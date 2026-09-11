@@ -2,7 +2,8 @@
   "name": "Parallax.Gameplay",
   "rootNamespace": "Parallax.Gameplay",
   "references": [
-    "Parallax.Core"
+    "Parallax.Core",
+    "Unity.InputSystem"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
