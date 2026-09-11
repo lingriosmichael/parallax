@@ -14,9 +14,22 @@ namespace Parallax.Gameplay.Player
         CatCommand command;
         bool warnedGravityScaleChanged;
 
+        ContactFilter2D groundFilter;
+        readonly RaycastHit2D[] groundHits = new RaycastHit2D[4];
+
+        float coyoteTimer;
+        float jumpBufferTimer;
+
+        public bool IsGrounded { get; private set; }
+
         public void SetCommand(CatCommand cmd)
         {
             command = cmd;
+
+            if (config != null && cmd.JumpPressed)
+            {
+                jumpBufferTimer = config.JumpBufferTime;
+            }
         }
 
         void Awake()
@@ -31,6 +44,10 @@ namespace Parallax.Gameplay.Player
                 enabled = false;
                 return;
             }
+
+            groundFilter = new ContactFilter2D();
+            groundFilter.useTriggers = false;
+            groundFilter.SetLayerMask(config.GroundMask);
         }
 
         void FixedUpdate()
@@ -45,11 +62,24 @@ namespace Parallax.Gameplay.Player
             float along = Vector2.Dot(v, right);
             float fall  = Vector2.Dot(v, down);
 
+            UpdateGrounded(down, fall);
+
+            coyoteTimer = IsGrounded ? config.CoyoteTime : Mathf.Max(0f, coyoteTimer - dt);
+            jumpBufferTimer = Mathf.Max(0f, jumpBufferTimer - dt);
+
             float target = command.Move * config.MaxSpeed;
             float accelRate = Mathf.Abs(command.Move) > 0.01f ? config.Acceleration : config.Deceleration;
             along = Mathf.MoveTowards(along, target, accelRate * dt);
 
             fall += gravity.Strength * dt;
+
+            if (jumpBufferTimer > 0f && coyoteTimer > 0f)
+            {
+                fall = -JumpMath.SpeedForHeight(config.JumpHeight, gravity.Strength);
+                jumpBufferTimer = 0f;
+                coyoteTimer = 0f;
+            }
+
             fall = Mathf.Min(fall, config.MaxFallSpeed);
 
             body.linearVelocity = right * along + down * fall;
@@ -65,6 +95,23 @@ namespace Parallax.Gameplay.Player
             }
 
             UpdateFacing();
+        }
+
+        void UpdateGrounded(Vector2 down, float fall)
+        {
+            int count = body.Cast(down, groundFilter, groundHits, config.GroundProbeDistance);
+
+            bool touchingGround = false;
+            for (int i = 0; i < count; i++)
+            {
+                if (Vector2.Dot(groundHits[i].normal, -down) > config.GroundNormalThreshold)
+                {
+                    touchingGround = true;
+                    break;
+                }
+            }
+
+            IsGrounded = touchingGround && fall >= -0.01f;
         }
 
         void UpdateFacing()
