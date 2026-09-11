@@ -1,0 +1,17 @@
+Image 5: Solo Reality Switch.
+
+Visualize PARALLAX's single-player mode.
+
+One player controls both cats by switching between Observer A and Observer B.
+
+Show a cinematic transition halfway through a reality switch: the warm ancient environment fractures into floating illustrated shards while the cyan geometric reality emerges underneath.
+
+Cat A is fading into a translucent afterimage while Cat B becomes solid and controllable.
+
+The two environments occupy exactly the same logical coordinates but have entirely different visual interpretations.
+
+The transition should feel like the universe is changing observer rather than simply loading another level.
+
+Use elegant distortion, geometry slicing, parallax layers and restrained particles.
+
+Make this look like an actual gameplay transition on a landscape smartphone.

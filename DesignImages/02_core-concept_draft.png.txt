@@ -1,0 +1,15 @@
+Image 2: Core cooperative gameplay concept. (early draft generation — no phone frames, direct split-reality render)
+
+Show two smartphones side by side, each displaying the same logical location from a completely different reality.
+
+On Phone A, an elegant dark cat stands in a warm ancient ruin filled with sandstone arches, hanging roots, faded cloth, black reflective water and golden atmospheric light.
+
+On Phone B, a pale cat stands at the equivalent coordinates inside a cold geometric machine-world of obsidian platforms, cyan energy lines, glass structures and floating architectural grids.
+
+The level layouts should clearly correspond structurally while appearing visually unrelated.
+
+Make this look like genuine landscape mobile gameplay rather than promotional key art. Include a very minimal premium-game HUD with subtle movement and interaction controls. Keep the interface elegant and unobtrusive.
+
+Emphasize that each player sees only their own reality. The concept image may show both phones together solely to demonstrate the mechanic.
+
+Note: this is the earliest generation (12:31 PM), predating the main batch and rendered without phone-frame chrome — kept as the source of the established Cat A / Cat B and reality designs referenced by the continuity suffix used in later prompts.

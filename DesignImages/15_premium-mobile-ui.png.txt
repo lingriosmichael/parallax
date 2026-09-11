@@ -1,0 +1,23 @@
+Image 15: Premium mobile gameplay UI.
+
+Design a realistic landscape gameplay screenshot for PARALLAX on a modern smartphone.
+
+Show one cat navigating a richly illustrated 2.5D reality.
+
+UI should be extremely restrained:
+
+subtle left/right movement control near the lower left,
+
+jump/interact control near the lower right,
+
+small partner/reality indicator,
+
+subtle connection quality indicator,
+
+optional reality-switch control for solo mode.
+
+Most of the screen should remain devoted to the artwork.
+
+Avoid the visual language of free-to-play mobile games: no currency counters, loot buttons, daily rewards, giant ability bars or clutter.
+
+The UI should communicate a premium narrative puzzle game.

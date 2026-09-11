@@ -1,0 +1,17 @@
+{
+  "name": "Parallax.App",
+  "rootNamespace": "Parallax.App",
+  "references": [
+    "Parallax.Core",
+    "Parallax.Gameplay"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

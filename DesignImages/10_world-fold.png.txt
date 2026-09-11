@@ -1,0 +1,15 @@
+Image 10: Impossible world-fold mechanic.
+
+Show one of PARALLAX's major spectacle moments.
+
+Cat A stands inside an enormous warm sandstone corridor surrounded by roots and reflective black water.
+
+Cat B activates a geometric mechanism in the alternate reality.
+
+On Cat A's screen, the corridor physically folds upward like an impossible sheet of architecture. Walls become floors, arches rotate into bridges and distant scenery moves into traversable alignment.
+
+Preserve a stable camera horizon so the transformation feels visually spectacular without becoming nauseating.
+
+Use layered 2.5D geometry, controlled perspective distortion, elegant particles and dramatic lighting.
+
+The transformation must visibly create a new gameplay route.
