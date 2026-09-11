@@ -284,6 +284,9 @@ GameObject:
   - component: {fileID: 7064627984492035233}
   - component: {fileID: 8385464979377668759}
   - component: {fileID: 5384427188274341245}
+  - component: {fileID: -8957719409104256222}
+  - component: {fileID: -6960851939468905688}
+  - component: {fileID: -879282820560298906}
   m_Layer: 0
   m_Name: Cat_Player
   m_TagString: Untagged
@@ -371,6 +374,47 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Size: {x: 1.2, y: 0.8}
   m_Direction: 1
+--- !u!114 &-8957719409104256222
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8383936889462940800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 618cc5e1fdf1c4dbf91c18d7c9bf2c37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Player.GravityReceiver
+  initialDirection: {x: 0, y: -1}
+  strength: 30
+  turnSpeedDegPerSec: 360
+--- !u!114 &-6960851939468905688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8383936889462940800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1ee0937ec63c4b88ac1eb4c9df261cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Player.CatMotor2D
+  config: {fileID: 11400000, guid: 1c8d4ec4dd7da4a2fa5f8beeb63fe3d4, type: 2}
+  visual: {fileID: 4873193962058543826}
+--- !u!114 &-879282820560298906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8383936889462940800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 805b7f36fa9524bb49850f72560f526e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Controls.KeyboardCatInput
 --- !u!1 &8746479637745861922
 GameObject:
   m_ObjectHideFlags: 0
