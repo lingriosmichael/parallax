@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Parallax.Gameplay.Controls;
 using Parallax.Gameplay.Player;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace Parallax.Editor
@@ -123,6 +124,42 @@ namespace Parallax.Editor
             AssetDatabase.CreateAsset(config, ConfigPath);
             changes.Add("created CatMotorConfig_Default asset");
             return config;
+        }
+
+        [MenuItem("PARALLAX/Setup/Build Gravity Test Arena")]
+        public static void BuildGravityTestArena()
+        {
+            if (GameObject.Find("GravityArena") != null)
+            {
+                Debug.Log("CatPlayerSetup: Gravity Test Arena already built.");
+                return;
+            }
+
+            GameObject ground = GameObject.Find("Ground");
+            if (ground == null)
+            {
+                Debug.LogError("CatPlayerSetup: no GameObject named 'Ground' found in the active scene. Stopping.");
+                return;
+            }
+
+            var arena = new GameObject("GravityArena");
+            Undo.RegisterCreatedObjectUndo(arena, "Build Gravity Test Arena");
+
+            CreateWallClone(ground, arena.transform, "Wall_Left",  new Vector3(-8.5f, 0f, 0f), new Vector3(1f, 9f, 1f));
+            CreateWallClone(ground, arena.transform, "Wall_Right", new Vector3(8.5f, 0f, 0f),  new Vector3(1f, 9f, 1f));
+            CreateWallClone(ground, arena.transform, "Ceiling",    new Vector3(0f, 4f, 0f),    new Vector3(18f, 1f, 1f));
+
+            EditorSceneManager.MarkSceneDirty(arena.scene);
+            Debug.Log("CatPlayerSetup: built GravityArena (Wall_Left, Wall_Right, Ceiling). Save the scene to keep it.");
+        }
+
+        static void CreateWallClone(GameObject template, Transform parent, string childName, Vector3 localPosition, Vector3 localScale)
+        {
+            GameObject clone = Object.Instantiate(template, parent);
+            clone.name = childName;
+            clone.transform.localPosition = localPosition;
+            clone.transform.localScale = localScale;
+            Undo.RegisterCreatedObjectUndo(clone, "Build Gravity Test Arena");
         }
     }
 }

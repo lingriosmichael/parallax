@@ -95,6 +95,10 @@ namespace Parallax.Gameplay.Player
             }
 
             UpdateFacing();
+
+            // Align body so local up = -gravity.Direction. Smoothing comes from GravityReceiver
+            // turning gradually toward its target; this is a direct assignment, not a second smoothing layer.
+            body.rotation = Vector2.SignedAngle(Vector2.down, down);
         }
 
         void UpdateGrounded(Vector2 down, float fall)
