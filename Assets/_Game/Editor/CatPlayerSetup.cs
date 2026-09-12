@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Parallax.Gameplay.Checkpoints;
-using Parallax.Gameplay.Controls;
+using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Player;
 using UnityEditor;
 using UnityEditor.SceneManagement;

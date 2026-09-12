@@ -2,7 +2,7 @@ using Parallax.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Parallax.Gameplay.Controls
+namespace Parallax.Gameplay.Input
 {
     public sealed class KeyboardCatInput : MonoBehaviour, ICatCommandSource
     {

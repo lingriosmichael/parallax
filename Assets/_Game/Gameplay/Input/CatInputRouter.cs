@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Parallax.Core;
 using UnityEngine;
 
-namespace Parallax.Gameplay
+namespace Parallax.Gameplay.Input
 {
     public sealed class CatInputRouter : MonoBehaviour, ICatCommandSource
     {
