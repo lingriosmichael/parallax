@@ -88,13 +88,19 @@ Format: `D-### · date · status` · Decision · Why · Supersedes
 **Why:** Reduce manual Editor work and back-and-forth without weakening review or the D-012 file rules.
 **Supersedes:** Plan §11 (Phase 0 sandbox) as a required phase; plan PAX-009 as a separate ticket.
 
+### D-020 · 2026-09-12 · Accepted
+**Decision:** The camera stays world-aligned and never rotates with gravity. Movement input remains cat-relative (perpendicular to the cat's gravity), so the on-screen direction of the move buttons changes when gravity rotates. A temporary gravity-aligned or snap-rotating camera may be revisited in Phase 5 as a deliberate disorientation effect while a Control Station is actively steering the other cat's gravity; that would need a new entry.
+**Why:** Two players can only coordinate ("it's above you, go left") if both phones share one frame of reference. A rotating camera destroys that shared spatial vocabulary and risks motion sickness on a phone. World-aligned also keeps level layouts mentally mappable across gravity changes.
+**Resolves:** Q-2. **Supersedes:** nothing.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
 
 - **Q-1** Partner presence hint: shimmer or nothing?
-- **Q-2** Camera rotates with gravity, or stays world-aligned?
+- ~~**Q-2** Camera rotates with gravity, or stays world-aligned?~~ Resolved by D-020: world-aligned.
 - **Q-3** Tilt or dial as default?
 - **Q-4** Solo gravity adaptation: persistent setting, Echo choreography, or both?
 - **Q-5** Echo length and looping.
 - **Q-6** Effect of same-room screen peeking.
+- **Q-7** Should a temporary gravity-aligned/snap-rotating camera be introduced in Phase 5 as a deliberate disorientation effect while a Control Station actively steers the other cat's gravity? (Raised by D-020; unconfirmed wording — please check.)

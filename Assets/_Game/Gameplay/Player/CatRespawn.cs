@@ -11,6 +11,8 @@ namespace Parallax.Gameplay.Player
 
         int lastRespawnFrame = -1;
 
+        public event System.Action Respawned;
+
         void Awake()
         {
             body = GetComponent<Rigidbody2D>();
@@ -31,6 +33,8 @@ namespace Parallax.Gameplay.Player
             motor.ResetMotion();
 
             Debug.Log($"CatRespawn: '{gameObject.name}' respawned at {position}.", this);
+
+            Respawned?.Invoke();
         }
     }
 }

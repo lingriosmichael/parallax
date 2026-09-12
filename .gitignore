@@ -117,3 +117,6 @@ InitTestScene*.unity*
 
 # Personal editor settings
 .vscode/
+
+# Architect/Claude conversation handoff notes (not game content)
+/ConversationHandoff/
