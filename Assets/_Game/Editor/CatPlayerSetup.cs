@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Parallax.Gameplay.Checkpoints;
 using Parallax.Gameplay.Controls;
 using Parallax.Gameplay.Player;
 using UnityEditor;
@@ -56,6 +57,12 @@ namespace Parallax.Editor
                 {
                     root.AddComponent<KeyboardCatInput>();
                     changes.Add("added KeyboardCatInput");
+                }
+
+                if (root.GetComponent<CatRespawn>() == null)
+                {
+                    root.AddComponent<CatRespawn>();
+                    changes.Add("added CatRespawn");
                 }
 
                 var motorSO = new SerializedObject(motor);
@@ -160,6 +167,71 @@ namespace Parallax.Editor
             clone.transform.localPosition = localPosition;
             clone.transform.localScale = localScale;
             Undo.RegisterCreatedObjectUndo(clone, "Build Gravity Test Arena");
+        }
+
+        [MenuItem("PARALLAX/Setup/Build Fall Reset Test")]
+        public static void BuildFallResetTest()
+        {
+            if (GameObject.Find("FallResetTest") != null)
+            {
+                Debug.Log("CatPlayerSetup: Fall Reset Test already built.");
+                return;
+            }
+
+            GameObject ground = GameObject.Find("Ground");
+            if (ground == null)
+            {
+                Debug.LogError("CatPlayerSetup: no GameObject named 'Ground' found in the active scene. Stopping.");
+                return;
+            }
+
+            GameObject wallRight = GameObject.Find("GravityArena/Wall_Right");
+            if (wallRight == null)
+            {
+                Debug.LogError("CatPlayerSetup: no GameObject named 'GravityArena/Wall_Right' found in the active scene. Stopping.");
+                return;
+            }
+
+            var root = new GameObject("FallResetTest");
+            Undo.RegisterCreatedObjectUndo(root, "Build Fall Reset Test");
+
+            var spawnGO = new GameObject("Spawn_Main");
+            Undo.RegisterCreatedObjectUndo(spawnGO, "Build Fall Reset Test");
+            spawnGO.transform.SetParent(root.transform);
+            spawnGO.transform.position = new Vector3(0f, -3.1f, 0f);
+            SpawnPoint spawn = spawnGO.AddComponent<SpawnPoint>();
+
+            var spawnSO = new SerializedObject(spawn);
+            spawnSO.FindProperty("gravityDirection").vector2Value = Vector2.down;
+            spawnSO.ApplyModifiedPropertiesWithoutUndo();
+
+            CreateKillZone(root.transform, "KillZone_Bottom", new Vector2(0f, -9f), new Vector2(40f, 4f), spawn);
+            CreateKillZone(root.transform, "KillZone_Top",    new Vector2(0f, 9f),  new Vector2(40f, 4f), spawn);
+            CreateKillZone(root.transform, "KillZone_Left",   new Vector2(-14f, 0f), new Vector2(4f, 22f), spawn);
+            CreateKillZone(root.transform, "KillZone_Right",  new Vector2(14f, 0f),  new Vector2(4f, 22f), spawn);
+
+            Undo.RecordObject(wallRight, "Build Fall Reset Test");
+            wallRight.SetActive(false);
+
+            EditorSceneManager.MarkSceneDirty(root.scene);
+            Debug.Log("CatPlayerSetup: built FallResetTest (Spawn_Main + 4 kill zones) and deactivated Wall_Right. Save the scene to keep it.");
+        }
+
+        static void CreateKillZone(Transform parent, string childName, Vector2 center, Vector2 size, SpawnPoint spawn)
+        {
+            var go = new GameObject(childName);
+            Undo.RegisterCreatedObjectUndo(go, "Build Fall Reset Test");
+            go.transform.SetParent(parent);
+            go.transform.position = center;
+
+            var box = go.AddComponent<BoxCollider2D>();
+            box.size = size;
+            box.isTrigger = true;
+
+            var volume = go.AddComponent<FallResetVolume>();
+            var volumeSO = new SerializedObject(volume);
+            volumeSO.FindProperty("spawn").objectReferenceValue = spawn;
+            volumeSO.ApplyModifiedPropertiesWithoutUndo();
         }
     }
 }

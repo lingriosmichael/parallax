@@ -11,6 +11,7 @@ namespace Parallax.Gameplay.Player
 
         Vector2 target;
         public Vector2 Direction { get; private set; }
+        public Vector2 TargetDirection => target;
         public float Strength => strength;
 
         void Awake()
@@ -18,9 +19,12 @@ namespace Parallax.Gameplay.Player
             Direction = target = initialDirection.normalized;
         }
 
-        public void SetTargetDirection(Vector2 dir)
+        public void SetTargetDirection(Vector2 dir, bool snap = false)
         {
-            if (dir.sqrMagnitude > 1e-4f) target = dir.normalized;
+            if (dir.sqrMagnitude <= 1e-4f) return;
+
+            target = dir.normalized;
+            if (snap) Direction = target;
         }
 
         public void FixedTick(float dt)

@@ -32,6 +32,16 @@ namespace Parallax.Gameplay.Player
             }
         }
 
+        public void ResetMotion()
+        {
+            body.linearVelocity = Vector2.zero;
+            body.angularVelocity = 0f;
+            coyoteTimer = 0f;
+            jumpBufferTimer = 0f;
+            command = CatCommand.None;
+            body.rotation = Vector2.SignedAngle(Vector2.down, gravity.Direction);
+        }
+
         void Awake()
         {
             body = GetComponent<Rigidbody2D>();
