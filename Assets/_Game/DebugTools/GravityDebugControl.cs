@@ -9,7 +9,6 @@ namespace Parallax.DebugTools
     public sealed class GravityDebugControl : MonoBehaviour
     {
         GravityReceiver receiver;
-        int steps;
 
         void Awake()
         {
@@ -21,29 +20,25 @@ namespace Parallax.DebugTools
             var keyboard = Keyboard.current;
             if (keyboard == null) return;
 
-            bool changed = false;
+            Vector2? dir = null;
 
             if (keyboard.qKey.wasPressedThisFrame)
             {
-                steps += 1;
-                changed = true;
+                dir = GravityMath.Rotate90(receiver.TargetDirection, +1);
             }
             else if (keyboard.eKey.wasPressedThisFrame)
             {
-                steps -= 1;
-                changed = true;
+                dir = GravityMath.Rotate90(receiver.TargetDirection, -1);
             }
             else if (keyboard.rKey.wasPressedThisFrame)
             {
-                steps = 0;
-                changed = true;
+                dir = Vector2.down;
             }
 
-            if (!changed) return;
+            if (dir == null) return;
 
-            Vector2 dir = GravityMath.Rotate90(Vector2.down, steps);
-            receiver.SetTargetDirection(dir);
-            Debug.Log($"GravityDebug: {gameObject.name} gravity → ({dir.x:0}, {dir.y:0})");
+            receiver.SetTargetDirection(dir.Value);
+            Debug.Log($"GravityDebug: {gameObject.name} gravity → ({dir.Value.x:0}, {dir.Value.y:0})");
         }
     }
 }
