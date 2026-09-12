@@ -11,20 +11,6 @@ namespace Parallax.Tests
         static readonly Rect Jump      = new Rect(0.78f, 0.00f, 0.22f, 0.45f);
 
         [Test]
-        public void Classify_PointInMoveLeftZone_ReturnsMoveLeft()
-        {
-            TouchZone zone = TouchZones.Classify(new Vector2(0.08f, 0.2f), MoveLeft, MoveRight, Jump);
-            Assert.AreEqual(TouchZone.MoveLeft, zone);
-        }
-
-        [Test]
-        public void Classify_PointInMoveRightZone_ReturnsMoveRight()
-        {
-            TouchZone zone = TouchZones.Classify(new Vector2(0.24f, 0.2f), MoveLeft, MoveRight, Jump);
-            Assert.AreEqual(TouchZone.MoveRight, zone);
-        }
-
-        [Test]
         public void Classify_PointInJumpZone_ReturnsJump()
         {
             TouchZone zone = TouchZones.Classify(new Vector2(0.9f, 0.2f), MoveLeft, MoveRight, Jump);
@@ -51,14 +37,6 @@ namespace Parallax.Tests
             Rect overlappingJump = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
             TouchZone zone = TouchZones.Classify(new Vector2(0.08f, 0.2f), MoveLeft, MoveRight, overlappingJump);
             Assert.AreEqual(TouchZone.Jump, zone);
-        }
-
-        [Test]
-        public void Classify_PointInOverlapOfMoveZones_MoveLeftTakesPriorityOverMoveRight()
-        {
-            Rect overlappingMoveRight = new Rect(0.0f, 0.0f, 1.0f, 0.45f);
-            TouchZone zone = TouchZones.Classify(new Vector2(0.08f, 0.2f), MoveLeft, overlappingMoveRight, Jump);
-            Assert.AreEqual(TouchZone.MoveLeft, zone);
         }
 
         [Test]

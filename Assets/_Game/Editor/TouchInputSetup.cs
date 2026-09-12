@@ -1,6 +1,5 @@
 using System.Collections.Generic;
-using Parallax.Gameplay;
-using Parallax.Gameplay.Controls;
+using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Player;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -31,11 +30,27 @@ namespace Parallax.Editor
 
             var changes = new List<string>();
 
-            var touchInput = catGO.GetComponent<TouchCatInput>();
+            var gravityReceiver = catGO.GetComponent<GravityReceiver>();
+            if (gravityReceiver == null)
+            {
+                Debug.LogError($"TouchInputSetup: '{CatPlayerName}' has no GravityReceiver. Stopping.");
+                return;
+            }
+
+            var touchInput = catGO.GetComponent<TouchStickCatInput>();
             if (touchInput == null)
             {
-                touchInput = catGO.AddComponent<TouchCatInput>();
-                changes.Add("added TouchCatInput");
+                touchInput = catGO.AddComponent<TouchStickCatInput>();
+                changes.Add("added TouchStickCatInput");
+            }
+
+            var touchInputSO = new SerializedObject(touchInput);
+            var gravityReceiverProp = touchInputSO.FindProperty("gravityReceiver");
+            if (gravityReceiverProp.objectReferenceValue != gravityReceiver)
+            {
+                gravityReceiverProp.objectReferenceValue = gravityReceiver;
+                touchInputSO.ApplyModifiedPropertiesWithoutUndo();
+                changes.Add("assigned TouchStickCatInput.gravityReceiver");
             }
 
             var router = catGO.GetComponent<CatInputRouter>();
@@ -59,7 +74,7 @@ namespace Parallax.Editor
             if (!ContainsReference(sourcesProp, touchInput))
             {
                 AppendSource(sourcesProp, touchInput);
-                changes.Add("added TouchCatInput to CatInputRouter.sources");
+                changes.Add("added TouchStickCatInput to CatInputRouter.sources");
             }
 
             routerSO.ApplyModifiedPropertiesWithoutUndo();
