@@ -1,27 +1,21 @@
 using Parallax.Core;
-using Parallax.Gameplay.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Parallax.Gameplay.Controls
 {
-    [RequireComponent(typeof(CatMotor2D))]
-    public sealed class KeyboardCatInput : MonoBehaviour
+    public sealed class KeyboardCatInput : MonoBehaviour, ICatCommandSource
     {
-        CatMotor2D motor;
-
-        void Awake()
-        {
-            motor = GetComponent<CatMotor2D>();
-        }
+        float move;
+        bool jumpHeld;
+        bool jumpPressedLatched;
 
         void Update()
         {
             var keyboard = Keyboard.current;
 
-            float move = 0f;
-            bool jumpPressed = false;
-            bool jumpHeld = false;
+            move = 0f;
+            jumpHeld = false;
 
             if (keyboard != null)
             {
@@ -31,20 +25,26 @@ namespace Parallax.Gameplay.Controls
                 if (left && !right) move = -1f;
                 else if (right && !left) move = 1f;
 
-                jumpPressed = keyboard.spaceKey.wasPressedThisFrame
-                              || keyboard.wKey.wasPressedThisFrame
-                              || keyboard.upArrowKey.wasPressedThisFrame;
+                jumpPressedLatched |= keyboard.spaceKey.wasPressedThisFrame
+                                      || keyboard.wKey.wasPressedThisFrame
+                                      || keyboard.upArrowKey.wasPressedThisFrame;
 
                 jumpHeld = keyboard.spaceKey.isPressed
                            || keyboard.wKey.isPressed
                            || keyboard.upArrowKey.isPressed;
             }
+        }
 
+        public CatCommand Read()
+        {
             var cmd = CatCommand.None;
             cmd.Move = move;
-            cmd.JumpPressed = jumpPressed;
+            cmd.JumpPressed = jumpPressedLatched;
             cmd.JumpHeld = jumpHeld;
-            motor.SetCommand(cmd);
+
+            jumpPressedLatched = false;
+
+            return cmd;
         }
     }
 }

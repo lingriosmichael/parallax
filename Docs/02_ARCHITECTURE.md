@@ -73,7 +73,7 @@ Scene: VS_Level01
 - One camera per Observer. It follows its cat.
 - **Solo:** only the active Observer's camera renders to the screen. The other is disabled, or renders to a small viewport in the debug PiP.
 - **Co-op:** each device enables only its local Observer's camera.
-- The camera stays world-aligned for now, even when gravity rotates (open question in `00_VISION.md` §12).
+- The camera stays world-aligned and never rotates with gravity (D-020).
 
 ---
 
