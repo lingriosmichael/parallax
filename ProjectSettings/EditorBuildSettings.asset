@@ -11,9 +11,12 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/_Game/Scenes/Bootstrap.unity
     guid: 759925cf71236486bbb7d10a5a7662f2
-  - enabled: 1
+  - enabled: 0
     path: Assets/_Game/Scenes/Sandbox_Player.unity
     guid: 804fdb3fe3cfd43a8a8b2fddac6e9120
+  - enabled: 1
+    path: Assets/_Game/Scenes/Sandbox_Realities.unity
+    guid: a8be6261c8f1543fa9b5a0a425fc5b9e
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
