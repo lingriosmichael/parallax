@@ -2,16 +2,16 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
+  serializedVersion: 3
   tags: []
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - RealityA
   - Water
   - UI
-  - 
+  - RealityB
   - 
   - 
   - 
@@ -41,3 +41,32 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: A_Background
+    uniqueID: 1621841959
+    locked: 0
+  - name: A_Middle
+    uniqueID: 3860466779
+    locked: 0
+  - name: A_Gameplay
+    uniqueID: 2581000149
+    locked: 0
+  - name: A_Foreground
+    uniqueID: 1041804007
+    locked: 0
+  - name: B_Background
+    uniqueID: 2554561513
+    locked: 0
+  - name: B_Middle
+    uniqueID: 3918863129
+    locked: 0
+  - name: B_Gameplay
+    uniqueID: 3639796507
+    locked: 0
+  - name: B_Foreground
+    uniqueID: 923146201
+    locked: 0
+  - name: UI
+    uniqueID: 4159029941
+    locked: 0
+  m_RenderingLayers:
+  - Default
