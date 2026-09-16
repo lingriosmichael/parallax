@@ -135,7 +135,7 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 **Supersedes:** 02_ARCHITECTURE §5.1 (per-cat `TouchCatInput`); the handoff note to apply input components to the Cat_Player prefab.
 
 ### D-023 · 2026-09-16 · Accepted
-**Decision:** (1) `SoloSwitchController` is the only runtime code that assigns Observer drivers or enables Observer cameras; bootstrap delegates to it and the PAX-014/015 dev toggles are removed. (2) On-screen controls declare `ITouchReservedRegion`s; a touch that begins inside one is never claimed by movement input. (3) Debug PiP renders the inactive Observer's camera into a corner viewport; dev builds only, default off.
+**Decision:** (1) `SoloSwitchController` is the only runtime owner of drivers and Observer cameras; `ObserverBootstrap` calls `Initialize(A)`. (2) UI that must not start movement implements `ITouchReservedRegion`: a touch that begins on SWITCH, the DBG button/debug panel, or the gravity debug buttons is never claimed by the stick or jump. (3) `DebugPanel` (backquote or DBG) only reads Observer state; it never assigns drivers.
 **Why:** Two owners of drivers/cameras can leave both cats LocalHuman on one router, or show one reality while driving the other. Without reserved regions, tapping SWITCH also starts the stick or jump.
 **Supersedes:** `RealityViewDebugToggle` and `ObserverDriverDebugToggle` (PAX-014/015).
 
@@ -151,11 +151,11 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 ## Open questions (to be resolved by playtest → new D-entries)
 
 - **Q-1** Partner presence hint: shimmer or nothing?
-- ~~**Q-2** Camera rotates with gravity, or stays world-aligned?~~ Resolved by D-020, confirmed on device by D-021.
+- ~~**Q-2** Camera rotates with gravity, or stays world-aligned?~~ Resolved by D-020: world-aligned.
 - **Q-3** Tilt or dial as default?
 - **Q-4** Solo gravity adaptation: persistent setting, Echo choreography, or both?
 - **Q-5** Echo length and looping.
 - **Q-6** Effect of same-room screen peeking.
-- ~~**Q-7** Should a temporary gravity-aligned/snap-rotating camera be introduced in Phase 5 as a deliberate disorientation effect while a Control Station actively steers the other cat's gravity? (Raised by D-020; unconfirmed wording — please check.)~~ Closed by D-021.
+- ~~**Q-7** Should a temporary gravity-aligned/snap-rotating camera be introduced in Phase 5 as a deliberate disorientation effect while a Control Station actively steers the other cat's gravity?~~ Closed by D-021: not needed.
 - **Q-8** Is v1 co-op-only? If levels require two humans (hostile anchors: one player's action sets traps in the other's reality), Echo (D-007, PAX-023/024) and solo as a first-class mode (Vision §4, D-016 solo cohort, Gate 3 check 6) may be cut. If solo stays, every hostile anchor must remain solvable against a ≤10 s Echo, which rules out traps that depend on the partner not knowing. Unaffected either way: PAX-014–022. SWITCH survives at least as a dev tool, because the one-phone proof (D-011) needs one human to drive both cats. **Decide before PAX-023**, after PAX-022 runs a cross-reality anchor on device.
 - **Q-9** Nine lives: shared between both cats or per-cat? Reset per level or per checkpoint? On zero, hard fail or a rating penalty? Note: a hard fail conflicts with Vision pillar 3 (cheap, funny failure, no death screens); resolving Q-9 toward hard fail requires a Vision change. Recorded, not designed.

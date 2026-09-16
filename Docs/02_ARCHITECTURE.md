@@ -61,21 +61,19 @@ Scene: VS_Level01
 └── Systems/           GameBootstrap, AnchorRegistry host, CheckpointManager…
 ```
 
-- **The offset** is a single constant (`RealitySpace.OffsetB`, default `(0, 1000)`). Everything uses it; nothing hard-codes it.
-- **Correspondence:** a position "in the same place" in the other reality has the **same local coordinates** under the other root. `RealityRoot.MapTo(other, worldPos)` (delegating to `RealitySpace.MapTo`) converts between them.
+- **The offset** is a single constant (`RealityRoot.OffsetB`, default `(0, 1000)`). Everything uses it; nothing hard-codes it.
+- **Correspondence:** a position "in the same place" in the other reality has the **same local coordinates** under the other root. `RealityRoot.MapTo(other, worldPos)` converts between them.
 - **Physics layers:** `RealityA` and `RealityB`, with cross-collision disabled in the collision matrix. The world offset already separates them, and the matrix is a second line of defense.
 - **All physics queries** (ground checks, sensors) use a layer mask for their own reality.
 - **Sorting layers:** `A_Background, A_Middle, A_Gameplay, A_Foreground, B_Background, B_Middle, B_Gameplay, B_Foreground, UI`. **This matters:** a global `Light2D` affects every sprite on its target sorting layers regardless of position, so per-reality sorting layers are the only way to keep warm light out of the cold reality.
 - **Both realities are loaded on every device.** In solo, both are simulated. In co-op, each device simulates its own cat; the remote cat is a network proxy.
-- `PARALLAX/Validate/Reality Isolation` (read-only) checks layers, sorting layers, cross-root references, Light2D targets, and camera culling masks for exactly this kind of leak. Run it after hand-editing either reality; `RealitySetup` also runs it as its last step.
 
 ### 3.2 Cameras
 
 - One camera per Observer. It follows its cat.
 - **Solo:** only the active Observer's camera renders to the screen. The other is disabled, or renders to a small viewport in the debug PiP.
 - **Co-op:** each device enables only its local Observer's camera.
-- World-aligned, never rotates (D-020, confirmed on device by D-021).
-- A hidden camera is disabled at the **component** level (`Camera.enabled = false`), never by deactivating its GameObject, so its `CatCameraFollow` keeps tracking its target while hidden and there's no swoop from a stale position when it's shown again.
+- The camera stays world-aligned for now, even when gravity rotates (open question in `00_VISION.md` §12).
 
 ---
 
@@ -137,7 +135,7 @@ public sealed class ObserverContext : MonoBehaviour
 
 `ObserverSet` holds both contexts (`Get(ObserverId)`). Systems receive it from the composition root. There is no global singleton.
 
-`ObserverSet.FixedUpdate` is the **only** per-tick entry point for cats (D-022). It owns `Tick`, incrementing once per fixed step, then steps Observer A, then Observer B, through their drivers: `Tick++; observerA.Step(Tick); observerB?.Step(Tick);`. `CatMotor2D` has no `FixedUpdate` of its own — it exposes `Step(in CatCommand, float dt)`, called only by a driver's `FixedTick`. "Motor enabled" / "motor disabled" in the table above means "driver calls `Step`" / "driver doesn't call `Step`", not a Unity component-enabled flag.
+**Tick ownership (D-022, as built in PAX-014):** `ObserverSet.FixedUpdate` is the only per-tick entry point. It owns `Tick` and runs, in order: `Tick++` → Observer A `Step(Tick)` → Observer B `Step(Tick)` → `Stepped(Tick)` event (PAX-019). `CatMotor2D` has no `FixedUpdate`; it exposes `Step(in CatCommand input, float dt)`, called only by drivers. `LocalHumanDriver` reads `CatInputRouter` exactly once per tick; `InactiveDriver` steps with `CatCommand.None`. `EchoReplay` and `RemoteHuman` exist as enum members only, and their driver classes are written in their own tickets.
 
 ### 4.1 Commands
 
@@ -158,14 +156,14 @@ Touch, keyboard, and (later) gamepad all produce `CatCommand`. The motor never r
 
 ### 4.2 Solo switching
 
-`SoloSwitchController` is the **only** runtime code that assigns Observer drivers or enables/disables Observer cameras; `ObserverBootstrap` delegates to it (D-023). On `SwitchTo`/`Toggle`:
+`SoloSwitchController` on SWITCH:
 
-1. For the **current** Observer: set `InactiveDriver`. (Stopping/replaying an Echo recording here is PAX-024.)
-2. For the **target** Observer: set `LocalHumanDriver`.
-3. Swap cameras at the component level: the target's `Camera` is enabled with `rect = (0,0,1,1)` and `depth = 0`; the other's `Camera` component is disabled (not its GameObject).
-4. Raise a **local-only** C# event `Switched(ObserverId from, ObserverId to)`. It is never networked, and carries no VFX/audio in v1 — `Switched` firing is enough (PAX-017).
+1. For the **current** Observer: if an Echo recording is active, stop it and set `EchoReplayDriver`. Otherwise set `InactiveDriver`.
+2. For the **target** Observer: if it is `EchoReplay`, cancel the Echo; the human resumes from the Echo's current position. Set `LocalHumanDriver`.
+3. Swap the active camera.
+4. Raise a **local-only** `ObserverSwitched` event (for transition VFX/audio). It is never networked.
 
-Switches are requested from `Update`, so they always land between fixed ticks, never mid-`FixedUpdate`.
+**As built (PAX-017, D-023):** `SoloSwitchController` is the only runtime owner of drivers and Observer cameras; `ObserverBootstrap` calls `Initialize(A)`. Steps 1–2 currently use only `InactiveDriver`/`LocalHumanDriver` (no Echo yet). SWITCH is a top-center uGUI button with an ASCII label (`A | b`); after a click its selection is cleared and navigation is None, so Space/Enter can't re-trigger it. Tab switches in the Editor. The event is `SoloSwitchController.Switched`.
 
 ### 4.3 Co-op binding
 
@@ -184,9 +182,9 @@ Echo is disabled in co-op in v1. The driver model keeps it possible later.
 
 ### 5.1 Movement input
 
-Movement input is a **device-level rig**, not part of the cat prefab (D-021, D-022): a `CatInputRouter` merges `KeyboardCatInput` (Editor) and `TouchStickCatInput` (touch, read cat-relative per D-021). Each implements `ICatCommandSource { CatCommand Read(); void ResetTransientState(); }`. `LocalHumanDriver` binds the router to its Observer's `GravityReceiver` on `Activate` (`CatInputRouter.SetGravityFrame`, forwarded to the touch source) and calls `ResetTransientState()` on both `Activate` and `Deactivate`, so latched edges (e.g. a jump press) never survive a driver handover.
+The Input System's touch controls produce `CatCommand` via `TouchCatInput`. `KeyboardCatInput` exists for the Editor. Both implement `ICatCommandSource { CatCommand Read(); }`, and `LocalHumanDriver` consumes it.
 
-**Reserved touch regions (D-023):** on-screen controls (SWITCH, the debug panel, the gravity debug buttons) declare `ITouchReservedRegion { bool ContainsScreenPoint(Vector2 screenPos); }`. `TouchStickCatInput` takes a list of these; a touch that **begins** inside any region is never claimed as stick or jump for its whole lifetime, even if it drifts elsewhere. Without this, tapping an on-screen control could also start the stick or a jump.
+**Superseded in part by D-021/D-022:** movement input is a scene-level `DeviceInput` rig (`CatInputRouter`, keyboard source, touch virtual stick per D-021, `KeyboardSwitchInput`), not part of the cat prefab. `Cat_Player` has no input components. `LocalHumanDriver` binds the rig to its Observer on Activate and resets transient input on Activate and Deactivate. Touches that begin on a UI element implementing `ITouchReservedRegion` (SWITCH, DBG/debug panel, gravity debug buttons) are never claimed by the stick or jump (D-023).
 
 ### 5.2 Gravity control input
 
@@ -276,7 +274,7 @@ void FixedUpdate()
 }
 ```
 
-**Ground detection:** `body.Cast(down, groundFilter, hits, probeDistance)`. Casting the cat's own collider never hits itself. `groundFilter`'s mask comes from the cat's parent `RealityRoot` (`GetComponentInParent<RealityRoot>().PhysicsMask`, resolved once in `Awake`), not from `CatMotorConfig` — a cat with no `RealityRoot` ancestor logs an error and its ground cast matches nothing (no silent fallback). A hit counts as ground if `Vector2.Dot(hit.normal, -down) > 0.7`.
+**Ground detection:** `body.Cast(down, groundFilter, hits, probeDistance)`. Casting the cat's own collider never hits itself. `groundFilter` uses the cat's reality layer mask. A hit counts as ground if `Vector2.Dot(hit.normal, -down) > 0.7`.
 
 **Gravity sources:** only `GravityReceiver.SetTargetDirection` changes gravity. It is called by the control-stream receiver, checkpoint restore, and debug tools.
 
@@ -344,7 +342,14 @@ public sealed class AnchorRegistry          // Parallax.Core, pure C#
     // Non-authority side: apply replicated state.
     public void ApplyReplicated(AnchorId id, AnchorState state);
     //  - ignore if state.Revision <= current Revision; create the anchor if unknown
+
+    public IEnumerable<KeyValuePair<AnchorId, AnchorState>> All; // stable registration order (debug table)
+    public void ResetSequences(); // must be called whenever EventSequencers are recreated (checkpoint/level reload)
 }
+
+public enum CommitResult { Applied, Duplicate, NoChange, UnknownAnchor, InvalidValue }
+
+public sealed class EventSequencer { public uint Next(EventOrigin origin); } // per-origin, starts at 1
 ```
 
 **Duplicate protection (D-024):** per-origin highest-applied sequence, not a bounded recent-ID set — a late duplicate arriving outside a fixed window could otherwise re-apply an outdated absolute target and revert a newer change. Because tracking is per origin across all anchors, not per (origin, anchor), a transport must deliver each origin's requests in send order, or an out-of-order later request for one anchor can cause an earlier request for a different anchor to be dropped as `Duplicate`. An Echo replay must issue fresh sequences from its own origin's `EventSequencer` on every playback (§8.3), never re-send recorded sequence numbers, or the second replay is dropped as `Duplicate`.
@@ -470,7 +475,7 @@ public interface IRealityTransport
 - `RequestAnchor` → (optional artificial delay) → `AnchorRegistry.Commit`.
 - `PublishControl` → (optional artificial delay) → `ControlReceived`.
 - **Artificial latency** (0–400 ms, set in the debug panel) lets causality theatre be designed and tested before Photon exists.
-- **Never synchronous (D-024):** `RequestAnchor`, `PublishControl`, and `SendCue` only enqueue — never deliver inside the call, even at 0 ms latency, so no caller can come to rely on synchronous commits the network won't give. Delivery tick is computed at enqueue time as `the current simulation tick (ObserverSet.Tick, via a tick source) + max(1, ceil(LatencyMs / (fixedDeltaSeconds * 1000)))`; changing `LatencyMs` afterward never reschedules items already queued. A request made during tick N is never delivered before tick N+1, wherever it's called from (inside `A.Step`/`B.Step`, from `OnGUI`, from a trigger callback). `LocalTransportHost` pumps the transport once per tick from `ObserverSet.Stepped`, after both Observers have stepped.
+- **Never synchronous (D-024):** `RequestAnchor`, `PublishControl`, and `SendCue` only enqueue — never deliver inside the call, even at 0 ms latency, so no caller can come to rely on synchronous commits the network won't give. Delivery tick is computed at enqueue time as the current simulation tick (`ObserverSet.Tick`, via a `Func<int>` tick source) + `max(1, ceil(LatencyMs / (fixedDeltaSeconds * 1000)))`; changing `LatencyMs` afterward never reschedules items already queued. A request made during tick N is never delivered before tick N+1, wherever it's called from (inside `A.Step`/`B.Step`, from `OnGUI`, from a trigger callback). `LocalTransportHost` (on the scene-root `Systems` object) owns the `AnchorRegistry` and `LocalTransport` and pumps the transport once per tick from `ObserverSet.Stepped`, after both Observers have stepped.
 
 ### 9.2 `FusionTransport` (Net.Fusion assembly)
 
@@ -503,7 +508,7 @@ public interface IRealityTransport
 
 ## 10. Time
 
-- **Solo:** `Tick` = count of `FixedUpdate` steps since the level loaded.
+- **Solo:** `Tick` = count of `FixedUpdate` steps since the level loaded, owned by `ObserverSet` (D-022).
 - **Co-op:** `Tick` = Fusion's network tick.
 - Echo uses tick offsets, never `Time.time`.
 - Cues use absolute ticks.
@@ -570,7 +575,7 @@ PiP toggle (visible only while the panel is open, default off): when on, the **i
 
 ## 15. Testing
 
-- **EditMode (Unity Test Framework):** `AnchorRegistry` (idempotency, dedupe, revision ordering), Echo frame indexing and event timing, tilt filter math, `ObserverId.Other`, the checkpoint snapshot round-trip.
+- **EditMode (Unity Test Framework):** `AnchorRegistry` (idempotency, dedupe, revision ordering) and `LocalTransport` (never-synchronous delivery, tick-based latency; PAX-019, 75 tests total at that point), Echo frame indexing and event timing, tilt filter math, `ObserverId.Other`, the checkpoint snapshot round-trip.
 - **Manual acceptance tests** per ticket, labeled Editor / device / two devices.
 - **Two-client Editor tests** via Multiplayer Play Mode or Fusion multi-peer (decided in PAX-S01/PAX-030).
 - **Device tests** for anything involving touch, sensors, performance, or networking conditions.
