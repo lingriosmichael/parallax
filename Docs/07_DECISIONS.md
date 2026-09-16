@@ -134,6 +134,11 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 **Why:** Explicit step order replaces execution-order coupling and gives Echo a single tick source. A per-cat input rig would make two cats read the same touches, and inactive cats would accumulate stale jump latches that fire on switch-back. Stubs are deferred pending Q-8.
 **Supersedes:** 02_ARCHITECTURE §5.1 (per-cat `TouchCatInput`); the handoff note to apply input components to the Cat_Player prefab.
 
+### D-023 · 2026-09-16 · Accepted
+**Decision:** (1) `SoloSwitchController` is the only runtime code that assigns Observer drivers or enables Observer cameras; bootstrap delegates to it and the PAX-014/015 dev toggles are removed. (2) On-screen controls declare `ITouchReservedRegion`s; a touch that begins inside one is never claimed by movement input. (3) Debug PiP renders the inactive Observer's camera into a corner viewport; dev builds only, default off.
+**Why:** Two owners of drivers/cameras can leave both cats LocalHuman on one router, or show one reality while driving the other. Without reserved regions, tapping SWITCH also starts the stick or jump.
+**Supersedes:** `RealityViewDebugToggle` and `ObserverDriverDebugToggle` (PAX-014/015).
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)

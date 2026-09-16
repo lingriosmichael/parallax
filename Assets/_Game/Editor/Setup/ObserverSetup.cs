@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Parallax.App;
 using Parallax.Core;
-using Parallax.DebugTools;
 using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Player;
@@ -146,45 +145,10 @@ namespace Parallax.Editor.Setup
             }
             observerSetSO.ApplyModifiedPropertiesWithoutUndo();
 
-            var bootstrapSO = new SerializedObject(bootstrap);
-            var observersProp = bootstrapSO.FindProperty("observers");
-            if (observersProp.objectReferenceValue != observerSet)
-            {
-                observersProp.objectReferenceValue = observerSet;
-                changes.Add("assigned ObserverBootstrap.observers = ObserverSet");
-            }
-            var routerProp = bootstrapSO.FindProperty("router");
-            if (routerProp.objectReferenceValue != router)
-            {
-                routerProp.objectReferenceValue = router;
-                changes.Add("assigned ObserverBootstrap.router = CatInputRouter");
-            }
-            bootstrapSO.ApplyModifiedPropertiesWithoutUndo();
+            // ObserverBootstrap.switchController is wired by
+            // 'PARALLAX/Setup/Switch + Debug (Sandbox)', not here.
 
-            // Step 4: debug toggle.
-            var toggle = observersGO.GetComponent<ObserverDriverDebugToggle>();
-            if (toggle == null)
-            {
-                toggle = observersGO.AddComponent<ObserverDriverDebugToggle>();
-                changes.Add("added ObserverDriverDebugToggle to Observers");
-            }
-
-            var toggleSO = new SerializedObject(toggle);
-            var toggleObserversProp = toggleSO.FindProperty("observers");
-            if (toggleObserversProp.objectReferenceValue != observerSet)
-            {
-                toggleObserversProp.objectReferenceValue = observerSet;
-                changes.Add("assigned ObserverDriverDebugToggle.observers = ObserverSet");
-            }
-            var toggleRouterProp = toggleSO.FindProperty("router");
-            if (toggleRouterProp.objectReferenceValue != router)
-            {
-                toggleRouterProp.objectReferenceValue = router;
-                changes.Add("assigned ObserverDriverDebugToggle.router = CatInputRouter");
-            }
-            toggleSO.ApplyModifiedPropertiesWithoutUndo();
-
-            // Step 5: log summary.
+            // Step 4: log summary.
             if (changes.Count == 0)
             {
                 Debug.Log("ObserverSetup: no changes.");

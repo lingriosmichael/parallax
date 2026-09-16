@@ -28,6 +28,7 @@ namespace Parallax.Editor.Setup
         const string PillarName = "Pillar_BOnly";
 
         static readonly Color ColdTint = ParseColor("#6FA8DC");
+        static readonly Color CatBTint = ParseColor("#D6F3FF");
         static readonly Color WarmCatTint = ParseColor("#E8A15A");
         static readonly Color WarmCameraBg = ParseColor("#2A1E14");
         static readonly Color ColdCameraBg = ParseColor("#0B1420");
@@ -68,7 +69,7 @@ namespace Parallax.Editor.Setup
             ApplyRealityLayerAndDefaultSorting(rootB, changes);
 
             TintSpriteRenderers(catA.GetComponentsInChildren<SpriteRenderer>(true), WarmCatTint, "Cat_A", changes);
-            TintSpriteRenderers(catB.GetComponentsInChildren<SpriteRenderer>(true), ColdTint, "Cat_B", changes);
+            TintSpriteRenderers(catB.GetComponentsInChildren<SpriteRenderer>(true), CatBTint, "Cat_B", changes);
 
             (Camera camA, Camera camB) = EnsureCameras(catA, catB, changes);
 
@@ -780,22 +781,6 @@ namespace Parallax.Editor.Setup
                 observerBProp.objectReferenceValue = observerB;
                 observerSetSO.ApplyModifiedPropertiesWithoutUndo();
                 changes.Add("assigned ObserverSet.observerB = Observer_B");
-            }
-
-            var toggle = observersGO.GetComponent<RealityViewDebugToggle>();
-            if (toggle == null)
-            {
-                toggle = observersGO.AddComponent<RealityViewDebugToggle>();
-                changes.Add("added RealityViewDebugToggle to Observers");
-            }
-
-            var toggleSO = new SerializedObject(toggle);
-            var toggleObserversProp = toggleSO.FindProperty("observers");
-            if (toggleObserversProp.objectReferenceValue != observerSet)
-            {
-                toggleObserversProp.objectReferenceValue = observerSet;
-                toggleSO.ApplyModifiedPropertiesWithoutUndo();
-                changes.Add("assigned RealityViewDebugToggle.observers = ObserverSet");
             }
         }
 
