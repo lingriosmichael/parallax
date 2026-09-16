@@ -1,118 +1,17 @@
-using System.Collections.Generic;
-using Parallax.Gameplay.Input;
-using Parallax.Gameplay.Player;
+using Parallax.Editor.Setup;
 using UnityEditor;
-using UnityEditor.SceneManagement;
-using UnityEngine;
 
 namespace Parallax.Editor
 {
     public static class TouchInputSetup
     {
-        const string CatPlayerName = "Cat_Player";
-
+        // Superseded by ObserverSetup (PAX-014): input now lives on a device-level
+        // DeviceInput rig, not on Cat_Player. Kept as a menu alias so muscle memory
+        // and any external references still resolve to the current setup step.
         [MenuItem("PARALLAX/Setup/Configure Touch Input")]
         public static void Configure()
         {
-            GameObject catGO = GameObject.Find(CatPlayerName);
-            if (catGO == null)
-            {
-                Debug.LogError($"TouchInputSetup: no GameObject named '{CatPlayerName}' found in the active scene. Stopping.");
-                return;
-            }
-
-            var motor = catGO.GetComponent<CatMotor2D>();
-            if (motor == null)
-            {
-                Debug.LogError($"TouchInputSetup: '{CatPlayerName}' has no CatMotor2D. Stopping.");
-                return;
-            }
-
-            var changes = new List<string>();
-
-            var gravityReceiver = catGO.GetComponent<GravityReceiver>();
-            if (gravityReceiver == null)
-            {
-                Debug.LogError($"TouchInputSetup: '{CatPlayerName}' has no GravityReceiver. Stopping.");
-                return;
-            }
-
-            var touchInput = catGO.GetComponent<TouchStickCatInput>();
-            if (touchInput == null)
-            {
-                touchInput = catGO.AddComponent<TouchStickCatInput>();
-                changes.Add("added TouchStickCatInput");
-            }
-
-            var touchInputSO = new SerializedObject(touchInput);
-            var gravityReceiverProp = touchInputSO.FindProperty("gravityReceiver");
-            if (gravityReceiverProp.objectReferenceValue != gravityReceiver)
-            {
-                gravityReceiverProp.objectReferenceValue = gravityReceiver;
-                touchInputSO.ApplyModifiedPropertiesWithoutUndo();
-                changes.Add("assigned TouchStickCatInput.gravityReceiver");
-            }
-
-            var router = catGO.GetComponent<CatInputRouter>();
-            if (router == null)
-            {
-                router = catGO.AddComponent<CatInputRouter>();
-                changes.Add("added CatInputRouter");
-            }
-
-            var keyboardInput = catGO.GetComponent<KeyboardCatInput>();
-
-            var routerSO = new SerializedObject(router);
-            var sourcesProp = routerSO.FindProperty("sources");
-
-            if (keyboardInput != null && !ContainsReference(sourcesProp, keyboardInput))
-            {
-                AppendSource(sourcesProp, keyboardInput);
-                changes.Add("added KeyboardCatInput to CatInputRouter.sources");
-            }
-
-            if (!ContainsReference(sourcesProp, touchInput))
-            {
-                AppendSource(sourcesProp, touchInput);
-                changes.Add("added TouchStickCatInput to CatInputRouter.sources");
-            }
-
-            routerSO.ApplyModifiedPropertiesWithoutUndo();
-
-            var motorSO = new SerializedObject(motor);
-            var commandSourceProp = motorSO.FindProperty("commandSource");
-            if (commandSourceProp.objectReferenceValue != router)
-            {
-                commandSourceProp.objectReferenceValue = router;
-                motorSO.ApplyModifiedPropertiesWithoutUndo();
-                changes.Add("assigned CatMotor2D.commandSource = CatInputRouter");
-            }
-
-            if (changes.Count == 0)
-            {
-                Debug.Log("TouchInputSetup: already configured.");
-            }
-            else
-            {
-                Debug.Log($"TouchInputSetup: {string.Join("; ", changes)}.");
-                EditorSceneManager.MarkSceneDirty(catGO.scene);
-            }
-        }
-
-        static bool ContainsReference(SerializedProperty arrayProp, Object value)
-        {
-            for (int i = 0; i < arrayProp.arraySize; i++)
-            {
-                if (arrayProp.GetArrayElementAtIndex(i).objectReferenceValue == value) return true;
-            }
-            return false;
-        }
-
-        static void AppendSource(SerializedProperty arrayProp, Object value)
-        {
-            int index = arrayProp.arraySize;
-            arrayProp.arraySize++;
-            arrayProp.GetArrayElementAtIndex(index).objectReferenceValue = value;
+            ObserverSetup.Configure();
         }
     }
 }

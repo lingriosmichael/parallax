@@ -286,7 +286,6 @@ GameObject:
   - component: {fileID: 5384427188274341245}
   - component: {fileID: -8957719409104256222}
   - component: {fileID: -6960851939468905688}
-  - component: {fileID: -879282820560298906}
   - component: {fileID: 6121271007245475599}
   m_Layer: 0
   m_Name: Cat_Player
@@ -404,18 +403,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Player.CatMotor2D
   config: {fileID: 11400000, guid: 1c8d4ec4dd7da4a2fa5f8beeb63fe3d4, type: 2}
   visual: {fileID: 4873193962058543826}
---- !u!114 &-879282820560298906
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8383936889462940800}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 805b7f36fa9524bb49850f72560f526e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Controls.KeyboardCatInput
 --- !u!114 &6121271007245475599
 MonoBehaviour:
   m_ObjectHideFlags: 0
