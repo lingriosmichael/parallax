@@ -13,6 +13,7 @@ namespace Parallax.Gameplay.Input
     {
         [SerializeField] Rect stickZone = new Rect(0.00f, 0.00f, 0.5f, 0.6f);
         [SerializeField] Rect jumpZone = new Rect(0.78f, 0.00f, 0.22f, 0.45f);
+        [SerializeField] Rect interactZone = new Rect(0.56f, 0.00f, 0.18f, 0.40f);
         [SerializeField] float stickRadius = 0.12f;
         [SerializeField] float deadZone = 0.15f;
         [SerializeField] StickProjection projection = StickProjection.CatRelative;
@@ -29,11 +30,13 @@ namespace Parallax.Gameplay.Input
         float currentMove;
 
         readonly HashSet<int> jumpFingerIds = new HashSet<int>();
+        readonly HashSet<int> interactFingerIds = new HashSet<int>();
         readonly HashSet<int> activeIds = new HashSet<int>();
         readonly List<int> staleIds = new List<int>();
         readonly HashSet<int> ignoredFingerIds = new HashSet<int>();
         readonly List<ITouchReservedRegion> validReservedRegions = new List<ITouchReservedRegion>();
         bool jumpPressedLatch;
+        bool interactPressedLatch;
 
         void Awake()
         {
@@ -92,7 +95,12 @@ namespace Parallax.Gameplay.Input
 
                     Vector2 norm = TouchZones.ToSafeAreaNormalised(touch.screenPosition, safeArea);
 
-                    if (jumpZone.Contains(norm))
+                    if (interactZone.Contains(norm))
+                    {
+                        interactFingerIds.Add(id);
+                        interactPressedLatch = true;
+                    }
+                    else if (jumpZone.Contains(norm))
                     {
                         jumpFingerIds.Add(id);
                         jumpPressedLatch = true;
@@ -126,6 +134,10 @@ namespace Parallax.Gameplay.Input
             staleIds.Clear();
             if (stickFingerId >= 0 && !activeIds.Contains(stickFingerId)) staleIds.Add(stickFingerId);
             foreach (int id in jumpFingerIds)
+            {
+                if (!activeIds.Contains(id)) staleIds.Add(id);
+            }
+            foreach (int id in interactFingerIds)
             {
                 if (!activeIds.Contains(id)) staleIds.Add(id);
             }
@@ -163,6 +175,7 @@ namespace Parallax.Gameplay.Input
         {
             if (id == stickFingerId) stickFingerId = -1;
             jumpFingerIds.Remove(id);
+            interactFingerIds.Remove(id);
         }
 
         public CatCommand Read()
@@ -175,9 +188,9 @@ namespace Parallax.Gameplay.Input
             cmd.JumpPressed = jumpPressedLatch;
             jumpPressedLatch = false;
 
-            // Interact arrives in Phase 4.
-            cmd.InteractPressed = false;
-            cmd.InteractHeld = false;
+            cmd.InteractPressed = interactPressedLatch;
+            cmd.InteractHeld = interactFingerIds.Count > 0;
+            interactPressedLatch = false;
 
             return cmd;
         }
@@ -186,10 +199,12 @@ namespace Parallax.Gameplay.Input
         {
             stickFingerId = -1;
             jumpFingerIds.Clear();
+            interactFingerIds.Clear();
             ignoredFingerIds.Clear();
             lastStickVector = Vector2.zero;
             currentMove = 0f;
             jumpPressedLatch = false;
+            interactPressedLatch = false;
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -200,6 +215,7 @@ namespace Parallax.Gameplay.Input
             Rect safeArea = Screen.safeArea;
 
             GUI.Label(new Rect(10f, 10f, 400f, 20f), $"Move: {currentMove:F2}  Projection: {projection}");
+            DrawZone(interactZone, safeArea, new Color(0.4f, 0.9f, 1f, 0.2f));
 
             if (stickFingerId >= 0)
             {
@@ -234,6 +250,19 @@ namespace Parallax.Gameplay.Input
                 GUI.DrawTexture(new Rect(point.x - 1f, point.y - 1f, 2f, 2f), Texture2D.whiteTexture);
             }
             GUI.color = prev;
+        }
+
+        static void DrawZone(Rect normalised, Rect safeArea, Color color)
+        {
+            var rect = new Rect(
+                safeArea.x + normalised.x * safeArea.width,
+                Screen.height - safeArea.y - (normalised.y + normalised.height) * safeArea.height,
+                normalised.width * safeArea.width,
+                normalised.height * safeArea.height);
+            Color previous = GUI.color;
+            GUI.color = color;
+            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            GUI.color = previous;
         }
 #endif
     }

@@ -186,6 +186,8 @@ The Input System's touch controls produce `CatCommand` via `TouchCatInput`. `Key
 
 **Superseded in part by D-021/D-022:** movement input is a scene-level `DeviceInput` rig (`CatInputRouter`, keyboard source, touch virtual stick per D-021, `KeyboardSwitchInput`), not part of the cat prefab. `Cat_Player` has no input components. `LocalHumanDriver` binds the rig to its Observer on Activate and resets transient input on Activate and Deactivate. Touches that begin on a UI element implementing `ITouchReservedRegion` (SWITCH, DBG/debug panel, gravity debug buttons) are never claimed by the stick or jump (D-023).
 
+**As built (PAX-021, D-025):** immediately after stepping the motor with a command, `LocalHumanDriver` calls `CatInteractor.Step` with that same command and Observer context. F produces the same latched/cleared `InteractPressed` edge as jump. Touch has an interact rectangle immediately left of jump: `(0.56, 0.00, 0.18, 0.40)` in normalized safe-area coordinates; a touch beginning there is never claimed by stick or jump.
+
 ### 5.2 Gravity control input
 
 ```csharp
@@ -365,8 +367,10 @@ SharedAnchor (logical, one per AnchorId)
 
 - A manifestation animates locally toward the committed value at its own speed/easing.
 - A manifestation **may carry colliders** (the elevator is a moving platform). This is safe because only its own reality's cat can touch it, and that cat is simulated on the same device that animates it.
-- Interactables (`VineInteractable`) issue `AnchorRequest`s through the transport. They never set manifestations directly.
+- Interactables (`VineInteractable`) issue `AnchorRequest`s through the `IAnchorRequester` handed to them by the interacting cat (D-025). They never set manifestations directly.
 - **Changing art never changes anchor or network code.** Swapping `ElevatorManifestation` for `CrystalLiftManifestation` is an art change.
+
+**As built (PAX-021):** `TransportHost` owns the device's single `EventSequencer`; gameplay depends on this abstract host, not `LocalTransportHost`. Scene-root presenters register their `AnchorDefinition`, snap manifestations in `OnEnable`, and forward committed registry values. Manifestations animate in `FixedUpdate`; the elevator is kinematic and uses `MovePosition`. `CatInteractor` finds own-reality `IInteractable`s, which use their cat-provided `IAnchorRequester`.
 
 ### 7.3 Control streams
 

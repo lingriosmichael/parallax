@@ -146,6 +146,11 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 **Consequence for transports:** sequence tracking is per origin across all anchors, so a transport must deliver each origin's requests in send order. If an origin's later request for anchor Y arrives before its earlier request for anchor X, X is dropped as Duplicate. Photon reliable RPCs preserve this. LocalTransport only breaks it when latency is lowered while items are pending, which is debug-only.
 **Supersedes:** 02_ARCHITECTURE §7.1 "bounded recent-ID set" and `bool Commit`.
 
+### D-025 · 2026-09-16 · Accepted
+**Decision:** (1) Interaction is driven by the Observer's `CatCommand`: `LocalHumanDriver` calls `CatInteractor.Step` with the command it gave the motor. Interactables never read input devices. (2) Interactables never touch the transport, registry, or manifestations. They receive an `IAnchorRequester` from the interacting cat, which stamps the Observer's origin and a sequence from the device's single `EventSequencer` on `TransportHost`. (3) Presenters live at scene root, outside both RealityRoots; they register their anchor, snap manifestations on enable, and forward committed values. Manifestations animate locally in FixedUpdate and may carry colliders. (4) Anchor IDs come from `AnchorDefinition` assets (1..65534; 65535 reserved for debug). (5) Gameplay references the abstract `TransportHost`, never `LocalTransportHost`.
+**Why:** Reading input in the interactable would let the active human trigger an inactive cat's zone. A per-Observer requester is the interception point Echo recording needs (§8.3) and keeps origin and sequencing out of puzzle code. Two sequencers issuing the same origin would collide under D-024. Presenters outside the roots keep the isolation rule (no A↔B references).
+**Supersedes:** 02_ARCHITECTURE §7.2 "issue AnchorRequests through the transport"; the CLAUDE.md line "Puzzles talk only to IRealityTransport" (narrowed, not removed).
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)

@@ -20,8 +20,6 @@ namespace Parallax.DebugTools
         static readonly Rect DbgButtonRect = new Rect(10f, 10f, 70f, 30f);
         static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 330f);
 
-        readonly EventSequencer debugSequencer = new EventSequencer();
-
         bool open;
         bool pipOn;
         bool debugAnchorRegistered;
@@ -160,7 +158,7 @@ namespace Parallax.DebugTools
             // target the opposite value, or it would collapse to a NoChange on commit.
             lastRequestedDebugValue = lastRequestedDebugValue == 0f ? 1f : 0f;
 
-            var request = new AnchorRequest(DebugAnchorId, lastRequestedDebugValue, EventOrigin.System, debugSequencer.Next(EventOrigin.System));
+            var request = new AnchorRequest(DebugAnchorId, lastRequestedDebugValue, EventOrigin.System, host.Sequencer.Next(EventOrigin.System));
             host.Transport.RequestAnchor(request);
         }
 

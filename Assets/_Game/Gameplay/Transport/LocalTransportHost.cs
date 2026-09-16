@@ -4,25 +4,41 @@ using UnityEngine;
 
 namespace Parallax.Gameplay.Transport
 {
-    public sealed class LocalTransportHost : MonoBehaviour
+    public sealed class LocalTransportHost : TransportHost
     {
         [SerializeField] ObserverSet observers;
         [SerializeField] int initialLatencyMs = 0;
 
-        public AnchorRegistry Registry { get; private set; }
-        public IRealityTransport Transport => Local;
+        AnchorRegistry registry;
+        EventSequencer sequencer;
+        bool warnedNoObservers;
+
+        public override AnchorRegistry Registry { get { EnsureCreated(); return registry; } }
+        public override IRealityTransport Transport { get { EnsureCreated(); return Local; } }
+        public override EventSequencer Sequencer { get { EnsureCreated(); return sequencer; } }
         public LocalTransport Local { get; private set; }
 
         void Awake()
         {
+            EnsureCreated();
+        }
+
+        void EnsureCreated()
+        {
+            if (Local != null) return;
             if (observers == null)
             {
-                Debug.LogError($"LocalTransportHost '{gameObject.name}' has no ObserverSet assigned.", this);
+                if (!warnedNoObservers)
+                {
+                    Debug.LogError($"LocalTransportHost '{gameObject.name}' has no ObserverSet assigned.", this);
+                    warnedNoObservers = true;
+                }
                 return;
             }
 
-            Registry = new AnchorRegistry();
-            Local = new LocalTransport(Registry, Time.fixedDeltaTime, () => observers.Tick) { LatencyMs = initialLatencyMs };
+            registry = new AnchorRegistry();
+            sequencer = new EventSequencer();
+            Local = new LocalTransport(registry, Time.fixedDeltaTime, () => observers.Tick) { LatencyMs = initialLatencyMs };
         }
 
         void OnEnable()
@@ -37,7 +53,7 @@ namespace Parallax.Gameplay.Transport
 
         void OnStepped(int tick)
         {
-            Local.Pump(tick);
+            if (Local != null) Local.Pump(tick);
         }
     }
 }
