@@ -1,5 +1,6 @@
 using Parallax.Core;
 using Parallax.Gameplay.Player;
+using Parallax.Gameplay.Reality;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Observers
@@ -7,10 +8,14 @@ namespace Parallax.Gameplay.Observers
     public sealed class ObserverContext : MonoBehaviour
     {
         [SerializeField] ObserverId id;
+        [SerializeField] RealityRoot reality;
         [SerializeField] CatMotor2D cat;
+        [SerializeField] Camera observerCamera;
 
         public ObserverId Id => id;
+        public RealityRoot Reality => reality;
         public CatMotor2D Cat => cat;
+        public Camera Camera => observerCamera;
         public GravityReceiver Gravity { get; private set; }
         public IObserverDriver Driver { get; private set; }
 
@@ -27,6 +32,23 @@ namespace Parallax.Gameplay.Observers
             else
             {
                 Debug.LogError($"ObserverContext '{gameObject.name}' has no cat assigned.", this);
+            }
+
+            if (reality != null)
+            {
+                if (reality.Id != id)
+                {
+                    Debug.LogError($"ObserverContext '{gameObject.name}': reality.Id ({reality.Id}) does not match this Observer's id ({id}).", this);
+                }
+
+                if (cat != null && !cat.transform.IsChildOf(reality.transform))
+                {
+                    Debug.LogError($"ObserverContext '{gameObject.name}': cat '{cat.name}' is not a descendant of reality '{reality.name}'.", this);
+                }
+            }
+            else
+            {
+                Debug.LogError($"ObserverContext '{gameObject.name}' has no reality assigned.", this);
             }
         }
 

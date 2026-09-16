@@ -13,6 +13,7 @@ namespace Parallax.Editor.Setup
 {
     public static class ObserverSetup
     {
+        const string CatAName = "Cat_A";
         const string CatPlayerName = "Cat_Player";
 
         [MenuItem("PARALLAX/Setup/Observers (Sandbox)")]
@@ -20,17 +21,17 @@ namespace Parallax.Editor.Setup
         {
             var changes = new List<string>();
 
-            GameObject catGO = GameObject.Find(CatPlayerName);
+            GameObject catGO = GameObject.Find(CatAName) ?? GameObject.Find(CatPlayerName);
             if (catGO == null)
             {
-                Debug.LogError($"ObserverSetup: no GameObject named '{CatPlayerName}' found in the active scene. Stopping.");
+                Debug.LogError($"ObserverSetup: no GameObject named '{CatAName}' or '{CatPlayerName}' found in the active scene. Stopping.");
                 return;
             }
 
             var motor = catGO.GetComponent<CatMotor2D>();
             if (motor == null)
             {
-                Debug.LogError($"ObserverSetup: '{CatPlayerName}' has no CatMotor2D. Stopping.");
+                Debug.LogError($"ObserverSetup: '{catGO.name}' has no CatMotor2D. Stopping.");
                 return;
             }
 
@@ -80,7 +81,7 @@ namespace Parallax.Editor.Setup
 
             // Step 2: strip input components from Cat_Player (prefab asset, then scene instance).
             StripPrefabInputComponents(catGO, changes);
-            RemoveInputComponents(catGO, changes, "Cat_Player scene instance");
+            RemoveInputComponents(catGO, changes, $"{catGO.name} scene instance");
 
             // Step 3: Observers + Observer_A.
             GameObject observersGO = GameObject.Find("Observers");

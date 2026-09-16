@@ -5,7 +5,9 @@
     "Parallax.Core",
     "Parallax.Gameplay",
     "Parallax.App",
-    "Parallax.DebugTools"
+    "Parallax.DebugTools",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.Universal.2D.Runtime"
   ],
   "includePlatforms": [
     "Editor"

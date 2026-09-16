@@ -139,11 +139,11 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 ## Open questions (to be resolved by playtest → new D-entries)
 
 - **Q-1** Partner presence hint: shimmer or nothing?
-- ~~**Q-2** Camera rotates with gravity, or stays world-aligned?~~ Resolved by D-020: world-aligned.
+- ~~**Q-2** Camera rotates with gravity, or stays world-aligned?~~ Resolved by D-020, confirmed on device by D-021.
 - **Q-3** Tilt or dial as default?
 - **Q-4** Solo gravity adaptation: persistent setting, Echo choreography, or both?
 - **Q-5** Echo length and looping.
 - **Q-6** Effect of same-room screen peeking.
-- **Q-7** Should a temporary gravity-aligned/snap-rotating camera be introduced in Phase 5 as a deliberate disorientation effect while a Control Station actively steers the other cat's gravity? (Raised by D-020; unconfirmed wording — please check.)
+- ~~**Q-7** Should a temporary gravity-aligned/snap-rotating camera be introduced in Phase 5 as a deliberate disorientation effect while a Control Station actively steers the other cat's gravity? (Raised by D-020; unconfirmed wording — please check.)~~ Closed by D-021.
 - **Q-8** Is v1 co-op-only? If levels require two humans (hostile anchors: one player's action sets traps in the other's reality), Echo (D-007, PAX-023/024) and solo as a first-class mode (Vision §4, D-016 solo cohort, Gate 3 check 6) may be cut. If solo stays, every hostile anchor must remain solvable against a ≤10 s Echo, which rules out traps that depend on the partner not knowing. Unaffected either way: PAX-014–022. SWITCH survives at least as a dev tool, because the one-phone proof (D-011) needs one human to drive both cats. **Decide before PAX-023**, after PAX-022 runs a cross-reality anchor on device.
 - **Q-9** Nine lives: shared between both cats or per-cat? Reset per level or per checkpoint? On zero, hard fail or a rating penalty? Note: a hard fail conflicts with Vision pillar 3 (cheap, funny failure, no death screens); resolving Q-9 toward hard fail requires a Vision change. Recorded, not designed.

@@ -61,19 +61,21 @@ Scene: VS_Level01
 └── Systems/           GameBootstrap, AnchorRegistry host, CheckpointManager…
 ```
 
-- **The offset** is a single constant (`RealityRoot.OffsetB`, default `(0, 1000)`). Everything uses it; nothing hard-codes it.
-- **Correspondence:** a position "in the same place" in the other reality has the **same local coordinates** under the other root. `RealityRoot.MapTo(other, worldPos)` converts between them.
+- **The offset** is a single constant (`RealitySpace.OffsetB`, default `(0, 1000)`). Everything uses it; nothing hard-codes it.
+- **Correspondence:** a position "in the same place" in the other reality has the **same local coordinates** under the other root. `RealityRoot.MapTo(other, worldPos)` (delegating to `RealitySpace.MapTo`) converts between them.
 - **Physics layers:** `RealityA` and `RealityB`, with cross-collision disabled in the collision matrix. The world offset already separates them, and the matrix is a second line of defense.
 - **All physics queries** (ground checks, sensors) use a layer mask for their own reality.
 - **Sorting layers:** `A_Background, A_Middle, A_Gameplay, A_Foreground, B_Background, B_Middle, B_Gameplay, B_Foreground, UI`. **This matters:** a global `Light2D` affects every sprite on its target sorting layers regardless of position, so per-reality sorting layers are the only way to keep warm light out of the cold reality.
 - **Both realities are loaded on every device.** In solo, both are simulated. In co-op, each device simulates its own cat; the remote cat is a network proxy.
+- `PARALLAX/Validate/Reality Isolation` (read-only) checks layers, sorting layers, cross-root references, Light2D targets, and camera culling masks for exactly this kind of leak. Run it after hand-editing either reality; `RealitySetup` also runs it as its last step.
 
 ### 3.2 Cameras
 
 - One camera per Observer. It follows its cat.
 - **Solo:** only the active Observer's camera renders to the screen. The other is disabled, or renders to a small viewport in the debug PiP.
 - **Co-op:** each device enables only its local Observer's camera.
-- The camera stays world-aligned and never rotates with gravity (D-020).
+- World-aligned, never rotates (D-020, confirmed on device by D-021).
+- A hidden camera is disabled at the **component** level (`Camera.enabled = false`), never by deactivating its GameObject, so its `CatCameraFollow` keeps tracking its target while hidden and there's no swoop from a stale position when it's shown again.
 
 ---
 
@@ -270,7 +272,7 @@ void FixedUpdate()
 }
 ```
 
-**Ground detection:** `body.Cast(down, groundFilter, hits, probeDistance)`. Casting the cat's own collider never hits itself. `groundFilter` uses the cat's reality layer mask. A hit counts as ground if `Vector2.Dot(hit.normal, -down) > 0.7`.
+**Ground detection:** `body.Cast(down, groundFilter, hits, probeDistance)`. Casting the cat's own collider never hits itself. `groundFilter`'s mask comes from the cat's parent `RealityRoot` (`GetComponentInParent<RealityRoot>().PhysicsMask`, resolved once in `Awake`), not from `CatMotorConfig` — a cat with no `RealityRoot` ancestor logs an error and its ground cast matches nothing (no silent fallback). A hit counts as ground if `Vector2.Dot(hit.normal, -down) > 0.7`.
 
 **Gravity sources:** only `GravityReceiver.SetTargetDirection` changes gravity. It is called by the control-stream receiver, checkpoint restore, and debug tools.
 

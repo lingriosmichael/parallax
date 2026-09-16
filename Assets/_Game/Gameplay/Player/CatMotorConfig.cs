@@ -32,9 +32,6 @@ namespace Parallax.Gameplay.Player
         [Tooltip("Minimum alignment (dot product) between a hit's normal and -gravity for it to count as ground.")]
         [SerializeField] float groundNormalThreshold = 0.7f;
 
-        [Tooltip("Layers considered ground by the ground cast.")]
-        [SerializeField] LayerMask groundMask = ~0;
-
         public float MaxSpeed => maxSpeed;
         public float Acceleration => acceleration;
         public float Deceleration => deceleration;
@@ -44,6 +41,5 @@ namespace Parallax.Gameplay.Player
         public float JumpBufferTime => jumpBufferTime;
         public float GroundProbeDistance => groundProbeDistance;
         public float GroundNormalThreshold => groundNormalThreshold;
-        public LayerMask GroundMask => groundMask;
     }
 }
