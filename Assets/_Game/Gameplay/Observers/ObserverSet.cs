@@ -1,3 +1,4 @@
+using System;
 using Parallax.Core;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ namespace Parallax.Gameplay.Observers
         [SerializeField] ObserverContext observerB;
 
         public int Tick { get; private set; }
+
+        public event Action<int> Stepped;
 
         void Awake()
         {
@@ -31,6 +34,7 @@ namespace Parallax.Gameplay.Observers
             Tick++;
             if (observerA != null) observerA.Step(Tick);
             if (observerB != null) observerB.Step(Tick);
+            Stepped?.Invoke(Tick);
         }
     }
 }

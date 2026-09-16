@@ -1,6 +1,7 @@
 using Parallax.Core;
 using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Observers;
+using Parallax.Gameplay.Transport;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,14 +11,21 @@ namespace Parallax.DebugTools
     // inactive Observer's Camera component for picture-in-picture.
     public sealed class DebugPanel : MonoBehaviour, ITouchReservedRegion
     {
+        static readonly AnchorId DebugAnchorId = new AnchorId(65535);
+
         [SerializeField] ObserverSet observers;
         [SerializeField] SoloSwitchController switchController;
+        [SerializeField] LocalTransportHost transportHost;
 
         static readonly Rect DbgButtonRect = new Rect(10f, 10f, 70f, 30f);
-        static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 190f);
+        static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 330f);
+
+        readonly EventSequencer debugSequencer = new EventSequencer();
 
         bool open;
         bool pipOn;
+        bool debugAnchorRegistered;
+        float lastRequestedDebugValue;
 
         float fpsTimer;
         int fpsFrames;
@@ -101,7 +109,59 @@ namespace Parallax.DebugTools
                 TogglePiP();
             }
 
+            DrawTransport();
+
             GUILayout.EndArea();
+        }
+
+        void DrawTransport()
+        {
+            if (transportHost == null || transportHost.Local == null)
+            {
+                GUILayout.Label("Transport: (missing)");
+                return;
+            }
+
+            LocalTransport transport = transportHost.Local;
+
+            float ticksEquivalent = Mathf.Max(1f, Mathf.Ceil(transport.LatencyMs / (Time.fixedDeltaTime * 1000f)));
+            GUILayout.Label($"Latency: {transport.LatencyMs:F0} ms (~{ticksEquivalent:F0} ticks)");
+            float nextLatency = GUILayout.HorizontalSlider(transport.LatencyMs, 0f, 400f);
+            if (!Mathf.Approximately(nextLatency, transport.LatencyMs))
+            {
+                transport.LatencyMs = nextLatency;
+            }
+
+            GUILayout.Label($"PendingCount: {transport.PendingCount}   LastCommitResult: {transport.LastCommitResult}");
+
+            if (GUILayout.Button("Debug anchor 0<->1"))
+            {
+                PressDebugAnchorButton(transportHost);
+            }
+
+            GUILayout.Label("Anchors:");
+            foreach (var entry in transportHost.Registry.All)
+            {
+                GUILayout.Label($"  {entry.Key}: value {entry.Value.Value:F2}  rev {entry.Value.Revision}");
+            }
+        }
+
+        void PressDebugAnchorButton(LocalTransportHost host)
+        {
+            if (!debugAnchorRegistered)
+            {
+                debugAnchorRegistered = true;
+                host.Registry.Register(DebugAnchorId, 0f);
+                lastRequestedDebugValue = 0f;
+            }
+
+            // Toggle against the last value we requested, not the committed value: a second
+            // press before the first request's artificial delivery delay elapses must still
+            // target the opposite value, or it would collapse to a NoChange on commit.
+            lastRequestedDebugValue = lastRequestedDebugValue == 0f ? 1f : 0f;
+
+            var request = new AnchorRequest(DebugAnchorId, lastRequestedDebugValue, EventOrigin.System, debugSequencer.Next(EventOrigin.System));
+            host.Transport.RequestAnchor(request);
         }
 
         void DrawObserverRow(ObserverId id)

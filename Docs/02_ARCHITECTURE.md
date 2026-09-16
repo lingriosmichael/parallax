@@ -329,19 +329,25 @@ public sealed class AnchorRegistry          // Parallax.Core, pure C#
 {
     public event System.Action<AnchorId, AnchorState> Changed;
 
+    public bool Register(AnchorId id, float initialValue); // Revision 0; false if already registered
     public bool TryGet(AnchorId id, out AnchorState state);
 
     // Authority side only.
-    public bool Commit(in AnchorRequest request);
-    //  - drop if (Origin, Sequence) already applied (bounded recent-ID set)
-    //  - drop if Value already equals TargetValue (idempotent)
-    //  - else set Value, Revision++, raise Changed, return true
+    public CommitResult Commit(in AnchorRequest request);
+    //  - unregistered anchor -> UnknownAnchor
+    //  - NaN/infinite target -> InvalidValue (sequence NOT recorded)
+    //  - request.Sequence <= lastAppliedSequence[request.Origin] -> Duplicate (per-origin highest-applied sequence, not a bounded recent-ID set)
+    //  - else record lastAppliedSequence[Origin] = Sequence, then:
+    //      Value == TargetValue (exact) -> NoChange (no revision change, no event)
+    //      else set Value, Revision++, raise Changed -> Applied
 
     // Non-authority side: apply replicated state.
     public void ApplyReplicated(AnchorId id, AnchorState state);
-    //  - ignore if state.Revision <= current Revision
+    //  - ignore if state.Revision <= current Revision; create the anchor if unknown
 }
 ```
+
+**Duplicate protection (D-024):** per-origin highest-applied sequence, not a bounded recent-ID set — a late duplicate arriving outside a fixed window could otherwise re-apply an outdated absolute target and revert a newer change. Because tracking is per origin across all anchors, not per (origin, anchor), a transport must deliver each origin's requests in send order, or an out-of-order later request for one anchor can cause an earlier request for a different anchor to be dropped as `Duplicate`. An Echo replay must issue fresh sequences from its own origin's `EventSequencer` on every playback (§8.3), never re-send recorded sequence numbers, or the second replay is dropped as `Duplicate`.
 
 ### 7.2 Presenters and manifestations
 
@@ -464,6 +470,7 @@ public interface IRealityTransport
 - `RequestAnchor` → (optional artificial delay) → `AnchorRegistry.Commit`.
 - `PublishControl` → (optional artificial delay) → `ControlReceived`.
 - **Artificial latency** (0–400 ms, set in the debug panel) lets causality theatre be designed and tested before Photon exists.
+- **Never synchronous (D-024):** `RequestAnchor`, `PublishControl`, and `SendCue` only enqueue — never deliver inside the call, even at 0 ms latency, so no caller can come to rely on synchronous commits the network won't give. Delivery tick is computed at enqueue time as `the current simulation tick (ObserverSet.Tick, via a tick source) + max(1, ceil(LatencyMs / (fixedDeltaSeconds * 1000)))`; changing `LatencyMs` afterward never reschedules items already queued. A request made during tick N is never delivered before tick N+1, wherever it's called from (inside `A.Step`/`B.Step`, from `OnGUI`, from a trigger callback). `LocalTransportHost` pumps the transport once per tick from `ObserverSet.Stepped`, after both Observers have stepped.
 
 ### 9.2 `FusionTransport` (Net.Fusion assembly)
 
@@ -543,7 +550,9 @@ Debug panel (toggle with a multi-finger tap or an Editor key):
 - picture-in-picture view of the other reality;
 - FPS.
 
-**v1 (PAX-017), `DebugPanel`:** toggled by an OnGUI "DBG" button (top-left) or the backquote key; starts collapsed, showing only the DBG button. Open, it shows the active Observer, `ObserverSet.Tick`, FPS (smoothed over ~0.5s), and per Observer: driver kind, gravity direction as an angle, grounded, velocity magnitude. Anchor table, control stream values, and the latency/RTT rows above are later phases. `DebugPanel` never assigns drivers — it only reads Observer state and (for PiP) enables/disables an Observer's `Camera` component.
+**v1 (PAX-017), `DebugPanel`:** toggled by an OnGUI "DBG" button (top-left) or the backquote key; starts collapsed, showing only the DBG button. Open, it shows the active Observer, `ObserverSet.Tick`, FPS (smoothed over ~0.5s), and per Observer: driver kind, gravity direction as an angle, grounded, velocity magnitude. Control stream values and the RTT/session-role row are later phases. `DebugPanel` never assigns drivers — it only reads Observer state and (for PiP) enables/disables an Observer's `Camera` component.
+
+**PAX-019 addition:** with a `LocalTransportHost` wired in, the panel also shows a latency slider (0–400 ms, labeled with the equivalent tick count), `PendingCount`, `LastCommitResult`, a live anchor table (ID, Value, Revision) from `AnchorRegistry.All`, and a "Debug anchor 0<->1" button that registers `AnchorId(65535)` (reserved for debug) on first use and requests the opposite of the last-requested value with origin `System`. The panel's rect grew to fit; `ContainsScreenPoint` still reads the same `PanelRect` field the panel draws with, so the reserved touch region grows with it.
 
 PiP toggle (visible only while the panel is open, default off): when on, the **inactive** Observer's `Camera` is enabled with `rect = (0.70, 0.70, 0.28, 0.28)` and `depth = 1`; off, it's disabled again. `DebugPanel` subscribes to `SoloSwitchController.Switched` and re-applies PiP to the now-inactive camera after every switch. The debug panel and PiP are compiled only under `UNITY_EDITOR || DEVELOPMENT_BUILD` (`Parallax.DebugTools`'s `defineConstraints`), so they are absent from release builds.
 

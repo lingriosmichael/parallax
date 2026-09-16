@@ -139,6 +139,13 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 **Why:** Two owners of drivers/cameras can leave both cats LocalHuman on one router, or show one reality while driving the other. Without reserved regions, tapping SWITCH also starts the stick or jump.
 **Supersedes:** `RealityViewDebugToggle` and `ObserverDriverDebugToggle` (PAX-014/015).
 
+### D-024 · 2026-09-16 · Accepted
+**Decision:** (1) Duplicate protection is per-origin highest-applied sequence (`Sequence <= last` → Duplicate), not a bounded recent-ID set. (2) `AnchorRegistry.Commit` returns `CommitResult`; anchors must be `Register`ed with an initial value. (3) `LocalTransport` never delivers synchronously: minimum one tick, delay computed in ticks at enqueue, pumped once per tick after both Observers step.
+**Why:** A recent-ID window lets a late duplicate outside the window re-apply an outdated absolute target and revert a newer change; per-origin ordering rejects it and is bounded by the number of origins. Synchronous local delivery would let gameplay code silently depend on behavior the network can't provide. Tick-based delay keeps delivery deterministic for Echo.
+**Consequence for PAX-023/024:** an Echo replay must issue fresh sequences from its own origin's sequencer on every playback, never re-send recorded sequence numbers, or the second replay is dropped as Duplicate.
+**Consequence for transports:** sequence tracking is per origin across all anchors, so a transport must deliver each origin's requests in send order. If an origin's later request for anchor Y arrives before its earlier request for anchor X, X is dropped as Duplicate. Photon reliable RPCs preserve this. LocalTransport only breaks it when latency is lowered while items are pending, which is debug-only.
+**Supersedes:** 02_ARCHITECTURE §7.1 "bounded recent-ID set" and `bool Commit`.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
