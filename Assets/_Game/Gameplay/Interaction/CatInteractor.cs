@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using Parallax.Core;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Reality;
@@ -13,7 +14,10 @@ namespace Parallax.Gameplay.Interaction
         [SerializeField] TransportHost transportHost;
         readonly List<Collider2D> overlaps = new List<Collider2D>();
         readonly Dictionary<EventOrigin, IAnchorRequester> requesters = new Dictionary<EventOrigin, IAnchorRequester>();
+        readonly Dictionary<EventOrigin, IAnchorRequester> forwardingRequesters = new Dictionary<EventOrigin, IAnchorRequester>();
         Collider2D catCollider;
+
+        public event Action<AnchorId, float> Requested;
 
         void Awake() => catCollider = GetComponent<Collider2D>();
 
@@ -53,7 +57,32 @@ namespace Parallax.Gameplay.Interaction
                 requester = new AnchorRequester(transport, sequencer, origin);
                 requesters.Add(origin, requester);
             }
-            closest.Interact(observer.Id, requester);
+            if (!forwardingRequesters.TryGetValue(origin, out IAnchorRequester forwarding))
+            {
+                forwarding = new ForwardingRequester(this, requester);
+                forwardingRequesters.Add(origin, forwarding);
+            }
+            closest.Interact(observer.Id, forwarding);
+        }
+
+        sealed class ForwardingRequester : IAnchorRequester
+        {
+            readonly IAnchorRequester inner;
+            readonly CatInteractor owner;
+
+            public EventOrigin Origin => inner.Origin;
+
+            public ForwardingRequester(CatInteractor owner, IAnchorRequester inner)
+            {
+                this.owner = owner;
+                this.inner = inner;
+            }
+
+            public void Request(AnchorId anchor, float targetValue)
+            {
+                inner.Request(anchor, targetValue);
+                owner.Requested?.Invoke(anchor, targetValue);
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ using Parallax.Core;
 using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Transport;
+using Parallax.Gameplay.Echo;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,9 +17,10 @@ namespace Parallax.DebugTools
         [SerializeField] ObserverSet observers;
         [SerializeField] SoloSwitchController switchController;
         [SerializeField] LocalTransportHost transportHost;
+        [SerializeField] EchoSession echoSession;
 
         static readonly Rect DbgButtonRect = new Rect(10f, 10f, 70f, 30f);
-        static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 330f);
+        static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 390f);
 
         bool open;
         bool pipOn;
@@ -108,8 +110,23 @@ namespace Parallax.DebugTools
             }
 
             DrawTransport();
+            DrawEcho();
 
             GUILayout.EndArea();
+        }
+
+        void DrawEcho()
+        {
+            if (echoSession != null) GUILayout.Label($"Echo: {echoSession.State} {echoSession.RecordedSeconds:F1}s");
+            DrawReplayRow(ObserverId.A);
+            DrawReplayRow(ObserverId.B);
+        }
+
+        void DrawReplayRow(ObserverId id)
+        {
+            ObserverContext observer = observers.Get(id);
+            if (observer == null || !(observer.Driver is EchoReplayDriver replay)) return;
+            GUILayout.Label($"Replay {id}: {replay.Cursor}/{replay.FrameCount}{(replay.IsHolding ? " [holding]" : "")}");
         }
 
         void DrawTransport()

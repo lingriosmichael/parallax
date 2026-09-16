@@ -22,6 +22,16 @@ namespace Parallax.Gameplay.Player
         float jumpBufferTimer;
 
         public bool IsGrounded { get; private set; }
+        public bool FacingRight => visual == null || visual.localScale.x >= 0f;
+
+        public void SetFacing(bool facingRight)
+        {
+            if (visual == null) return;
+            Vector3 scale = visual.localScale;
+            float absX = Mathf.Abs(scale.x);
+            scale.x = facingRight ? absX : -absX;
+            visual.localScale = scale;
+        }
 
         void SetCommand(CatCommand cmd)
         {
@@ -141,10 +151,7 @@ namespace Parallax.Gameplay.Player
             if (visual == null) return;
             if (Mathf.Abs(command.Move) <= 0.01f) return;
 
-            Vector3 scale = visual.localScale;
-            float absX = Mathf.Abs(scale.x);
-            scale.x = command.Move > 0f ? absX : -absX;
-            visual.localScale = scale;
+            SetFacing(command.Move > 0f);
         }
     }
 }

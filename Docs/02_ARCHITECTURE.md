@@ -165,6 +165,8 @@ Touch, keyboard, and (later) gamepad all produce `CatCommand`. The motor never r
 
 **As built (PAX-017, D-023):** `SoloSwitchController` is the only runtime owner of drivers and Observer cameras; `ObserverBootstrap` calls `Initialize(A)`. Steps 1–2 currently use only `InactiveDriver`/`LocalHumanDriver` (no Echo yet). SWITCH is a top-center uGUI button with an ASCII label (`A | b`); after a click its selection is cleared and navigation is None, so Space/Enter can't re-trigger it. Tab switches in the Editor. The event is `SoloSwitchController.Switched`.
 
+**As built (PAX-023):** when leaving an Observer, `SoloSwitchController` uses an Echo replay driver if `EchoSession` holds a recording for it; otherwise it uses `InactiveDriver`. RECORD is unavailable while the other Observer has an Echo; toggling RECORD while recording discards the recording.
+
 ### 4.3 Co-op binding
 
 The composition root binds drivers per device:
@@ -432,6 +434,8 @@ public sealed class EchoRecording
 ```
 
 At 50 Hz, a 10 s recording is 500 frames, which is trivial in memory.
+
+**As built (PAX-023):** an `EchoFrame` stores local position, body rotation, gravity direction, and facing. Frames are captured at `ObserverSet.Stepped`; `CatInteractor.Requested` records `(TickOffset, Anchor, Target)`. Replay sends fresh Echo-origin requests, stops capture at the cap while retaining its recording, holds its final frame, and cancellation restores Dynamic body type and current-frame gravity.
 
 ### 8.3 Recording
 

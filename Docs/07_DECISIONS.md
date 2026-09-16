@@ -151,6 +151,17 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 **Why:** Reading input in the interactable would let the active human trigger an inactive cat's zone. A per-Observer requester is the interception point Echo recording needs (§8.3) and keeps origin and sequencing out of puzzle code. Two sequencers issuing the same origin would collide under D-024. Presenters outside the roots keep the isolation rule (no A↔B references).
 **Supersedes:** 02_ARCHITECTURE §7.2 "issue AnchorRequests through the transport"; the CLAUDE.md line "Puzzles talk only to IRealityTransport" (narrowed, not removed).
 
+### D-026 · 2026-09-17 · Accepted
+**Decision:** Solo stays in v1. Echo (PAX-023/024) and solo as a first-class mode are in scope.
+**Why:** Solo widens the audience beyond players with a partner, and the Echo machinery also serves Type B and Type C puzzles.
+**Consequence:** Every hostile anchor must remain solvable against a ≤10 s Echo. SWITCH is a player-facing feature, not only a dev tool.
+**Resolves:** Q-8.
+
+### D-027 · 2026-09-17 · Accepted
+**Decision:** Echo v1 as built: (1) `EchoSession` records the active Observer after RECORD; frames are captured on `ObserverSet.Stepped`, anchor requests via `CatInteractor.Requested` as (TickOffset, Anchor, Target). (2) Playback is `EchoReplayDriver` (kinematic, never calls the motor), advanced by tick count; events are re-issued through an Echo-origin `AnchorRequester` with fresh sequences. (3) One Echo at a time: RECORD is unavailable while the other Observer is EchoReplay; RECORD while recording discards. (4) The 10 s cap stops capture but keeps the recording for SWITCH. (5) End of playback holds the last frame; cancel restores Dynamic, keeps position, and sets gravity from the current frame. (6) `SoloSwitchController` remains the only code that assigns drivers.
+**Why:** Tick-indexed state replay is exact and independent of physics; recording requests instead of interactions keeps the Echo working even if interactables change; a single interception point on the cat covers every interactable.
+**Supersedes:** 02_ARCHITECTURE §8.2 `EchoFrame` field list and `EchoAnchorEvent.Request` (refined; the removed fields return with animation/hold interactions).
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
@@ -162,5 +173,5 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 - **Q-5** Echo length and looping.
 - **Q-6** Effect of same-room screen peeking.
 - ~~**Q-7** Should a temporary gravity-aligned/snap-rotating camera be introduced in Phase 5 as a deliberate disorientation effect while a Control Station actively steers the other cat's gravity?~~ Closed by D-021: not needed.
-- **Q-8** Is v1 co-op-only? If levels require two humans (hostile anchors: one player's action sets traps in the other's reality), Echo (D-007, PAX-023/024) and solo as a first-class mode (Vision §4, D-016 solo cohort, Gate 3 check 6) may be cut. If solo stays, every hostile anchor must remain solvable against a ≤10 s Echo, which rules out traps that depend on the partner not knowing. Unaffected either way: PAX-014–022. SWITCH survives at least as a dev tool, because the one-phone proof (D-011) needs one human to drive both cats. **Decide before PAX-023**, after PAX-022 runs a cross-reality anchor on device.
+- ~~**Q-8** Is v1 co-op-only?~~ Closed by D-026: solo stays in v1; Echo and solo as a first-class mode remain in scope.
 - **Q-9** Nine lives: shared between both cats or per-cat? Reset per level or per checkpoint? On zero, hard fail or a rating penalty? Note: a hard fail conflicts with Vision pillar 3 (cheap, funny failure, no death screens); resolving Q-9 toward hard fail requires a Vision change. Recorded, not designed.
