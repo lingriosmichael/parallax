@@ -8,11 +8,9 @@ namespace Parallax.Gameplay.Player
     {
         [SerializeField] CatMotorConfig config;
         [SerializeField] Transform visual;
-        [SerializeField] MonoBehaviour commandSource;
 
         Rigidbody2D body;
         GravityReceiver gravity;
-        ICatCommandSource commandSourceInterface;
         CatCommand command;
         bool warnedGravityScaleChanged;
 
@@ -24,7 +22,7 @@ namespace Parallax.Gameplay.Player
 
         public bool IsGrounded { get; private set; }
 
-        public void SetCommand(CatCommand cmd)
+        void SetCommand(CatCommand cmd)
         {
             command = cmd;
 
@@ -60,25 +58,12 @@ namespace Parallax.Gameplay.Player
             groundFilter = new ContactFilter2D();
             groundFilter.useTriggers = false;
             groundFilter.SetLayerMask(config.GroundMask);
-
-            if (commandSource != null)
-            {
-                commandSourceInterface = commandSource as ICatCommandSource;
-                if (commandSourceInterface == null)
-                {
-                    Debug.LogError($"CatMotor2D on '{gameObject.name}' has commandSource '{commandSource.GetType().Name}' which does not implement ICatCommandSource.", this);
-                }
-            }
         }
 
-        void FixedUpdate()
+        public void Step(in CatCommand input, float dt)
         {
-            if (commandSourceInterface != null)
-            {
-                SetCommand(commandSourceInterface.Read());
-            }
+            SetCommand(input);
 
-            float dt = Time.fixedDeltaTime;
             gravity.FixedTick(dt);
 
             Vector2 down  = gravity.Direction;

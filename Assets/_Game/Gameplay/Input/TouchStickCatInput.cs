@@ -16,8 +16,10 @@ namespace Parallax.Gameplay.Input
         [SerializeField] float stickRadius = 0.12f;
         [SerializeField] float deadZone = 0.15f;
         [SerializeField] StickProjection projection = StickProjection.CatRelative;
-        [SerializeField] GravityReceiver gravityReceiver;
         [SerializeField] bool showDebugOverlay = true;
+
+        GravityReceiver gravityReceiver;
+        bool warnedNoGravityFrame;
 
         int stickFingerId = -1;
         Vector2 stickOrigin;
@@ -38,11 +40,12 @@ namespace Parallax.Gameplay.Input
         void OnDisable()
         {
             EnhancedTouchSupport.Disable();
-            stickFingerId = -1;
-            jumpFingerIds.Clear();
-            lastStickVector = Vector2.zero;
-            currentMove = 0f;
-            jumpPressedLatch = false;
+            ResetTransientState();
+        }
+
+        public void SetGravityFrame(GravityReceiver g)
+        {
+            gravityReceiver = g;
         }
 
         void Update()
@@ -101,7 +104,18 @@ namespace Parallax.Gameplay.Input
                 ? VirtualStick.Evaluate(stickOrigin, stickCurrent, radiusPixels, deadZone)
                 : Vector2.zero;
 
-            Vector2 up = gravityReceiver != null ? -gravityReceiver.Direction : Vector2.up;
+            if (gravityReceiver == null)
+            {
+                if (!warnedNoGravityFrame)
+                {
+                    Debug.LogWarning($"TouchStickCatInput on '{gameObject.name}' has no gravity frame bound. Move will read 0 until SetGravityFrame is called.", this);
+                    warnedNoGravityFrame = true;
+                }
+                currentMove = 0f;
+                return;
+            }
+
+            Vector2 up = -gravityReceiver.Direction;
             Vector2 catRight = new Vector2(up.y, -up.x);
             currentMove = VirtualStick.ToMove(lastStickVector, catRight, projection);
         }
@@ -127,6 +141,15 @@ namespace Parallax.Gameplay.Input
             cmd.InteractHeld = false;
 
             return cmd;
+        }
+
+        public void ResetTransientState()
+        {
+            stickFingerId = -1;
+            jumpFingerIds.Clear();
+            lastStickVector = Vector2.zero;
+            currentMove = 0f;
+            jumpPressedLatch = false;
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Parallax.Core;
+using Parallax.Gameplay.Player;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Input
@@ -9,10 +10,12 @@ namespace Parallax.Gameplay.Input
         [SerializeField] MonoBehaviour[] sources = System.Array.Empty<MonoBehaviour>();
 
         readonly List<ICatCommandSource> validSources = new List<ICatCommandSource>();
+        readonly List<TouchStickCatInput> touchSources = new List<TouchStickCatInput>();
 
         void Awake()
         {
             validSources.Clear();
+            touchSources.Clear();
 
             foreach (MonoBehaviour source in sources)
             {
@@ -21,11 +24,32 @@ namespace Parallax.Gameplay.Input
                 if (source is ICatCommandSource commandSource)
                 {
                     validSources.Add(commandSource);
+
+                    if (source is TouchStickCatInput touchSource)
+                    {
+                        touchSources.Add(touchSource);
+                    }
                 }
                 else
                 {
                     Debug.LogError($"CatInputRouter on '{gameObject.name}': '{source.GetType().Name}' does not implement ICatCommandSource. Skipping.", this);
                 }
+            }
+        }
+
+        public void ResetTransientState()
+        {
+            for (int i = 0; i < validSources.Count; i++)
+            {
+                validSources[i].ResetTransientState();
+            }
+        }
+
+        public void SetGravityFrame(GravityReceiver g)
+        {
+            for (int i = 0; i < touchSources.Count; i++)
+            {
+                touchSources[i].SetGravityFrame(g);
             }
         }
 

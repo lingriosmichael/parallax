@@ -53,12 +53,6 @@ namespace Parallax.Editor
                     changes.Add("added CatMotor2D");
                 }
 
-                if (root.GetComponent<KeyboardCatInput>() == null)
-                {
-                    root.AddComponent<KeyboardCatInput>();
-                    changes.Add("added KeyboardCatInput");
-                }
-
                 if (root.GetComponent<CatRespawn>() == null)
                 {
                     root.AddComponent<CatRespawn>();

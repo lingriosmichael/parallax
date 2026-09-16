@@ -135,6 +135,8 @@ public sealed class ObserverContext : MonoBehaviour
 
 `ObserverSet` holds both contexts (`Get(ObserverId)`). Systems receive it from the composition root. There is no global singleton.
 
+`ObserverSet.FixedUpdate` is the **only** per-tick entry point for cats (D-022). It owns `Tick`, incrementing once per fixed step, then steps Observer A, then Observer B, through their drivers: `Tick++; observerA.Step(Tick); observerB?.Step(Tick);`. `CatMotor2D` has no `FixedUpdate` of its own — it exposes `Step(in CatCommand, float dt)`, called only by a driver's `FixedTick`. "Motor enabled" / "motor disabled" in the table above means "driver calls `Step`" / "driver doesn't call `Step`", not a Unity component-enabled flag.
+
 ### 4.1 Commands
 
 ```csharp
@@ -178,7 +180,7 @@ Echo is disabled in co-op in v1. The driver model keeps it possible later.
 
 ### 5.1 Movement input
 
-The Input System's touch controls produce `CatCommand` via `TouchCatInput`. `KeyboardCatInput` exists for the Editor. Both implement `ICatCommandSource { CatCommand Read(); }`, and `LocalHumanDriver` consumes it.
+Movement input is a **device-level rig**, not part of the cat prefab (D-021, D-022): a `CatInputRouter` merges `KeyboardCatInput` (Editor) and `TouchStickCatInput` (touch, read cat-relative per D-021). Each implements `ICatCommandSource { CatCommand Read(); void ResetTransientState(); }`. `LocalHumanDriver` binds the router to its Observer's `GravityReceiver` on `Activate` (`CatInputRouter.SetGravityFrame`, forwarded to the touch source) and calls `ResetTransientState()` on both `Activate` and `Deactivate`, so latched edges (e.g. a jump press) never survive a driver handover.
 
 ### 5.2 Gravity control input
 

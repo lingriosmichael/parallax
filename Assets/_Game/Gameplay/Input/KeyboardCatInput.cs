@@ -46,5 +46,12 @@ namespace Parallax.Gameplay.Input
 
             return cmd;
         }
+
+        public void ResetTransientState()
+        {
+            move = 0f;
+            jumpHeld = false;
+            jumpPressedLatched = false;
+        }
     }
 }

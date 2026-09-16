@@ -129,6 +129,11 @@ space while the camera never rotates.
 
 Status: Closed by D-021 (2026-09-16). Not needed.
 
+### D-022 · 2026-09-16 · Accepted
+**Decision:** (1) `ObserverSet.FixedUpdate` is the only per-tick entry point for cats. It owns `Tick` and steps Observer A, then B, through their drivers. `CatMotor2D` has no `FixedUpdate`; it exposes `Step(in CatCommand, float dt)`, called only by drivers. (2) Movement input is a device-level rig (`CatInputRouter` + sources), not part of the cat prefab. `LocalHumanDriver` binds the rig to its Observer's `GravityReceiver` on Activate and resets transient input state on Activate and Deactivate. (3) `EchoReplay` and `RemoteHuman` exist as enum members only; driver classes are written in their own tickets.
+**Why:** Explicit step order replaces execution-order coupling and gives Echo a single tick source. A per-cat input rig would make two cats read the same touches, and inactive cats would accumulate stale jump latches that fire on switch-back. Stubs are deferred pending Q-8.
+**Supersedes:** 02_ARCHITECTURE §5.1 (per-cat `TouchCatInput`); the handoff note to apply input components to the Cat_Player prefab.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
@@ -140,3 +145,5 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 - **Q-5** Echo length and looping.
 - **Q-6** Effect of same-room screen peeking.
 - **Q-7** Should a temporary gravity-aligned/snap-rotating camera be introduced in Phase 5 as a deliberate disorientation effect while a Control Station actively steers the other cat's gravity? (Raised by D-020; unconfirmed wording — please check.)
+- **Q-8** Is v1 co-op-only? If levels require two humans (hostile anchors: one player's action sets traps in the other's reality), Echo (D-007, PAX-023/024) and solo as a first-class mode (Vision §4, D-016 solo cohort, Gate 3 check 6) may be cut. If solo stays, every hostile anchor must remain solvable against a ≤10 s Echo, which rules out traps that depend on the partner not knowing. Unaffected either way: PAX-014–022. SWITCH survives at least as a dev tool, because the one-phone proof (D-011) needs one human to drive both cats. **Decide before PAX-023**, after PAX-022 runs a cross-reality anchor on device.
+- **Q-9** Nine lives: shared between both cats or per-cat? Reset per level or per checkpoint? On zero, hard fail or a rating penalty? Note: a hard fail conflicts with Vision pillar 3 (cheap, funny failure, no death screens); resolving Q-9 toward hard fail requires a Vision change. Recorded, not designed.

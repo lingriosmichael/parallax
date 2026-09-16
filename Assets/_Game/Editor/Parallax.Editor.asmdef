@@ -3,7 +3,9 @@
   "rootNamespace": "Parallax.Editor",
   "references": [
     "Parallax.Core",
-    "Parallax.Gameplay"
+    "Parallax.Gameplay",
+    "Parallax.App",
+    "Parallax.DebugTools"
   ],
   "includePlatforms": [
     "Editor"
