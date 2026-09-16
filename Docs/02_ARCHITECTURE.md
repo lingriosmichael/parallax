@@ -158,12 +158,14 @@ Touch, keyboard, and (later) gamepad all produce `CatCommand`. The motor never r
 
 ### 4.2 Solo switching
 
-`SoloSwitchController` on SWITCH:
+`SoloSwitchController` is the **only** runtime code that assigns Observer drivers or enables/disables Observer cameras; `ObserverBootstrap` delegates to it (D-023). On `SwitchTo`/`Toggle`:
 
-1. For the **current** Observer: if an Echo recording is active, stop it and set `EchoReplayDriver`. Otherwise set `InactiveDriver`.
-2. For the **target** Observer: if it is `EchoReplay`, cancel the Echo; the human resumes from the Echo's current position. Set `LocalHumanDriver`.
-3. Swap the active camera.
-4. Raise a **local-only** `ObserverSwitched` event (for transition VFX/audio). It is never networked.
+1. For the **current** Observer: set `InactiveDriver`. (Stopping/replaying an Echo recording here is PAX-024.)
+2. For the **target** Observer: set `LocalHumanDriver`.
+3. Swap cameras at the component level: the target's `Camera` is enabled with `rect = (0,0,1,1)` and `depth = 0`; the other's `Camera` component is disabled (not its GameObject).
+4. Raise a **local-only** C# event `Switched(ObserverId from, ObserverId to)`. It is never networked, and carries no VFX/audio in v1 — `Switched` firing is enough (PAX-017).
+
+Switches are requested from `Update`, so they always land between fixed ticks, never mid-`FixedUpdate`.
 
 ### 4.3 Co-op binding
 
@@ -183,6 +185,8 @@ Echo is disabled in co-op in v1. The driver model keeps it possible later.
 ### 5.1 Movement input
 
 Movement input is a **device-level rig**, not part of the cat prefab (D-021, D-022): a `CatInputRouter` merges `KeyboardCatInput` (Editor) and `TouchStickCatInput` (touch, read cat-relative per D-021). Each implements `ICatCommandSource { CatCommand Read(); void ResetTransientState(); }`. `LocalHumanDriver` binds the router to its Observer's `GravityReceiver` on `Activate` (`CatInputRouter.SetGravityFrame`, forwarded to the touch source) and calls `ResetTransientState()` on both `Activate` and `Deactivate`, so latched edges (e.g. a jump press) never survive a driver handover.
+
+**Reserved touch regions (D-023):** on-screen controls (SWITCH, the debug panel, the gravity debug buttons) declare `ITouchReservedRegion { bool ContainsScreenPoint(Vector2 screenPos); }`. `TouchStickCatInput` takes a list of these; a touch that **begins** inside any region is never claimed as stick or jump for its whole lifetime, even if it drifts elsewhere. Without this, tapping an on-screen control could also start the stick or a jump.
 
 ### 5.2 Gravity control input
 
@@ -538,6 +542,10 @@ Debug panel (toggle with a multi-finger tap or an Editor key):
 - RTT and session role (FusionTransport);
 - picture-in-picture view of the other reality;
 - FPS.
+
+**v1 (PAX-017), `DebugPanel`:** toggled by an OnGUI "DBG" button (top-left) or the backquote key; starts collapsed, showing only the DBG button. Open, it shows the active Observer, `ObserverSet.Tick`, FPS (smoothed over ~0.5s), and per Observer: driver kind, gravity direction as an angle, grounded, velocity magnitude. Anchor table, control stream values, and the latency/RTT rows above are later phases. `DebugPanel` never assigns drivers — it only reads Observer state and (for PiP) enables/disables an Observer's `Camera` component.
+
+PiP toggle (visible only while the panel is open, default off): when on, the **inactive** Observer's `Camera` is enabled with `rect = (0.70, 0.70, 0.28, 0.28)` and `depth = 1`; off, it's disabled again. `DebugPanel` subscribes to `SoloSwitchController.Switched` and re-applies PiP to the now-inactive camera after every switch. The debug panel and PiP are compiled only under `UNITY_EDITOR || DEVELOPMENT_BUILD` (`Parallax.DebugTools`'s `defineConstraints`), so they are absent from release builds.
 
 ---
 

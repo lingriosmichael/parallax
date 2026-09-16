@@ -17,6 +17,7 @@ namespace Parallax.Gameplay.Input
         [SerializeField] float deadZone = 0.15f;
         [SerializeField] StickProjection projection = StickProjection.CatRelative;
         [SerializeField] bool showDebugOverlay = true;
+        [SerializeField] MonoBehaviour[] reservedRegions = System.Array.Empty<MonoBehaviour>();
 
         GravityReceiver gravityReceiver;
         bool warnedNoGravityFrame;
@@ -30,7 +31,27 @@ namespace Parallax.Gameplay.Input
         readonly HashSet<int> jumpFingerIds = new HashSet<int>();
         readonly HashSet<int> activeIds = new HashSet<int>();
         readonly List<int> staleIds = new List<int>();
+        readonly HashSet<int> ignoredFingerIds = new HashSet<int>();
+        readonly List<ITouchReservedRegion> validReservedRegions = new List<ITouchReservedRegion>();
         bool jumpPressedLatch;
+
+        void Awake()
+        {
+            validReservedRegions.Clear();
+            foreach (MonoBehaviour region in reservedRegions)
+            {
+                if (region == null) continue;
+
+                if (region is ITouchReservedRegion reserved)
+                {
+                    validReservedRegions.Add(reserved);
+                }
+                else
+                {
+                    Debug.LogError($"TouchStickCatInput on '{gameObject.name}': '{region.GetType().Name}' does not implement ITouchReservedRegion. Skipping.", this);
+                }
+            }
+        }
 
         void OnEnable()
         {
@@ -63,6 +84,12 @@ namespace Parallax.Gameplay.Input
 
                 if (touch.phase == TouchPhase.Began)
                 {
+                    if (ReservedRegionCheck.IsReserved(validReservedRegions, touch.screenPosition))
+                    {
+                        ignoredFingerIds.Add(id);
+                        continue;
+                    }
+
                     Vector2 norm = TouchZones.ToSafeAreaNormalised(touch.screenPosition, safeArea);
 
                     if (jumpZone.Contains(norm))
@@ -76,6 +103,11 @@ namespace Parallax.Gameplay.Input
                         stickOrigin = touch.screenPosition;
                         stickCurrent = touch.screenPosition;
                     }
+                }
+                else if (ignoredFingerIds.Contains(id))
+                {
+                    // A touch that began inside a reserved region is never claimed
+                    // for its whole lifetime, even if it later drifts elsewhere.
                 }
                 else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
                 {
@@ -98,6 +130,13 @@ namespace Parallax.Gameplay.Input
                 if (!activeIds.Contains(id)) staleIds.Add(id);
             }
             for (int i = 0; i < staleIds.Count; i++) EndFinger(staleIds[i]);
+
+            staleIds.Clear();
+            foreach (int id in ignoredFingerIds)
+            {
+                if (!activeIds.Contains(id)) staleIds.Add(id);
+            }
+            for (int i = 0; i < staleIds.Count; i++) ignoredFingerIds.Remove(staleIds[i]);
 
             float radiusPixels = stickRadius * safeArea.height;
             lastStickVector = stickFingerId >= 0
@@ -147,6 +186,7 @@ namespace Parallax.Gameplay.Input
         {
             stickFingerId = -1;
             jumpFingerIds.Clear();
+            ignoredFingerIds.Clear();
             lastStickVector = Vector2.zero;
             currentMove = 0f;
             jumpPressedLatch = false;
