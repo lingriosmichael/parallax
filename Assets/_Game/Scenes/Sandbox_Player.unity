@@ -180,6 +180,10 @@ PrefabInstance:
       propertyPath: initialDirection.y
       value: -1
       objectReference: {fileID: 0}
+    - target: {fileID: -6960851939468905688, guid: e8e548020841f43039a9c15a84b6ebf6, type: 3}
+      propertyPath: commandSource
+      value: 
+      objectReference: {fileID: 1395653764}
     - target: {fileID: 7064627984492035233, guid: e8e548020841f43039a9c15a84b6ebf6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -227,7 +231,16 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8383936889462940800, guid: e8e548020841f43039a9c15a84b6ebf6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1395653765}
+    - targetCorrespondingSourceObject: {fileID: 8383936889462940800, guid: e8e548020841f43039a9c15a84b6ebf6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1395653764}
+    - targetCorrespondingSourceObject: {fileID: 8383936889462940800, guid: e8e548020841f43039a9c15a84b6ebf6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1395653766}
   m_SourcePrefab: {fileID: 100100000, guid: e8e548020841f43039a9c15a84b6ebf6, type: 3}
 --- !u!1 &412851580
 GameObject:
@@ -804,7 +817,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6121271007245475599, guid: e8e548020841f43039a9c15a84b6ebf6, type: 3}
   m_PrefabInstance: {fileID: 247191330}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1395653758}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 88981d63c54c14252820bbd4605579f3, type: 3}
@@ -1256,6 +1269,89 @@ Transform:
   - {fileID: 1699412550}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1395653758 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8383936889462940800, guid: e8e548020841f43039a9c15a84b6ebf6, type: 3}
+  m_PrefabInstance: {fileID: 247191330}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1395653759 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -879282820560298906, guid: e8e548020841f43039a9c15a84b6ebf6, type: 3}
+  m_PrefabInstance: {fileID: 247191330}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1395653758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 805b7f36fa9524bb49850f72560f526e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Controls.KeyboardCatInput
+--- !u!114 &1395653761 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -8957719409104256222, guid: e8e548020841f43039a9c15a84b6ebf6, type: 3}
+  m_PrefabInstance: {fileID: 247191330}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1395653758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 618cc5e1fdf1c4dbf91c18d7c9bf2c37, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Player.GravityReceiver
+--- !u!114 &1395653764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1395653758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60911fbe569e845949cf2aa3abe64daf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Input.CatInputRouter
+  sources:
+  - {fileID: 1395653759}
+  - {fileID: 1395653765}
+--- !u!114 &1395653765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1395653758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a00b382081c4f7aa9a6bd9f6c78ecdc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Input.TouchStickCatInput
+  stickZone:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0.5
+    height: 0.6
+  jumpZone:
+    serializedVersion: 2
+    x: 0.78
+    y: 0
+    width: 0.22
+    height: 0.45
+  stickRadius: 0.12
+  deadZone: 0.15
+  projection: 0
+  gravityReceiver: {fileID: 1395653761}
+  showDebugOverlay: 1
+--- !u!114 &1395653766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1395653758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ccaebb63eef74070bc52d2624a6a4b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.GravityDebugControl
 --- !u!1 &1697995686
 GameObject:
   m_ObjectHideFlags: 0
