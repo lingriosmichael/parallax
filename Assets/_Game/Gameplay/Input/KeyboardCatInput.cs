@@ -9,6 +9,8 @@ namespace Parallax.Gameplay.Input
         float move;
         bool jumpHeld;
         bool jumpPressedLatched;
+        bool interactHeld;
+        bool interactPressedLatched;
 
         void Update()
         {
@@ -16,6 +18,7 @@ namespace Parallax.Gameplay.Input
 
             move = 0f;
             jumpHeld = false;
+            interactHeld = false;
 
             if (keyboard != null)
             {
@@ -32,6 +35,8 @@ namespace Parallax.Gameplay.Input
                 jumpHeld = keyboard.spaceKey.isPressed
                            || keyboard.wKey.isPressed
                            || keyboard.upArrowKey.isPressed;
+                interactPressedLatched |= keyboard.fKey.wasPressedThisFrame;
+                interactHeld = keyboard.fKey.isPressed;
             }
         }
 
@@ -41,8 +46,11 @@ namespace Parallax.Gameplay.Input
             cmd.Move = move;
             cmd.JumpPressed = jumpPressedLatched;
             cmd.JumpHeld = jumpHeld;
+            cmd.InteractPressed = interactPressedLatched;
+            cmd.InteractHeld = interactHeld;
 
             jumpPressedLatched = false;
+            interactPressedLatched = false;
 
             return cmd;
         }
@@ -52,6 +60,8 @@ namespace Parallax.Gameplay.Input
             move = 0f;
             jumpHeld = false;
             jumpPressedLatched = false;
+            interactHeld = false;
+            interactPressedLatched = false;
         }
     }
 }

@@ -78,7 +78,7 @@ If documents conflict, or a ticket conflicts with the architecture: **stop and r
   - Anchors, puzzle phase, checkpoints → the session authority (master client in co-op; the local device in solo).
 - Requests use **absolute target values**, never deltas, and carry `(Origin, Sequence)` event IDs. Commits must be **idempotent**.
 - **Local input feedback never waits for the network.**
-- Puzzles talk only to `IRealityTransport`. They must work unchanged with `LocalTransport` and `FusionTransport`.
+- Puzzles talk only to `IRealityTransport`; interactables go through the `IAnchorRequester` their cat hands them (D-025). They must work unchanged with `LocalTransport` and `FusionTransport`.
 
 ## Echo
 

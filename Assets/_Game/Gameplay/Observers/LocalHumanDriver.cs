@@ -1,5 +1,6 @@
 using Parallax.Core;
 using Parallax.Gameplay.Input;
+using Parallax.Gameplay.Interaction;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Observers
@@ -8,6 +9,7 @@ namespace Parallax.Gameplay.Observers
     {
         readonly CatInputRouter router;
         ObserverContext observer;
+        CatInteractor interactor;
 
         public LocalHumanDriver(CatInputRouter router)
         {
@@ -19,6 +21,7 @@ namespace Parallax.Gameplay.Observers
         public void Activate(ObserverContext observer)
         {
             this.observer = observer;
+            interactor = observer != null && observer.Cat != null ? observer.Cat.GetComponent<CatInteractor>() : null;
 
             if (router == null)
             {
@@ -36,6 +39,7 @@ namespace Parallax.Gameplay.Observers
 
             CatCommand cmd = router.Read();
             observer.Cat.Step(cmd, Time.fixedDeltaTime);
+            if (interactor != null) interactor.Step(in cmd, observer);
         }
 
         public void Deactivate()
