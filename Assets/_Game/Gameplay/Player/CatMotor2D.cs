@@ -1,4 +1,5 @@
 using Parallax.Core;
+using Parallax.Gameplay.Reality;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Player
@@ -55,9 +56,15 @@ namespace Parallax.Gameplay.Player
                 return;
             }
 
+            var reality = GetComponentInParent<RealityRoot>();
+            if (reality == null)
+            {
+                Debug.LogError($"CatMotor2D on '{gameObject.name}' has no RealityRoot in its parent hierarchy. Ground detection will hit nothing.", this);
+            }
+
             groundFilter = new ContactFilter2D();
             groundFilter.useTriggers = false;
-            groundFilter.SetLayerMask(config.GroundMask);
+            groundFilter.SetLayerMask(reality != null ? reality.PhysicsMask : (LayerMask)0);
         }
 
         public void Step(in CatCommand input, float dt)

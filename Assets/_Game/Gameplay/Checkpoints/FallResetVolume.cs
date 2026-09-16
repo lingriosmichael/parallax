@@ -1,4 +1,5 @@
 using Parallax.Gameplay.Player;
+using Parallax.Gameplay.Reality;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Checkpoints
@@ -7,7 +8,6 @@ namespace Parallax.Gameplay.Checkpoints
     public sealed class FallResetVolume : MonoBehaviour
     {
         [SerializeField] SpawnPoint spawn;
-        [SerializeField] LayerMask catMask = ~0;
 
         BoxCollider2D box;
         ContactFilter2D filter;
@@ -31,9 +31,15 @@ namespace Parallax.Gameplay.Checkpoints
                 return;
             }
 
+            var reality = GetComponentInParent<RealityRoot>();
+            if (reality == null)
+            {
+                Debug.LogError($"FallResetVolume: '{gameObject.name}' has no RealityRoot in its parent hierarchy. Overlap query will match nothing.", this);
+            }
+
             filter = new ContactFilter2D();
             filter.useTriggers = false;
-            filter.SetLayerMask(catMask);
+            filter.SetLayerMask(reality != null ? reality.PhysicsMask : (LayerMask)0);
         }
 
         void FixedUpdate()
