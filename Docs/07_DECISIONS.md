@@ -93,6 +93,42 @@ Format: `D-### · date · status` · Decision · Why · Supersedes
 **Why:** Two players can only coordinate ("it's above you, go left") if both phones share one frame of reference. A rotating camera destroys that shared spatial vocabulary and risks motion sickness on a phone. World-aligned also keeps level layouts mentally mappable across gravity changes.
 **Resolves:** Q-2. **Supersedes:** nothing.
 
+## D-021 — Touch movement is a virtual stick, read cat-relative
+
+Status: Accepted (2026-09-16)
+Supersedes: the three-zone touch scheme from PAX-013
+Resolves: Q-2
+Closes: Q-7
+
+Movement on touch is a floating-origin virtual stick in the bottom-left;
+jump is a button on the right. CatCommand.Move is continuous in [-1, 1].
+
+The stick is read cat-relative: Move = stick.x in the cat's own frame, so
+"right" always means "forward along the surface the cat stands on",
+regardless of gravity. On a wall this means pushing right walks the cat
+down the screen.
+
+Verified on Pixel 8a (PAX-013b, Gate 2 session): tested against the
+ScreenRelative alternative and found tolerable in play. Cat-relative kept.
+
+Consequence: Q-7's snap-rotating camera is closed, not deferred.
+Cat-relative movement is playable as-is, so the rotating camera has no
+problem left to solve. D-020 (camera stays world-aligned, never rotates)
+is now confirmed by play rather than argument, and PAX-016 can build two
+world-aligned cameras without hedging.
+
+ScreenRelative remains implemented behind the `projection` enum on
+TouchStickCatInput, with VirtualStick test coverage. It is not used.
+Retained deliberately: if hostile anchors (PAX-020-022) later demand
+faster reactions than a sandbox does, the comparison can be re-run
+without rebuilding it. Note that ScreenRelative depends on D-020 — it
+projects onto catRight in world space, which is only equal to screen
+space while the camera never rotates.
+
+## Q-7 — Snap-rotating camera on gravity change
+
+Status: Closed by D-021 (2026-09-16). Not needed.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)

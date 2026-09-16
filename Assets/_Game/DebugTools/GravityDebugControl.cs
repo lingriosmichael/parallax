@@ -37,8 +37,36 @@ namespace Parallax.DebugTools
 
             if (dir == null) return;
 
-            receiver.SetTargetDirection(dir.Value);
-            Debug.Log($"GravityDebug: {gameObject.name} gravity → ({dir.Value.x:0}, {dir.Value.y:0})");
+            Rotate(dir.Value);
         }
+
+        void Rotate(Vector2 dir)
+        {
+            receiver.SetTargetDirection(dir);
+            Debug.Log($"GravityDebug: {gameObject.name} gravity → ({dir.x:0}, {dir.y:0})");
+        }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        void OnGUI()
+        {
+            const float buttonSize = 80f;
+            const float margin = 16f;
+
+            var ccwRect = new Rect(Screen.width - margin - buttonSize * 2f - margin, margin, buttonSize, buttonSize);
+            var cwRect = new Rect(Screen.width - margin - buttonSize, margin, buttonSize, buttonSize);
+
+            var style = new GUIStyle(GUI.skin.button) { fontSize = 32 };
+
+            if (GUI.Button(ccwRect, "↺", style))
+            {
+                Rotate(GravityMath.Rotate90(receiver.TargetDirection, +1));
+            }
+
+            if (GUI.Button(cwRect, "↻", style))
+            {
+                Rotate(GravityMath.Rotate90(receiver.TargetDirection, -1));
+            }
+        }
+#endif
     }
 }
