@@ -1,6 +1,7 @@
 using System;
 using Parallax.Core;
 using Parallax.Gameplay.Input;
+using Parallax.Gameplay.Echo;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Observers
@@ -10,6 +11,7 @@ namespace Parallax.Gameplay.Observers
     {
         [SerializeField] ObserverSet observers;
         [SerializeField] CatInputRouter router;
+        [SerializeField] EchoSession echoSession;
 
         public ObserverId Active { get; private set; }
 
@@ -37,7 +39,11 @@ namespace Parallax.Gameplay.Observers
             ObserverId from = Active;
 
             ObserverContext current = observers.Get(from);
-            if (current != null) current.SetDriver(new InactiveDriver());
+            if (current != null)
+            {
+                if (echoSession != null && echoSession.TryCreateReplayDriver(from, out IObserverDriver echo)) current.SetDriver(echo);
+                else current.SetDriver(new InactiveDriver());
+            }
 
             ObserverContext next = observers.Get(target);
             if (next != null) next.SetDriver(new LocalHumanDriver(router));
