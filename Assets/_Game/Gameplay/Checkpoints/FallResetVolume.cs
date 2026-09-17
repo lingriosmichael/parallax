@@ -1,3 +1,5 @@
+using Parallax.Core;
+using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Player;
 using Parallax.Gameplay.Reality;
 using UnityEngine;
@@ -7,11 +9,13 @@ namespace Parallax.Gameplay.Checkpoints
     [RequireComponent(typeof(BoxCollider2D))]
     public sealed class FallResetVolume : MonoBehaviour
     {
-        [SerializeField] SpawnPoint spawn;
+        [SerializeField] CheckpointManager checkpoints;
+        [SerializeField] ObserverSet observers;
 
         BoxCollider2D box;
         ContactFilter2D filter;
         readonly Collider2D[] results = new Collider2D[8];
+        RealityRoot reality;
 
         void Reset()
         {
@@ -24,22 +28,24 @@ namespace Parallax.Gameplay.Checkpoints
             box = GetComponent<BoxCollider2D>();
             box.isTrigger = true;
 
-            if (spawn == null)
+            if (checkpoints == null || observers == null)
             {
-                Debug.LogError($"FallResetVolume: '{gameObject.name}' has no SpawnPoint assigned. Disabling.", this);
+                Debug.LogError($"FallResetVolume: '{gameObject.name}' has no CheckpointManager or ObserverSet assigned. Disabling.", this);
                 enabled = false;
                 return;
             }
 
-            var reality = GetComponentInParent<RealityRoot>();
+            reality = GetComponentInParent<RealityRoot>();
             if (reality == null)
             {
                 Debug.LogError($"FallResetVolume: '{gameObject.name}' has no RealityRoot in its parent hierarchy. Overlap query will match nothing.", this);
+                enabled = false;
+                return;
             }
 
             filter = new ContactFilter2D();
             filter.useTriggers = false;
-            filter.SetLayerMask(reality != null ? reality.PhysicsMask : (LayerMask)0);
+            filter.SetLayerMask(reality.PhysicsMask);
         }
 
         void FixedUpdate()
@@ -50,10 +56,11 @@ namespace Parallax.Gameplay.Checkpoints
                 Rigidbody2D body = results[i].attachedRigidbody;
                 if (body == null) continue;
 
-                var respawn = body.GetComponent<CatRespawn>();
-                if (respawn == null) continue;
+                ObserverContext context = observers.Get(reality.Id);
+                if (context == null || context.Driver == null || !CheckpointPolicy.FallResets(context.Driver.Kind)) continue;
+                if (context.Cat == null || body.gameObject != context.Cat.gameObject) continue;
 
-                respawn.RespawnAt(spawn.Position, spawn.GravityDirection);
+                checkpoints.Respawn(context);
             }
         }
     }

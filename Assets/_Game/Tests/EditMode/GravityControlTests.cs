@@ -40,5 +40,28 @@ namespace Parallax.Tests.EditMode
             Assert.IsTrue(filtered.InteractPressed);
             Assert.IsTrue(filtered.InteractHeld);
         }
+
+        [Test]
+        public void RespawnGravity_NoHeldStreamValue_CheckpointGravityWins()
+        {
+            Vector2 checkpointDirection = Vector2.down;
+            Vector2 result = GravityRespawnPrecedence.GravityOnRespawn(checkpointDirection, Vector2.left, false);
+            Assert.AreEqual(checkpointDirection, result);
+        }
+
+        [Test]
+        public void RespawnGravity_HeldStreamValue_StreamGravityWins()
+        {
+            Vector2 result = GravityRespawnPrecedence.GravityOnRespawn(Vector2.down, Vector2.left, true);
+            Assert.AreEqual(Vector2.left, result);
+        }
+
+        [Test]
+        public void RespawnGravity_HeldEchoPublishedValue_StreamGravityWins()
+        {
+            Vector2 echoPublishedDirection = Vector2.right;
+            Vector2 result = GravityRespawnPrecedence.GravityOnRespawn(Vector2.down, echoPublishedDirection, true);
+            Assert.AreEqual(echoPublishedDirection, result);
+        }
     }
 }

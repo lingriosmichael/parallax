@@ -34,7 +34,7 @@ namespace Parallax.Gameplay.Player
 
             Debug.Log($"CatRespawn: '{gameObject.name}' respawned at {position}.", this);
 
-            Respawned?.Invoke();
+            if (Respawned != null) Respawned.Invoke();
         }
     }
 }
