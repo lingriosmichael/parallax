@@ -198,6 +198,11 @@ CheckpointSnapshot. Consequence: a hostile dial can cause repeated
 respawns, which is accepted as legible co-op failure under Vision
 pillar 3 and revisited at Gate 5.
 
+D-033 · 2026-09-18 · Accepted
+Decision: MCP for Unity is committed to the repo as dev tooling, pinned to v10.2.0 on both the Unity package and the Python server. Its MCPForUnity.Runtime assembly is not platform-constrained upstream; this is accepted unfixed. Gate 3 adds a one-time check that the assembly is absent from the Android player build.
+Why: Embedding the package to constrain the asmdef means owning a vendored fork of a peripheral tool. Nothing in Assets references the runtime assembly, so IL2CPP managed stripping should remove it; the cost of being wrong is APK size, not correctness.
+Consequence: If the Gate 3 check finds the assembly shipped, embed the package and set includePlatforms: ["Editor"], recorded as an amendment.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
