@@ -167,10 +167,25 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 **Why:** If Inactive cats pressed plates, every sustained puzzle could be solved by switching away while standing on the plate, making Echo pointless. In co-op a reality's cat is simulated only on its owner's device, so only that device may report its sensors, and its Human origin already belongs to that device's sequencer (a shared System origin from two devices would collide under D-024). Recording sensor requests as well would double-issue them on replay.
 **Consequence:** Level design: a cat left Inactive is scenery for sensors but still collides and falls. Networking (PAX-033): sensors must be disabled for realities this device does not own.
 
+### D-030 · 2026-09-17 · Accepted
+**Decision:** (1) Checkpoints use shared checkpoint IDs across both realities. (2) A fall respawns only the cat that fell, at its Observer's spawn for the last reached checkpoint; the other cat is unaffected. (3) There is no world rewind: anchors, puzzle phase and the other cat's state are not restored on a fall. (4) Checkpoints v1 (PAX-036) is pulled ahead of networking (PAX-028–035).
+**Why:** One player's mistake should not undo the partner's progress. Leaving world state alone keeps respawn simple and avoids rolling back committed anchors. Building checkpoints before Photon means networking is designed around an existing checkpoint model rather than retrofitted.
+**Consequence:** Full state restore (anchors, puzzle phase, gravity) belongs to the later checkpoint snapshot work, not to fall respawn.
+
 ### D-029 · 2026-09-17 · Accepted
 **Decision:** (1) Gravity control input is `IGravityControlInput` (Core); the touch dial ships first, tilt plugs into the same interface later. (2) A cat sits at a `ControlStation` via interact; `LocalHumanDriver` filters its motor command (no move, no jump) while seated and releases the seat on Deactivate. (3) Stations publish control samples only through the seated cat's `CatInteractor.PublishControl`, only when the value changes, never on sitting down; the target is the other Observer. (4) Each cat's `GravityControlReceiver` applies samples for its Observer through `GravityControlMapping` (positive = clockwise, per-receiver max angle and optional snap) and holds the last direction. (5) Echo records `ControlPublished` and re-publishes due control events during replay.
 **Why:** One interception point on the cat serves anchors and streams, so Echo records both the same way. Publishing on change keeps recordings small and means sitting down does not reset the other cat's gravity. Releasing the seat on Deactivate means switching away never leaves a stale occupant.
 **Consequence:** Tilt must only implement `IGravityControlInput` and be selectable; station, stream, receiver, and Echo remain unchanged.
+
+### D-031 · 2026-09-17 · Accepted
+**Decision:** Amends D-015. The art pipeline test (plan Phase 7) starts now, in parallel with
+code, limited to one cat and a small kit per reality. Concept art: ChatGPT (existing concepts are
+the style reference). Character animation: AutoSprite (free tier / Starter month as needed).
+Sorceress is dropped. Placeholder-quality in-game art is allowed; full art production still
+begins only after Gate 5.
+**Why:** Concepts already exist and are approved. AutoSprite produced a usable quadruped walk at
+near-zero cost, so the reason to wait for a paid tool at Gate 4 is gone. Proving import, pivots,
+lighting and readability early removes risk without committing to production art.
 
 ---
 

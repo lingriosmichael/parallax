@@ -1,0 +1,546 @@
+fileFormatVersion: 2
+guid: 62c2a97752ffc4a059f31c25a9052bc1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5629453517615390117
+    second: Regulus-walk-trimmed_0
+  - first:
+      213: -5297846749886427284
+    second: Regulus-walk-trimmed_1
+  - first:
+      213: 731316726445923117
+    second: Regulus-walk-trimmed_2
+  - first:
+      213: 8147104999169232300
+    second: Regulus-walk-trimmed_3
+  - first:
+      213: 7973196489300837152
+    second: Regulus-walk-trimmed_4
+  - first:
+      213: 7218229555546159430
+    second: Regulus-walk-trimmed_5
+  - first:
+      213: -3819160530685501473
+    second: Regulus-walk-trimmed_6
+  - first:
+      213: 2674130195946911580
+    second: Regulus-walk-trimmed_7
+  - first:
+      213: 7287873090437546736
+    second: Regulus-walk-trimmed_8
+  - first:
+      213: 1144016643867882688
+    second: Regulus-walk-trimmed_9
+  - first:
+      213: -2881213746082771049
+    second: Regulus-walk-trimmed_10
+  - first:
+      213: 618182544335601275
+    second: Regulus-walk-trimmed_11
+  - first:
+      213: 2654726355291166041
+    second: Regulus-walk-trimmed_12
+  - first:
+      213: -6850407126913609022
+    second: Regulus-walk-trimmed_13
+  - first:
+      213: 8291968658932948752
+    second: Regulus-walk-trimmed_14
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_0
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 572
+        width: 239
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5226f21ad920e1b0800000000000000
+      internalID: -5629453517615390117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_1
+      rect:
+        serializedVersion: 2
+        x: 262
+        y: 572
+        width: 238
+        height: 114
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6fcf8e33744a76b0800000000000000
+      internalID: -5297846749886427284
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_2
+      rect:
+        serializedVersion: 2
+        x: 515
+        y: 572
+        width: 241
+        height: 117
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d2b5c1220b8262a00800000000000000
+      internalID: 731316726445923117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_3
+      rect:
+        serializedVersion: 2
+        x: 767
+        y: 572
+        width: 245
+        height: 119
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cad8a4fd4d4501170800000000000000
+      internalID: 8147104999169232300
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_4
+      rect:
+        serializedVersion: 2
+        x: 1023
+        y: 572
+        width: 245
+        height: 118
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0230b2596fb76ae60800000000000000
+      internalID: 7973196489300837152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_5
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 316
+        width: 244
+        height: 116
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 649fd85798d4c2460800000000000000
+      internalID: 7218229555546159430
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_6
+      rect:
+        serializedVersion: 2
+        x: 257
+        y: 316
+        width: 244
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fdf5c4c6bbd9ffac0800000000000000
+      internalID: -3819160530685501473
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_7
+      rect:
+        serializedVersion: 2
+        x: 514
+        y: 316
+        width: 242
+        height: 118
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c57bf8cbe3b6c1520800000000000000
+      internalID: 2674130195946911580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_8
+      rect:
+        serializedVersion: 2
+        x: 770
+        y: 316
+        width: 242
+        height: 119
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f288a386f9b32560800000000000000
+      internalID: 7287873090437546736
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_9
+      rect:
+        serializedVersion: 2
+        x: 1027
+        y: 316
+        width: 241
+        height: 117
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c431ea831d50ef00800000000000000
+      internalID: 1144016643867882688
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_10
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 60
+        width: 239
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79f83cefc5fd308d0800000000000000
+      internalID: -2881213746082771049
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_11
+      rect:
+        serializedVersion: 2
+        x: 262
+        y: 60
+        width: 238
+        height: 115
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7e7871bfb9349800800000000000000
+      internalID: 618182544335601275
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_12
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 60
+        width: 244
+        height: 118
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9555ff60e8b77d420800000000000000
+      internalID: 2654726355291166041
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_13
+      rect:
+        serializedVersion: 2
+        x: 767
+        y: 60
+        width: 245
+        height: 118
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2c2928953077ee0a0800000000000000
+      internalID: -6850407126913609022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Regulus-walk-trimmed_14
+      rect:
+        serializedVersion: 2
+        x: 1023
+        y: 60
+        width: 245
+        height: 116
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01fde54009df21370800000000000000
+      internalID: 8291968658932948752
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Regulus-walk-trimmed_0: -5629453517615390117
+      Regulus-walk-trimmed_1: -5297846749886427284
+      Regulus-walk-trimmed_10: -2881213746082771049
+      Regulus-walk-trimmed_11: 618182544335601275
+      Regulus-walk-trimmed_12: 2654726355291166041
+      Regulus-walk-trimmed_13: -6850407126913609022
+      Regulus-walk-trimmed_14: 8291968658932948752
+      Regulus-walk-trimmed_2: 731316726445923117
+      Regulus-walk-trimmed_3: 8147104999169232300
+      Regulus-walk-trimmed_4: 7973196489300837152
+      Regulus-walk-trimmed_5: 7218229555546159430
+      Regulus-walk-trimmed_6: -3819160530685501473
+      Regulus-walk-trimmed_7: 2674130195946911580
+      Regulus-walk-trimmed_8: 7287873090437546736
+      Regulus-walk-trimmed_9: 1144016643867882688
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
