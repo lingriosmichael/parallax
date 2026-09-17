@@ -9,6 +9,7 @@ namespace Parallax.Core
         readonly int maxFrames;
         readonly List<EchoFrame> frames = new List<EchoFrame>();
         readonly List<EchoAnchorEvent> events = new List<EchoAnchorEvent>();
+        readonly List<EchoControlEvent> controlEvents = new List<EchoControlEvent>();
         bool finished;
 
         public int FrameCount => frames.Count;
@@ -33,11 +34,17 @@ namespace Parallax.Core
             if (!IsFull) events.Add(new EchoAnchorEvent(FrameCount, anchor, targetValue));
         }
 
+        public void AddControlEvent(ControlChannel channel, ObserverId target, float value)
+        {
+            EnsureOpen();
+            if (!IsFull) controlEvents.Add(new EchoControlEvent(FrameCount, channel, target, value));
+        }
+
         public EchoRecording Finish()
         {
             EnsureOpen();
             finished = true;
-            return new EchoRecording(observer, frames.ToArray(), events.ToArray());
+            return new EchoRecording(observer, frames.ToArray(), events.ToArray(), controlEvents.ToArray());
         }
 
         void EnsureOpen()

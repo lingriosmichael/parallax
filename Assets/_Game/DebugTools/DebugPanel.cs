@@ -3,6 +3,7 @@ using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Transport;
 using Parallax.Gameplay.Echo;
+using Parallax.Gameplay.GravityControl;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,6 +19,10 @@ namespace Parallax.DebugTools
         [SerializeField] SoloSwitchController switchController;
         [SerializeField] LocalTransportHost transportHost;
         [SerializeField] EchoSession echoSession;
+        [SerializeField] CatSeat seatA;
+        [SerializeField] CatSeat seatB;
+        [SerializeField] GravityControlReceiver receiverA;
+        [SerializeField] GravityControlReceiver receiverB;
 
         static readonly Rect DbgButtonRect = new Rect(10f, 10f, 70f, 30f);
         static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 390f);
@@ -102,6 +107,8 @@ namespace Parallax.DebugTools
 
             DrawObserverRow(ObserverId.A);
             DrawObserverRow(ObserverId.B);
+            DrawControlRow(ObserverId.A, seatA, receiverA);
+            DrawControlRow(ObserverId.B, seatB, receiverB);
 
             bool nextPiP = GUILayout.Toggle(pipOn, "PiP (inactive reality, top-right)");
             if (nextPiP != pipOn)
@@ -113,6 +120,13 @@ namespace Parallax.DebugTools
             DrawEcho();
 
             GUILayout.EndArea();
+        }
+
+        static void DrawControlRow(ObserverId id, CatSeat seat, GravityControlReceiver receiver)
+        {
+            string seated = seat != null && seat.IsSeated ? "seated" : "-";
+            string received = receiver != null && receiver.HasValue ? receiver.LastValue.ToString("F2") : "-";
+            GUILayout.Label($"Seat {id}: {seated}  Recv {id}: {received}");
         }
 
         void DrawEcho()

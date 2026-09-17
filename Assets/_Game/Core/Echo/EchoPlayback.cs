@@ -6,7 +6,8 @@ namespace Parallax.Core
     public sealed class EchoPlayback
     {
         readonly EchoRecording recording;
-        int nextEvent;
+        int nextAnchorEvent;
+        int nextControlEvent;
 
         public int Cursor { get; private set; }
         public int FrameCount => recording.Frames.Count;
@@ -20,12 +21,15 @@ namespace Parallax.Core
             Current = recording.Frames[0];
         }
 
-        public EchoFrame Advance(List<EchoAnchorEvent> due)
+        public EchoFrame Advance(List<EchoAnchorEvent> dueAnchors, List<EchoControlEvent> dueControls)
         {
-            due.Clear();
+            dueAnchors.Clear();
+            dueControls.Clear();
             if (IsHolding) return Current;
-            while (nextEvent < recording.AnchorEvents.Count && recording.AnchorEvents[nextEvent].TickOffset <= Cursor)
-                due.Add(recording.AnchorEvents[nextEvent++]);
+            while (nextAnchorEvent < recording.AnchorEvents.Count && recording.AnchorEvents[nextAnchorEvent].TickOffset <= Cursor)
+                dueAnchors.Add(recording.AnchorEvents[nextAnchorEvent++]);
+            while (nextControlEvent < recording.ControlEvents.Count && recording.ControlEvents[nextControlEvent].TickOffset <= Cursor)
+                dueControls.Add(recording.ControlEvents[nextControlEvent++]);
             Current = recording.Frames[Cursor++];
             return Current;
         }

@@ -45,34 +45,37 @@ namespace Parallax.Tests.EditMode
             {
                 new EchoAnchorEvent(1, new AnchorId(1), 1f),
                 new EchoAnchorEvent(1, new AnchorId(2), 0f),
-            });
+            }, Array.Empty<EchoControlEvent>());
             var playback = new EchoPlayback(recording);
             var due = new List<EchoAnchorEvent>();
+            var controls = new List<EchoControlEvent>();
             Assert.AreEqual(0f, playback.Current.Position.x);
-            Assert.AreEqual(0f, playback.Advance(due).Position.x);
+            Assert.AreEqual(0f, playback.Advance(due, controls).Position.x);
             Assert.AreEqual(0, due.Count);
-            Assert.AreEqual(1f, playback.Advance(due).Position.x);
+            Assert.AreEqual(1f, playback.Advance(due, controls).Position.x);
             Assert.AreEqual(2, due.Count);
             Assert.AreEqual((ushort)1, due[0].Anchor.Value);
             Assert.AreEqual((ushort)2, due[1].Anchor.Value);
-            Assert.AreEqual(2f, playback.Advance(due).Position.x);
+            Assert.AreEqual(2f, playback.Advance(due, controls).Position.x);
             Assert.IsTrue(playback.IsHolding);
-            Assert.AreEqual(2f, playback.Advance(due).Position.x);
+            Assert.AreEqual(2f, playback.Advance(due, controls).Position.x);
             Assert.AreEqual(0, due.Count);
         }
 
         [Test]
         public void Playback_RejectsZeroFramesAndIsDeterministic()
         {
-            Assert.Throws<ArgumentException>(() => new EchoPlayback(new EchoRecording(ObserverId.A, Array.Empty<EchoFrame>(), Array.Empty<EchoAnchorEvent>())));
-            var recording = new EchoRecording(ObserverId.B, new[] { Frame(0), Frame(1) }, new[] { new EchoAnchorEvent(0, new AnchorId(1), 1f) });
+            Assert.Throws<ArgumentException>(() => new EchoPlayback(new EchoRecording(ObserverId.A, Array.Empty<EchoFrame>(), Array.Empty<EchoAnchorEvent>(), Array.Empty<EchoControlEvent>())));
+            var recording = new EchoRecording(ObserverId.B, new[] { Frame(0), Frame(1) }, new[] { new EchoAnchorEvent(0, new AnchorId(1), 1f) }, Array.Empty<EchoControlEvent>());
             var a = new EchoPlayback(recording);
             var b = new EchoPlayback(recording);
             var dueA = new List<EchoAnchorEvent>();
             var dueB = new List<EchoAnchorEvent>();
+            var controlsA = new List<EchoControlEvent>();
+            var controlsB = new List<EchoControlEvent>();
             for (int i = 0; i < recording.Frames.Count + 5; i++)
             {
-                Assert.AreEqual(a.Advance(dueA).Position, b.Advance(dueB).Position);
+                Assert.AreEqual(a.Advance(dueA, controlsA).Position, b.Advance(dueB, controlsB).Position);
                 Assert.AreEqual(dueA.Count, dueB.Count);
             }
         }
@@ -89,14 +92,15 @@ namespace Parallax.Tests.EditMode
             var recording = new EchoRecording(ObserverId.A, new[] { Frame(0), Frame(1), Frame(2) }, new[]
             {
                 new EchoAnchorEvent(0, id, 1f), new EchoAnchorEvent(2, id, 0f)
-            });
+            }, Array.Empty<EchoControlEvent>());
             for (int replay = 0; replay < 2; replay++)
             {
                 var playback = new EchoPlayback(recording);
                 var due = new List<EchoAnchorEvent>();
+                var controls = new List<EchoControlEvent>();
                 for (int i = 0; i < 3; i++)
                 {
-                    playback.Advance(due);
+                    playback.Advance(due, controls);
                     foreach (EchoAnchorEvent item in due) requester.Request(item.Anchor, item.TargetValue);
                     tick++;
                     transport.Pump(tick);
@@ -131,13 +135,14 @@ namespace Parallax.Tests.EditMode
         [Test]
         public void Playback_WhileHolding_CurrentIsLastFrame_NoDueEvents()
         {
-            var playback = new EchoPlayback(new EchoRecording(ObserverId.A, new[] { Frame(0), Frame(1) }, new[] { new EchoAnchorEvent(1, new AnchorId(1), 1f) }));
+            var playback = new EchoPlayback(new EchoRecording(ObserverId.A, new[] { Frame(0), Frame(1) }, new[] { new EchoAnchorEvent(1, new AnchorId(1), 1f) }, Array.Empty<EchoControlEvent>()));
             var due = new List<EchoAnchorEvent>();
-            playback.Advance(due);
-            playback.Advance(due);
+            var controls = new List<EchoControlEvent>();
+            playback.Advance(due, controls);
+            playback.Advance(due, controls);
             for (int i = 0; i < 3; i++)
             {
-                playback.Advance(due);
+                playback.Advance(due, controls);
                 Assert.AreEqual(1f, playback.Current.Position.x);
                 Assert.AreEqual(0, due.Count);
             }
@@ -146,20 +151,21 @@ namespace Parallax.Tests.EditMode
         [Test]
         public void Playback_PastOffsetsDoNotBlockLaterEvents()
         {
-            var playback = new EchoPlayback(new EchoRecording(ObserverId.A, new[] { Frame(0), Frame(1), Frame(2) }, new[] { new EchoAnchorEvent(0, new AnchorId(1), 1f), new EchoAnchorEvent(0, new AnchorId(2), 1f), new EchoAnchorEvent(2, new AnchorId(3), 1f) }));
+            var playback = new EchoPlayback(new EchoRecording(ObserverId.A, new[] { Frame(0), Frame(1), Frame(2) }, new[] { new EchoAnchorEvent(0, new AnchorId(1), 1f), new EchoAnchorEvent(0, new AnchorId(2), 1f), new EchoAnchorEvent(2, new AnchorId(3), 1f) }, Array.Empty<EchoControlEvent>()));
             var due = new List<EchoAnchorEvent>();
-            playback.Advance(due);
+            var controls = new List<EchoControlEvent>();
+            playback.Advance(due, controls);
             Assert.AreEqual(2, due.Count);
-            playback.Advance(due);
+            playback.Advance(due, controls);
             Assert.AreEqual(0, due.Count);
-            playback.Advance(due);
+            playback.Advance(due, controls);
             Assert.AreEqual(1, due.Count);
         }
 
         [Test]
         public void Recording_SortsEventsStably()
         {
-            var recording = new EchoRecording(ObserverId.A, new[] { Frame(0), Frame(1), Frame(2) }, new[] { new EchoAnchorEvent(2, new AnchorId(1), 1f), new EchoAnchorEvent(0, new AnchorId(2), 1f), new EchoAnchorEvent(2, new AnchorId(3), 1f) });
+            var recording = new EchoRecording(ObserverId.A, new[] { Frame(0), Frame(1), Frame(2) }, new[] { new EchoAnchorEvent(2, new AnchorId(1), 1f), new EchoAnchorEvent(0, new AnchorId(2), 1f), new EchoAnchorEvent(2, new AnchorId(3), 1f) }, Array.Empty<EchoControlEvent>());
             Assert.AreEqual((ushort)2, recording.AnchorEvents[0].Anchor.Value);
             Assert.AreEqual((ushort)1, recording.AnchorEvents[1].Anchor.Value);
             Assert.AreEqual((ushort)3, recording.AnchorEvents[2].Anchor.Value);

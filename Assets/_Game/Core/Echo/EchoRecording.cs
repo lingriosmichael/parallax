@@ -8,12 +8,14 @@ namespace Parallax.Core
         public ObserverId Observer { get; }
         public IReadOnlyList<EchoFrame> Frames { get; }
         public IReadOnlyList<EchoAnchorEvent> AnchorEvents { get; }
+        public IReadOnlyList<EchoControlEvent> ControlEvents { get; }
 
-        public EchoRecording(ObserverId observer, IReadOnlyList<EchoFrame> frames, IReadOnlyList<EchoAnchorEvent> anchorEvents)
+        public EchoRecording(ObserverId observer, IReadOnlyList<EchoFrame> frames, IReadOnlyList<EchoAnchorEvent> anchorEvents, IReadOnlyList<EchoControlEvent> controlEvents)
         {
             Observer = observer;
             Frames = new List<EchoFrame>(frames).AsReadOnly();
             AnchorEvents = anchorEvents.OrderBy(e => e.TickOffset).ToList().AsReadOnly();
+            ControlEvents = controlEvents.OrderBy(e => e.TickOffset).ToList().AsReadOnly();
         }
     }
 }

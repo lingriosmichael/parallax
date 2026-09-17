@@ -18,8 +18,27 @@ namespace Parallax.Gameplay.Interaction
         Collider2D catCollider;
 
         public event Action<AnchorId, float> Requested;
+        public event Action<ControlSample> ControlPublished;
+        bool warnedMissingControlTransport;
 
         void Awake() => catCollider = GetComponent<Collider2D>();
+
+        public void PublishControl(ControlChannel channel, ObserverId source, float value)
+        {
+            if (transportHost == null || transportHost.Transport == null)
+            {
+                if (!warnedMissingControlTransport)
+                {
+                    warnedMissingControlTransport = true;
+                    Debug.LogError($"CatInteractor '{name}' cannot publish control: TransportHost or transport is missing.", this);
+                }
+                return;
+            }
+            IRealityTransport transport = transportHost.Transport;
+            var sample = new ControlSample(channel, source.Other(), value, transport.Tick);
+            transport.PublishControl(sample);
+            ControlPublished?.Invoke(sample);
+        }
 
         public void Step(in CatCommand command, ObserverContext observer)
         {
