@@ -167,6 +167,8 @@ Touch, keyboard, and (later) gamepad all produce `CatCommand`. The motor never r
 
 **As built (PAX-023):** when leaving an Observer, `SoloSwitchController` uses an Echo replay driver if `EchoSession` holds a recording for it; otherwise it uses `InactiveDriver`. RECORD is unavailable while the other Observer has an Echo; toggling RECORD while recording discards the recording.
 
+**As built (PAX-024, D-028):** an `Inactive` cat does not press sensors. It remains physical scenery — it still collides and falls — but only `LocalHuman` and `EchoReplay` drivers count for sensor occupancy.
+
 ### 4.3 Co-op binding
 
 The composition root binds drivers per device:
@@ -437,6 +439,8 @@ At 50 Hz, a 10 s recording is 500 frames, which is trivial in memory.
 
 **As built (PAX-023):** an `EchoFrame` stores local position, body rotation, gravity direction, and facing. Frames are captured at `ObserverSet.Stepped`; `CatInteractor.Requested` records `(TickOffset, Anchor, Target)`. Replay sends fresh Echo-origin requests, stops capture at the cap while retaining its recording, holds its final frame, and cancellation restores Dynamic body type and current-frame gravity.
 
+**As built (PAX-024):** the player-facing HUD Echo timeline appears only while an Observer is replaying. It shows that replaying Observer's progress, or `HOLD` after playback reaches the final frame; its graphics do not receive raycasts.
+
 ### 8.3 Recording
 
 - `EchoRecorder` attaches to an Observer while it is `LocalHuman`.
@@ -455,7 +459,9 @@ At 50 Hz, a 10 s recording is 500 frames, which is trivial in memory.
 
 ### 8.5 Sensors must detect Echoes
 
-Kinematic bodies do not reliably generate contacts or trigger callbacks with static colliders. So **puzzle sensors (pressure plates, zones) use explicit overlap queries** (`Physics2D.OverlapBox` with the reality's layer mask, then check for a `CatBody` component) every fixed tick. This works identically for live cats and Echo cats.
+Kinematic bodies do not reliably generate contacts or trigger callbacks with static colliders. So **puzzle sensors (pressure plates, zones) use explicit overlap queries** (`Physics2D.OverlapBox` with the reality's layer mask, then check for that reality's cat collider) every fixed tick. This works identically for live cats and Echo cats.
+
+**As built (PAX-024):** sensors step on `ObserverSet.Stepped`, query `OverlapBox` with their reality mask against that reality's cat, and count only `LocalHuman` or `EchoReplay`. They request only on occupancy changes through an `EventOrigins.Sensor` requester and are not recorded by Echo; replay instead works because the sensor detects the Echo body.
 
 ---
 
