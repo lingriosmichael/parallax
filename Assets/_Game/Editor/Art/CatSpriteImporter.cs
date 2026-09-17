@@ -1,0 +1,238 @@
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
+using UnityEditor;
+using UnityEditor.U2D.Sprites;
+using UnityEngine;
+
+namespace Parallax.Editor.Art
+{
+    // Slices an AutoSprite walk export into named, pivoted sprites. Pure import-time
+    // tooling: never runs at play time, never touches gameplay or collider data.
+    public static class CatSpriteImporter
+    {
+        const int CellSize = 256;
+        const byte OpaqueAlphaThreshold = 25; // ~10% alpha
+        const string SpriteNamePrefix = "CatA_Walk_";
+        const string CatPlayerPrefabPath = "Assets/_Game/Gameplay/Player/Cat_Player.prefab";
+
+        [MenuItem("PARALLAX/Art/Import Cat Sheet")]
+        public static void ImportSelected()
+        {
+            Texture2D selected = Selection.activeObject as Texture2D;
+            if (selected == null)
+            {
+                Debug.LogError("CatSpriteImporter: select the CatA_Walk.png texture asset first.");
+                return;
+            }
+
+            string path = AssetDatabase.GetAssetPath(selected);
+            var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null)
+            {
+                Debug.LogError($"CatSpriteImporter: '{path}' has no TextureImporter.");
+                return;
+            }
+
+            // Temporarily force readable + uncompressed so we can analyze raw alpha.
+            importer.textureType = TextureImporterType.Sprite;
+            importer.isReadable = true;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.mipmapEnabled = false;
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+
+            Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            if (texture == null)
+            {
+                Debug.LogError($"CatSpriteImporter: could not load texture at '{path}' after reimport.");
+                return;
+            }
+
+            int columns = Mathf.Max(1, texture.width / CellSize);
+            int rows = Mathf.Max(1, texture.height / CellSize);
+            int frameCount = columns * rows;
+
+            Color32[] pixels = texture.GetPixels32();
+
+            float colliderLength = GetCatColliderLength();
+            if (colliderLength <= 0f)
+            {
+                Debug.LogError("CatSpriteImporter: could not read Cat_Player's collider length. Aborting before writing import settings.");
+                return;
+            }
+
+            var frameRects = new Rect[frameCount];
+            for (int i = 0; i < frameCount; i++)
+            {
+                int col = i % columns;
+                int row = i / columns; // row 0 = top row of the sheet
+                int x = col * CellSize;
+                int y = texture.height - (row + 1) * CellSize;
+                frameRects[i] = new Rect(x, y, CellSize, CellSize);
+            }
+
+            int frame0OpaqueWidth = OpaquePixelWidth(pixels, texture.width, frameRects[0]);
+            if (frame0OpaqueWidth <= 0)
+            {
+                Debug.LogError("CatSpriteImporter: frame 0 has no opaque pixels. Aborting.");
+                return;
+            }
+
+            float pixelsPerUnit = frame0OpaqueWidth / colliderLength;
+
+            int pawRowLocal = LowestOpaqueRow(pixels, texture.width, frameRects);
+            (int pawMinX, int pawMaxX) = PawSpan(pixels, texture.width, frameRects, pawRowLocal);
+            float pivotXNormalized = frameCount > 0 ? (pawMinX + pawMaxX + 1) * 0.5f / CellSize : 0.5f;
+            float pivotYNormalized = (pawRowLocal + 0.5f) / CellSize;
+            var pivot = new Vector2(pivotXNormalized, pivotYNormalized);
+
+            importer.spriteImportMode = SpriteImportMode.Multiple;
+            importer.spritePixelsPerUnit = pixelsPerUnit;
+            importer.filterMode = FilterMode.Bilinear;
+            importer.mipmapEnabled = false;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+
+            var settings = new TextureImporterSettings();
+            importer.ReadTextureSettings(settings);
+            settings.spriteMeshType = SpriteMeshType.FullRect;
+            importer.SetTextureSettings(settings);
+
+            var factory = new SpriteDataProviderFactories();
+            factory.Init();
+            ISpriteEditorDataProvider dataProvider = factory.GetSpriteEditorDataProviderFromObject(importer);
+            dataProvider.InitSpriteEditorDataProvider();
+
+            var spriteRects = new List<SpriteRect>(frameCount);
+            var nameFileIdPairs = new List<SpriteNameFileIdPair>(frameCount);
+            for (int i = 0; i < frameCount; i++)
+            {
+                string name = $"{SpriteNamePrefix}{i:00}";
+                GUID spriteID = DeterministicGuid(name);
+
+                spriteRects.Add(new SpriteRect
+                {
+                    name = name,
+                    rect = frameRects[i],
+                    alignment = SpriteAlignment.Custom,
+                    pivot = pivot,
+                    spriteID = spriteID,
+                });
+                nameFileIdPairs.Add(new SpriteNameFileIdPair(name, spriteID));
+            }
+
+            dataProvider.SetSpriteRects(spriteRects.ToArray());
+            var nameFileIdDataProvider = dataProvider.GetDataProvider<ISpriteNameFileIdDataProvider>();
+            nameFileIdDataProvider.SetNameFileIdPairs(nameFileIdPairs);
+            dataProvider.Apply();
+
+            EditorUtility.SetDirty(importer);
+            importer.SaveAndReimport();
+
+            Debug.Log(
+                $"CatSpriteImporter: sliced {frameCount} frames ({columns}x{rows}) from '{path}'. " +
+                $"PixelsPerUnit = {pixelsPerUnit:F3} (frame0 opaque width {frame0OpaqueWidth}px / collider length {colliderLength}u). " +
+                $"Pivot = ({pivot.x:F4}, {pivot.y:F4}) normalized (paw row {pawRowLocal}px, paw span [{pawMinX},{pawMaxX}]px).");
+        }
+
+        static float GetCatColliderLength()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(CatPlayerPrefabPath);
+            if (prefab == null)
+            {
+                Debug.LogError($"CatSpriteImporter: prefab not found at '{CatPlayerPrefabPath}'.");
+                return 0f;
+            }
+
+            var collider = prefab.GetComponent<CapsuleCollider2D>();
+            if (collider == null)
+            {
+                Debug.LogError($"CatSpriteImporter: '{CatPlayerPrefabPath}' has no CapsuleCollider2D.");
+                return 0f;
+            }
+
+            return collider.direction == CapsuleDirection2D.Horizontal ? collider.size.x : collider.size.y;
+        }
+
+        // Stable per-name GUID so re-slicing the same sprite name keeps the same
+        // internal fileID across reimports, preserving asset references.
+        static GUID DeterministicGuid(string name)
+        {
+            using var md5 = MD5.Create();
+            byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes($"{nameof(CatSpriteImporter)}:{name}"));
+            var sb = new StringBuilder(32);
+            foreach (byte b in hash) sb.Append(b.ToString("x2"));
+            return new GUID(sb.ToString());
+        }
+
+        static bool IsOpaque(Color32[] pixels, int textureWidth, int px, int py) =>
+            pixels[py * textureWidth + px].a > OpaqueAlphaThreshold;
+
+        static int OpaquePixelWidth(Color32[] pixels, int textureWidth, Rect frame)
+        {
+            int minX = int.MaxValue, maxX = int.MinValue;
+            int x0 = (int)frame.x, y0 = (int)frame.y;
+            int size = (int)frame.width;
+
+            for (int ly = 0; ly < size; ly++)
+            {
+                for (int lx = 0; lx < size; lx++)
+                {
+                    if (!IsOpaque(pixels, textureWidth, x0 + lx, y0 + ly)) continue;
+                    if (lx < minX) minX = lx;
+                    if (lx > maxX) maxX = lx;
+                }
+            }
+
+            return maxX >= minX ? maxX - minX + 1 : 0;
+        }
+
+        static int LowestOpaqueRow(Color32[] pixels, int textureWidth, Rect[] frames)
+        {
+            int lowest = int.MaxValue;
+
+            foreach (Rect frame in frames)
+            {
+                int x0 = (int)frame.x, y0 = (int)frame.y;
+                int size = (int)frame.width;
+
+                for (int ly = 0; ly < size; ly++)
+                {
+                    bool rowHasOpaque = false;
+                    for (int lx = 0; lx < size; lx++)
+                    {
+                        if (IsOpaque(pixels, textureWidth, x0 + lx, y0 + ly)) { rowHasOpaque = true; break; }
+                    }
+                    if (rowHasOpaque)
+                    {
+                        if (ly < lowest) lowest = ly;
+                        break;
+                    }
+                }
+            }
+
+            return lowest == int.MaxValue ? 0 : lowest;
+        }
+
+        static (int minX, int maxX) PawSpan(Color32[] pixels, int textureWidth, Rect[] frames, int pawRowLocal)
+        {
+            int minX = int.MaxValue, maxX = int.MinValue;
+
+            foreach (Rect frame in frames)
+            {
+                int x0 = (int)frame.x, y0 = (int)frame.y;
+                int size = (int)frame.width;
+                if (pawRowLocal >= size) continue;
+
+                for (int lx = 0; lx < size; lx++)
+                {
+                    if (!IsOpaque(pixels, textureWidth, x0 + lx, y0 + pawRowLocal)) continue;
+                    if (lx < minX) minX = lx;
+                    if (lx > maxX) maxX = lx;
+                }
+            }
+
+            if (maxX < minX) { minX = 0; maxX = CellSize - 1; }
+            return (minX, maxX);
+        }
+    }
+}
