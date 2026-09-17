@@ -167,6 +167,11 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 **Why:** If Inactive cats pressed plates, every sustained puzzle could be solved by switching away while standing on the plate, making Echo pointless. In co-op a reality's cat is simulated only on its owner's device, so only that device may report its sensors, and its Human origin already belongs to that device's sequencer (a shared System origin from two devices would collide under D-024). Recording sensor requests as well would double-issue them on replay.
 **Consequence:** Level design: a cat left Inactive is scenery for sensors but still collides and falls. Networking (PAX-033): sensors must be disabled for realities this device does not own.
 
+### D-029 · 2026-09-17 · Accepted
+**Decision:** (1) Gravity control input is `IGravityControlInput` (Core); the touch dial ships first, tilt plugs into the same interface later. (2) A cat sits at a `ControlStation` via interact; `LocalHumanDriver` filters its motor command (no move, no jump) while seated and releases the seat on Deactivate. (3) Stations publish control samples only through the seated cat's `CatInteractor.PublishControl`, only when the value changes, never on sitting down; the target is the other Observer. (4) Each cat's `GravityControlReceiver` applies samples for its Observer through `GravityControlMapping` (positive = clockwise, per-receiver max angle and optional snap) and holds the last direction. (5) Echo records `ControlPublished` and re-publishes due control events during replay.
+**Why:** One interception point on the cat serves anchors and streams, so Echo records both the same way. Publishing on change keeps recordings small and means sitting down does not reset the other cat's gravity. Releasing the seat on Deactivate means switching away never leaves a stale occupant.
+**Consequence:** Tilt must only implement `IGravityControlInput` and be selectable; station, stream, receiver, and Echo remain unchanged.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)

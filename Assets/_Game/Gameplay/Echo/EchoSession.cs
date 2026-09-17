@@ -51,6 +51,7 @@ namespace Parallax.Gameplay.Echo
             recordingBody = recordingCat.GetComponent<Rigidbody2D>();
             recordingInteractor = recordingCat.GetComponent<CatInteractor>();
             if (recordingInteractor != null) recordingInteractor.Requested += OnRequested;
+            if (recordingInteractor != null) recordingInteractor.ControlPublished += OnControlPublished;
         }
 
         public bool TryCreateReplayDriver(ObserverId id, out IObserverDriver driver)
@@ -65,7 +66,7 @@ namespace Parallax.Gameplay.Echo
                 Debug.LogWarning($"EchoSession '{gameObject.name}' cannot create replay: TransportHost, transport, or sequencer is missing.", this);
                 return false;
             }
-            driver = new EchoReplayDriver(new EchoPlayback(recording), new AnchorRequester(transportHost.Transport, transportHost.Sequencer, EventOrigins.Echo(id)));
+            driver = new EchoReplayDriver(new EchoPlayback(recording), new AnchorRequester(transportHost.Transport, transportHost.Sequencer, EventOrigins.Echo(id)), transportHost.Transport);
             return true;
         }
 
@@ -89,6 +90,11 @@ namespace Parallax.Gameplay.Echo
             if (recorder != null) recorder.AddAnchorEvent(anchor, targetValue);
         }
 
+        void OnControlPublished(ControlSample sample)
+        {
+            if (recorder != null) recorder.AddControlEvent(sample.Channel, sample.Target, sample.Value);
+        }
+
         void StopRecording(bool discard)
         {
             Unsubscribe();
@@ -101,6 +107,7 @@ namespace Parallax.Gameplay.Echo
         void Unsubscribe()
         {
             if (recordingInteractor != null) recordingInteractor.Requested -= OnRequested;
+            if (recordingInteractor != null) recordingInteractor.ControlPublished -= OnControlPublished;
             recordingInteractor = null;
         }
 

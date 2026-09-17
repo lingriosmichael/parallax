@@ -194,6 +194,8 @@ The Input System's touch controls produce `CatCommand` via `TouchCatInput`. `Key
 
 ### 5.2 Gravity control input
 
+**As built (PAX-026):** the touch dial ships first through `IGravityControlInput`; tilt is deferred to a later ticket using this same interface.
+
 ```csharp
 public interface IGravityControlInput
 {
@@ -218,9 +220,13 @@ The active implementation is chosen in settings. If `TiltGravityInput.IsAvailabl
 
 While seated at a Control Station, the controlling cat's movement is locked and its `IGravityControlInput` value is published as a control stream (§7.3) targeting `observer.Other()`. The station shows **immediate local feedback** (glow/pulse scaled by the value), followed by a short "energy in transit" effect, so network latency reads as intentional theatre.
 
+**As built (PAX-026):** `CatSeat` and `SeatCommandFilter` in `LocalHumanDriver` prevent seated movement/jump while keeping interact available to stand. Driver deactivation releases the seat; stations publish only changed values through `CatInteractor.PublishControl`, never publish while sitting down, glow immediately, and add a cosmetic transit pulse.
+
 ---
 
 ## 6. Cat motor and per-cat gravity
+
+`GravityControlReceiver` applies received gravity-angle samples through `GravityControlMapping` (clockwise-positive, tunable maximum angle and optional snap) using `GravityReceiver.SetTargetDirection`, then holds the last direction.
 
 **`Physics2D.gravity` is never used for cats.** Each cat's `Rigidbody2D.gravityScale` is forced to 0, and the motor applies gravity itself.
 
@@ -438,6 +444,8 @@ public sealed class EchoRecording
 At 50 Hz, a 10 s recording is 500 frames, which is trivial in memory.
 
 **As built (PAX-023):** an `EchoFrame` stores local position, body rotation, gravity direction, and facing. Frames are captured at `ObserverSet.Stepped`; `CatInteractor.Requested` records `(TickOffset, Anchor, Target)`. Replay sends fresh Echo-origin requests, stops capture at the cap while retaining its recording, holds its final frame, and cancellation restores Dynamic body type and current-frame gravity.
+
+**As built (PAX-026):** Echo records `ControlPublished` as `(TickOffset, Channel, Target, Value)` and republishes due control events during replay. At replay end the receiver holds its final received value.
 
 **As built (PAX-024):** the player-facing HUD Echo timeline appears only while an Observer is replaying. It shows that replaying Observer's progress, or `HOLD` after playback reaches the final frame; its graphics do not receive raycasts.
 

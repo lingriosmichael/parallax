@@ -1,6 +1,7 @@
 using Parallax.Core;
 using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Interaction;
+using Parallax.Gameplay.GravityControl;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Observers
@@ -10,6 +11,7 @@ namespace Parallax.Gameplay.Observers
         readonly CatInputRouter router;
         ObserverContext observer;
         CatInteractor interactor;
+        CatSeat seat;
 
         public LocalHumanDriver(CatInputRouter router)
         {
@@ -22,6 +24,7 @@ namespace Parallax.Gameplay.Observers
         {
             this.observer = observer;
             interactor = observer != null && observer.Cat != null ? observer.Cat.GetComponent<CatInteractor>() : null;
+            seat = observer != null && observer.Cat != null ? observer.Cat.GetComponent<CatSeat>() : null;
 
             if (router == null)
             {
@@ -38,12 +41,14 @@ namespace Parallax.Gameplay.Observers
             if (router == null || observer == null) return;
 
             CatCommand cmd = router.Read();
-            observer.Cat.Step(cmd, Time.fixedDeltaTime);
+            CatCommand motorCommand = seat != null && seat.IsSeated ? SeatCommandFilter.Apply(cmd) : cmd;
+            observer.Cat.Step(motorCommand, Time.fixedDeltaTime);
             if (interactor != null) interactor.Step(in cmd, observer);
         }
 
         public void Deactivate()
         {
+            if (seat != null && seat.IsSeated) seat.Release();
             if (router != null) router.ResetTransientState();
         }
     }
