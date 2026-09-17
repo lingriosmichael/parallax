@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using Parallax.Core;
 using Parallax.Gameplay.Anchors;
 using Parallax.Gameplay.Interaction;
+using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Player;
 using Parallax.Gameplay.Reality;
+using Parallax.Gameplay.Sensors;
 using Parallax.Gameplay.Transport;
 using UnityEditor;
 using UnityEngine;
@@ -29,8 +31,12 @@ namespace Parallax.Editor.Setup
                 problems++;
             }
 
+            var writerIds = new HashSet<ushort>();
             foreach (VineInteractable vine in Object.FindObjectsByType<VineInteractable>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                problems += ValidateVine(vine, presenterIds);
+                problems += ValidateVine(vine, presenterIds, writerIds);
+
+            foreach (PressurePlateSensor plate in Object.FindObjectsByType<PressurePlateSensor>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                problems += ValidatePlate(plate, presenterIds, writerIds);
 
             foreach (RealityRoot root in Object.FindObjectsByType<RealityRoot>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             foreach (CatMotor2D cat in root.GetComponentsInChildren<CatMotor2D>(true))
@@ -82,7 +88,7 @@ namespace Parallax.Editor.Setup
             return problems;
         }
 
-        static int ValidateVine(VineInteractable vine, HashSet<ushort> presenterIds)
+        static int ValidateVine(VineInteractable vine, HashSet<ushort> presenterIds, HashSet<ushort> writerIds)
         {
             SerializedObject serialized = new SerializedObject(vine);
             AnchorDefinition definition = serialized.FindProperty("definition").objectReferenceValue as AnchorDefinition;
@@ -94,8 +100,27 @@ namespace Parallax.Editor.Setup
                          && collider.isTrigger
                          && vine.gameObject.layer == LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id))
                          && presenterIds.Contains(definition.Id.Value);
-            if (valid) return 0;
+            if (valid && writerIds.Add(definition.Id.Value)) return 0;
             Debug.LogError($"Anchors: invalid vine interactable '{vine.name}'.", vine);
+            return 1;
+        }
+
+        static int ValidatePlate(PressurePlateSensor plate, HashSet<ushort> presenterIds, HashSet<ushort> writerIds)
+        {
+            SerializedObject serialized = new SerializedObject(plate);
+            AnchorDefinition definition = serialized.FindProperty("definition").objectReferenceValue as AnchorDefinition;
+            TransportHost host = serialized.FindProperty("transportHost").objectReferenceValue as TransportHost;
+            ObserverSet observers = serialized.FindProperty("observers").objectReferenceValue as ObserverSet;
+            RealityRoot root = plate.GetComponentInParent<RealityRoot>();
+            bool valid = definition != null
+                         && host != null
+                         && observers != null
+                         && root != null
+                         && plate.gameObject.layer == LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id))
+                         && presenterIds.Contains(definition.Id.Value)
+                         && writerIds.Add(definition.Id.Value);
+            if (valid) return 0;
+            Debug.LogError($"Anchors: invalid pressure plate '{plate.name}', or it shares an anchor writer.", plate);
             return 1;
         }
 

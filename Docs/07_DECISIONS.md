@@ -162,6 +162,11 @@ Status: Closed by D-021 (2026-09-16). Not needed.
 **Why:** Tick-indexed state replay is exact and independent of physics; recording requests instead of interactions keeps the Echo working even if interactables change; a single interception point on the cat covers every interactable.
 **Supersedes:** 02_ARCHITECTURE §8.2 `EchoFrame` field list and `EchoAnchorEvent.Request` (refined; the removed fields return with animation/hold interactions).
 
+### D-028 · 2026-09-17 · Accepted
+**Decision:** (1) Puzzle sensors run an `OverlapBox` query on `ObserverSet.Stepped` with their reality's mask and count that reality's cat only when its driver is `LocalHuman` or `EchoReplay`. Inactive cats do not press sensors; RemoteHuman cats are not counted on this device. (2) Sensors request on state change only, through their own `AnchorRequester` with origin `EventOrigins.Sensor(reality)` (= that reality's Human origin) and the device's single sequencer. (3) Sensor requests are not recorded by Echo; during replay the sensor detects the Echo body. (4) Each anchor has exactly one writer (validator-enforced).
+**Why:** If Inactive cats pressed plates, every sustained puzzle could be solved by switching away while standing on the plate, making Echo pointless. In co-op a reality's cat is simulated only on its owner's device, so only that device may report its sensors, and its Human origin already belongs to that device's sequencer (a shared System origin from two devices would collide under D-024). Recording sensor requests as well would double-issue them on replay.
+**Consequence:** Level design: a cat left Inactive is scenery for sensors but still collides and falls. Networking (PAX-033): sensors must be disabled for realities this device does not own.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
