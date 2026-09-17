@@ -14,14 +14,26 @@ namespace Parallax.Gameplay.GravityControl
         RealityRoot root;
         GravityReceiver gravity;
         IRealityTransport transport;
+        CatRespawn respawn;
         public float LastValue { get; private set; }
         public bool HasValue { get; private set; }
         void OnEnable() => EnsureInit();
-        void OnDisable() { if (transport != null) transport.ControlReceived -= OnControl; transport = null; }
+        void OnDisable()
+        {
+            if (transport != null) transport.ControlReceived -= OnControl;
+            if (respawn != null) respawn.Respawned -= ReassertHeldValue;
+            transport = null;
+            respawn = null;
+        }
         void EnsureInit()
         {
             if (root == null) root = GetComponentInParent<RealityRoot>();
             if (gravity == null) gravity = GetComponent<GravityReceiver>();
+            if (respawn == null)
+            {
+                respawn = GetComponent<CatRespawn>();
+                if (respawn != null) respawn.Respawned += ReassertHeldValue;
+            }
             if (transport != null || transportHost == null) return;
             transport = transportHost.Transport;
             if (transport != null) transport.ControlReceived += OnControl;
@@ -33,6 +45,14 @@ namespace Parallax.Gameplay.GravityControl
             LastValue = sample.Value;
             HasValue = true;
             gravity.SetTargetDirection(GravityControlMapping.ToDirection(sample.Value, maxAngleDeg, snapDeg));
+        }
+
+        public void ReassertHeldValue()
+        {
+            if (!HasValue || gravity == null) return;
+            Vector2 heldDirection = GravityControlMapping.ToDirection(LastValue, maxAngleDeg, snapDeg);
+            Vector2 direction = GravityRespawnPrecedence.GravityOnRespawn(gravity.Direction, heldDirection, HasValue);
+            gravity.SetTargetDirection(direction, snap: true);
         }
     }
 }

@@ -1,4 +1,5 @@
 using Parallax.Core;
+using Parallax.Gameplay.Checkpoints;
 using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Transport;
@@ -23,9 +24,10 @@ namespace Parallax.DebugTools
         [SerializeField] CatSeat seatB;
         [SerializeField] GravityControlReceiver receiverA;
         [SerializeField] GravityControlReceiver receiverB;
+        [SerializeField] CheckpointManager checkpoints;
 
         static readonly Rect DbgButtonRect = new Rect(10f, 10f, 70f, 30f);
-        static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 390f);
+        static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 420f);
 
         bool open;
         bool pipOn;
@@ -118,8 +120,24 @@ namespace Parallax.DebugTools
 
             DrawTransport();
             DrawEcho();
+            DrawCheckpoints();
 
             GUILayout.EndArea();
+        }
+
+        void DrawCheckpoints()
+        {
+            if (checkpoints == null)
+            {
+                GUILayout.Label("Checkpoint: (missing)");
+                return;
+            }
+
+            GUILayout.Label($"Checkpoint: {checkpoints.Current}");
+            if (GUILayout.Button("Respawn active cat"))
+            {
+                checkpoints.Respawn(observers.Get(switchController.Active));
+            }
         }
 
         static void DrawControlRow(ObserverId id, CatSeat seat, GravityControlReceiver receiver)

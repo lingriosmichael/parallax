@@ -187,6 +187,17 @@ begins only after Gate 5.
 near-zero cost, so the reason to wait for a paid tool at Gate 4 is gone. Proving import, pivots,
 lighting and readability early removes risk without committing to production art.
 
+
+### D-032 · 2026-09-18 · Accepted
+Checkpoints restore cats, not the world. On respawn, gravity is snapped
+to the checkpoint's stored direction and then overridden by the
+respawned cat's current control-stream value if one is held; the
+receiver re-asserts locally, without a republish. Control-stream values
+are live state owned by the controlling device and are not part of
+CheckpointSnapshot. Consequence: a hostile dial can cause repeated
+respawns, which is accepted as legible co-op failure under Vision
+pillar 3 and revisited at Gate 5.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)

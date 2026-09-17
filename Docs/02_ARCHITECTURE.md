@@ -554,6 +554,16 @@ public struct CheckpointSnapshot
 - Taken and restored by the session authority. In co-op, a restore is a replicated state change.
 - Restore is instant: teleport cats, snap gravity, apply anchors (presenters snap), cancel any Echo. No scene reload.
 
+**As built (PAX-036):** Checkpoints v1 uses shared integer ids across both realities; at most one
+`CheckpointMarker` per id per reality holds that reality's spawn transform and gravity. Only a
+`LocalHuman` cat overlapping a marker activates it, checked on `ObserverSet.Stepped`; progress
+(`CheckpointProgress`) only advances forward. `CheckpointManager` (on `Systems`) owns progress and
+a `CheckpointSpawnTable`, and `Respawn(observer)` snaps only the fallen cat via the existing
+`CatRespawn.RespawnAt`. `FallResetVolume` ignores cats driven by `EchoReplay`
+(`CheckpointPolicy.FallResets`). Solo/local authority only — no transport use. The full
+`CheckpointSnapshot` restore above (anchors, puzzle phase, Echo cancel) is **not implemented yet**;
+see D-030. Checkpoint id `0` is reserved for each reality's level spawn.
+
 ---
 
 ## 12. Sessions (co-op)
