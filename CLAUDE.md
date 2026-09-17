@@ -34,10 +34,49 @@ If documents conflict, or a ticket conflicts with the architecture: **stop and r
 ## Unity file rules
 
 - You may create/edit: `.cs`, `.asmdef`, `.md`, `.json`, test files, Editor scripts.
-- **Do not hand-edit** `.unity`, `.prefab`, `.asset`, `.meta`, or anything in `ProjectSettings/` unless the ticket explicitly permits it.
+- **Do not hand-edit** `.unity`, `.prefab`, `.asset`, `.meta`, or anything in `ProjectSettings/` unless the ticket explicitly permits it. **Having Unity MCP does not create an exception** — see "Unity MCP" below.
 - **Never delete, regenerate, or rename `.meta` files.** To move an asset, tell the developer to move it in the Unity Editor.
 - Scene/prefab wiring goes in the ticket's **"YOU — UNITY EDITOR"** steps. Where setup is repetitive, write an Editor menu script (`PARALLAX/Setup/…`) the developer can run.
 - Use Unity 6 APIs (e.g. `Rigidbody2D.linearVelocity`, `Rigidbody2D.bodyType`). Do not use deprecated members.
+
+## Unity MCP (MCP for Unity, pinned v10.2.0)
+
+MCP gives you hands inside the running Editor. It changes **who presses the buttons**, not what is allowed.
+
+### Multiple agents
+
+- One Unity Editor and project folder are shared by every client. The agent holding the current approved ticket is the **only** agent allowed to make MCP calls that change Editor or project state.
+- Other agents may make read-only MCP queries only when they cannot interfere with the ticket holder; otherwise they must not use MCP.
+- Never run concurrent `refresh_unity`, `run_tests`, console-clearing, builds, or other state-changing MCP operations. A domain reload can invalidate another call, Test Runner jobs collide, and clearing the console can erase evidence another agent needs.
+- Commit at every handoff between agents. There are no separate worktrees for Unity's shared project folder.
+
+### Allowed tool groups
+
+- **On:** `core`, `testing`, `docs`.
+- **Off unless the ticket names it:** `asset_gen`, `vfx`, `animation`, `ui`, `probuilder`, `profiling`, `scripting_ext`.
+- **Never call `execute_code`.** Arbitrary C# in the Editor bypasses review and leaves nothing in git. If you believe a task needs it, stop and report.
+- **Never call `manage_packages`** with install/remove/update/embed. The package-approval rule above still applies. Querying is fine.
+- **`manage_build`:** only when the ticket asks for a build. Never change target platform, the build scene list, or player settings on your own initiative.
+
+### Scene and prefab wiring — unchanged
+
+- Wiring is **delivered as an idempotent `PARALLAX/Setup/…` Editor menu script**, committed to git. Then run it with `execute_menu_item` and verify with `find_gameobjects`.
+- **Do not use `manage_gameobject`, `manage_components`, `manage_prefabs`, `manage_scene`, `manage_material` or `manage_camera` as the delivery mechanism for wiring.** Scene YAML you mutated directly is not reproducible, not reviewable, and not a source of truth.
+- **Read-only inspection is always allowed and encouraged:** query objects, components and serialized values to *verify* the ticket's DoD instead of asking the developer to confirm it.
+- Throwaway diagnostic objects are acceptable only in a scratch scene, never in `Sandbox_Realities`, and must be listed in your output.
+
+### Compile, tests, console
+
+- Before claiming the project compiles: `refresh_unity` (with compilation), then `validate_script` on changed files, then `read_console`. Quote the relevant console lines.
+- After any change to `Parallax.Core` or `Parallax.Gameplay`: run EditMode tests via `run_tests` / `get_test_job`. Report the **pass count** and the **names** of any failures. Baseline is **110 green** — a lower total is a regression, not a rounding error. Report it.
+- Clear the console before an acceptance run so the output you report belongs to that run.
+- Use `batch_execute` for long sequences of calls rather than dozens of round trips.
+
+### What MCP does not do
+
+- **MCP acceptance is Editor-only and never counts as device validation.** Touch input, finger lifecycle, analog feel, frame timing and thermals are device-only, and only the developer signs those off.
+- If a tool call fails or the Editor is not connected, **say so plainly.** Never infer Editor state you did not read.
+- If the available tool list differs from this file, report the difference before proceeding.
 
 ## Assembly rules
 
@@ -78,7 +117,7 @@ If documents conflict, or a ticket conflicts with the architecture: **stop and r
   - Anchors, puzzle phase, checkpoints → the session authority (master client in co-op; the local device in solo).
 - Requests use **absolute target values**, never deltas, and carry `(Origin, Sequence)` event IDs. Commits must be **idempotent**.
 - **Local input feedback never waits for the network.**
-- Puzzles talk only to `IRealityTransport`; interactables go through the `IAnchorRequester` their cat hands them (D-025). They must work unchanged with `LocalTransport` and `FusionTransport`.
+- Puzzles talk only to `IRealityTransport`. They must work unchanged with `LocalTransport` and `FusionTransport`.
 
 ## Echo
 
@@ -92,12 +131,13 @@ No voice chat · no IAP · no matchmaking · no final art · no iOS · no analyt
 
 ## Required output after every task
 
-1. Confirm the project compiles (or say clearly that you could not verify it).
+1. Confirm the project compiles, stating **how** you verified it (`refresh_unity` + `validate_script` + `read_console`), or say clearly that you could not verify it.
 2. **Files changed**, as a complete list.
 3. A short explanation of what each changed script does (two sentences each).
 4. **Exact manual test steps**, labeled Editor / device / two devices.
-5. EditMode tests added or run, if any.
-6. **Known limitations** and anything left for a later ticket.
-7. Any conflicts with the docs you noticed.
+5. EditMode tests: the `run_tests` result — total, passed, failed by name — or "not run" with a reason.
+6. **MCP calls that changed project state**, as a list (menu items executed, builds triggered, assets imported). Read-only queries need not be listed.
+7. **Known limitations** and anything left for a later ticket.
+8. Any conflicts with the docs you noticed.
 
-**Never claim something was tested on a device, or in the Editor, unless it actually was.** Say "untested" when it is.
+**Never claim something was tested on a device, or in the Editor, unless it actually was.** Say "untested" when it is. A green `run_tests` is not device validation.
