@@ -31,6 +31,10 @@ namespace Parallax.Gameplay.Sensors
         bool requesterErrorLogged;
         bool hasIndicatorColor;
 
+        public AnchorDefinition Definition => definition;
+        public bool IsPressed { get; private set; }
+        public bool IsPressedByEcho { get; private set; }
+
         void OnEnable()
         {
             EnsureInit();
@@ -71,6 +75,8 @@ namespace Parallax.Gameplay.Sensors
             if (!initialized) return;
             ObserverContext context = observers.Get(root.Id);
             bool occupied = IsOccupied(context);
+            IsPressed = occupied;
+            IsPressedByEcho = occupied && context.Driver.Kind == InputSourceKind.EchoReplay;
             SetIndicator(occupied);
             if (!EnsureRequester()) return;
             if (!latch.Update(occupied, out float target)) return;

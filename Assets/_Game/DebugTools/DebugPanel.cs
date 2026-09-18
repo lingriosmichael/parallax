@@ -31,6 +31,7 @@ namespace Parallax.DebugTools
 
         bool open;
         bool pipOn;
+        bool labelsVisible = true;
         bool debugAnchorRegistered;
         float lastRequestedDebugValue;
 
@@ -117,6 +118,8 @@ namespace Parallax.DebugTools
             {
                 TogglePiP();
             }
+
+            labelsVisible = GUILayout.Toggle(labelsVisible, "World labels");
 
             DrawTransport();
             DrawEcho();
@@ -256,5 +259,7 @@ namespace Parallax.DebugTools
 
             return false;
         }
+
+        public bool LabelsVisible => labelsVisible;
     }
 }

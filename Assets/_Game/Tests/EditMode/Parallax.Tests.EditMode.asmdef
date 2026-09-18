@@ -5,7 +5,8 @@
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner",
     "Parallax.Core",
-    "Parallax.Gameplay"
+    "Parallax.Gameplay",
+    "Parallax.DebugTools"
   ],
   "includePlatforms": [
     "Editor"

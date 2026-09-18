@@ -162,7 +162,6 @@ GameObject:
   - component: {fileID: 36650039}
   - component: {fileID: 36650041}
   - component: {fileID: 36650040}
-  - component: {fileID: 36650042}
   m_Layer: 3
   m_Name: Station_A
   m_TagString: Untagged
@@ -251,20 +250,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.2, y: 1.6}
   m_EdgeRadius: 0
---- !u!114 &36650042
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 36650038}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Station
-  offset: {x: 0, y: 0}
 --- !u!1 &56394172
 GameObject:
   m_ObjectHideFlags: 0
@@ -726,7 +711,6 @@ GameObject:
   - component: {fileID: 191166116}
   - component: {fileID: 191166118}
   - component: {fileID: 191166117}
-  - component: {fileID: 191166119}
   m_Layer: 6
   m_Name: Pillar_BOnly
   m_TagString: Untagged
@@ -854,20 +838,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &191166119
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 191166115}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Pillar
-  offset: {x: 0, y: 0}
 --- !u!1 &201526845
 GameObject:
   m_ObjectHideFlags: 0
@@ -1300,7 +1270,6 @@ GameObject:
   m_Component:
   - component: {fileID: 287598402}
   - component: {fileID: 287598403}
-  - component: {fileID: 287598404}
   m_Layer: 3
   m_Name: Checkpoint_0
   m_TagString: Untagged
@@ -1340,20 +1309,6 @@ MonoBehaviour:
   zoneSize: {x: 1.5, y: 2}
   manager: {fileID: 56394175}
   observers: {fileID: 1522400323}
---- !u!114 &287598404
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 287598401}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Checkpoint
-  offset: {x: 0, y: 0}
 --- !u!1 &296981698
 GameObject:
   m_ObjectHideFlags: 0
@@ -1364,7 +1319,6 @@ GameObject:
   m_Component:
   - component: {fileID: 296981700}
   - component: {fileID: 296981699}
-  - component: {fileID: 296981701}
   m_Layer: 3
   m_Name: Vine_A
   m_TagString: Untagged
@@ -1403,20 +1357,6 @@ Transform:
   - {fileID: 834120259}
   m_Father: {fileID: 1933297674}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &296981701
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 296981698}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Vine
-  offset: {x: 0, y: 0}
 --- !u!1 &333963035
 GameObject:
   m_ObjectHideFlags: 0
@@ -1598,7 +1538,6 @@ GameObject:
   m_Component:
   - component: {fileID: 426804451}
   - component: {fileID: 426804452}
-  - component: {fileID: 426804453}
   m_Layer: 3
   m_Name: Plate_A
   m_TagString: Untagged
@@ -1640,20 +1579,6 @@ MonoBehaviour:
   sensorSize: {x: 1.2, y: 0.6}
   sensorOffset: {x: 0, y: 0.3}
   indicator: {fileID: 2078965592}
---- !u!114 &426804453
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 426804450}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Plate
-  offset: {x: 0, y: 0}
 --- !u!1 &484982844
 GameObject:
   m_ObjectHideFlags: 0
@@ -1664,7 +1589,6 @@ GameObject:
   m_Component:
   - component: {fileID: 484982845}
   - component: {fileID: 484982846}
-  - component: {fileID: 484982847}
   m_Layer: 6
   m_Name: Checkpoint_0
   m_TagString: Untagged
@@ -1704,20 +1628,6 @@ MonoBehaviour:
   zoneSize: {x: 1.5, y: 2}
   manager: {fileID: 56394175}
   observers: {fileID: 1522400323}
---- !u!114 &484982847
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 484982844}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Checkpoint
-  offset: {x: 0, y: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1887,7 +1797,6 @@ GameObject:
   - component: {fileID: 535135809}
   - component: {fileID: 535135811}
   - component: {fileID: 535135810}
-  - component: {fileID: 535135812}
   m_Layer: 3
   m_Name: KillZone_Top
   m_TagString: Untagged
@@ -1970,20 +1879,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 40, y: 4}
   m_EdgeRadius: 0
---- !u!114 &535135812
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 535135808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Fall reset
-  offset: {x: 0, y: 0}
 --- !u!1001 &589262362
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2184,7 +2079,6 @@ GameObject:
   - component: {fileID: 619990608}
   - component: {fileID: 619990610}
   - component: {fileID: 619990609}
-  - component: {fileID: 619990613}
   m_Layer: 6
   m_Name: Elevator_B
   m_TagString: Untagged
@@ -2354,20 +2248,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 282739359}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &619990613
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 619990607}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Elevator
-  offset: {x: 0, y: 0}
 --- !u!1 &632587546
 GameObject:
   m_ObjectHideFlags: 0
@@ -2412,7 +2292,6 @@ GameObject:
   m_Component:
   - component: {fileID: 662266861}
   - component: {fileID: 662266862}
-  - component: {fileID: 662266863}
   m_Layer: 6
   m_Name: Checkpoint_1
   m_TagString: Untagged
@@ -2452,20 +2331,6 @@ MonoBehaviour:
   zoneSize: {x: 1.5, y: 2}
   manager: {fileID: 56394175}
   observers: {fileID: 1522400323}
---- !u!114 &662266863
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 662266860}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Checkpoint
-  offset: {x: 0, y: 0}
 --- !u!1 &679430146
 GameObject:
   m_ObjectHideFlags: 0
@@ -2512,7 +2377,6 @@ GameObject:
   - component: {fileID: 768593708}
   - component: {fileID: 768593710}
   - component: {fileID: 768593709}
-  - component: {fileID: 768593711}
   m_Layer: 3
   m_Name: KillZone_Bottom
   m_TagString: Untagged
@@ -2595,20 +2459,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 40, y: 4}
   m_EdgeRadius: 0
---- !u!114 &768593711
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 768593707}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Fall reset
-  offset: {x: 0, y: 0}
 --- !u!1 &781067033
 GameObject:
   m_ObjectHideFlags: 0
@@ -3120,7 +2970,6 @@ GameObject:
   m_Component:
   - component: {fileID: 889494676}
   - component: {fileID: 889494677}
-  - component: {fileID: 889494678}
   m_Layer: 6
   m_Name: Goal_B
   m_TagString: Untagged
@@ -3202,20 +3051,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &889494678
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 889494675}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Goal
-  offset: {x: 0, y: 0}
 --- !u!114 &895099147 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6121271007245475599, guid: e8e548020841f43039a9c15a84b6ebf6, type: 3}
@@ -3334,7 +3169,6 @@ GameObject:
   - component: {fileID: 1038634304}
   - component: {fileID: 1038634306}
   - component: {fileID: 1038634305}
-  - component: {fileID: 1038634307}
   m_Layer: 6
   m_Name: Ledge_B
   m_TagString: Untagged
@@ -3462,20 +3296,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 3, y: 0.5}
   m_EdgeRadius: 0
---- !u!114 &1038634307
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1038634303}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Ledge
-  offset: {x: 0, y: 0}
 --- !u!1 &1108440469
 GameObject:
   m_ObjectHideFlags: 0
@@ -3487,7 +3307,6 @@ GameObject:
   - component: {fileID: 1108440471}
   - component: {fileID: 1108440470}
   - component: {fileID: 1108440472}
-  - component: {fileID: 1108440473}
   m_Layer: 3
   m_Name: Ground
   m_TagString: Untagged
@@ -3615,20 +3434,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &1108440473
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1108440469}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Ground
-  offset: {x: 0, y: 0}
 --- !u!1 &1213193669
 GameObject:
   m_ObjectHideFlags: 0
@@ -3841,7 +3646,6 @@ GameObject:
   - component: {fileID: 1238142970}
   - component: {fileID: 1238142972}
   - component: {fileID: 1238142971}
-  - component: {fileID: 1238142973}
   m_Layer: 3
   m_Name: KillZone_Left
   m_TagString: Untagged
@@ -3924,20 +3728,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4, y: 22}
   m_EdgeRadius: 0
---- !u!114 &1238142973
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1238142969}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Fall reset
-  offset: {x: 0, y: 0}
 --- !u!1 &1264716936
 GameObject:
   m_ObjectHideFlags: 0
@@ -4340,7 +4130,6 @@ GameObject:
   - component: {fileID: 1361349822}
   - component: {fileID: 1361349824}
   - component: {fileID: 1361349823}
-  - component: {fileID: 1361349825}
   m_Layer: 6
   m_Name: KillZone_Bottom
   m_TagString: Untagged
@@ -4423,20 +4212,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 40, y: 4}
   m_EdgeRadius: 0
---- !u!114 &1361349825
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1361349821}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Fall reset
-  offset: {x: 0, y: 0}
 --- !u!1 &1372029837
 GameObject:
   m_ObjectHideFlags: 0
@@ -4757,7 +4532,6 @@ GameObject:
   - component: {fileID: 1413676102}
   - component: {fileID: 1413676104}
   - component: {fileID: 1413676103}
-  - component: {fileID: 1413676107}
   m_Layer: 6
   m_Name: Gate_B
   m_TagString: Untagged
@@ -4927,20 +4701,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 282739359}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1413676107
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1413676101}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Gate
-  offset: {x: 0, y: 0}
 --- !u!1 &1440067175
 GameObject:
   m_ObjectHideFlags: 0
@@ -5309,6 +5069,7 @@ GameObject:
   - component: {fileID: 1522400326}
   - component: {fileID: 1522400327}
   - component: {fileID: 1522400328}
+  - component: {fileID: 1522400329}
   m_Layer: 0
   m_Name: Observers
   m_TagString: Untagged
@@ -5426,6 +5187,22 @@ MonoBehaviour:
   switchController: {fileID: 1522400325}
   transportHost: {fileID: 56394173}
   config: {fileID: 11400000, guid: 8b96dea6311bb4037b2417178adea11c, type: 2}
+--- !u!114 &1522400329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1522400320}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3028f0324dca433ea0aeea5f705289d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.WorldLabelOverlay
+  observers: {fileID: 1522400323}
+  switchController: {fileID: 1522400325}
+  transportHost: {fileID: 56394173}
+  debugPanel: {fileID: 1522400327}
 --- !u!1 &1575657821
 GameObject:
   m_ObjectHideFlags: 0
@@ -5437,7 +5214,6 @@ GameObject:
   - component: {fileID: 1575657822}
   - component: {fileID: 1575657824}
   - component: {fileID: 1575657823}
-  - component: {fileID: 1575657825}
   m_Layer: 6
   m_Name: Ground
   m_TagString: Untagged
@@ -5565,20 +5341,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &1575657825
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1575657821}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Ground
-  offset: {x: 0, y: 0}
 --- !u!1 &1596400680
 GameObject:
   m_ObjectHideFlags: 0
@@ -6023,7 +5785,6 @@ GameObject:
   - component: {fileID: 1699412550}
   - component: {fileID: 1699412552}
   - component: {fileID: 1699412551}
-  - component: {fileID: 1699412553}
   m_Layer: 3
   m_Name: KillZone_Right
   m_TagString: Untagged
@@ -6106,68 +5867,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4, y: 22}
   m_EdgeRadius: 0
---- !u!114 &1699412553
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1699412549}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Fall reset
-  offset: {x: 0, y: 0}
---- !u!1 &1765191919
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1765191921}
-  - component: {fileID: 1765191920}
-  m_Layer: 0
-  m_Name: DebugLabelOverlay
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1765191920
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1765191919}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b2862e09fa2914ed7aa97051027633d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabelOverlay
-  observers: {fileID: 1522400323}
-  rootA: {fileID: 1335036911}
-  rootB: {fileID: 1309592418}
-  switchController: {fileID: 1522400325}
---- !u!4 &1765191921
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1765191919}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1824940236
 GameObject:
   m_ObjectHideFlags: 0
@@ -6872,7 +6571,6 @@ GameObject:
   - component: {fileID: 1966832507}
   - component: {fileID: 1966832509}
   - component: {fileID: 1966832508}
-  - component: {fileID: 1966832510}
   m_Layer: 6
   m_Name: KillZone_Top
   m_TagString: Untagged
@@ -6955,20 +6653,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 40, y: 4}
   m_EdgeRadius: 0
---- !u!114 &1966832510
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1966832506}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Fall reset
-  offset: {x: 0, y: 0}
 --- !u!1 &1982485026
 GameObject:
   m_ObjectHideFlags: 0
@@ -6980,7 +6664,6 @@ GameObject:
   - component: {fileID: 1982485027}
   - component: {fileID: 1982485029}
   - component: {fileID: 1982485028}
-  - component: {fileID: 1982485030}
   m_Layer: 6
   m_Name: KillZone_Right
   m_TagString: Untagged
@@ -7063,20 +6746,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4, y: 22}
   m_EdgeRadius: 0
---- !u!114 &1982485030
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1982485026}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Fall reset
-  offset: {x: 0, y: 0}
 --- !u!1 &2068592950
 GameObject:
   m_ObjectHideFlags: 0
@@ -7228,7 +6897,6 @@ GameObject:
   - component: {fileID: 2090926734}
   - component: {fileID: 2090926736}
   - component: {fileID: 2090926735}
-  - component: {fileID: 2090926737}
   m_Layer: 6
   m_Name: KillZone_Left
   m_TagString: Untagged
@@ -7311,20 +6979,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4, y: 22}
   m_EdgeRadius: 0
---- !u!114 &2090926737
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2090926733}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Fall reset
-  offset: {x: 0, y: 0}
 --- !u!1 &2092595850
 GameObject:
   m_ObjectHideFlags: 0
@@ -7584,7 +7238,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2144160117}
   - component: {fileID: 2144160118}
-  - component: {fileID: 2144160119}
   m_Layer: 3
   m_Name: Checkpoint_1
   m_TagString: Untagged
@@ -7624,20 +7277,6 @@ MonoBehaviour:
   zoneSize: {x: 1.5, y: 2}
   manager: {fileID: 56394175}
   observers: {fileID: 1522400323}
---- !u!114 &2144160119
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2144160116}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25d6807c81b05455d9b196383c622e8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Parallax.DebugTools::Parallax.DebugTools.DebugLabel
-  text: Checkpoint
-  offset: {x: 0, y: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -7652,4 +7291,3 @@ SceneRoots:
   - {fileID: 848910514}
   - {fileID: 56394174}
   - {fileID: 333963036}
-  - {fileID: 1765191921}

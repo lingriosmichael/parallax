@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Parallax.Core;
 using Parallax.Gameplay.Transport;
 using UnityEngine;
@@ -9,6 +10,9 @@ namespace Parallax.Gameplay.Anchors
         [SerializeField] AnchorDefinition definition;
         [SerializeField] TransportHost transportHost;
         [SerializeField] RealityManifestation[] manifestations;
+
+        public AnchorDefinition Definition => definition;
+        public IReadOnlyList<RealityManifestation> Manifestations => manifestations;
 
         void OnEnable()
         {

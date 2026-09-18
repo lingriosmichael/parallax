@@ -19,6 +19,10 @@ namespace Parallax.Gameplay.GravityControl
         float lastPublished;
         bool hasPublished;
         float pulseUntil;
+
+        public bool IsOccupied => seatState.IsOccupied;
+        public ObserverId Occupant => occupant;
+        public float CurrentValue => hasPublished ? lastPublished : 0f;
         void Awake()
         {
             input = inputSource as IGravityControlInput;
