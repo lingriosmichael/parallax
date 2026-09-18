@@ -203,6 +203,11 @@ Decision: MCP for Unity is committed to the repo as dev tooling, pinned to v10.2
 Why: Embedding the package to constrain the asmdef means owning a vendored fork of a peripheral tool. Nothing in Assets references the runtime assembly, so IL2CPP managed stripping should remove it; the cost of being wrong is APK size, not correctness.
 Consequence: If the Gate 3 check finds the assembly shipped, embed the package and set includePlatforms: ["Editor"], recorded as an amendment.
 
+### D-034 · 2026-09-18 · Accepted
+**Decision:** Visual facing is presentation-owned. `CatVisualPresenter` derives facing from motion for live and Echo cats and is the sole writer of Visual scale. Gameplay holds no facing state; `EchoFrame.FacingRight` is retained for format stability, no longer written or read.
+**Why:** Facing is purely visual and derivable from motion; two writers fought during replay.
+**Consequence:** Any future gameplay need for facing (for example, directional interact) must come from motor/command state, never from Visual.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)

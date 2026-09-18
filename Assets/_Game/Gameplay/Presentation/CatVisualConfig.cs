@@ -41,6 +41,18 @@ namespace Parallax.Gameplay.Presentation
         [Tooltip("Along-speed magnitude a new facing direction must exceed, beyond the opposite of the current facing, before flipping.")]
         [SerializeField] float flipHysteresis = 0.05f;
 
+        [Tooltip("Exponential velocity smoothing time constant in seconds.")]
+        [SerializeField] float velocitySmoothingTime = 0.08f;
+
+        [Tooltip("Time below idleSpeedThreshold before Walk becomes Idle.")]
+        [SerializeField] float idleDwell = 0.1f;
+
+        [Tooltip("Root movement in one frame at or beyond this distance is treated as a teleport.")]
+        [SerializeField] float teleportDistance = 1f;
+
+        [Tooltip("Body alpha while this cat is driven by EchoReplay.")]
+        [SerializeField, Range(0f, 1f)] float echoAlpha = 0.5f;
+
         [Tooltip("Outline width, in texels of the sprite texture.")]
         [SerializeField] float outlineWidth = 1.5f;
 
@@ -65,6 +77,10 @@ namespace Parallax.Gameplay.Presentation
         public float IdleSpeedThreshold => idleSpeedThreshold;
         public float AirThreshold => airThreshold;
         public float FlipHysteresis => flipHysteresis;
+        public float VelocitySmoothingTime => velocitySmoothingTime;
+        public float IdleDwell => idleDwell;
+        public float TeleportDistance => teleportDistance;
+        public float EchoAlpha => echoAlpha;
         public float OutlineWidth => outlineWidth;
         public float GroundOffset => groundOffset;
         public Color OutlineColorA => outlineColorA;

@@ -14,6 +14,7 @@ namespace Parallax.Editor.Art
         const int CellSize = 256;
         const byte OpaqueAlphaThreshold = 25; // ~10% alpha
         const string SpriteNamePrefix = "CatA_Walk_";
+        const string CatWalkPath = "Assets/_Game/Art/Cats/CatA/CatA_Walk.png";
         const string CatPlayerPrefabPath = "Assets/_Game/Gameplay/Player/Cat_Player.prefab";
 
         [MenuItem("PARALLAX/Art/Import Cat Sheet")]
@@ -26,7 +27,14 @@ namespace Parallax.Editor.Art
                 return;
             }
 
-            string path = AssetDatabase.GetAssetPath(selected);
+            Import(AssetDatabase.GetAssetPath(selected));
+        }
+
+        [MenuItem("PARALLAX/Art/Import Cat A Walk")]
+        public static void ImportCatAWalk() => Import(CatWalkPath);
+
+        static void Import(string path)
+        {
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
             if (importer == null)
             {
@@ -71,7 +79,8 @@ namespace Parallax.Editor.Art
                 frameRects[i] = new Rect(x, y, CellSize, CellSize);
             }
 
-            int frame0OpaqueWidth = OpaquePixelWidth(pixels, texture.width, frameRects[0]);
+            (int frame0MinX, int frame0MaxX) = OpaquePixelBounds(pixels, texture.width, frameRects[0]);
+            int frame0OpaqueWidth = frame0MaxX >= frame0MinX ? frame0MaxX - frame0MinX + 1 : 0;
             if (frame0OpaqueWidth <= 0)
             {
                 Debug.LogError("CatSpriteImporter: frame 0 has no opaque pixels. Aborting.");
@@ -82,7 +91,7 @@ namespace Parallax.Editor.Art
 
             int pawRowLocal = LowestOpaqueRow(pixels, texture.width, frameRects);
             (int pawMinX, int pawMaxX) = PawSpan(pixels, texture.width, frameRects, pawRowLocal);
-            float pivotXNormalized = frameCount > 0 ? (pawMinX + pawMaxX + 1) * 0.5f / CellSize : 0.5f;
+            float pivotXNormalized = (frame0MinX + frame0MaxX + 1) * 0.5f / CellSize;
             float pivotYNormalized = (pawRowLocal + 0.5f) / CellSize;
             var pivot = new Vector2(pivotXNormalized, pivotYNormalized);
 
@@ -125,13 +134,14 @@ namespace Parallax.Editor.Art
             nameFileIdDataProvider.SetNameFileIdPairs(nameFileIdPairs);
             dataProvider.Apply();
 
+            importer.isReadable = false;
             EditorUtility.SetDirty(importer);
             importer.SaveAndReimport();
 
             Debug.Log(
                 $"CatSpriteImporter: sliced {frameCount} frames ({columns}x{rows}) from '{path}'. " +
                 $"PixelsPerUnit = {pixelsPerUnit:F3} (frame0 opaque width {frame0OpaqueWidth}px / collider length {colliderLength}u). " +
-                $"Pivot = ({pivot.x:F4}, {pivot.y:F4}) normalized (paw row {pawRowLocal}px, paw span [{pawMinX},{pawMaxX}]px).");
+                $"Pivot = ({pivot.x:F4}, {pivot.y:F4}) normalized (frame0 bounds [{frame0MinX},{frame0MaxX}]px, paw row {pawRowLocal}px). ");
         }
 
         static float GetCatColliderLength()
@@ -167,7 +177,7 @@ namespace Parallax.Editor.Art
         static bool IsOpaque(Color32[] pixels, int textureWidth, int px, int py) =>
             pixels[py * textureWidth + px].a > OpaqueAlphaThreshold;
 
-        static int OpaquePixelWidth(Color32[] pixels, int textureWidth, Rect frame)
+        static (int minX, int maxX) OpaquePixelBounds(Color32[] pixels, int textureWidth, Rect frame)
         {
             int minX = int.MaxValue, maxX = int.MinValue;
             int x0 = (int)frame.x, y0 = (int)frame.y;
@@ -183,7 +193,7 @@ namespace Parallax.Editor.Art
                 }
             }
 
-            return maxX >= minX ? maxX - minX + 1 : 0;
+            return (minX, maxX);
         }
 
         static int LowestOpaqueRow(Color32[] pixels, int textureWidth, Rect[] frames)
