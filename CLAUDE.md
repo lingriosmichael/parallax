@@ -2,6 +2,9 @@
 
 Read this file completely before every task.
 
+Before any MCP work, query mcpforunity://instances. If instance_count is 0, stop and report immediately. Do not retry, poll, or investigate around it.
+If any MCP call reports no Unity session, stop and report. A missing Editor is a precondition failure for the human, never something to work around.
+
 ## Project
 
 - **PARALLAX:** a landscape mobile 2D/2.5D puzzle adventure, 1–2 players, two cats, two realities.
