@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Parallax.Core;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Player;
+using Parallax.Gameplay.GravityControl;
 using Parallax.Gameplay.Transport;
 using UnityEngine;
 
@@ -36,6 +37,8 @@ namespace Parallax.Gameplay.Echo
         {
             this.observer = observer;
             cat = observer != null ? observer.Cat : null;
+            CatSeat seat = cat != null ? cat.GetComponent<CatSeat>() : null;
+            if (seat != null) seat.Release();
             body = cat != null ? cat.GetComponent<Rigidbody2D>() : null;
             if (body == null || observer == null || observer.Reality == null)
             {

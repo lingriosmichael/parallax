@@ -15,7 +15,7 @@ namespace Parallax.Gameplay.GravityControl
         [SerializeField] SpriteRenderer transitPulse;
         IGravityControlInput input;
         ObserverId occupant;
-        CatSeat seat;
+        readonly SeatState seatState = new SeatState();
         float lastPublished;
         bool hasPublished;
         float pulseUntil;
@@ -23,35 +23,47 @@ namespace Parallax.Gameplay.GravityControl
         {
             input = inputSource as IGravityControlInput;
             if (input == null) Debug.LogError($"ControlStation '{name}' inputSource must implement IGravityControlInput.", this);
+            seatState.Released += OnSeatReleased;
         }
         void OnEnable() { if (observers != null) observers.Stepped += OnStepped; }
-        void OnDisable() { if (observers != null) observers.Stepped -= OnStepped; }
+        void OnDisable()
+        {
+            Release();
+            if (observers != null) observers.Stepped -= OnStepped;
+        }
+        void OnDestroy()
+        {
+            Release();
+            seatState.Released -= OnSeatReleased;
+        }
         public void Interact(ObserverId observerId, IAnchorRequester requester)
         {
             ObserverContext context = observers != null ? observers.Get(observerId) : null;
             CatSeat nextSeat = context != null && context.Cat != null ? context.Cat.GetComponent<CatSeat>() : null;
             if (nextSeat == null || input == null) return;
-            if (nextSeat == seat) { nextSeat.Release(); return; }
-            if (seat != null || nextSeat.IsSeated) return;
-            seat = nextSeat;
+            if (ReferenceEquals(nextSeat, seatState.Occupant)) { nextSeat.Release(); return; }
+            if (seatState.IsOccupied || nextSeat.IsSeated || !seatState.TryOccupy(nextSeat, this)) return;
             occupant = observerId;
-            seat.SitAt(this);
+            nextSeat.SitAt(seatState);
             input.Calibrate();
             lastPublished = 0f;
             hasPublished = false;
             if (dial != null) dial.SetVisible(true);
             SetGlow(0f);
         }
-        public void OnReleased(CatSeat released)
+        public void Release()
         {
-            if (released != seat) return;
-            seat = null;
+            seatState.Release();
+        }
+
+        void OnSeatReleased()
+        {
             if (dial != null) dial.SetVisible(false);
             SetGlow(0.3f);
         }
         void OnStepped(int tick)
         {
-            if (seat == null || observers == null || input == null) return;
+            if (!seatState.IsOccupied || observers == null || input == null) return;
             ObserverContext context = observers.Get(occupant);
             if (context == null || context.Driver == null || context.Driver.Kind != InputSourceKind.LocalHuman) return;
             float value = input.ReadNormalized();

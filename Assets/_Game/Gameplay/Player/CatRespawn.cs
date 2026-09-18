@@ -1,3 +1,4 @@
+using Parallax.Gameplay.GravityControl;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Player
@@ -24,6 +25,9 @@ namespace Parallax.Gameplay.Player
         {
             if (lastRespawnFrame == Time.frameCount) return;
             lastRespawnFrame = Time.frameCount;
+
+            CatSeat seat = GetComponent<CatSeat>();
+            if (seat != null) seat.Release();
 
             gravity.SetTargetDirection(gravityDirection, snap: true);
 
