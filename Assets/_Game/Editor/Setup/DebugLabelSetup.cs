@@ -3,7 +3,6 @@ using Parallax.DebugTools;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Transport;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -34,13 +33,11 @@ namespace Parallax.Editor.Setup
             if (changes.Count == 0)
             {
                 Debug.Log("DebugLabelSetup: no changes.");
-                EditorSceneManager.SaveScene(panel.gameObject.scene);
                 return;
             }
 
             Debug.Log("DebugLabelSetup: " + string.Join("; ", changes));
-            EditorSceneManager.MarkSceneDirty(panel.gameObject.scene);
-            EditorSceneManager.SaveScene(panel.gameObject.scene);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(panel.gameObject.scene);
         }
     }
 }

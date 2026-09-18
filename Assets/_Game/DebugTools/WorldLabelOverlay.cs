@@ -18,8 +18,25 @@ namespace Parallax.DebugTools
         sealed class Entry
         {
             public Component Target;
-            public AnchorId Anchor;
+            public ObserverId Reality;
+            public CatSeat Seat;
             public System.Func<string> Text;
+        }
+
+        readonly struct AnchorReality : System.IEquatable<AnchorReality>
+        {
+            readonly AnchorId anchor;
+            readonly ObserverId reality;
+
+            public AnchorReality(AnchorId anchor, ObserverId reality)
+            {
+                this.anchor = anchor;
+                this.reality = reality;
+            }
+
+            public bool Equals(AnchorReality other) => anchor == other.anchor && reality == other.reality;
+            public override bool Equals(object obj) => obj is AnchorReality other && Equals(other);
+            public override int GetHashCode() => (anchor.GetHashCode() * 397) ^ (int)reality;
         }
 
         [SerializeField] ObserverSet observers;
@@ -28,41 +45,48 @@ namespace Parallax.DebugTools
         [SerializeField] DebugPanel debugPanel;
 
         readonly List<Entry> entries = new List<Entry>();
-        bool visible = true;
 
         void OnEnable()
         {
-            if (switchController != null) switchController.Switched += OnSwitched;
             Rescan();
-        }
-
-        void OnDisable()
-        {
-            if (switchController != null) switchController.Switched -= OnSwitched;
         }
 
         void Update()
         {
-            if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame) visible = !visible;
+            if (Keyboard.current != null && Keyboard.current.f1Key.wasPressedThisFrame && debugPanel != null) debugPanel.ToggleLabels();
         }
-
-        void OnSwitched(ObserverId from, ObserverId to) => Rescan();
 
         void Rescan()
         {
             entries.Clear();
+            var touchLabels = new HashSet<AnchorReality>();
+            var pressureWrittenAnchors = new HashSet<AnchorId>();
+            foreach (VineInteractable vine in FindObjectsByType<VineInteractable>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (vine.Definition == null || !TryGetReality(vine, out ObserverId reality)) continue;
+                touchLabels.Add(new AnchorReality(vine.Definition.Id, reality));
+                AddAnchor(vine, reality, vine.Definition.Id, false);
+            }
+            foreach (PressurePlateSensor plate in FindObjectsByType<PressurePlateSensor>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (plate.Definition == null || !TryGetReality(plate, out ObserverId reality)) continue;
+                touchLabels.Add(new AnchorReality(plate.Definition.Id, reality));
+                pressureWrittenAnchors.Add(plate.Definition.Id);
+                AddPlate(plate, reality, plate.Definition.Id);
+            }
             foreach (RealityPresenter presenter in FindObjectsByType<RealityPresenter>(FindObjectsInactive.Include, FindObjectsSortMode.None))
             {
                 if (presenter.Definition == null) continue;
-                Tag(presenter.Definition.Id);
                 foreach (RealityManifestation manifestation in presenter.Manifestations)
-                    if (manifestation != null) AddAnchor(manifestation, presenter.Definition.Id, manifestation.name.Contains("Gate"));
+                {
+                    if (manifestation == null || !TryGetReality(manifestation, out ObserverId reality)) continue;
+                    AnchorId anchor = presenter.Definition.Id;
+                    if (!touchLabels.Contains(new AnchorReality(anchor, reality)))
+                        AddAnchor(manifestation, reality, anchor, pressureWrittenAnchors.Contains(anchor));
+                }
             }
-            foreach (VineInteractable vine in FindObjectsByType<VineInteractable>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (vine.Definition != null) AddAnchor(vine, vine.Definition.Id, false);
-            foreach (PressurePlateSensor plate in FindObjectsByType<PressurePlateSensor>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (plate.Definition != null) AddPlate(plate, plate.Definition.Id);
-            foreach (ControlStation station in FindObjectsByType<ControlStation>(FindObjectsInactive.Include, FindObjectsSortMode.None)) AddStation(station);
+            foreach (ControlStation station in FindObjectsByType<ControlStation>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (TryGetReality(station, out ObserverId reality)) AddStation(station, reality);
             AddCats();
         }
 
@@ -75,39 +99,39 @@ namespace Parallax.DebugTools
 
         void AddCat(ObserverContext observer)
         {
-            if (observer == null || observer.Cat == null) return;
-            entries.Add(new Entry { Target = observer.Cat, Text = () =>
+            if (observer == null || observer.Cat == null || !TryGetReality(observer.Cat, out ObserverId reality)) return;
+            CatSeat seat = observer.Cat.GetComponent<CatSeat>();
+            var entry = new Entry { Target = observer.Cat, Reality = reality, Seat = seat };
+            entry.Text = () =>
             {
-                CatSeat seat = observer.Cat.GetComponent<CatSeat>();
-                EchoReplayDriver echo = observer.Driver as EchoReplayDriver;
-                return LabelFormatter.Cat(observer.Id, observer.Driver?.Kind ?? InputSourceKind.Inactive, seat != null && seat.IsSeated,
+                IObserverDriver driver = observer.Driver;
+                EchoReplayDriver echo = driver as EchoReplayDriver;
+                InputSourceKind kind = driver != null ? driver.Kind : InputSourceKind.Inactive;
+                return LabelFormatter.Cat(observer.Id, kind, entry.Seat != null && entry.Seat.IsSeated,
                     echo == null ? 0f : echo.Cursor * Time.fixedDeltaTime, echo != null && echo.IsHolding);
-            }});
+            };
+            entries.Add(entry);
         }
 
-        void AddAnchor(Component target, AnchorId anchor, bool gate)
+        void AddAnchor(Component target, ObserverId reality, AnchorId anchor, bool gate)
         {
-            Tag(anchor);
-            entries.Add(new Entry { Target = target, Anchor = anchor, Text = () => gate ? LabelFormatter.Gate(Tag(anchor), Value(anchor)) : LabelFormatter.Anchor(Tag(anchor), PendingOrValue(anchor, out bool pending), pending) });
+            string tag = LabelFormatter.AnchorTag(anchor);
+            entries.Add(new Entry { Target = target, Reality = reality, Text = () => gate ? LabelFormatter.Gate(tag, Value(anchor)) : LabelFormatter.Anchor(tag, PendingOrValue(anchor, out bool pending), pending) });
         }
 
-        void AddPlate(PressurePlateSensor plate, AnchorId anchor)
+        void AddPlate(PressurePlateSensor plate, ObserverId reality, AnchorId anchor)
         {
-            Tag(anchor);
-            entries.Add(new Entry { Target = plate, Anchor = anchor, Text = () => LabelFormatter.Plate(Tag(anchor), plate.IsPressed, plate.IsPressedByEcho) });
+            string tag = LabelFormatter.AnchorTag(anchor);
+            entries.Add(new Entry { Target = plate, Reality = reality, Text = () => LabelFormatter.Plate(tag, plate.IsPressed, plate.IsPressedByEcho) });
         }
 
-        void AddStation(ControlStation station) => entries.Add(new Entry { Target = station, Text = () => LabelFormatter.Station(station.IsOccupied, station.Occupant, station.CurrentValue) });
-
-        string Tag(AnchorId anchor)
-        {
-            return LabelFormatter.AnchorTag(anchor);
-        }
+        void AddStation(ControlStation station, ObserverId reality) => entries.Add(new Entry { Target = station, Reality = reality, Text = () => LabelFormatter.Station(station.IsOccupied, station.Occupant, station.CurrentValue) });
 
         float Value(AnchorId anchor) => transportHost != null && transportHost.Registry != null && transportHost.Registry.TryGet(anchor, out AnchorState state) ? state.Value : 0f;
         float PendingOrValue(AnchorId anchor, out bool pending)
         {
-            LocalTransport local = (transportHost as LocalTransportHost)?.Local;
+            LocalTransportHost host = transportHost as LocalTransportHost;
+            LocalTransport local = host != null ? host.Local : null;
             float target = 0f;
             pending = local != null && local.TryGetPendingAnchorTarget(anchor, out target);
             return pending ? target : Value(anchor);
@@ -116,13 +140,13 @@ namespace Parallax.DebugTools
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         void OnGUI()
         {
-            if (!visible || (debugPanel != null && !debugPanel.LabelsVisible) || switchController == null || observers == null) return;
+            if (Event.current.type != EventType.Repaint || debugPanel == null || !debugPanel.LabelsVisible || switchController == null || observers == null) return;
             ObserverContext active = observers.Get(switchController.Active);
             if (active == null || active.Camera == null) return;
             Camera camera = active.Camera;
             foreach (Entry entry in entries)
             {
-                if (entry.Target == null || !InActiveReality(entry.Target, active.Id)) continue;
+                if (entry.Target == null || entry.Reality != active.Id) continue;
                 Vector3 point = camera.WorldToScreenPoint(entry.Target.transform.position + Vector3.up * 0.8f);
                 if (point.z < 0f || !camera.pixelRect.Contains((Vector2)point)) continue;
                 GUI.Box(new Rect(point.x, Screen.height - point.y - 22f, 180f, 22f), entry.Text());
@@ -130,6 +154,17 @@ namespace Parallax.DebugTools
         }
 #endif
 
-        static bool InActiveReality(Component component, ObserverId active) => component.GetComponentInParent<RealityRoot>()?.Id == active;
+        static bool TryGetReality(Component component, out ObserverId reality)
+        {
+            RealityRoot root = component.GetComponentInParent<RealityRoot>();
+            if (root == null)
+            {
+                reality = default;
+                return false;
+            }
+
+            reality = root.Id;
+            return true;
+        }
     }
 }

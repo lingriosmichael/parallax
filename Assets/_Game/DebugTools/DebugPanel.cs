@@ -261,5 +261,7 @@ namespace Parallax.DebugTools
         }
 
         public bool LabelsVisible => labelsVisible;
+
+        public void ToggleLabels() => labelsVisible = !labelsVisible;
     }
 }
