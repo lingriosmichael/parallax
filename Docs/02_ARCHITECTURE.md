@@ -220,7 +220,7 @@ The active implementation is chosen in settings. If `TiltGravityInput.IsAvailabl
 
 While seated at a Control Station, the controlling cat's movement is locked and its `IGravityControlInput` value is published as a control stream (§7.3) targeting `observer.Other()`. The station shows **immediate local feedback** (glow/pulse scaled by the value), followed by a short "energy in transit" effect, so network latency reads as intentional theatre.
 
-**As built (PAX-026):** `CatSeat` and `SeatCommandFilter` in `LocalHumanDriver` prevent seated movement/jump while keeping interact available to stand. Driver deactivation releases the seat; stations publish only changed values through `CatInteractor.PublishControl`, never publish while sitting down, glow immediately, and add a cosmetic transit pulse.
+**As built (PAX-026/PAX-026a):** `CatSeat` and `SeatCommandFilter` in `LocalHumanDriver` prevent seated movement/jump while keeping interact available to stand. A seated interact edge is routed directly to `CatSeat.Release` before overlap lookup, so it cannot re-sit in that tick or depend on remaining in the station trigger. A shared, idempotent seat state also releases from driver deactivation, respawn, cat disable/destroy, station disable/destroy, and Echo takeover; it clears cat and station together and never publishes a control sample. Stations publish only changed values through `CatInteractor.PublishControl`, never publish while sitting down, glow immediately, and add a cosmetic transit pulse.
 
 ---
 

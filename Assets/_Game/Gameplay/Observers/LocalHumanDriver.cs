@@ -41,8 +41,11 @@ namespace Parallax.Gameplay.Observers
             if (router == null || observer == null) return;
 
             CatCommand cmd = router.Read();
-            CatCommand motorCommand = seat != null && seat.IsSeated ? SeatCommandFilter.Apply(cmd) : cmd;
+            bool seated = seat != null && seat.IsSeated;
+            bool stand = SeatInteractRouting.Route(ref cmd, seated);
+            CatCommand motorCommand = SeatCommandFilter.Apply(cmd, seated);
             observer.Cat.Step(motorCommand, Time.fixedDeltaTime);
+            if (stand) seat.Release();
             if (interactor != null) interactor.Step(in cmd, observer);
         }
 
