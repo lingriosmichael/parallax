@@ -3,7 +3,7 @@
 ```text
 TASK: PAX-A02
 TITLE: Environment kit per reality — backgrounds, platforms, puzzle objects, light, parallax
-PHASE / GATE: Art lane (D-031 pipeline test) / runs in parallel with PAX-036 → PAX-035
+PHASE / GATE: Art lane (D-031 pipeline test) / after PAX-A01 and PAX-V01; runs in parallel with PAX-028 → PAX-035
 TYPE: Art pipeline + presentation wiring. Editor only (device FPS check deferred to the device session).
 ```
 
@@ -21,6 +21,7 @@ Replace the grey boxes in `Sandbox_Realities` with a first-pass environment kit 
   - §9: changing art never changes anchor or network code.
 - Plan §18.4: layer breakdown, parallax depths (Sky 0.05 · Far 0.15 · Mid 0.35 · Gameplay 1.00 · Foreground 1.20), per-reality atlases. Lighting: A = soft warm global light, B = dim global light + cyan emissive accents.
 - PAX-A01: the cat sprite is already in. Its import settings (PPU, filter, compression) are the reference for everything here.
+- PAX-V01: world-space **state labels** already sit on puzzle objects. **Division of work:** V01 labels say what *state* an object is in (pressed, open, seated, reached). A02 art says what an object *is*. A02 adds no state visuals and must never hide, cover or disable a V01 label.
 
 ## REFERENCES (in repo)
 
@@ -53,12 +54,12 @@ This ticket runs in three stages in the normal linear loop. Stages 1 and 3 are C
 
 ### Stage 1 — Claude Code: inventory, manifest, pipeline
 
-**1a. Scene inventory.** List every visible object in `Sandbox_Realities` per reality: platforms, walls, ceilings, hazards/fall volumes, and every puzzle object with its manifestation class. Record its collider size in world units and whether it moves (elevator, gate, etc.).
+**1a. Scene inventory.** List every visible object in `Sandbox_Realities` per reality: platforms, walls, ceilings, hazards/fall volumes, and every puzzle object with its manifestation class. Record its collider size in world units and whether it moves (elevator, gate, etc.). For each object, also name **exactly which renderer is the greybox**, which renderers are driven at runtime (station glow/pulse, etc.) and which belong to PAX-V01 labels. List every **anchor link** (which objects share an `AnchorId`, in which realities).
 
 **1b. Write `Docs/Art/A02_asset_manifest.md`.** This is your shopping list for Stage 2. One row per slot:
 
-| Slot file name | Reality | What it is | Source (AutoSprite/Manual) | Reference image | Draw mode | Target size (px) | Pivot | Notes |
-|---|---|---|---|---|---|---|---|---|
+| Slot file name | Reality | What it is | Source (AutoSprite/Manual) | Reference image | Draw mode | Target size (px) | Pivot | Pair motif | Notes |
+|---|---|---|---|---|---|---|---|---|---|
 
 Minimum slots per reality (Claude Code adjusts the list to the inventory and drops slots for objects that don't exist in a reality):
 
@@ -69,17 +70,22 @@ Minimum slots per reality (Claude Code adjusts the list to the inventory and dro
 
 Naming: `Art/RealityA/Environment/A_<Slot>.png` and `Art/RealityB/Environment/B_<Slot>.png`.
 
+**Pair motif:** objects linked by an anchor (e.g. vine in A ↔ elevator in B) share one simple, named motif (a shape or glyph, e.g. a leaf-shaped notch) drawn in each reality's own palette, so a player can tell what is linked to what without labels. Fill the column for every linked object; leave it empty for unlinked ones. Include the motif in the generation prompt for both sides.
+
 Sizes: derive from the collider sizes and the **PPU used by the A01 cat** (read it from the cat's importer), so a platform tile and the cat share one pixel density.
 
 **1c. Pipeline code and Setup.**
 - **Import preset** matching the A01 cat, applied automatically by an `AssetPostprocessor` to everything under `Art/RealityA/Environment` and `Art/RealityB/Environment`: PPU, filter mode, compression, Full Rect mesh for tiled sprites, wrap mode.
 - **Sprite Atlases**: `Atlas_RealityA_Env`, `Atlas_RealityB_Env`.
-- **`ParallaxLayer`** runtime component, visual only. It offsets a background layer relative to **its own reality's Observer camera** and that reality's `RealityRoot`. The (0, 1000) B offset must not leak in: compute from camera position minus reality origin. It also tiles horizontally so the strip never runs out.
+- **`ParallaxLayer`** runtime component, visual only. It offsets a background layer relative to **its own reality's Observer camera** and that reality's `RealityRoot`. The B offset (`RealityRoot.OffsetB`, never a hard-coded (0, 1000)) must not leak in: compute from camera position minus reality origin. It also tiles horizontally so the strip never runs out.
+  - Runs in `LateUpdate` **after** `CatCameraFollow` (execution order), so layers don't lag the camera by a frame and jitter.
+  - Does no work while its reality's camera is disabled (inactive Observer, PiP off), per the Performance rule for the inactive reality. When the debug PiP enables that camera, it runs again, and it snaps to the correct offset on its first active frame.
 - **`PARALLAX/Setup/Environment Art`** menu, idempotent:
-  1. For each geometry collider object: create or update a child `Art` with a `SpriteRenderer` (Tiled/Sliced, sized to collider bounds, on `<R>_Gameplay`), then disable the greybox renderer. Never touch or add colliders.
+  1. For each geometry collider object: create or update a child `Art` with a `SpriteRenderer` (Tiled/Sliced, sized to collider bounds, on `<R>_Gameplay`), then disable **only the greybox `SpriteRenderer` named in the inventory**, never every renderer on the object or its children. Never touch or add colliders.
   2. For each puzzle object: add the `OBJ_*` sprite as a visual child of the **manifestation's moving transform**, so it rides the existing animation. **Preserve any renderer that gameplay or presenters drive** (station glow/pulse, anything else that changes color at runtime). Art goes beside or under it, never replacing it.
   3. Create or update the background layers under each `RealityRoot/Background` on `<R>_Background` / `<R>_Middle` with `ParallaxLayer` at the plan's depths. Put the FG accent on `<R>_Foreground`.
   4. Any slot with no file keeps its greybox. Log one info line per missing slot.
+  4b. PAX-V01 labels are never disabled, re-parented or recolored. They must sort above all environment art (higher order within `<R>_Gameplay`, or above `<R>_Foreground`). The FG accent must not cover them.
   5. Print a summary: slots filled / missing per reality.
 - **Lighting:** adjust the existing per-reality `Light2D`s. A: warm global light, soft. B: dim cool global light plus 1–3 cyan point or freeform lights near the platform edges and station. Each light targets its own reality's sorting layers only. Add lights via the Setup script, not by hand.
 
@@ -113,6 +119,8 @@ Seamless tiles and wide parallax strips aren't what AutoSprite is built for. Kee
 - Gameplay surfaces clearly separate from background. Background layers have lower contrast and saturation.
 - The cat stays readable against every surface in both realities.
 - Puzzle objects are the highest-contrast things on screen after the cat.
+- Anchor-linked objects are recognisable as a pair by their shared motif.
+- V01 state labels stay readable against the new art.
 
 Partial sets are fine: run Stage 3 as often as you like.
 
@@ -149,6 +157,8 @@ Partial sets are fine: run Stage 3 as often as you like.
 - Parallax works independently per reality with no drift from the B offset, and background strips never show an edge.
 - Warm light never reaches Reality B sprites, and cyan light never reaches Reality A sprites.
 - Setup is idempotent: a second run creates no duplicates.
+- PAX-V01 labels stay enabled, on top and readable everywhere.
+- `ParallaxLayer` does no work for a reality whose camera is disabled.
 - All EditMode tests still green. No new console warnings or errors apart from the "missing slot" info lines.
 
 ## ACCEPTANCE TEST — Editor only
@@ -162,8 +172,9 @@ Partial sets are fine: run Stage 3 as often as you like.
 7. **Station glow intact:** sit at the station and turn the dial → glow and pulse still visible over or around the station art.
 8. **Parallax:** walk the full width of each reality → layers move at visibly different speeds with no gaps. Switch A↔B several times → no jumps or drift.
 9. **Light separation:** in A, no cyan tint on anything. In B, no warm tint on anything.
-10. **Readability:** take one screenshot per reality at the Game view's phone resolution. The cat, platforms and each puzzle object must be identifiable without labels.
-11. **Echo:** record and replay an Echo → the Echo cat is still distinguishable from background and live cat (if not, note it for A01, don't fix here).
+10. **Readability:** take one screenshot per reality at the Game view's phone resolution. With V01 labels hidden for the screenshot only, the cat, platforms and each puzzle object must be identifiable (what it is; state is V01's job), and every anchor-linked pair must be recognisable by its motif. With labels shown, every V01 label is visible and on top.
+11. **Echo:** record and replay an Echo → the Echo cat (A01 `echoAlpha`) is still distinguishable from background and live cat (if not, tune `echoAlpha` on the A01 config or note it, don't change code here).
+11b. **Inactive reality:** with Observer A active and PiP off, Profiler shows no `ParallaxLayer` work for Reality B. Turn PiP on → B's layers are correct on the first frame.
 12. **Deferred to the device session:** atlas FPS check on the Pixel 8a (plan pipeline DoD). Log it in the deferred-verification list.
 
 ## DELIVERABLE (from Claude Code)
