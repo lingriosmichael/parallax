@@ -46,6 +46,22 @@ namespace Parallax.Gameplay.Transport
         public int PendingCount => pending.Count;
         public CommitResult LastCommitResult { get; private set; }
 
+        public bool TryGetPendingAnchorTarget(AnchorId anchor, out float target)
+        {
+            for (int i = pending.Count - 1; i >= 0; i--)
+            {
+                PendingItem item = pending[i];
+                if (item.Kind == ItemKind.Anchor && item.AnchorRequest.Anchor == anchor)
+                {
+                    target = item.AnchorRequest.TargetValue;
+                    return true;
+                }
+            }
+
+            target = default;
+            return false;
+        }
+
         public event Action<ControlSample> ControlReceived;
         public event Action<SpectacleCue> CueReceived;
 

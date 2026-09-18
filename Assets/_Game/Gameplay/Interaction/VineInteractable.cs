@@ -12,6 +12,8 @@ namespace Parallax.Gameplay.Interaction
         Color initialColor;
         float pulseUntil;
 
+        public AnchorDefinition Definition => definition;
+
         void Awake()
         {
             if (definition == null) Debug.LogError($"VineInteractable '{gameObject.name}' has no AnchorDefinition assigned.", this);
