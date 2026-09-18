@@ -31,7 +31,7 @@ namespace Parallax.Tests
         public void Station_FormatsState(bool occupied, ObserverId occupant, float value, string expected) => Assert.That(LabelFormatter.Station(occupied, occupant, value), Is.EqualTo(expected));
 
         [Test]
-        public void AnchorTags_AreStableRegardlessOfDiscoveryOrder()
+        public void AnchorTag_UsesAnchorId()
         {
             Assert.That(LabelFormatter.AnchorTag(new AnchorId(2)), Is.EqualTo("K2"));
             Assert.That(LabelFormatter.AnchorTag(new AnchorId(1)), Is.EqualTo("K1"));
