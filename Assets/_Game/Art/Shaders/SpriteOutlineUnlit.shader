@@ -43,6 +43,7 @@ Shader "PARALLAX/SpriteOutlineUnlit"
             {
                 float4 positionHCS : SV_POSITION;
                 float2 uv          : TEXCOORD0;
+                float4 color       : COLOR;
             };
 
             TEXTURE2D(_MainTex);
@@ -59,6 +60,7 @@ Shader "PARALLAX/SpriteOutlineUnlit"
                 Varyings OUT;
                 OUT.positionHCS = TransformObjectToHClip(IN.positionOS.xyz);
                 OUT.uv = IN.uv;
+                OUT.color = IN.color;
                 return OUT;
             }
 
@@ -92,7 +94,7 @@ Shader "PARALLAX/SpriteOutlineUnlit"
                     return half4(0, 0, 0, 0);
                 }
 
-                return half4(_OutlineColor.rgb, _OutlineColor.a);
+                return half4(_OutlineColor.rgb * IN.color.rgb, _OutlineColor.a * IN.color.a);
             }
             ENDHLSL
         }

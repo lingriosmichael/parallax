@@ -8,7 +8,7 @@ namespace Parallax.Tests.EditMode
 {
     public class EchoTests
     {
-        static EchoFrame Frame(float x) => new EchoFrame { Position = new UnityEngine.Vector2(x, 0f), FacingRight = true };
+        static EchoFrame Frame(float x) => new EchoFrame { Position = new UnityEngine.Vector2(x, 0f) };
 
         [Test]
         public void EventOrigins_EchoMapsObservers()

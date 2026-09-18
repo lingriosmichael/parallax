@@ -76,10 +76,15 @@ namespace Parallax.Editor.Setup
             int problems = 0;
             foreach (SpriteRenderer sr in root.GetComponentsInChildren<SpriteRenderer>(true))
             {
+                if (sr.gameObject.layer != root.gameObject.layer)
+                {
+                    Debug.LogWarning($"Reality isolation: SpriteRenderer '{Path(sr.transform)}' is on layer '{LayerMask.LayerToName(sr.gameObject.layer)}', expected '{LayerMask.LayerToName(root.gameObject.layer)}'.");
+                    problems++;
+                }
                 string layer = sr.sortingLayerName;
                 if (layer != bg && layer != mid && layer != gp && layer != fg)
                 {
-                    Debug.LogWarning($"Reality isolation: '{Path(sr.transform)}' SpriteRenderer is on sorting layer '{layer}', not one of {root.Id}'s sorting layers.");
+                    Debug.LogWarning($"Reality isolation: SpriteRenderer '{Path(sr.transform)}' is on sorting layer '{layer}', not one of {root.Id}'s sorting layers.");
                     problems++;
                 }
             }

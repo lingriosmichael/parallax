@@ -78,7 +78,6 @@ namespace Parallax.Gameplay.Echo
                 Position = recordingObserver.Reality.ToLocal(recordingBody.position),
                 Rotation = recordingBody.rotation,
                 GravityDirection = recordingObserver.Gravity != null ? recordingObserver.Gravity.Direction : Vector2.down,
-                FacingRight = recordingCat.FacingRight,
             };
             recorder.AddFrame(frame);
             if (!recorder.IsFull) return;

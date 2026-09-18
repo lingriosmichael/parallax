@@ -8,7 +8,6 @@ namespace Parallax.Gameplay.Player
     public sealed class CatMotor2D : MonoBehaviour
     {
         [SerializeField] CatMotorConfig config;
-        [SerializeField] Transform visual;
 
         Rigidbody2D body;
         GravityReceiver gravity;
@@ -22,16 +21,6 @@ namespace Parallax.Gameplay.Player
         float jumpBufferTimer;
 
         public bool IsGrounded { get; private set; }
-        public bool FacingRight => visual == null || visual.localScale.x >= 0f;
-
-        public void SetFacing(bool facingRight)
-        {
-            if (visual == null) return;
-            Vector3 scale = visual.localScale;
-            float absX = Mathf.Abs(scale.x);
-            scale.x = facingRight ? absX : -absX;
-            visual.localScale = scale;
-        }
 
         void SetCommand(CatCommand cmd)
         {

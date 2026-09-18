@@ -83,7 +83,6 @@ namespace Parallax.Gameplay.Echo
                 body.MovePosition(world);
                 body.MoveRotation(frame.Rotation);
             }
-            if (cat != null) cat.SetFacing(frame.FacingRight);
         }
 
         void LogMissingDependencies()
