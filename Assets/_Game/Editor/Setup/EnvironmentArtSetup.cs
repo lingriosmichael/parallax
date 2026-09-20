@@ -19,6 +19,11 @@ namespace Parallax.Editor.Setup
         const string AtlasBPath = ArtRoot + "/RealityB/Atlas_RealityB_Env.spriteatlas";
         const string AtlasAPathV2 = ArtRoot + "/RealityA/Atlas_RealityA_Env.spriteatlasv2";
         const string AtlasBPathV2 = ArtRoot + "/RealityB/Atlas_RealityB_Env.spriteatlasv2";
+        // PAX-A02_Stage2.md: final-palette globals must not darken Reality B to 35%.
+        static readonly Color GlobalLightAColor = new Color(1f, .95f, .88f);
+        const float GlobalLightAIntensity = 1f;
+        static readonly Color GlobalLightBColor = new Color(.78f, .86f, 1f);
+        const float GlobalLightBIntensity = .9f;
         static readonly string[] GeometryA = { "Ground", "Wall_Left", "Wall_Right", "Ceiling", "Platform_Left", "Platform_Right" };
         static readonly string[] GeometryB = { "Ground", "Wall_Left", "Wall_Right", "Ceiling", "Pillar_BOnly", "Ledge_B" };
         static readonly string[] SlotsA = { "BG_00_Sky", "BG_01_Far", "MG_01_Mid", "GAME_Platform_Top", "GAME_Platform_Fill", "GAME_Wall", "OBJ_Vine", "OBJ_Plate", "OBJ_Station", "OBJ_Checkpoint", "OBJ_Hazard", "FG_01" };
@@ -41,6 +46,8 @@ namespace Parallax.Editor.Setup
             int filledB = ConfigureReality(rootB, GeometryB, "B", CameraNamed("Camera_B"), changes);
             ValidateGlobalLight(rootA);
             ValidateGlobalLight(rootB);
+            ConfigureGlobalLight(rootA, GlobalLightAColor, GlobalLightAIntensity, changes);
+            ConfigureGlobalLight(rootB, GlobalLightBColor, GlobalLightBIntensity, changes);
             ConfigureAccentShadows(rootB, changes);
 
             if (changes.Count == 0) Debug.Log("EnvironmentArtSetup: no changes.");
@@ -225,6 +232,17 @@ namespace Parallax.Editor.Setup
             int count = 0;
             foreach (Light2D light in root.GetComponentsInChildren<Light2D>(true)) if (light.lightType == Light2D.LightType.Global) count++;
             if (count != 1) Debug.LogError("EnvironmentArtSetup: expected exactly one Global Light2D under " + root.name + ", found " + count + ".");
+        }
+
+        static void ConfigureGlobalLight(RealityRoot root, Color color, float intensity, List<string> changes)
+        {
+            foreach (Light2D light in root.GetComponentsInChildren<Light2D>(true))
+            {
+                if (light.lightType != Light2D.LightType.Global) continue;
+                if (light.color != color) { light.color = color; changes.Add("set " + light.name + ".color"); }
+                if (!Mathf.Approximately(light.intensity, intensity)) { light.intensity = intensity; changes.Add("set " + light.name + ".intensity"); }
+                return;
+            }
         }
 
         static void ConfigureAccentShadows(RealityRoot root, List<string> changes)
