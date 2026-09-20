@@ -22,7 +22,8 @@ namespace Parallax.Editor.Art
                 return;
             }
             bool background = IsBackground(assetPath);
-            importer.spritePixelsPerUnit = background ? catImporter.spritePixelsPerUnit * 0.5f : catImporter.spritePixelsPerUnit;
+            bool material = IsMaterial(assetPath);
+            importer.spritePixelsPerUnit = background || material ? catImporter.spritePixelsPerUnit * 0.5f : catImporter.spritePixelsPerUnit;
             importer.filterMode = FilterMode.Bilinear;
             importer.mipmapEnabled = false;
             importer.textureCompression = background ? TextureImporterCompression.Compressed : TextureImporterCompression.Uncompressed;
@@ -47,6 +48,11 @@ namespace Parallax.Editor.Art
             path.StartsWith("Assets/_Game/Art/RealityA/Environment/") || path.StartsWith("Assets/_Game/Art/RealityB/Environment/");
 
         static bool IsBackground(string path) => path.Contains("/Environment/Backgrounds/");
+        static bool IsMaterial(string path)
+        {
+            string file = System.IO.Path.GetFileNameWithoutExtension(path);
+            return file.Contains("_GAME_Platform_Fill") || file.Contains("_GAME_Wall");
+        }
         static bool IsTileable(string path)
         {
             string file = System.IO.Path.GetFileNameWithoutExtension(path);

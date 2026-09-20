@@ -43,6 +43,14 @@ namespace Parallax.Tests
             Assert.That(ParallaxMath.TileCoversCamera(left, cameraLocalX, width) || ParallaxMath.TileCoversCamera(middle, cameraLocalX, width) || ParallaxMath.TileCoversCamera(right, cameraLocalX, width), Is.True);
         }
 
+        [Test]
+        public void BackgroundCoverage_UsesCenteredTileWhenManifestHeightCoversEnvelope()
+        {
+            float offset = ParallaxMath.BackgroundTileOffsetY(13.79f, 4.7f, 5f, .35f, .25f, out float shortfall);
+            Assert.That(offset, Is.EqualTo(0f).Within(.0001f));
+            Assert.That(shortfall, Is.EqualTo(0f).Within(.0001f));
+        }
+
         static void AssertVector(Vector2 expected, Vector2 actual)
         {
             Assert.That(actual.x, Is.EqualTo(expected.x).Within(0.0001f));

@@ -101,6 +101,16 @@ namespace Parallax.Editor.Setup
             changes.Add("set " + target.name + "." + name);
         }
 
+        public static void SetColor(Object target, string name, Color value, List<string> changes)
+        {
+            var serialized = new SerializedObject(target);
+            SerializedProperty property = serialized.FindProperty(name);
+            if (property == null || property.colorValue == value) return;
+            property.colorValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            changes.Add("set " + target.name + "." + name);
+        }
+
         public static void SetArray(Object target, string name, Object[] values, List<string> changes)
         {
             var serialized = new SerializedObject(target);

@@ -16,5 +16,13 @@ namespace Parallax.Core.Presentation
 
         public static bool TileCoversCamera(float tileLocalX, float cameraLocalX, float width) =>
             Mathf.Abs(tileLocalX - cameraLocalX) <= width * 0.5f;
+
+        public static float BackgroundTileOffsetY(float tileHeight, float maxAbsCameraY, float orthoSize, float screenSpeed, float margin, out float shortfall)
+        {
+            float halfEnvelope = orthoSize + screenSpeed * maxAbsCameraY + margin;
+            float requiredHeight = 2f * halfEnvelope;
+            shortfall = Mathf.Max(0f, requiredHeight - tileHeight);
+            return shortfall <= 0f ? 0f : -halfEnvelope + tileHeight * .5f;
+        }
     }
 }

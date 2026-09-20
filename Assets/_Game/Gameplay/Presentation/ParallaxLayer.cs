@@ -12,6 +12,7 @@ namespace Parallax.Gameplay.Presentation
         [SerializeField] Camera realityCamera;
         [SerializeField] float screenSpeed = 0.05f;
         [SerializeField] float tileWidth = 1f;
+        [SerializeField] float tileOffsetY;
         [SerializeField] Transform[] tiles;
 
         RealityRoot realityRoot;
@@ -46,7 +47,7 @@ namespace Parallax.Gameplay.Presentation
             {
                 Transform tile = tiles[i];
                 if (tile == null) continue;
-                tile.localPosition = new Vector3(ParallaxMath.TileLocalX(cameraLocal.x, tileWidth, i, middle), 0f, 0f);
+                tile.localPosition = new Vector3(ParallaxMath.TileLocalX(cameraLocal.x, tileWidth, i, middle), tileOffsetY, 0f);
             }
         }
     }

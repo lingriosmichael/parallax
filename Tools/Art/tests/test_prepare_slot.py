@@ -34,11 +34,36 @@ def test_hazard_fade_is_monotonic_and_reaches_zero():
     alpha=out[:,60,3]
     assert alpha[0]==255 and alpha[-1]==0 and np.all(np.diff(alpha[round(49*.55):].astype(int))<=0)
 
+def test_haze_lerps_visible_pixels_and_keeps_alpha():
+    image=np.array([[[100,50,0,255],[20,30,40,0]]],np.uint8)
+    result=tool.apply_haze(image,.25,np.array([200,150,100]))
+    assert np.allclose(result[0,0,:3],[125,75,25],atol=1)
+    assert np.array_equal(result[...,3],image[...,3]) and np.array_equal(result[0,1,:3],image[0,1,:3])
+
+def test_tint_multiplies_visible_pixels_and_strength_zero_is_noop():
+    image=np.array([[[128,128,128,200],[20,30,40,0]]],np.uint8)
+    tinted=tool.apply_tint(image,tool.tint_colour("#E8B87A"),1)
+    assert np.allclose(tinted[0,0,:3],[116,92,61],atol=1)
+    assert np.array_equal(tinted[...,3],image[...,3])
+    assert np.array_equal(tool.apply_tint(image,tool.tint_colour("#E8B87A"),0),image)
+
+def test_grounded_strip_extends_every_visible_column_to_bottom():
+    image=np.zeros((10,4,4),np.uint8);image[3:7,:, :]=[10,20,30,255]
+    result=tool.ground_strip(image)
+    assert (result[-1,:,3]>127).all()
+
+def test_bottom_alignment_ignores_isolated_alpha_one_pixels():
+    image=np.zeros((200,400,4),np.uint8);image[100:150,:,:]=[10,20,30,255];image[199,0,3]=1
+    crop=tool.aspect_crop(image,4,bottom=True)
+    assert crop.shape == (100,400,4) and (crop[-1,:,3]>127).all()
+    assert tool.base_row(image) == 149
+
 def test_provenance_writes_one_row(tmp_path,monkeypatch):
     text="| Slot file name | Reality | What | Source | Ref | Mode | Target size (px) | Pivot | Motif | Raw source | Notes |\n| A_X.png | A | x | Manual | x | Simple | 1 × 1 | centre | | | note |\n| B_X.png | B | x | Manual | x | Simple | 1 × 1 | centre | | | note |\n"
     manifest=tmp_path/"m.md";manifest.write_text(text);monkeypatch.setattr(tool,"MANIFEST",manifest)
-    tool.write_provenance("A_X.png","raw.png","P-1")
+    tool.write_provenance("A_X.png","raw.png","P-1",.45,"#E8B87A",.35)
     lines=manifest.read_text().splitlines();assert "raw.png · P-1" in lines[1] and "raw.png" not in lines[2]
+    assert "haze 0.45" in lines[1] and "tint #E8B87A 0.35" in lines[1]
 
 def test_transparent_quiet_edges_skip_seam():
     keyed=np.zeros((30,60,4),np.uint8);assert tool.seam_ratio(keyed)[0] is None

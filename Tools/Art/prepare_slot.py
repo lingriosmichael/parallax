@@ -57,11 +57,27 @@ def surface_row(a):
     if not len(found): raise ValueError("no surface row with 60% opacity")
     return int(found[0])
 
+def base_row(a):
+    rows = np.where((a[..., 3] > 127).mean(axis=1) >= .05)[0]
+    if not len(rows):
+        raise ValueError("no base row with 5% opacity")
+    return int(rows[-1])
+
 def aspect_crop(a, aspect, bottom=False):
     h,w = a.shape[:2]; cw,ch = (round(h*aspect),h) if w/h > aspect else (w,round(w/aspect))
     x=(w-cw)//2; y=(h-ch)//2
-    if bottom: y=min(max(0,bounds(a)[3]-ch),h-ch)
+    if bottom: y=min(max(0, base_row(a) + 1 - ch),h-ch)
     return a[y:y+ch,x:x+cw]
+
+def ground_strip(a):
+    """Extend each visible base column to the bottom without changing its alpha."""
+    result = a.copy()
+    visible = result[..., 3] > 127
+    for x in range(result.shape[1]):
+        ys = np.where(visible[:, x])[0]
+        if len(ys):
+            result[ys[-1] + 1:, x] = result[ys[-1], x]
+    return result
 
 def resize_uniform(a, maxw, maxh):
     image=Image.fromarray(a,"RGBA"); scale=min(maxw/image.width,maxh/image.height)
@@ -86,7 +102,7 @@ def seam_ratio(a, axis="x"):
     if mask.mean()<.01 or wrap_mask.mean()<.01:return None,0,1
     interior=max(float(np.percentile(dif[mask],95)),1.0); wrap=float(np.mean(wrap_dif[wrap_mask])); return wrap/interior,wrap,interior
 
-def process(a, mode, w, h, pivot):
+def process(a, mode, w, h, pivot, grounded=False):
     band=round(.12*w)
     if mode=="sky": crop=aspect_crop(a,(w+band)/h)
     elif mode=="strip": crop=aspect_crop(a,(w+band)/h,True)
@@ -102,7 +118,10 @@ def process(a, mode, w, h, pivot):
     else: raise ValueError("unknown mode")
     if mode=="material":
         source=np.asarray(Image.fromarray(crop,"RGBA").resize((w+band,h+round(.12*h)),Image.Resampling.LANCZOS)); return seam(seam(source.astype(float),w),h,"y")
-    source=np.asarray(Image.fromarray(crop,"RGBA").resize((w+band,h),Image.Resampling.LANCZOS)); return seam(source.astype(float),w)
+    source=np.asarray(Image.fromarray(crop,"RGBA").resize((w+band,h),Image.Resampling.LANCZOS))
+    if mode == "strip" and grounded:
+        source = ground_strip(source)
+    return seam(source.astype(float),w)
 
 def validate(a, mode, w, h, key=None):
     if a.shape[:2] != (h,w): raise ValueError("wrong output size")
@@ -127,7 +146,7 @@ def processing_metadata(a, mode, w, h):
         aspect=(w+band)/h
         crop_w,crop_h=(round(source_h*aspect),source_h) if source_w/source_h>aspect else (source_w,round(source_w/aspect))
         crop_x=(source_w-crop_w)//2; crop_y=(source_h-crop_h)//2
-        if mode=="strip": crop_y=min(max(0,bounds(a)[3]-crop_h),source_h-crop_h)
+        if mode=="strip": crop_y=min(max(0,base_row(a)+1-crop_h),source_h-crop_h)
         return f"({crop_x},{crop_y},{crop_x+crop_w},{crop_y+crop_h})",(w+band)/crop_w,None
     if mode=="material":
         side=min(source_w,source_h); x=(source_w-side)//2; y=(source_h-side)//2
@@ -156,8 +175,46 @@ def sheet(raw, processed, slot, mode):
     if mode in {"edge","hazard"}:d.line((310,50,310+processed.width,50),fill="red")
     path=Path.home()/"Desktop/PAX-A02_contact"/slot; path.parent.mkdir(parents=True,exist_ok=True); out.save(path); return path
 
-def write_provenance(slot, raw, prompt):
-    lines,row,fields,_,_=info(slot); fields[9]=f"{raw} · {prompt} · {datetime.date.today().isoformat()}"; lines[row]="| "+" | ".join(fields)+" |"; MANIFEST.write_text("\n".join(lines)+"\n")
+def write_provenance(slot, raw, prompt, haze, tint, tint_strength):
+    lines,row,fields,_,_=info(slot)
+    haze_note = f" · haze {haze:g}" if haze else ""
+    tint_note = f" · tint {tint.upper()} {tint_strength:g}" if tint else ""
+    fields[9]=f"{raw} · {prompt} · {datetime.date.today().isoformat()}{haze_note}{tint_note}"
+    lines[row]="| "+" | ".join(fields)+" |"
+    MANIFEST.write_text("\n".join(lines)+"\n")
+
+def haze_colour(path):
+    sky = np.asarray(Image.open(path).convert("RGBA"))
+    opaque = sky[..., 3] > 0
+    if not opaque.any():
+        raise ValueError("haze source has no opaque pixels")
+    return sky[..., :3][opaque].mean(axis=0)
+
+def apply_haze(a, haze, colour):
+    if haze == 0:
+        return a
+    result = a.copy()
+    visible = result[..., 3] > 0
+    rgb = result[..., :3].astype(float)
+    rgb[visible] = rgb[visible] * (1 - haze) + colour * haze
+    result[..., :3] = np.round(rgb).clip(0, 255).astype(np.uint8)
+    return result
+
+def tint_colour(value):
+    if not re.fullmatch(r"#[0-9A-Fa-f]{6}", value):
+        raise ValueError("--tint must be #RRGGBB")
+    return np.array([int(value[i:i + 2], 16) for i in (1, 3, 5)], dtype=float) / 255
+
+def apply_tint(a, tint, strength):
+    if tint is None or strength == 0:
+        return a
+    result = a.copy()
+    visible = result[..., 3] > 0
+    rgb = result[..., :3].astype(float)
+    multiplied = rgb * tint
+    rgb[visible] = rgb[visible] * (1 - strength) + multiplied[visible] * strength
+    result[..., :3] = np.round(rgb).clip(0, 255).astype(np.uint8)
+    return result
 
 def run(args):
     _,_,fields,w,h=info(args.slot); w=args.width or w; h=args.height or h; raw_image=Image.open(args.raw).convert("RGBA"); a=np.asarray(raw_image).copy(); keyed=0
@@ -165,7 +222,18 @@ def run(args):
     background=core=fringe=0
     if args.mode in KEYED:a,colour,(background,core,fringe)=key_foreground(a)
     crop_box,scale,surface=processing_metadata(a,args.mode,w,h)
-    result=process(a,args.mode,w,h,fields[7]); path=sheet(raw_image,Image.fromarray(result,"RGBA"),args.slot,args.mode)
+    if args.haze and not args.haze_from:
+        raise ValueError("--haze-from is required when --haze is non-zero")
+    if not 0 <= args.haze <= 1:
+        raise ValueError("--haze must be in 0..1")
+    if not 0 <= args.tint_strength <= 1:
+        raise ValueError("--tint-strength must be in 0..1")
+    source_tint_colour = tint_colour(args.tint) if args.tint else None
+    result=process(a,args.mode,w,h,fields[7],args.grounded)
+    source_haze_colour = haze_colour(args.haze_from) if args.haze else None
+    result=apply_haze(result,args.haze,source_haze_colour) if source_haze_colour is not None else result
+    result=apply_tint(result,source_tint_colour,args.tint_strength)
+    path=sheet(raw_image,Image.fromarray(result,"RGBA"),args.slot,args.mode)
     print(f"K={tuple(round(float(x),1) for x in colour) if colour is not None else 'n/a'} background={background:.2f}% core={core:.2f}% fringe={fringe:.2f}% sheet={path}")
     detail=f"raw={args.raw} mode={args.mode} surface_row={surface if surface is not None else 'n/a'} crop_box={crop_box} scale_factor={scale:.6f} seam_x={seam_text(result, 'x')}" + (f" seam_y={seam_text(result, 'y')}" if args.mode=="material" else "")
     try:
@@ -176,7 +244,7 @@ def run(args):
     print(detail+" PASS")
     if not args.dry_run:
       if not args.prompt: raise ValueError("--prompt is required unless --dry-run")
-      sub="Backgrounds/" if "_BG_" in args.slot or "_MG_" in args.slot else ""; target=ROOT/"Assets/_Game/Art"/f"Reality{fields[1]}"/"Environment"/sub/args.slot; target.parent.mkdir(parents=True,exist_ok=True); Image.fromarray(result,"RGBA").save(target); write_provenance(args.slot,args.raw,args.prompt)
+      sub="Backgrounds/" if "_BG_" in args.slot or "_MG_" in args.slot else ""; target=ROOT/"Assets/_Game/Art"/f"Reality{fields[1]}"/"Environment"/sub/args.slot; target.parent.mkdir(parents=True,exist_ok=True); Image.fromarray(result,"RGBA").save(target); write_provenance(args.slot,args.raw,args.prompt,args.haze,args.tint,args.tint_strength)
 
 def candidates_main():
     p=argparse.ArgumentParser(); p.add_argument("--slot",required=True);p.add_argument("--raw",action="append",required=True);args=p.parse_args()
@@ -188,5 +256,5 @@ def candidates_main():
 def main():
     if len(__import__("sys").argv)>1 and __import__("sys").argv[1]=="candidates":
       __import__("sys").argv.pop(1); candidates_main(); return
-    p=argparse.ArgumentParser(); p.add_argument("--raw",required=True);p.add_argument("--slot",required=True);p.add_argument("--mode",required=True,choices=("sky","strip","material","edge","hazard","object"));p.add_argument("--width",type=int);p.add_argument("--height",type=int);p.add_argument("--dry-run",action="store_true");p.add_argument("--prompt");run(p.parse_args())
+    p=argparse.ArgumentParser(); p.add_argument("--raw",required=True);p.add_argument("--slot",required=True);p.add_argument("--mode",required=True,choices=("sky","strip","material","edge","hazard","object"));p.add_argument("--width",type=int);p.add_argument("--height",type=int);p.add_argument("--dry-run",action="store_true");p.add_argument("--prompt");p.add_argument("--haze",type=float,default=0);p.add_argument("--haze-from");p.add_argument("--grounded",action="store_true");p.add_argument("--tint");p.add_argument("--tint-strength",type=float,default=0);run(p.parse_args())
 if __name__=="__main__":main()

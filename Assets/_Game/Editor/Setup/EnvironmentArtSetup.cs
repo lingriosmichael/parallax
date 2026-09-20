@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using Parallax.Core;
+using Parallax.Core.Presentation;
 using Parallax.Gameplay.Presentation;
 using Parallax.Gameplay.Reality;
+using Parallax.Gameplay.Checkpoints;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.U2D;
@@ -24,8 +26,6 @@ namespace Parallax.Editor.Setup
         const float GlobalLightAIntensity = 1f;
         static readonly Color GlobalLightBColor = new Color(.78f, .86f, 1f);
         const float GlobalLightBIntensity = .9f;
-        static readonly string[] GeometryA = { "Ground", "Wall_Left", "Wall_Right", "Ceiling", "Platform_Left", "Platform_Right" };
-        static readonly string[] GeometryB = { "Ground", "Wall_Left", "Wall_Right", "Ceiling", "Pillar_BOnly", "Ledge_B" };
         static readonly string[] SlotsA = { "BG_00_Sky", "BG_01_Far", "MG_01_Mid", "GAME_Platform_Top", "GAME_Platform_Fill", "GAME_Wall", "OBJ_Vine", "OBJ_Plate", "OBJ_Station", "OBJ_Checkpoint", "OBJ_Hazard", "FG_01" };
         static readonly string[] SlotsB = { "BG_00_Sky", "BG_01_Far", "MG_01_Mid", "GAME_Platform_Top", "GAME_Platform_Fill", "GAME_Wall", "OBJ_Elevator", "OBJ_Gate", "OBJ_Checkpoint", "OBJ_Hazard", "FG_01" };
 
@@ -42,8 +42,8 @@ namespace Parallax.Editor.Setup
             bool useV2Atlas = UsesV2SpritePacker();
             EnsureAtlas(AtlasAPath, AtlasAPathV2, "A", useV2Atlas, changes);
             EnsureAtlas(AtlasBPath, AtlasBPathV2, "B", useV2Atlas, changes);
-            int filledA = ConfigureReality(rootA, GeometryA, "A", CameraNamed("Camera_A"), changes);
-            int filledB = ConfigureReality(rootB, GeometryB, "B", CameraNamed("Camera_B"), changes);
+            int filledA = ConfigureReality(rootA, "A", CameraNamed("Camera_A"), changes);
+            int filledB = ConfigureReality(rootB, "B", CameraNamed("Camera_B"), changes);
             ValidateGlobalLight(rootA);
             ValidateGlobalLight(rootB);
             ConfigureGlobalLight(rootA, GlobalLightAColor, GlobalLightAIntensity, changes);
@@ -78,23 +78,27 @@ namespace Parallax.Editor.Setup
             return camera;
         }
 
-        static int ConfigureReality(RealityRoot root, string[] geometryNames, string prefix, Camera camera, List<string> changes)
+        static int ConfigureReality(RealityRoot root, string prefix, Camera camera, List<string> changes)
         {
             int filled = 0;
-            for (int i = 0; i < geometryNames.Length; i++)
+            Transform geometryRoot = root.transform.Find("Geometry");
+            Collider2D[] colliders = geometryRoot == null ? new Collider2D[0] : geometryRoot.GetComponentsInChildren<Collider2D>(true);
+            for (int i = 0; i < colliders.Length; i++)
             {
-                string name = geometryNames[i];
-                string slot = name.StartsWith("Wall") || name == "Ceiling" || name == "Pillar_BOnly" ? "GAME_Wall" : "GAME_Platform_Fill";
+                Collider2D collider = colliders[i];
+                Transform geometry = collider.transform;
+                SpriteRenderer greybox = geometry.GetComponent<SpriteRenderer>();
+                if (collider.isTrigger || greybox == null) continue;
+                float angle = Mathf.Repeat(geometry.eulerAngles.z, 90f);
+                if (!Mathf.Approximately(angle, 0f)) { Debug.LogWarning("EnvironmentArtSetup: skipped rotated geometry " + RealityIsolationValidator.Path(geometry)); continue; }
+                Bounds bounds = collider.bounds;
+                string slot = bounds.size.y > bounds.size.x ? "GAME_Wall" : "GAME_Platform_Fill";
                 Sprite sprite = Load(prefix, slot);
-                bool topGeometry = IsTopGeometry(prefix, name);
+                bool topGeometry = bounds.size.y <= bounds.size.x && IsOpenTop(collider, colliders);
                 Sprite top = topGeometry ? Load(prefix, "GAME_Platform_Top") : null;
                 if (sprite == null) Missing(prefix, slot);
                 if (topGeometry && top == null) Missing(prefix, "GAME_Platform_Top");
                 if (sprite == null && top == null) continue;
-                Transform geometry = root.transform.Find("Geometry/" + name);
-                BoxCollider2D collider = geometry == null ? null : geometry.GetComponent<BoxCollider2D>();
-                SpriteRenderer greybox = geometry == null ? null : geometry.GetComponent<SpriteRenderer>();
-                if (collider == null || greybox == null) { Debug.LogError("EnvironmentArtSetup: missing inventoried geometry renderer/collider " + name); continue; }
                 bool hasArt = false;
                 if (sprite != null) { ConfigureGeometryArt(geometry, collider, root, "Art", sprite, -10, changes); hasArt = true; }
                 if (topGeometry)
@@ -110,28 +114,44 @@ namespace Parallax.Editor.Setup
             return filled;
         }
 
-        static bool IsTopGeometry(string prefix, string name) =>
-            name == "Ground" || (prefix == "A" && name.StartsWith("Platform_")) || (prefix == "B" && name == "Ledge_B");
+        static bool IsOpenTop(Collider2D candidate, Collider2D[] colliders)
+        {
+            Bounds bounds = candidate.bounds;
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                Collider2D other = colliders[i];
+                if (other == candidate || other.isTrigger || other.GetComponent<SpriteRenderer>() == null) continue;
+                Bounds above = other.bounds;
+                if (above.min.y >= bounds.max.y && above.min.y - bounds.max.y <= .1f && above.max.x > bounds.min.x && above.min.x < bounds.max.x) return false;
+            }
+            return true;
+        }
 
-        static void ConfigureGeometryArt(Transform geometry, BoxCollider2D collider, RealityRoot root, string childName, Sprite sprite, int order, List<string> changes)
+        static void ConfigureGeometryArt(Transform geometry, Collider2D collider, RealityRoot root, string childName, Sprite sprite, int order, List<string> changes)
         {
             Transform art = SetupUtility.EnsureChild(geometry, childName, root.gameObject.layer, changes);
             SetArtScale(art, changes);
-            SetupUtility.SetLocalPosition(art, collider.offset, changes);
+            Bounds worldBounds = collider.bounds;
+            SetWorldPosition(art, new Vector3(worldBounds.center.x, worldBounds.center.y, geometry.position.z), changes);
             SpriteRenderer renderer = SetupUtility.Ensure<SpriteRenderer>(art.gameObject, changes);
-            ConfigureRenderer(renderer, sprite, RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay), collider.bounds.size, SpriteDrawMode.Tiled, order, changes);
+            ConfigureRenderer(renderer, sprite, RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay), worldBounds.size, SpriteDrawMode.Tiled, order, changes);
         }
 
-        static void ConfigureTopArt(Transform geometry, BoxCollider2D collider, RealityRoot root, Sprite sprite, List<string> changes)
+        static void ConfigureTopArt(Transform geometry, Collider2D collider, RealityRoot root, Sprite sprite, List<string> changes)
         {
             Transform art = SetupUtility.EnsureChild(geometry, "ArtTop", root.gameObject.layer, changes);
             SetArtScale(art, changes);
-            float pivotY = sprite.rect.height == 0f ? 1f : sprite.pivot.y / sprite.rect.height;
-            float topFromPivotInWorldUnits = (1f - pivotY) * sprite.bounds.size.y;
-            float topFromPivotInParentUnits = topFromPivotInWorldUnits / geometry.lossyScale.y;
-            SetupUtility.SetLocalPosition(art, collider.offset + Vector2.up * (collider.size.y * 0.5f - topFromPivotInParentUnits), changes);
+            Bounds worldBounds = collider.bounds;
+            SetWorldPosition(art, new Vector3(worldBounds.center.x, worldBounds.max.y, geometry.position.z), changes);
             SpriteRenderer renderer = SetupUtility.Ensure<SpriteRenderer>(art.gameObject, changes);
-            ConfigureRenderer(renderer, sprite, RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay), new Vector2(collider.bounds.size.x, sprite.bounds.size.y), SpriteDrawMode.Tiled, -9, changes);
+            ConfigureRenderer(renderer, sprite, RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay), new Vector2(worldBounds.size.x, sprite.bounds.size.y), SpriteDrawMode.Tiled, -9, changes);
+        }
+
+        static void SetWorldPosition(Transform target, Vector3 position, List<string> changes)
+        {
+            if (target.position == position) return;
+            target.position = position;
+            changes.Add("set " + RealityIsolationValidator.Path(target) + ".position");
         }
 
         static void SetArtScale(Transform art, List<string> changes)
@@ -176,12 +196,28 @@ namespace Parallax.Editor.Setup
         {
             Sprite sprite = Load(prefix, "OBJ_Hazard");
             if (sprite == null) { Missing(prefix, "OBJ_Hazard"); return 0; }
+            FallResetVolume[] volumes = root.GetComponentsInChildren<FallResetVolume>(true);
+            Collider2D lowest = null;
+            for (int i = 0; i < volumes.Length; i++)
+            {
+                Collider2D collider = volumes[i].GetComponent<Collider2D>();
+                if (collider != null && (lowest == null || collider.bounds.min.y < lowest.bounds.min.y)) lowest = collider;
+            }
+            if (lowest == null) { Debug.LogError("EnvironmentArtSetup: missing FallResetVolume collider for " + root.Id); return 0; }
             Transform reset = root.transform.Find("FallResetTest");
-            if (reset == null) { Debug.LogError("EnvironmentArtSetup: missing FallResetTest for " + root.Id); return 0; }
             Transform art = SetupUtility.EnsureChild(reset, "HazardArt", root.gameObject.layer, changes);
-            SetupUtility.SetLocalPosition(art, new Vector2(0f, -3.5f), changes);
+            Bounds bounds = lowest.bounds;
+            SetWorldPosition(art, new Vector3(bounds.center.x, bounds.max.y, reset.position.z), changes);
             SpriteRenderer renderer = SetupUtility.Ensure<SpriteRenderer>(art.gameObject, changes);
-            ConfigureRenderer(renderer, sprite, RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay), new Vector2(18f, 1f), SpriteDrawMode.Tiled, -2, changes);
+            ConfigureRenderer(renderer, sprite, RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay), new Vector2(bounds.size.x, sprite.bounds.size.y), SpriteDrawMode.Tiled, -11, changes);
+            Collider2D[] geometry = root.transform.Find("Geometry").GetComponentsInChildren<Collider2D>(true);
+            for (int i = 0; i < geometry.Length; i++)
+            {
+                Bounds other = geometry[i].bounds;
+                bool overlaps = bounds.min.x < other.max.x && bounds.max.x > other.min.x && bounds.min.y < other.max.y && bounds.max.y > other.min.y;
+                Debug.Assert(!overlaps, "EnvironmentArtSetup: HazardArt overlaps geometry " + RealityIsolationValidator.Path(geometry[i].transform));
+            }
+            Debug.Log("EnvironmentArtSetup: HazardArt position " + art.position + " for " + root.name + ".");
             return 1;
         }
 
@@ -215,6 +251,10 @@ namespace Parallax.Editor.Setup
             SetupUtility.SetFloat(parallax, "screenSpeed", screenSpeed, changes);
             float width = sprite.bounds.size.x;
             SetupUtility.SetFloat(parallax, "tileWidth", width, changes);
+            float shortfall;
+            float offsetY = ParallaxMath.BackgroundTileOffsetY(sprite.bounds.size.y, 4.7f, camera.orthographicSize, screenSpeed, .25f, out shortfall);
+            SetupUtility.SetFloat(parallax, "tileOffsetY", offsetY, changes);
+            if (shortfall > 0f) Debug.LogWarning("EnvironmentArtSetup: " + prefix + "_" + slot + " background vertical coverage shortfall " + shortfall + "u.");
             var tiles = new Object[3];
             for (int i = 0; i < 3; i++)
             {
@@ -324,28 +364,47 @@ namespace Parallax.Editor.Setup
                 AssetDatabase.DeleteAsset(v1Path);
                 changes.Add("removed V1 atlas " + v1Path);
             }
-            SpriteAtlasAsset atlas = SpriteAtlasAsset.Load(v2Path);
+            SpriteAtlas atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(v2Path);
             if (atlas == null)
             {
-                atlas = new SpriteAtlasAsset();
-                SpriteAtlasAsset.Save(atlas, v2Path);
+                SpriteAtlasAsset.Save(new SpriteAtlasAsset(), v2Path);
+                atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(v2Path);
                 changes.Add("created " + v2Path);
             }
-            string[] dependencies = AssetDatabase.GetDependencies(v2Path, false);
+            if (atlas == null)
+            {
+                Debug.LogError("EnvironmentArtSetup: could not load V2 SpriteAtlas " + v2Path + ".");
+                return;
+            }
+            Object[] packables = SpriteAtlasExtensions.GetPackables(atlas);
+            var duplicates = new List<Object>();
+            for (int i = 0; i < packables.Length; i++)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    if (packables[i] == packables[j]) { duplicates.Add(packables[i]); break; }
+                }
+            }
+            if (duplicates.Count > 0)
+            {
+                SpriteAtlasExtensions.Remove(atlas, duplicates.ToArray());
+                changes.Add("removed " + duplicates.Count + " duplicate packable(s) from " + System.IO.Path.GetFileName(v2Path));
+                packables = SpriteAtlasExtensions.GetPackables(atlas);
+            }
             string[] slots = { "GAME_Platform_Top", "GAME_Platform_Fill", "GAME_Wall", "OBJ_Vine", "OBJ_Elevator", "OBJ_Plate", "OBJ_Gate", "OBJ_Station", "OBJ_Checkpoint", "OBJ_Hazard", "FG_01" };
             for (int i = 0; i < slots.Length; i++)
             {
                 Sprite sprite = Load(prefix, slots[i]);
-                if (sprite == null || Contains(dependencies, AssetDatabase.GetAssetPath(sprite))) continue;
-                atlas.Add(new Object[] { sprite });
-                SpriteAtlasAsset.Save(atlas, v2Path);
-                changes.Add("added " + sprite.name + " to " + atlas.name);
+                if (sprite == null || Contains(packables, sprite)) continue;
+                SpriteAtlasExtensions.Add(atlas, new Object[] { sprite });
+                changes.Add("added " + sprite.name + " to " + System.IO.Path.GetFileName(v2Path));
+                packables = SpriteAtlasExtensions.GetPackables(atlas);
             }
             SpriteAtlasImporter importer = AssetImporter.GetAtPath(v2Path) as SpriteAtlasImporter;
             if (importer != null && !importer.includeInBuild) { importer.includeInBuild = true; importer.SaveAndReimport(); changes.Add("set " + atlas.name + ".includeInBuild"); }
         }
 
-        static bool Contains(string[] values, string candidate)
+        static bool Contains(Object[] values, Object candidate)
         {
             for (int i = 0; i < values.Length; i++) if (values[i] == candidate) return true;
             return false;
