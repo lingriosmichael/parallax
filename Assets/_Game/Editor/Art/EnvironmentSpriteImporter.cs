@@ -15,6 +15,9 @@ namespace Parallax.Editor.Art
             var importer = (TextureImporter)assetImporter;
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
+#pragma warning disable CS0618
+            importer.spritesheet = System.Array.Empty<SpriteMetaData>();
+#pragma warning restore CS0618
             var catImporter = AssetImporter.GetAtPath(CatPath) as TextureImporter;
             if (catImporter == null)
             {
