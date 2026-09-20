@@ -114,7 +114,10 @@ def process(a, mode, w, h, pivot, grounded=False):
         if scaled.shape[1]<w+band: raise ValueError("raw band too short")
         start=(scaled.shape[1]-w-band)//2; result=seam(scaled[:,start:start+w+band].astype(float),w); return hazard_fade(result) if mode=="hazard" else result
     elif mode=="object":
-        x0,y0,x1,y1=bounds(a); scaled=resize_uniform(a[y0:y1,x0:x1],w,h); canvas=np.zeros((h,w,4),np.uint8); x=(w-scaled.shape[1])//2; y=0 if pivot=="top centre" else h-scaled.shape[0] if pivot=="bottom centre" else (h-scaled.shape[0])//2; canvas[y:y+scaled.shape[0],x:x+scaled.shape[1]]=scaled; return canvas
+        # The keyer can leave sub-visible alpha in a colour-gradient backdrop.
+        # Object crops use the same visible-alpha threshold as validation so that
+        # this residue never expands an object's content bounds.
+        x0,y0,x1,y1=bounds(a,25); scaled=resize_uniform(a[y0:y1,x0:x1],w,h); canvas=np.zeros((h,w,4),np.uint8); x=(w-scaled.shape[1])//2; y=0 if pivot=="top centre" else h-scaled.shape[0] if pivot=="bottom centre" else (h-scaled.shape[0])//2; canvas[y:y+scaled.shape[0],x:x+scaled.shape[1]]=scaled; return canvas
     else: raise ValueError("unknown mode")
     if mode=="material":
         source=np.asarray(Image.fromarray(crop,"RGBA").resize((w+band,h+round(.12*h)),Image.Resampling.LANCZOS)); return seam(seam(source.astype(float),w),h,"y")
@@ -154,7 +157,7 @@ def processing_metadata(a, mode, w, h):
     if mode in {"edge","hazard"}:
         row=surface_row(a); rows=np.where((a[...,3]>12).mean(axis=1)>=.05)[0]; x0,_,x1,_=bounds(a,12)
         return f"({x0},{row},{x1},{rows[-1]+1})",h/(rows[-1]+1-row),row
-    x0,y0,x1,y1=bounds(a)
+    x0,y0,x1,y1=bounds(a,25)
     return f"({x0},{y0},{x1},{y1})",min(w/(x1-x0),h/(y1-y0)),None
 
 def seam_text(a, axis):
