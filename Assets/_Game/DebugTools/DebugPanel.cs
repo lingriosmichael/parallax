@@ -27,6 +27,7 @@ namespace Parallax.DebugTools
         [SerializeField] GravityControlReceiver receiverB;
         [SerializeField] CheckpointManager checkpoints;
         [SerializeField] RoomManager rooms;
+        [SerializeField] RoomDeath roomDeath;
 
         static readonly Rect DbgButtonRect = new Rect(10f, 10f, 70f, 30f);
         static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 450f);
@@ -40,16 +41,21 @@ namespace Parallax.DebugTools
         float fpsTimer;
         int fpsFrames;
         float fps;
+        DeathInfo? lastDeath;
 
         void OnEnable()
         {
             if (switchController != null) switchController.Switched += OnSwitched;
+            if (roomDeath != null) roomDeath.Died += OnDied;
         }
 
         void OnDisable()
         {
             if (switchController != null) switchController.Switched -= OnSwitched;
+            if (roomDeath != null) roomDeath.Died -= OnDied;
         }
+
+        void OnDied(DeathInfo info) => lastDeath = info;
 
         void Update()
         {
@@ -127,6 +133,7 @@ namespace Parallax.DebugTools
             DrawEcho();
             DrawCheckpoints();
             DrawRooms();
+            DrawDeath();
 
             GUILayout.EndArea();
         }
@@ -155,6 +162,17 @@ namespace Parallax.DebugTools
             }
 
             GUILayout.Label($"Room: {rooms.CurrentRoom} · door: {(rooms.CurrentDoorTouched ? "touched" : "—")}{(rooms.LevelComplete ? " · Level complete" : "")}");
+        }
+
+        void DrawDeath()
+        {
+            if (!lastDeath.HasValue)
+            {
+                GUILayout.Label("Last death: —");
+                return;
+            }
+            DeathInfo death = lastDeath.Value;
+            GUILayout.Label($"Last death: {death.Cause} · room {death.Room} · tick {death.Tick} · reset {death.TrapsReset} traps, {death.AnchorsReset} anchors");
         }
 
         static void DrawControlRow(ObserverId id, CatSeat seat, GravityControlReceiver receiver)

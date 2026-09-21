@@ -528,6 +528,18 @@ see D-030. Checkpoint id `0` is reserved for each reality's level spawn.
 - With no door N+1 the level completes (`LevelCompleted`, logged once).
 - Local only: no transport, no Photon.
 
+**As built (PAX-041):** `RoomDeath` on `Systems` is the one solo death path. It rejects
+non-`LocalHuman` cats, respawns the live room's cat immediately, resets only that room's registered
+traps, and issues each registered room-owned anchor's initial value as a fresh System-origin absolute
+request; an anchor not yet registered with `AnchorRegistry` is silently skipped. `RoomAnchorBinding`
+serializes its anchor as a `ushort` and constructs `AnchorId` at registration because `AnchorId` is a
+readonly non-Unity-serializable struct.
+
+`RoomManager` owns the single ordered `ObserverSet.Stepped` room pass: live traps step first,
+then hazards overlap-test, then the current door is tested. `Hazard` and `RoomTrap` never subscribe
+to `Stepped` themselves, so a trap cannot fire outside its live room and death deterministically wins
+over a same-tick door touch; `DeathTickGuard` permits one death per Observer/tick.
+
 ---
 
 ## 12. Sessions (co-op)

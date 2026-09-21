@@ -1,6 +1,6 @@
 using Parallax.Core;
 using Parallax.Gameplay.Observers;
-using Parallax.Gameplay.Player;
+using Parallax.Gameplay.Rooms;
 using Parallax.Gameplay.Reality;
 using UnityEngine;
 
@@ -9,7 +9,7 @@ namespace Parallax.Gameplay.Checkpoints
     [RequireComponent(typeof(BoxCollider2D))]
     public sealed class FallResetVolume : MonoBehaviour
     {
-        [SerializeField] CheckpointManager checkpoints;
+        [SerializeField] RoomDeath roomDeath;
         [SerializeField] ObserverSet observers;
 
         BoxCollider2D box;
@@ -28,9 +28,9 @@ namespace Parallax.Gameplay.Checkpoints
             box = GetComponent<BoxCollider2D>();
             box.isTrigger = true;
 
-            if (checkpoints == null || observers == null)
+            if (roomDeath == null || observers == null)
             {
-                Debug.LogError($"FallResetVolume: '{gameObject.name}' has no CheckpointManager or ObserverSet assigned. Disabling.", this);
+                Debug.LogError($"FallResetVolume: '{gameObject.name}' has no RoomDeath or ObserverSet assigned. Disabling.", this);
                 enabled = false;
                 return;
             }
@@ -60,7 +60,7 @@ namespace Parallax.Gameplay.Checkpoints
                 if (context == null || context.Driver == null || !CheckpointPolicy.FallResets(context.Driver.Kind)) continue;
                 if (context.Cat == null || body.gameObject != context.Cat.gameObject) continue;
 
-                checkpoints.Respawn(context);
+                roomDeath.Kill(context.Id, DeathCause.Fall);
             }
         }
     }

@@ -12,16 +12,22 @@ namespace Parallax.Gameplay.Rooms
         [SerializeField] ObserverId soloReality = ObserverId.A;
         [SerializeField] CheckpointManager checkpoints;
         [SerializeField] ObserverSet observers;
+        [SerializeField] RoomDeath roomDeath;
 
         readonly RoomProgress progress = new RoomProgress();
         readonly Dictionary<int, RoomDoor> doors = new Dictionary<int, RoomDoor>();
+        readonly List<RoomTrap> traps = new List<RoomTrap>();
+        readonly List<Hazard> hazards = new List<Hazard>();
 
         public int CurrentRoom => checkpoints != null ? checkpoints.Current : 0;
+        public ObserverId SoloReality => soloReality;
         public bool LevelComplete => progress.LevelComplete;
         public bool CurrentDoorTouched { get; private set; }
 
         public event Action<int> RoomCompleted;
         public event Action LevelCompleted;
+
+        public bool IsLive(int roomId) => !progress.LevelComplete && roomId == CurrentRoom;
 
         void OnEnable()
         {
@@ -53,9 +59,28 @@ namespace Parallax.Gameplay.Rooms
             if (doors.TryGetValue(door.RoomId, out RoomDoor registered) && registered == door) doors.Remove(door.RoomId);
         }
 
+        public void RegisterTrap(RoomTrap trap)
+        {
+            if (trap != null && !traps.Contains(trap)) traps.Add(trap);
+        }
+
+        public void UnregisterTrap(RoomTrap trap) => traps.Remove(trap);
+
+        public void RegisterHazard(Hazard hazard)
+        {
+            if (hazard != null && !hazards.Contains(hazard)) hazards.Add(hazard);
+        }
+
+        public void UnregisterHazard(Hazard hazard) => hazards.Remove(hazard);
+
         void OnStepped(int tick)
         {
             if (progress.LevelComplete || checkpoints == null) return;
+
+            // The one ordered room tick is traps -> hazards -> door. Components never subscribe
+            // independently, so a dead cat cannot complete a door on this same tick.
+            for (int i = 0; i < traps.Count; i++) traps[i].StepIfLive();
+            for (int i = 0; i < hazards.Count; i++) hazards[i].KillOverlappingCat();
 
             int room = checkpoints.Current;
             if (!doors.TryGetValue(room, out RoomDoor door))
@@ -65,6 +90,11 @@ namespace Parallax.Gameplay.Rooms
             }
 
             ObserverContext observer = observers.Get(soloReality);
+            if (roomDeath != null && roomDeath.WasKilledThisTick(soloReality, tick))
+            {
+                CurrentDoorTouched = false;
+                return;
+            }
             bool touched = observer != null && observer.Driver != null
                 && RoomPolicy.CompletesRoom(observer.Driver.Kind)
                 && door.IsTouchedBy(observer);
