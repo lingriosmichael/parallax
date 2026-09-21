@@ -81,21 +81,25 @@ namespace Parallax.Editor.Setup
             RoomValidator.Validate();
         }
 
-        static void BuildDoor(RealityRoot root, RoomManager manager, int id, Vector2 localPosition, List<string> changes)
+        static void BuildDoor(RealityRoot root, RoomManager manager, int id, Vector2 localPosition, List<string> changes) =>
+            BuildDoorCore(SetupUtility.EnsureChild(root.transform, "Doors", LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id)), changes), root, $"Door_{id}", manager, id, localPosition, DoorSize, new Color(0.9f, 0.5f, 1f, 1f), null, changes);
+
+        internal static RoomDoor BuildDoorCore(Transform parent, RealityRoot root, string name, RoomManager manager, int id, Vector2 localPosition, Vector2 size, Color color, int? sortingOrder, List<string> changes)
         {
             int layer = LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id));
-            Transform folder = SetupUtility.EnsureChild(root.transform, "Doors", layer, changes);
-            GameObject doorObject = SetupUtility.EnsureChild(folder, $"Door_{id}", layer, changes).gameObject;
+            GameObject doorObject = SetupUtility.EnsureChild(parent, name, layer, changes).gameObject;
             SetupUtility.SetLocalPosition(doorObject.transform, localPosition, changes);
-            SpriteRenderer greybox = SetupUtility.SetVisual(doorObject, root, DoorSize, new Color(0.9f, 0.5f, 1f, 1f), changes);
-            BuildDoorArt(doorObject.transform, greybox, root, changes);
+            SpriteRenderer greybox = SetupUtility.SetVisual(doorObject, root, size, color, changes);
+            if (sortingOrder.HasValue && greybox.sortingOrder != sortingOrder.Value) { greybox.sortingOrder = sortingOrder.Value; changes.Add("set " + doorObject.name + ".sortingOrder"); }
+            BuildDoorArt(doorObject.transform, greybox, root, size, changes);
             RoomDoor door = SetupUtility.Ensure<RoomDoor>(doorObject, changes);
             SetInt(door, "roomId", id, changes);
-            SetupUtility.SetVector2(door, "zoneSize", DoorSize, changes);
+            SetupUtility.SetVector2(door, "zoneSize", size, changes);
             SetupUtility.SetObject(door, "manager", manager, changes);
+            return door;
         }
 
-        static void BuildDoorArt(Transform door, SpriteRenderer greybox, RealityRoot root, List<string> changes)
+        static void BuildDoorArt(Transform door, SpriteRenderer greybox, RealityRoot root, Vector2 doorSize, List<string> changes)
         {
             Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(DoorArtPath);
             if (sprite == null)
@@ -105,7 +109,7 @@ namespace Parallax.Editor.Setup
             }
 
             Transform art = SetupUtility.EnsureChild(door, "Art", door.gameObject.layer, changes);
-            SetupUtility.SetLocalPosition(art, new Vector2(0f, -DoorSize.y * 0.5f), changes);
+            SetupUtility.SetLocalPosition(art, new Vector2(0f, -doorSize.y * 0.5f), changes);
             var renderer = SetupUtility.Ensure<SpriteRenderer>(art.gameObject, changes);
             if (renderer.sprite != sprite)
             {

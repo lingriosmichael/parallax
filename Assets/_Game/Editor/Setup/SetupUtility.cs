@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using Parallax.Core;
 using Parallax.Gameplay.Anchors;
 using Parallax.Gameplay.Reality;
@@ -10,6 +11,8 @@ namespace Parallax.Editor.Setup
 {
     public static class SetupUtility
     {
+        const string GreyboxFolder = "Assets/_Game/Art/Greybox";
+        const string GreyboxPath = GreyboxFolder + "/Greybox_Square.png";
         public static Transform EnsureChild(Transform parent, string name, int layer, List<string> changes)
         {
             Transform child = parent.Find(name);
@@ -127,12 +130,20 @@ namespace Parallax.Editor.Setup
 
         public static SpriteRenderer SetVisual(GameObject go, RealityRoot root, Vector2 size, Color color, List<string> changes)
         {
-            SpriteRenderer renderer = Ensure<SpriteRenderer>(go, changes);
             Transform ground = root.transform.Find("Geometry/Ground");
             SpriteRenderer source = ground == null ? null : ground.GetComponent<SpriteRenderer>();
-            if (source != null && renderer.sprite != source.sprite)
+            Sprite sprite = source != null ? source.sprite : null;
+            if (sprite == null) sprite = GetGreyboxSprite();
+            if (sprite == null)
             {
-                renderer.sprite = source.sprite;
+                Debug.LogError($"SetupUtility: no scene sprite at {root.name}/Geometry/Ground and fallback '{GreyboxPath}' is unavailable; '{go.name}' was not given a renderer.", go);
+                return go.GetComponent<SpriteRenderer>();
+            }
+
+            SpriteRenderer renderer = Ensure<SpriteRenderer>(go, changes);
+            if (renderer.sprite != sprite)
+            {
+                renderer.sprite = sprite;
                 changes.Add("set " + go.name + ".sprite");
             }
             if (renderer.drawMode != SpriteDrawMode.Sliced)
@@ -157,6 +168,45 @@ namespace Parallax.Editor.Setup
                 changes.Add("set " + go.name + ".color");
             }
             return renderer;
+        }
+
+        public static Sprite GetGreyboxSprite()
+        {
+            Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(GreyboxPath);
+            if (sprite != null) return sprite;
+
+            if (!AssetDatabase.IsValidFolder(GreyboxFolder))
+            {
+                if (!AssetDatabase.IsValidFolder("Assets/_Game/Art")) return null;
+                AssetDatabase.CreateFolder("Assets/_Game/Art", "Greybox");
+            }
+
+            if (!File.Exists(Path.Combine(Directory.GetCurrentDirectory(), GreyboxPath)))
+            {
+                var texture = new Texture2D(16, 16, TextureFormat.RGBA32, false);
+                Color[] pixels = new Color[16 * 16];
+                for (int i = 0; i < pixels.Length; i++) pixels[i] = Color.white;
+                texture.SetPixels(pixels);
+                texture.Apply(false, false);
+                File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), GreyboxPath), texture.EncodeToPNG());
+                Object.DestroyImmediate(texture);
+                AssetDatabase.ImportAsset(GreyboxPath, ImportAssetOptions.ForceUpdate);
+            }
+
+            var importer = AssetImporter.GetAtPath(GreyboxPath) as TextureImporter;
+            if (importer == null) return null;
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
+            var settings = new TextureImporterSettings();
+            importer.ReadTextureSettings(settings);
+            settings.spriteMeshType = SpriteMeshType.FullRect;
+            importer.SetTextureSettings(settings);
+            Texture2D fallbackTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(GreyboxPath);
+            importer.spritePixelsPerUnit = fallbackTexture != null ? fallbackTexture.width : 16f;
+            importer.filterMode = FilterMode.Point;
+            importer.mipmapEnabled = false;
+            importer.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Sprite>(GreyboxPath);
         }
 
         public static AnchorDefinition EnsureDefinition(string path, int id, string displayName, List<string> changes)

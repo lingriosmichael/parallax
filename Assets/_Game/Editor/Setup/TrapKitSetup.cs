@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Parallax.Core;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Reality;
 using Parallax.Gameplay.Rooms;
@@ -45,49 +46,70 @@ namespace Parallax.Editor.Setup
             Debug.Log("TrapKitSetup: " + string.Join("; ", changes));
         }
 
-        static void BuildCollapsingFloor(Transform parent, RealityRoot root, RoomManager rooms, RoomDeath death, ObserverSet observers, float top, List<string> changes)
+        static void BuildCollapsingFloor(Transform parent, RealityRoot root, RoomManager rooms, RoomDeath death, ObserverSet observers, float top, List<string> changes) =>
+            BuildCollapsingFloorCore(parent, root, "CollapsingFloor", new(-8f, top + .85f), new(1.5f, .3f), FloorTan, 0, rooms, death, observers, 12, null, changes);
+
+        internal static CollapsingFloorTrap BuildCollapsingFloorCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, Color color, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, int delayTicks, int? sortingOrder, List<string> changes)
         {
-            GameObject go = CreateTrap<CollapsingFloorTrap>(parent, root, "CollapsingFloor", new(-8f, top + .85f), new(1.5f, .3f), FloorTan, 0, rooms, death, observers, false, changes);
-            Write(go.GetComponent<CollapsingFloorTrap>(), changes, ("delayTicks", 12));
+            GameObject go = CreateTrap<CollapsingFloorTrap>(parent, root, name, position, size, color, roomId, rooms, death, observers, false, sortingOrder, changes);
+            CollapsingFloorTrap trap = go.GetComponent<CollapsingFloorTrap>();
+            Write(trap, changes, ("delayTicks", delayTicks));
+            return trap;
         }
 
-        static void BuildGravityFlip(Transform parent, RealityRoot root, RoomManager rooms, RoomDeath death, ObserverSet observers, float top, List<string> changes)
+        static void BuildGravityFlip(Transform parent, RealityRoot root, RoomManager rooms, RoomDeath death, ObserverSet observers, float top, List<string> changes) =>
+            BuildGravityFlipCore(parent, root, "GravityFlip", new(-4f, top + .75f), new(1f, 1.5f), FlipPurple, 0, rooms, death, observers, GravityFlipMode.Flip, 0, false, null, changes);
+
+        internal static GravityFlipTrap BuildGravityFlipCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, Color color, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, GravityFlipMode mode, int delayTicks, bool rearmOnExit, int? sortingOrder, List<string> changes)
         {
-            GameObject go = CreateTrap<GravityFlipTrap>(parent, root, "GravityFlip", new(-4f, top + .75f), new(1f, 1.5f), FlipPurple, 0, rooms, death, observers, true, changes);
-            Write(go.GetComponent<GravityFlipTrap>(), changes, ("delayTicks", 0), ("rearmOnExit", false));
+            GameObject go = CreateTrap<GravityFlipTrap>(parent, root, name, position, size, color, roomId, rooms, death, observers, true, sortingOrder, changes);
+            GravityFlipTrap trap = go.GetComponent<GravityFlipTrap>();
+            Write(trap, changes, ("mode", (int)mode), ("delayTicks", delayTicks), ("rearmOnExit", rearmOnExit));
+            return trap;
         }
 
-        static void BuildHiddenSpikes(Transform parent, RealityRoot root, RoomManager rooms, RoomDeath death, ObserverSet observers, float top, List<string> changes)
+        static void BuildHiddenSpikes(Transform parent, RealityRoot root, RoomManager rooms, RoomDeath death, ObserverSet observers, float top, List<string> changes) =>
+            BuildHiddenSpikesCore(parent, root, "HiddenSpikes", new(-.5f, top + .15f), new(.5f, .3f), SpikesRed, 0, rooms, death, observers, "Trigger", new(-.6f, 0f), new(.7f, .6f), 0, null, changes);
+
+        internal static HiddenSpikesTrap BuildHiddenSpikesCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, Color color, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, string triggerName, Vector2 triggerLocalPosition, Vector2 triggerSize, int revealDelayTicks, int? sortingOrder, List<string> changes)
         {
-            GameObject go = CreateTrap<HiddenSpikesTrap>(parent, root, "HiddenSpikes", new(-.5f, top + .15f), new(.5f, .3f), SpikesRed, 0, rooms, death, observers, true, changes);
+            GameObject go = CreateTrap<HiddenSpikesTrap>(parent, root, name, position, size, color, roomId, rooms, death, observers, true, sortingOrder, changes);
             Hazard hazard = SetupUtility.Ensure<Hazard>(go, changes);
             Write(hazard, changes, ("observers", (Object)observers), ("roomDeath", death), ("rooms", rooms), ("armed", false));
-            // Ahead of the spikes, but ending left of the spawn collider to prevent a respawn loop.
-            BoxCollider2D trigger = CreateTrigger(go.transform, root, "Trigger", new(-.6f, 0f), new(.7f, .6f), changes);
-            Write(go.GetComponent<HiddenSpikesTrap>(), changes, ("hazard", hazard), ("trigger", trigger), ("revealDelayTicks", 0));
+            BoxCollider2D trigger = CreateTrigger(go.transform, root, triggerName, triggerLocalPosition, triggerSize, changes);
+            HiddenSpikesTrap trap = go.GetComponent<HiddenSpikesTrap>();
+            Write(trap, changes, ("hazard", hazard), ("trigger", trigger), ("revealDelayTicks", revealDelayTicks));
+            return trap;
         }
 
-        static void BuildDoorRetreat(Transform parent, RealityRoot root, RoomManager rooms, RoomDeath death, ObserverSet observers, float top, List<string> changes)
+        static void BuildDoorRetreat(Transform parent, RealityRoot root, RoomManager rooms, RoomDeath death, ObserverSet observers, float top, List<string> changes) =>
+            BuildDoorRetreatCore(parent, root, "DoorRetreat", new(2.25f, top + .75f), new(.7f, 1.5f), 0, rooms, death, observers, GameObject.Find("Door_0")?.transform, new Vector2(2f, 0f), 10, 0, changes);
+
+        internal static DoorRetreatTrap BuildDoorRetreatCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, Transform doorRoot, Vector2 offset, int moveTicks, int delayTicks, List<string> changes)
         {
-            GameObject go = CreateTrap<DoorRetreatTrap>(parent, root, "DoorRetreat", new(2.25f, top + .75f), new(.7f, 1.5f), Color.clear, 0, rooms, death, observers, true, changes);
-            Write(go.GetComponent<DoorRetreatTrap>(), changes, ("trigger", go.GetComponent<BoxCollider2D>()), ("doorRoot", GameObject.Find("Door_0")?.transform), ("offset", new Vector2(2f, 0f)), ("moveTicks", 10), ("delayTicks", 0));
+            GameObject go = CreateTrap<DoorRetreatTrap>(parent, root, name, position, size, Color.clear, roomId, rooms, death, observers, true, null, changes);
+            DoorRetreatTrap trap = go.GetComponent<DoorRetreatTrap>();
+            Write(trap, changes, ("trigger", go.GetComponent<BoxCollider2D>()), ("doorRoot", doorRoot), ("offset", offset), ("moveTicks", moveTicks), ("delayTicks", delayTicks));
+            return trap;
         }
 
-        static void BuildFallingBlock(Transform parent, RealityRoot root, RoomManager rooms, RoomDeath death, ObserverSet observers, float top, List<string> changes)
+        static void BuildFallingBlock(Transform parent, RealityRoot root, RoomManager rooms, RoomDeath death, ObserverSet observers, float top, List<string> changes) =>
+            BuildFallingBlockCore(parent, root, "FallingBlock", new(8f, top + 3f), new(.8f, .8f), BlockGrey, 1, rooms, death, observers, "Trigger", new(0f, -2.25f), new(1.6f, 1.5f), FallingBlockDirection.Down, 0, .3f, 2.6f, null, changes);
+
+        internal static FallingBlockTrap BuildFallingBlockCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, Color color, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, string triggerName, Vector2 triggerLocalPosition, Vector2 triggerSize, FallingBlockDirection direction, int delayTicks, float unitsPerTick, float travelDistance, int? sortingOrder, List<string> changes)
         {
-            const float blockHeight = .8f;
-            Vector2 start = new(8f, top + 3f);
-            GameObject go = CreateTrap<FallingBlockTrap>(parent, root, "FallingBlock", start, new(.8f, blockHeight), BlockGrey, 1, rooms, death, observers, false, changes);
+            GameObject go = CreateTrap<FallingBlockTrap>(parent, root, name, position, size, color, roomId, rooms, death, observers, false, sortingOrder, changes);
             Rigidbody2D body = SetupUtility.Ensure<Rigidbody2D>(go, changes);
             SetupUtility.SetBodyType(body, RigidbodyType2D.Kinematic, changes);
             BoxCollider2D block = go.GetComponent<BoxCollider2D>();
             block.isTrigger = false;
-            BoxCollider2D trigger = CreateTrigger(go.transform, root, "Trigger", new(0f, top + .75f - start.y), new(1.6f, 1.5f), changes);
-            float travelDistance = start.y - (blockHeight * .5f) - top;
-            Write(go.GetComponent<FallingBlockTrap>(), changes, ("trigger", trigger), ("direction", 0), ("delayTicks", 0), ("unitsPerTick", .3f), ("travelDistance", travelDistance));
+            BoxCollider2D trigger = CreateTrigger(go.transform, root, triggerName, triggerLocalPosition, triggerSize, changes);
+            FallingBlockTrap trap = go.GetComponent<FallingBlockTrap>();
+            Write(trap, changes, ("trigger", trigger), ("direction", (int)direction), ("delayTicks", delayTicks), ("unitsPerTick", unitsPerTick), ("travelDistance", travelDistance));
+            return trap;
         }
 
-        static GameObject CreateTrap<T>(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, Color color, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, bool trigger, List<string> changes) where T : Component
+        internal static GameObject CreateTrap<T>(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, Color color, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, bool trigger, int? sortingOrder, List<string> changes) where T : Component
         {
             Transform transform = SetupUtility.EnsureChild(parent, name, root.gameObject.layer, changes);
             GameObject go = transform.gameObject;
@@ -95,7 +117,11 @@ namespace Parallax.Editor.Setup
             if (newTrap)
             {
                 SetupUtility.SetLocalPosition(transform, position, changes);
-                if (color != Color.clear) SetupUtility.SetVisual(go, root, size, color, changes);
+                if (color != Color.clear)
+                {
+                    SpriteRenderer visual = SetupUtility.SetVisual(go, root, size, color, changes);
+                    if (sortingOrder.HasValue && visual.sortingOrder != sortingOrder.Value) { visual.sortingOrder = sortingOrder.Value; changes.Add("set " + go.name + ".sortingOrder"); }
+                }
                 BoxCollider2D box = SetupUtility.Ensure<BoxCollider2D>(go, changes);
                 SetupUtility.SetColliderSize(box, size, changes);
                 box.isTrigger = trigger;
@@ -109,7 +135,7 @@ namespace Parallax.Editor.Setup
             return go;
         }
 
-        static BoxCollider2D CreateTrigger(Transform parent, RealityRoot root, string name, Vector2 localPosition, Vector2 size, List<string> changes)
+        internal static BoxCollider2D CreateTrigger(Transform parent, RealityRoot root, string name, Vector2 localPosition, Vector2 size, List<string> changes)
         {
             Transform transform = SetupUtility.EnsureChild(parent, name, root.gameObject.layer, changes);
             if (transform.GetComponent<BoxCollider2D>() == null)
@@ -122,7 +148,7 @@ namespace Parallax.Editor.Setup
             return transform.GetComponent<BoxCollider2D>();
         }
 
-        static void Write(Object target, List<string> changes, params (string name, object value)[] values)
+        internal static void Write(Object target, List<string> changes, params (string name, object value)[] values)
         {
             SerializedObject serialized = new(target);
             bool changed = false;

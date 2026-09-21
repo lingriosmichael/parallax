@@ -255,11 +255,16 @@ Consequence: If the Gate 3 check finds the assembly shipped, embed the package a
 **Why:** Network latency varies. A cross-reality trap with a tight window would feel random, and randomness breaks the deterministic contract of D-040.
 **Consequence:** Level design and the AnchorValidator reviews check every hostile anchor against this rule.
 
-### D-044 · 2026-09-21 · Proposed
-**Decision:** No lives. Retries are unlimited. Deaths are counted per room and shown when the room is cleared.
-**Why:** A lives system turns ragebait into a fail state and contradicts Vision pillar 3 (cheap, funny failure). A death counter keeps the sting as a score, not a punishment.
-**Resolves:** Q-9 and the nine-lives part of Q-11.
-**Status note:** Awaiting the developer's confirmation.
+### D-044 · 2026-09-21 · Accepted
+**Decision:** No lives, unlimited retries. A death resets the current room (D-041) and costs
+nothing else: no level fail state, no lives counter. The game keeps a per-room death count; its UI,
+and whether it persists between sessions, are decided with the ticket that shows it. Resolves Q-9:
+there is no nine-lives mechanic.
+**Why:** The rage-platformer loop depends on instant, free retries. Failure stays cheap and funny
+(Vision pillar 3), and a death count gives the pressure and bragging rights without punishing the
+player.
+**Consequence:** Difficulty comes only from room design (D-050, D-053), never from a resource the
+player can run out of. Rooms can be tuned for many deaths per room on a blind run.
 
 ### D-045 · 2026-09-21 · Accepted
 **Decision:** Tilt is removed. Gravity control at a Control Station is a touch flip only (D-037). Plan PAX-025 and ticket PAX-038 (tilt) are cancelled; the number PAX-038 is retired and not reused. `IGravityControlInput` stays as the station's input seam; whether it simplifies to a flip is decided in the gravity ticket.
@@ -313,7 +318,22 @@ order means a trap, a hazard and the door can never disagree about the same tick
    **Consequence:** Hazards and rooms (PAX-043) are authored against the art. Changing the
    collider size alone moves nothing else; changing the paw line (−0.4) moves spawns and the
    visual seat.
-   
+
+### D-053 · 2026-09-21 · Accepted
+**Decision:** Room grammar v1 (PAX-043).
+- No tutorial or teaching rooms: every solo room is a troll room from the start.
+- Rooms stack betrayals: the obvious fix for one trap leads into the next. Players learn by dying.
+- Betrayals are disguised as their surroundings; tools the player must use are visible.
+- No room can soft-lock: every state is either completable or ends in a death that resets the room
+  (D-041).
+- Rooms are physically separate and joined only by door teleports, so the skip rule (D-050) holds
+  by construction.
+- Rooms are scene data scaffolded by a setup menu and then tuned in the scene, not gameplay code.
+**Why:** Players of the genre already know it, so teaching rooms only slow them down. Stacked,
+disguised betrayals are what make the troll loop work, and a soft-lock would break the
+cheap-retry promise of D-044.
+**Consequence:** New rooms are reviewed against these rules. The first playtest found the
+PAX-043 rooms too easy; PAX-044 raises the density to 4–6 chained betrayals per room.
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
@@ -325,6 +345,6 @@ order means a trap, a hazard and the door can never disagree about the same tick
 - ~~**Q-5** Echo length and looping.~~ Moot as a player feature by D-038; Echo is dev tooling only.
 - ~~**Q-8** Is v1 co-op-only?~~ Closed by D-026, superseded by D-038: solo is one cat in one reality.
 - ~~**Q-7** Should a temporary gravity-aligned/snap-rotating camera be introduced in Phase 5 as a deliberate disorientation effect while a Control Station actively steers the other cat's gravity?~~ Closed by D-021: not needed.
-- ~~**Q-9** Nine lives: shared or per-cat, per level or per checkpoint, hard fail or rating?~~ Proposed closure by D-044: no lives, per-room death counter.
+- **Q-9** ~~Nine lives~~ → resolved by D-044 (no lives, unlimited retries, per-room death count).
 - **Q-10 · Cat collider height vs. art silhouette.** Collider is a horizontal capsule, 1.2 × 0.8. Art PPU (196.667) is derived from Walk frame-0 width over collider length, so the art matches length by construction but not height: Walk draws 0.580 u tall, Idle 0.656, Rise 0.702, Fall 0.524, Land 0.447. The standing cat leaves ~0.14 u of empty collider above its back, so ceilings and head bumps read as gaps. Proposed: shrink collider height to ~0.62 as PAX-A04, after A03 Play acceptance and before PAX-037. `CatVisualSetup` places Visual at the collider's bottom edge, so the setup menu must be re-run after any collider change. Blocks level design.
 - ~~**Q-11 · Solo room structure.**~~ Closed by D-040 (room = checkpoint + door, deterministic traps, no precision platforming) and D-044 (no lives, pending confirmation).

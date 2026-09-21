@@ -81,11 +81,13 @@ namespace Parallax.Editor.Setup
             return manager;
         }
 
-        static CheckpointMarker BuildMarker(RealityRoot root, CheckpointManager manager, ObserverSet observers, int id, Vector2 localPosition, Vector2 gravityDirection, List<string> changes)
+        static CheckpointMarker BuildMarker(RealityRoot root, CheckpointManager manager, ObserverSet observers, int id, Vector2 localPosition, Vector2 gravityDirection, List<string> changes) =>
+            BuildMarkerCore(SetupUtility.EnsureChild(root.transform, "Checkpoints", LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id)), changes), root, $"Checkpoint_{id}", manager, observers, id, localPosition, gravityDirection, changes);
+
+        internal static CheckpointMarker BuildMarkerCore(Transform parent, RealityRoot root, string name, CheckpointManager manager, ObserverSet observers, int id, Vector2 localPosition, Vector2 gravityDirection, List<string> changes)
         {
             int layer = LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id));
-            Transform folder = SetupUtility.EnsureChild(root.transform, "Checkpoints", layer, changes);
-            GameObject markerObject = SetupUtility.EnsureChild(folder, $"Checkpoint_{id}", layer, changes).gameObject;
+            GameObject markerObject = SetupUtility.EnsureChild(parent, name, layer, changes).gameObject;
             SetupUtility.SetLocalPosition(markerObject.transform, localPosition, changes);
             CheckpointMarker marker = SetupUtility.Ensure<CheckpointMarker>(markerObject, changes);
             SetIntField(marker, "checkpointId", id, changes);

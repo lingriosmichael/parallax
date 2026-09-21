@@ -65,20 +65,24 @@ namespace Parallax.Editor.Setup
             }
         }
 
-        static void BuildHazard(RealityRoot root, RoomDeath death, ObserverSet observers, int id, float x, float groundTop, List<string> changes)
+        static void BuildHazard(RealityRoot root, RoomDeath death, ObserverSet observers, int id, float x, float groundTop, List<string> changes) =>
+            BuildHazardCore(SetupUtility.EnsureChild(root.transform, "Hazards", LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id)), changes), root, $"Hazard_{id}", death, observers, Object.FindAnyObjectByType<RoomManager>(FindObjectsInactive.Include), new Vector2(x, groundTop + HazardSize.y * 0.5f), HazardSize, Color.red, null, changes);
+
+        internal static Hazard BuildHazardCore(Transform parent, RealityRoot root, string name, RoomDeath death, ObserverSet observers, RoomManager rooms, Vector2 localPosition, Vector2 size, Color color, int? sortingOrder, List<string> changes)
         {
             int layer = LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id));
-            Transform folder = SetupUtility.EnsureChild(root.transform, "Hazards", layer, changes);
-            GameObject go = SetupUtility.EnsureChild(folder, $"Hazard_{id}", layer, changes).gameObject;
-            SetupUtility.SetLocalPosition(go.transform, new Vector2(x, groundTop + HazardSize.y * 0.5f), changes);
-            SetupUtility.SetVisual(go, root, HazardSize, Color.red, changes);
+            GameObject go = SetupUtility.EnsureChild(parent, name, layer, changes).gameObject;
+            SetupUtility.SetLocalPosition(go.transform, localPosition, changes);
+            SpriteRenderer visual = SetupUtility.SetVisual(go, root, size, color, changes);
+            if (sortingOrder.HasValue && visual.sortingOrder != sortingOrder.Value) { visual.sortingOrder = sortingOrder.Value; changes.Add("set " + go.name + ".sortingOrder"); }
             BoxCollider2D box = SetupUtility.Ensure<BoxCollider2D>(go, changes);
             box.isTrigger = true;
-            SetupUtility.SetColliderSize(box, HazardSize, changes);
+            SetupUtility.SetColliderSize(box, size, changes);
             Hazard hazard = SetupUtility.Ensure<Hazard>(go, changes);
             SetupUtility.SetObject(hazard, "observers", observers, changes);
             SetupUtility.SetObject(hazard, "roomDeath", death, changes);
-            SetupUtility.SetObject(hazard, "rooms", Object.FindAnyObjectByType<RoomManager>(FindObjectsInactive.Include), changes);
+            SetupUtility.SetObject(hazard, "rooms", rooms, changes);
+            return hazard;
         }
 
         static void BuildDebugTrap(RealityRoot root, RoomDeath death, ObserverSet observers, float groundTop, List<string> changes)
