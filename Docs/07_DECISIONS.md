@@ -289,6 +289,17 @@ Consequence: If the Gate 3 check finds the assembly shipped, embed the package a
 **Why:** D-040 defines a room as a checkpoint and a door. Reusing checkpoint ids gives rooms progress and respawn for free. Completing on touch with an instant move keeps the troll loop fast.
 **Consequence:** Walking into a later room's checkpoint marker skips the current room, so level design keeps room N+1's marker unreachable before room N's door. Co-op rooms (doors in two realities) are designed in the co-op update.
 
+### D-051 · 2026-09-21 · Accepted
+**Decision:** Trap kit v1 (PAX-042). Traps are ticked only by `RoomManager` in the live-traps phase
+(traps → hazards → door, each list snapshotted just before its phase). Time is in integer ticks;
+delay N fires exactly N ticks after the trigger tick. Motion is a pure function of ticks since
+firing. Only the `LocalHuman` cat triggers traps, via own-reality overlap queries on collider
+bounds. Kills go only through `RoomDeath`. Room reset restores authored state. Traps fire once per
+room life unless explicitly re-armable. Kit v1 uses no anchors; presenter snap-vs-animate on reset
+is decided with the first anchor-using trap.
+**Why:** Deterministic, ordered, resettable traps make every room learnable (D-050), and one tick
+order means a trap, a hazard and the door can never disagree about the same tick.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
