@@ -266,6 +266,12 @@ Consequence: If the Gate 3 check finds the assembly shipped, embed the package a
 **Why:** With binary gravity (D-037), a flip is a button. Tilt would add sensor noise, calibration and a second input mode for no gameplay gain.
 **Supersedes:** D-009 (tilt as an option) and D-029 (1) "tilt plugs into the same interface later". **Resolves:** Q-3.
 
+### D-047 · 2026-09-21 · Accepted
+**Decision:** v1 is solo only: one cat, one reality (A). Co-op is a later update. Until then, tickets, tests and device sessions cover only the solo cat and its reality. Existing two-reality code (Reality B, anchors across realities, Echo, switch, Control Station, transport) stays in the repo untouched and is not extended; nothing is deleted.
+**Why:** Finish one mode end to end before starting the second. Solo needs no networking.
+**Defers:** co-op as a v1 feature (co-op half of D-038), networking (PAX-028–035), D-042 (stays Proposed until the co-op update), PAX-043 (hostile anchor). D-043 remains a rule for the co-op update.
+**Consequence:** Gate 3 is the solo device verdict (D-035). Solo features take an `ObserverId` rather than hard-coding A, and must not break the two-reality sandbox.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
