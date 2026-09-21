@@ -19,9 +19,6 @@ namespace Parallax.Editor
         {
             var changes = new List<string>();
 
-            PhysicsMaterial2D noFriction = GetOrCreateNoFrictionMaterial(changes);
-            CatMotorConfig defaultConfig = GetOrCreateDefaultConfig(changes);
-
             GameObject prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
             if (prefabAsset == null)
             {
@@ -30,8 +27,17 @@ namespace Parallax.Editor
             }
 
             GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+            bool prefabSaved = false;
+            bool createdMaterial = false;
+            bool createdConfig = false;
             try
             {
+                if (root == null)
+                {
+                    Debug.LogError($"CatPlayerSetup: could not load prefab contents for '{PrefabPath}'. Stopping without saving.");
+                    return;
+                }
+
                 Transform visual = root.transform.Find("Visual");
                 if (visual == null)
                 {
@@ -59,22 +65,6 @@ namespace Parallax.Editor
                     changes.Add("added CatRespawn");
                 }
 
-                var motorSO = new SerializedObject(motor);
-                var configProp = motorSO.FindProperty("config");
-                if (configProp.objectReferenceValue == null)
-                {
-                    configProp.objectReferenceValue = defaultConfig;
-                    changes.Add("assigned CatMotor2D.config = CatMotorConfig_Default");
-                }
-
-                var visualProp = motorSO.FindProperty("visual");
-                if (visualProp.objectReferenceValue == null)
-                {
-                    visualProp.objectReferenceValue = visual;
-                    changes.Add("assigned CatMotor2D.visual = Visual");
-                }
-                motorSO.ApplyModifiedPropertiesWithoutUndo();
-
                 var collider = root.GetComponent<CapsuleCollider2D>();
                 if (collider == null)
                 {
@@ -82,19 +72,55 @@ namespace Parallax.Editor
                     return;
                 }
 
+                var motorSO = new SerializedObject(motor);
+                if (!TryGetRequiredProperty(motorSO, "config", out SerializedProperty configProp)) return;
+
+                PhysicsMaterial2D noFriction = GetOrCreateNoFrictionMaterial(changes, out createdMaterial);
+                CatMotorConfig defaultConfig = GetOrCreateDefaultConfig(changes, out createdConfig);
+                if (configProp.objectReferenceValue == null)
+                {
+                    configProp.objectReferenceValue = defaultConfig;
+                    changes.Add("assigned CatMotor2D.config = CatMotorConfig_Default");
+                }
+
+                motorSO.ApplyModifiedPropertiesWithoutUndo();
+
                 if (collider.sharedMaterial != noFriction)
                 {
                     collider.sharedMaterial = noFriction;
                     changes.Add("assigned CapsuleCollider2D.sharedMaterial = Cat_NoFriction");
                 }
 
-                PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+                ApplyConfiguredCollider(collider, defaultConfig, changes);
+
+                GameObject savedPrefab = PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+                if (savedPrefab == null)
+                {
+                    Debug.LogError($"CatPlayerSetup: failed to save '{PrefabPath}'. Stopping without saving the config.");
+                    return;
+                }
+
+                prefabSaved = true;
+
+                // Persist newly introduced config fields only after the prefab references them successfully.
+                EditorUtility.SetDirty(defaultConfig);
+                AssetDatabase.SaveAssets();
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogError($"CatPlayerSetup: failed while configuring '{PrefabPath}': {exception.Message}. Stopping without saving the config.");
             }
             finally
             {
-                PrefabUtility.UnloadPrefabContents(root);
+                if (root != null) PrefabUtility.UnloadPrefabContents(root);
+                if (!prefabSaved)
+                {
+                    if (createdConfig) AssetDatabase.DeleteAsset(ConfigPath);
+                    if (createdMaterial) AssetDatabase.DeleteAsset(MaterialPath);
+                }
             }
 
+            if (!prefabSaved) return;
             if (changes.Count == 0)
             {
                 Debug.Log("CatPlayerSetup: Cat Player already configured.");
@@ -105,25 +131,65 @@ namespace Parallax.Editor
             }
         }
 
-        static PhysicsMaterial2D GetOrCreateNoFrictionMaterial(List<string> changes)
+        static void ApplyConfiguredCollider(CapsuleCollider2D collider, CatMotorConfig config, List<string> changes)
+        {
+            if (collider.direction != CapsuleDirection2D.Horizontal)
+            {
+                collider.direction = CapsuleDirection2D.Horizontal;
+                changes.Add("set CapsuleCollider2D.direction = Horizontal");
+            }
+
+            if (collider.size != config.ColliderSize)
+            {
+                collider.size = config.ColliderSize;
+                changes.Add($"set CapsuleCollider2D.size = {config.ColliderSize}");
+            }
+
+            if (collider.offset != config.ColliderOffset)
+            {
+                collider.offset = config.ColliderOffset;
+                changes.Add($"set CapsuleCollider2D.offset = {config.ColliderOffset}");
+            }
+        }
+
+        static bool TryGetRequiredProperty(SerializedObject serialized, string propertyName, out SerializedProperty property)
+        {
+            property = serialized.FindProperty(propertyName);
+            if (property != null) return true;
+
+            Debug.LogError($"CatPlayerSetup: {serialized.targetObject.GetType().Name} on '{PrefabPath}' has no serialized '{propertyName}' field. Stopping without saving.");
+            return false;
+        }
+
+        static PhysicsMaterial2D GetOrCreateNoFrictionMaterial(List<string> changes, out bool created)
         {
             var mat = AssetDatabase.LoadAssetAtPath<PhysicsMaterial2D>(MaterialPath);
-            if (mat != null) return mat;
+            if (mat != null)
+            {
+                created = false;
+                return mat;
+            }
 
             mat = new PhysicsMaterial2D("Cat_NoFriction") { friction = 0f, bounciness = 0f };
             AssetDatabase.CreateAsset(mat, MaterialPath);
             changes.Add("created Cat_NoFriction physics material");
+            created = true;
             return mat;
         }
 
-        static CatMotorConfig GetOrCreateDefaultConfig(List<string> changes)
+        static CatMotorConfig GetOrCreateDefaultConfig(List<string> changes, out bool created)
         {
             var config = AssetDatabase.LoadAssetAtPath<CatMotorConfig>(ConfigPath);
-            if (config != null) return config;
+            if (config != null)
+            {
+                created = false;
+                return config;
+            }
 
             config = ScriptableObject.CreateInstance<CatMotorConfig>();
             AssetDatabase.CreateAsset(config, ConfigPath);
             changes.Add("created CatMotorConfig_Default asset");
+            created = true;
             return config;
         }
 

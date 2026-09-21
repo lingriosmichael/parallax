@@ -300,6 +300,20 @@ is decided with the first anchor-using trap.
 **Why:** Deterministic, ordered, resettable traps make every room learnable (D-050), and one tick
 order means a trap, a hazard and the door can never disagree about the same tick.
 
+   ### D-052 · 2026-09-21 · Accepted
+   **Decision:** Cat hitbox follows the art body (PAX-A04, resolves Q-10). Both cats use a
+   horizontal `CapsuleCollider2D` 1.0 × 0.56 at offset (0, −0.12), covering torso and legs (not
+   tail or ear tips), with its bottom on the paw line at −0.4 from the root. The values live only
+   in `CatMotorConfig`; `PARALLAX/Setup/Configure Cat Player` applies them to `Cat_Player.prefab`,
+   and scene cats inherit them with no overrides. With gravity up the root rotates 180°, so one
+   offset holds in both directions. Grounding casts the collider itself (`Rigidbody2D.Cast`) and
+   spawns place the root, so neither needs size constants.
+   **Why:** Players judge hits by the art; in a troll platformer a hit that looks clear must be
+   clear (D-050).
+   **Consequence:** Hazards and rooms (PAX-043) are authored against the art. Changing the
+   collider size alone moves nothing else; changing the paw line (−0.4) moves spawns and the
+   visual seat.
+   
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)

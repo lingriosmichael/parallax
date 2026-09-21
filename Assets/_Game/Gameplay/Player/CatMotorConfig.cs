@@ -29,6 +29,12 @@ namespace Parallax.Gameplay.Player
         [Tooltip("Distance, in world units, the ground cast probes below the cat along gravity.")]
         [SerializeField] float groundProbeDistance = 0.05f;
 
+        [Tooltip("Horizontal capsule dimensions for every cat, in world units.")]
+        [SerializeField] Vector2 colliderSize = new Vector2(1f, 0.56f);
+
+        [Tooltip("Horizontal capsule centre relative to the cat root, in world units.")]
+        [SerializeField] Vector2 colliderOffset = new Vector2(0f, -0.12f);
+
         [Tooltip("Minimum alignment (dot product) between a hit's normal and -gravity for it to count as ground.")]
         [SerializeField] float groundNormalThreshold = 0.7f;
 
@@ -40,6 +46,9 @@ namespace Parallax.Gameplay.Player
         public float CoyoteTime => coyoteTime;
         public float JumpBufferTime => jumpBufferTime;
         public float GroundProbeDistance => groundProbeDistance;
+        public Vector2 ColliderSize => colliderSize;
+        public Vector2 ColliderOffset => colliderOffset;
+        public float ColliderBottom => colliderOffset.y - colliderSize.y * 0.5f;
         public float GroundNormalThreshold => groundNormalThreshold;
     }
 }
