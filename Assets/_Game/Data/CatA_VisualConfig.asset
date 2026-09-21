@@ -13,17 +13,18 @@ MonoBehaviour:
   m_Name: CatA_VisualConfig
   m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Presentation.CatVisualConfig
   cellSize: 256
-  walkLoopStart: 0
-  walkLoopEnd: 9
-  idleFrame: 0
-  airFrame: 0
-  walkFps: 10
   minFps: 2
   maxFps: 18
   referenceSpeed: 6
   idleSpeedThreshold: 0.15
+  walkExit: 0.1
   airThreshold: 1
+  landDuration: 0.12
   flipHysteresis: 0.05
+  velocitySmoothingTime: 0.08
+  teleportDistance: 1
+  echoAlpha: 0.5
   outlineWidth: 1.5
+  groundOffset: 0
   outlineColorA: {r: 1, g: 0.75, b: 0.3, a: 1}
   outlineColorB: {r: 0.35, g: 0.85, b: 1, a: 1}

@@ -158,7 +158,9 @@ namespace Parallax.Gameplay.Presentation
         void UpdateFacing(float along)
         {
             bool currentFacingRight = transform.localScale.x >= 0f;
-            if (!CatVisualStateLogic.ShouldFlip(along, config.FlipHysteresis, currentFacingRight)) return;
+            bool shouldFlip = Mathf.Abs(along) > config.FlipHysteresis
+                && (along > 0f) != currentFacingRight;
+            if (!shouldFlip) return;
 
             Vector3 scale = transform.localScale;
             scale.x = Mathf.Abs(scale.x) * (along > 0f ? 1f : -1f);

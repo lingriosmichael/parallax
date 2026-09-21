@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Parallax.Core;
 using Parallax.Gameplay.Observers;
-using Parallax.Gameplay.Presentation;
 using Parallax.Gameplay.Player;
+using Parallax.Gameplay.Presentation;
 using Parallax.Gameplay.Reality;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -12,38 +12,60 @@ using UnityEngine.SceneManagement;
 
 namespace Parallax.Editor.Art
 {
-    // Idempotent scene/prefab wiring for PAX-A01. Safe to re-run after a new sprite export.
+    // Idempotent prefab and scene wiring for PAX-A03 cat animation clips.
     public static class CatVisualSetup
     {
+        readonly struct ClipSpec
+        {
+            public ClipSpec(string label, string property, string path, string prefix, float fps, bool loop)
+            {
+                Label = label;
+                Property = property;
+                Path = path;
+                Prefix = prefix;
+                Fps = fps;
+                Loop = loop;
+            }
+
+            public readonly string Label;
+            public readonly string Property;
+            public readonly string Path;
+            public readonly string Prefix;
+            public readonly float Fps;
+            public readonly bool Loop;
+        }
+
         const string PrefabPath = "Assets/_Game/Gameplay/Player/Cat_Player.prefab";
-        const string SpriteSheetPath = "Assets/_Game/Art/Cats/CatA/CatA_Walk.png";
         const string ConfigPath = "Assets/_Game/Data/CatA_VisualConfig.asset";
+        const string CatArtPath = "Assets/_Game/Art/Cats/CatA/";
         const string ShaderPath = "Assets/_Game/Art/Shaders/SpriteOutlineUnlit.shader";
         const string MaterialFolderPath = "Assets/_Game/Art/Materials";
         const string MaterialPath = MaterialFolderPath + "/Cat_OutlineUnlit.mat";
         static readonly string[] LegacyPlaceholderChildren = { "Body", "Ear_Front", "Ear_Back" };
+        static readonly ClipSpec[] Clips =
+        {
+            new ClipSpec("Idle", "idleClip", CatArtPath + "CatA_Idle.png", "CatA_Idle_", 7f, true),
+            new ClipSpec("Walk", "walkClip", CatArtPath + "CatA_Walk.png", "CatA_Walk_", 10f, true),
+            new ClipSpec("Rise", "riseClip", CatArtPath + "CatA_Rise.png", "CatA_Rise_", 12f, false),
+            new ClipSpec("Fall", "fallClip", CatArtPath + "CatA_Fall.png", "CatA_Fall_", 12f, false),
+            new ClipSpec("Land", "landClip", CatArtPath + "CatA_Land.png", "CatA_Land_", 12f, false)
+        };
 
         [MenuItem("PARALLAX/Setup/Cat Visual")]
         public static void Configure()
         {
             var changes = new List<string>();
-
             CatVisualConfig config = GetOrCreateConfig(changes);
             Material outlineMaterial = GetOrCreateOutlineMaterial(changes);
+            Dictionary<string, Sprite[]> framesByClip = LoadFrames();
 
-            Sprite[] frames = AssetDatabase.LoadAllAssetsAtPath(SpriteSheetPath)
-                .OfType<Sprite>()
-                .OrderBy(s => s.name, System.StringComparer.Ordinal)
-                .ToArray();
-
-            if (frames.Length == 0)
+            if (!ValidateSheets(config, framesByClip))
             {
-                Debug.LogError($"CatVisualSetup: no sliced sprites found at '{SpriteSheetPath}'. Run 'PARALLAX/Art/Import Cat Sheet' first. Stopping without saving.");
+                Debug.LogError("CatVisualSetup: sheet validation failed. Stopping without saving.");
                 return;
             }
 
-            GameObject prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
-            if (prefabAsset == null)
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath) == null)
             {
                 Debug.LogError($"CatVisualSetup: prefab not found at '{PrefabPath}'. Stopping without saving.");
                 return;
@@ -54,31 +76,30 @@ namespace Parallax.Editor.Art
             try
             {
                 Transform visual = root.transform.Find("Visual");
-                if (visual == null)
+                CatMotor2D motor = root.GetComponent<CatMotor2D>();
+                if (visual == null || motor == null)
                 {
-                    Debug.LogError($"CatVisualSetup: '{PrefabPath}' has no child named 'Visual'. Stopping without saving.");
+                    Debug.LogError($"CatVisualSetup: '{PrefabPath}' needs a Visual child and root CatMotor2D. Stopping without saving.");
                     return;
                 }
 
                 RemoveLegacyPlaceholderChildren(visual, changes);
                 ApplyGroundContactOffset(root, visual, config, changes);
 
-                var bodyRenderer = visual.GetComponent<SpriteRenderer>();
-                if (bodyRenderer == null)
+                Sprite initialSprite = framesByClip["idleClip"][0];
+                SpriteRenderer body = visual.GetComponent<SpriteRenderer>();
+                if (body == null)
                 {
-                    bodyRenderer = visual.gameObject.AddComponent<SpriteRenderer>();
+                    body = visual.gameObject.AddComponent<SpriteRenderer>();
                     changes.Add("added SpriteRenderer to Visual");
                 }
-                AssignIfChanged(bodyRenderer, bodyRenderer.sortingLayerName, RealitySpace.SortingLayerName(ObserverId.A, SortingBand.Gameplay), changes, "set Visual SpriteRenderer sorting layer");
-                if (bodyRenderer.sprite != frames[0])
-                {
-                    bodyRenderer.sprite = frames[0];
-                    changes.Add("set Visual SpriteRenderer sprite");
-                }
+                SetSortingLayer(body, RealitySpace.SortingLayerName(ObserverId.A, SortingBand.Gameplay), changes, "Visual");
+                SetSprite(body, initialSprite, changes, "Visual");
 
-                SpriteRenderer outlineRenderer = GetOrCreateOutlineRenderer(visual, bodyRenderer.sortingLayerName, outlineMaterial, changes);
+                SpriteRenderer outline = GetOrCreateOutlineRenderer(visual, body.sortingLayerName, outlineMaterial, changes);
+                SetSprite(outline, initialSprite, changes, "Outline");
 
-                var presenter = visual.GetComponent<CatVisualPresenter>();
+                CatVisualPresenter presenter = visual.GetComponent<CatVisualPresenter>();
                 if (presenter == null)
                 {
                     presenter = visual.gameObject.AddComponent<CatVisualPresenter>();
@@ -86,18 +107,12 @@ namespace Parallax.Editor.Art
                 }
 
                 var presenterSO = new SerializedObject(presenter);
-                AssignIfChanged(presenterSO, "config", config, changes, "CatVisualPresenter.config");
-                AssignIfChanged(presenterSO, "bodyRenderer", bodyRenderer, changes, "CatVisualPresenter.bodyRenderer");
-                AssignIfChanged(presenterSO, "outlineRenderer", outlineRenderer, changes, "CatVisualPresenter.outlineRenderer");
-
-                SerializedProperty framesProp = presenterSO.FindProperty("frames");
-                if (!SameSprites(framesProp, frames))
-                {
-                    framesProp.arraySize = frames.Length;
-                    for (int i = 0; i < frames.Length; i++)
-                        framesProp.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
-                    changes.Add($"assigned CatVisualPresenter.frames ({frames.Length} sprites)");
-                }
+                AssignObject(presenterSO, "config", config, changes, "CatVisualPresenter.config");
+                AssignObject(presenterSO, "bodyRenderer", body, changes, "CatVisualPresenter.bodyRenderer");
+                AssignObject(presenterSO, "outlineRenderer", outline, changes, "CatVisualPresenter.outlineRenderer");
+                AssignObject(presenterSO, "motor", motor, changes, "CatVisualPresenter.motor");
+                foreach (ClipSpec clip in Clips)
+                    AssignClip(presenterSO, clip, framesByClip[clip.Property], changes);
                 presenterSO.ApplyModifiedPropertiesWithoutUndo();
 
                 if (changes.Count > changesBeforePrefab)
@@ -108,33 +123,174 @@ namespace Parallax.Editor.Art
                 PrefabUtility.UnloadPrefabContents(root);
             }
 
+            // Rewrites the existing config through Unity so removed serialized fields do not linger in YAML.
+            AssetDatabase.ForceReserializeAssets(new[] { ConfigPath });
             ConfigureSceneInstances(changes);
+            ReportAssignments();
 
-            if (changes.Count == 0)
-                Debug.Log("CatVisualSetup: already configured.");
-            else
-                Debug.Log($"CatVisualSetup: {string.Join("; ", changes)}.");
+            Debug.Log(changes.Count == 0
+                ? "CatVisualSetup: already configured."
+                : $"CatVisualSetup: {string.Join("; ", changes)}.");
+        }
+
+        static Dictionary<string, Sprite[]> LoadFrames()
+        {
+            var result = new Dictionary<string, Sprite[]>();
+            foreach (ClipSpec clip in Clips)
+            {
+                result[clip.Property] = AssetDatabase.LoadAllAssetsAtPath(clip.Path)
+                    .OfType<Sprite>()
+                    .Where(sprite => sprite.name.StartsWith(clip.Prefix, System.StringComparison.Ordinal))
+                    .OrderBy(sprite => sprite.name, System.StringComparer.Ordinal)
+                    .ToArray();
+            }
+            return result;
+        }
+
+        static bool ValidateSheets(CatVisualConfig config, Dictionary<string, Sprite[]> framesByClip)
+        {
+            TextureImporter walkImporter = AssetImporter.GetAtPath(Clips[1].Path) as TextureImporter;
+            Sprite[] walkFrames = framesByClip[Clips[1].Property];
+            if (walkImporter == null || walkFrames.Length == 0) return false;
+
+            float expectedPpu = walkImporter.spritePixelsPerUnit;
+            Vector2 expectedPivot = walkFrames[0].pivot;
+            bool valid = true;
+            foreach (ClipSpec clip in Clips)
+            {
+                TextureImporter importer = AssetImporter.GetAtPath(clip.Path) as TextureImporter;
+                Sprite[] frames = framesByClip[clip.Property];
+                if (importer == null || frames.Length == 0)
+                {
+                    Debug.LogError($"CatVisualSetup: {clip.Label} has no imported sprites at '{clip.Path}'.");
+                    valid = false;
+                    continue;
+                }
+                if (!Mathf.Approximately(importer.spritePixelsPerUnit, expectedPpu))
+                {
+                    Debug.LogError($"CatVisualSetup: {clip.Label} PPU {importer.spritePixelsPerUnit} != Walk PPU {expectedPpu}.");
+                    valid = false;
+                }
+                foreach (Sprite frame in frames)
+                {
+                    if (!Mathf.Approximately(frame.rect.width, config.CellSize)
+                        || !Mathf.Approximately(frame.rect.height, config.CellSize)
+                        || Vector2.Distance(frame.pivot, expectedPivot) > 0.01f)
+                    {
+                        Debug.LogError($"CatVisualSetup: '{frame.name}' does not match the {config.CellSize}px cell and Walk pivot.");
+                        valid = false;
+                    }
+                }
+            }
+            return valid;
+        }
+
+        static void AssignClip(SerializedObject presenter, ClipSpec clip, Sprite[] frames, List<string> changes)
+        {
+            SerializedProperty clipProperty = presenter.FindProperty(clip.Property);
+            SerializedProperty framesProperty = clipProperty.FindPropertyRelative("frames");
+            bool changed = false;
+            if (!SameSprites(framesProperty, frames))
+            {
+                framesProperty.arraySize = frames.Length;
+                for (int i = 0; i < frames.Length; i++)
+                    framesProperty.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
+                changed = true;
+            }
+
+            SerializedProperty fpsProperty = clipProperty.FindPropertyRelative("fps");
+            SerializedProperty loopProperty = clipProperty.FindPropertyRelative("loop");
+            if (!Mathf.Approximately(fpsProperty.floatValue, clip.Fps))
+            {
+                fpsProperty.floatValue = clip.Fps;
+                changed = true;
+            }
+            if (loopProperty.boolValue != clip.Loop)
+            {
+                loopProperty.boolValue = clip.Loop;
+                changed = true;
+            }
+            if (changed) changes.Add($"assigned {clip.Label} clip ({frames.Length} sprites)");
+        }
+
+        static void ConfigureSceneInstances(List<string> changes)
+        {
+            for (int sceneIndex = 0; sceneIndex < SceneManager.sceneCount; sceneIndex++)
+            {
+                Scene scene = SceneManager.GetSceneAt(sceneIndex);
+                if (!scene.isLoaded) continue;
+                bool sceneChanged = false;
+                foreach (GameObject root in scene.GetRootGameObjects())
+                foreach (CatMotor2D cat in root.GetComponentsInChildren<CatMotor2D>(true))
+                {
+                    RealityRoot reality = cat.GetComponentInParent<RealityRoot>();
+                    Transform visual = cat.transform.Find("Visual");
+                    if (reality == null || visual == null) continue;
+
+                    SpriteRenderer body = visual.GetComponent<SpriteRenderer>();
+                    Transform outlineTransform = visual.Find("Outline");
+                    SpriteRenderer outline = outlineTransform != null ? outlineTransform.GetComponent<SpriteRenderer>() : null;
+                    string sortingLayer = RealitySpace.SortingLayerName(reality.Id, SortingBand.Gameplay);
+                    sceneChanged |= ApplyInstanceRenderer(visual, body, reality.gameObject.layer, sortingLayer, changes);
+                    sceneChanged |= ApplyInstanceRenderer(outlineTransform, outline, reality.gameObject.layer, sortingLayer, changes);
+                    sceneChanged |= AssignSceneReferences(cat, visual, changes);
+                    sceneChanged |= RemoveUnusedOverrides(cat.gameObject, changes);
+                }
+                if (sceneChanged) EditorSceneManager.MarkSceneDirty(scene);
+            }
+        }
+
+        static bool AssignSceneReferences(CatMotor2D cat, Transform visual, List<string> changes)
+        {
+            CatVisualPresenter presenter = visual.GetComponent<CatVisualPresenter>();
+            if (presenter == null) return false;
+            ObserverContext match = Object.FindObjectsByType<ObserverContext>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .FirstOrDefault(context => context.Cat == cat);
+            var serialized = new SerializedObject(presenter);
+            bool changed = AssignObject(serialized, "motor", cat)
+                | AssignObject(serialized, "observer", match);
+            if (!changed) return false;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            changes.Add($"assigned {cat.name} presenter references");
+            return true;
+        }
+
+        static void ReportAssignments()
+        {
+            var reported = new HashSet<ObserverId>();
+            foreach (CatMotor2D cat in Object.FindObjectsByType<CatMotor2D>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                RealityRoot reality = cat.GetComponentInParent<RealityRoot>();
+                CatVisualPresenter presenter = cat.transform.Find("Visual")?.GetComponent<CatVisualPresenter>();
+                if (reality == null || presenter == null || !reported.Add(reality.Id)) continue;
+
+                var serialized = new SerializedObject(presenter);
+                var missing = new List<string>();
+                foreach (ClipSpec clip in Clips)
+                {
+                    SerializedProperty frames = serialized.FindProperty(clip.Property)?.FindPropertyRelative("frames");
+                    if (frames == null || frames.arraySize == 0) missing.Add(clip.Label);
+                }
+                int missingRenderers = serialized.FindProperty("bodyRenderer").objectReferenceValue == null ? 1 : 0;
+                if (serialized.FindProperty("outlineRenderer").objectReferenceValue == null) missingRenderers++;
+                Debug.Log($"CatVisualSetup: Reality {reality.Id}: {Clips.Length - missing.Count}/{Clips.Length} clips assigned; unassigned slots: {(missing.Count == 0 ? "none" : string.Join(", ", missing))}; unassigned renderers: {missingRenderers}.");
+            }
+            foreach (ObserverId id in new[] { ObserverId.A, ObserverId.B })
+                if (!reported.Contains(id)) Debug.LogWarning($"CatVisualSetup: Reality {id}: 0/{Clips.Length} clips assigned; cat not found in loaded scenes.");
         }
 
         static void ApplyGroundContactOffset(GameObject root, Transform visual, CatVisualConfig config, List<string> changes)
         {
-            var collider = root.GetComponent<CapsuleCollider2D>();
+            CapsuleCollider2D collider = root.GetComponent<CapsuleCollider2D>();
             if (collider == null)
             {
-                Debug.LogError($"CatVisualSetup: '{PrefabPath}' root has no CapsuleCollider2D. Cannot compute Visual's ground-contact position.");
+                Debug.LogError($"CatVisualSetup: '{PrefabPath}' has no CapsuleCollider2D; cannot place Visual at ground contact.");
                 return;
             }
-
-            var target = new Vector3(
-                collider.offset.x,
-                collider.offset.y - collider.size.y * 0.5f + config.GroundOffset,
-                visual.localPosition.z);
-
-            if (visual.localPosition != target)
-            {
-                visual.localPosition = target;
-                changes.Add($"set Visual.localPosition = {target} (from collider offset/size + groundOffset)");
-            }
+            var target = new Vector3(collider.offset.x, collider.offset.y - collider.size.y * 0.5f + config.GroundOffset, visual.localPosition.z);
+            if (visual.localPosition == target) return;
+            visual.localPosition = target;
+            changes.Add($"set Visual.localPosition = {target}");
         }
 
         static void RemoveLegacyPlaceholderChildren(Transform visual, List<string> changes)
@@ -142,52 +298,46 @@ namespace Parallax.Editor.Art
             foreach (string childName in LegacyPlaceholderChildren)
             {
                 Transform child = visual.Find(childName);
-                if (child != null)
-                {
-                    Object.DestroyImmediate(child.gameObject);
-                    changes.Add($"removed legacy placeholder '{childName}'");
-                }
+                if (child == null) continue;
+                Object.DestroyImmediate(child.gameObject);
+                changes.Add($"removed legacy placeholder '{childName}'");
             }
         }
 
-        static SpriteRenderer GetOrCreateOutlineRenderer(Transform visual, string sortingLayerName, Material material, List<string> changes)
+        static SpriteRenderer GetOrCreateOutlineRenderer(Transform visual, string sortingLayer, Material material, List<string> changes)
         {
-            Transform outline = visual.Find("Outline");
-            GameObject outlineGO;
-            if (outline == null)
+            Transform child = visual.Find("Outline");
+            if (child == null)
             {
-                outlineGO = new GameObject("Outline");
-                outlineGO.transform.SetParent(visual, false);
+                var childObject = new GameObject("Outline");
+                childObject.transform.SetParent(visual, false);
+                child = childObject.transform;
                 changes.Add("created Outline child");
             }
-            else
-            {
-                outlineGO = outline.gameObject;
-            }
-
-            var renderer = outlineGO.GetComponent<SpriteRenderer>();
+            SpriteRenderer renderer = child.GetComponent<SpriteRenderer>();
             if (renderer == null)
             {
-                renderer = outlineGO.AddComponent<SpriteRenderer>();
+                renderer = child.gameObject.AddComponent<SpriteRenderer>();
                 changes.Add("added SpriteRenderer to Outline");
             }
-
-            AssignIfChanged(renderer, renderer.sortingLayerName, sortingLayerName, changes, "set Outline sorting layer");
+            SetSortingLayer(renderer, sortingLayer, changes, "Outline");
             if (renderer.sortingOrder != -1)
             {
                 renderer.sortingOrder = -1;
                 changes.Add("set Outline sorting order");
             }
-            AssignMaterialIfChanged(renderer, material, changes, "assigned Outline material");
-
+            if (renderer.sharedMaterial != material)
+            {
+                renderer.sharedMaterial = material;
+                changes.Add("assigned Outline material");
+            }
             return renderer;
         }
 
         static CatVisualConfig GetOrCreateConfig(List<string> changes)
         {
-            var config = AssetDatabase.LoadAssetAtPath<CatVisualConfig>(ConfigPath);
+            CatVisualConfig config = AssetDatabase.LoadAssetAtPath<CatVisualConfig>(ConfigPath);
             if (config != null) return config;
-
             config = ScriptableObject.CreateInstance<CatVisualConfig>();
             AssetDatabase.CreateAsset(config, ConfigPath);
             changes.Add("created CatA_VisualConfig asset");
@@ -198,54 +348,17 @@ namespace Parallax.Editor.Art
         {
             Material material = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
             if (material != null) return material;
-
             Shader shader = AssetDatabase.LoadAssetAtPath<Shader>(ShaderPath);
             if (shader == null)
             {
                 Debug.LogError($"CatVisualSetup: shader not found at '{ShaderPath}'.");
                 return null;
             }
-
-            if (!AssetDatabase.IsValidFolder(MaterialFolderPath))
-                AssetDatabase.CreateFolder("Assets/_Game/Art", "Materials");
-
+            if (!AssetDatabase.IsValidFolder(MaterialFolderPath)) AssetDatabase.CreateFolder("Assets/_Game/Art", "Materials");
             material = new Material(shader) { name = "Cat_OutlineUnlit" };
             AssetDatabase.CreateAsset(material, MaterialPath);
             changes.Add("created Cat_OutlineUnlit material asset");
             return material;
-        }
-
-        static void ConfigureSceneInstances(List<string> changes)
-        {
-            for (int sceneIndex = 0; sceneIndex < SceneManager.sceneCount; sceneIndex++)
-            {
-                Scene scene = SceneManager.GetSceneAt(sceneIndex);
-                if (!scene.isLoaded) continue;
-
-                bool sceneChanged = false;
-                foreach (GameObject root in scene.GetRootGameObjects())
-                {
-                    foreach (CatMotor2D cat in root.GetComponentsInChildren<CatMotor2D>(true))
-                    {
-                        RealityRoot reality = cat.GetComponentInParent<RealityRoot>();
-                        Transform visual = cat.transform.Find("Visual");
-                        if (reality == null || visual == null) continue;
-
-                        SpriteRenderer visualRenderer = visual.GetComponent<SpriteRenderer>();
-                        Transform outline = visual.Find("Outline");
-                        SpriteRenderer outlineRenderer = outline != null ? outline.GetComponent<SpriteRenderer>() : null;
-                        string sortingLayer = RealitySpace.SortingLayerName(reality.Id, SortingBand.Gameplay);
-                        int rootLayer = reality.gameObject.layer;
-
-                        sceneChanged |= ApplyInstanceRenderer(visual, visualRenderer, rootLayer, sortingLayer, changes);
-                        sceneChanged |= ApplyInstanceRenderer(outline, outlineRenderer, rootLayer, sortingLayer, changes);
-                        sceneChanged |= AssignObserver(cat, visual, changes);
-                        sceneChanged |= RemoveUnusedOverrides(cat.gameObject, changes);
-                    }
-                }
-
-                if (sceneChanged) EditorSceneManager.MarkSceneDirty(scene);
-            }
         }
 
         static bool ApplyInstanceRenderer(Transform target, SpriteRenderer renderer, int layer, string sortingLayer, List<string> changes)
@@ -255,52 +368,25 @@ namespace Parallax.Editor.Art
             if (target.gameObject.layer != layer)
             {
                 target.gameObject.layer = layer;
-                changes.Add($"set {target.name}.layer");
                 changed = true;
             }
             if (renderer.sortingLayerName != sortingLayer)
             {
                 renderer.sortingLayerName = sortingLayer;
-                changes.Add($"set {target.name} sorting layer");
                 changed = true;
             }
+            if (changed) changes.Add($"set {target.name} reality layer/sorting");
             return changed;
-        }
-
-        static bool AssignObserver(CatMotor2D cat, Transform visual, List<string> changes)
-        {
-            ObserverContext match = null;
-            foreach (ObserverContext context in Object.FindObjectsByType<ObserverContext>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-            {
-                if (context.Cat == cat)
-                {
-                    match = context;
-                    break;
-                }
-            }
-
-            var serialized = new SerializedObject(visual.GetComponent<CatVisualPresenter>());
-            SerializedProperty property = serialized.FindProperty("observer");
-            if (property.objectReferenceValue == match) return false;
-            property.objectReferenceValue = match;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-            changes.Add("assigned CatVisualPresenter observer");
-            return true;
         }
 
         static bool RemoveUnusedOverrides(GameObject instanceRoot, List<string> changes)
         {
-            var removed = new List<string>();
-            foreach (PropertyModification modification in PrefabUtility.GetPropertyModifications(instanceRoot))
-            {
-                string targetName = TargetName(modification.target);
-                if (targetName == "Body" || targetName == "Ear_Front" || targetName == "Ear_Back")
-                    removed.Add(targetName + "." + modification.propertyPath);
-            }
-
+            PropertyModification[] modifications = PrefabUtility.GetPropertyModifications(instanceRoot);
+            int legacyCount = modifications == null ? 0 : modifications.Count(modification =>
+                TargetName(modification.target) == "Body" || TargetName(modification.target) == "Ear_Front" || TargetName(modification.target) == "Ear_Back");
             PrefabUtility.RemoveUnusedOverrides(new[] { instanceRoot }, InteractionMode.AutomatedAction);
-            if (removed.Count == 0) return false;
-            changes.Add($"removed unused overrides from {instanceRoot.name}: {string.Join(", ", removed)}");
+            if (legacyCount == 0) return false;
+            changes.Add($"removed {legacyCount} unused overrides from {instanceRoot.name}");
             return true;
         }
 
@@ -311,33 +397,39 @@ namespace Parallax.Editor.Art
             return target != null ? target.name : string.Empty;
         }
 
-        static void AssignIfChanged(SerializedObject so, string propertyName, Object value, List<string> changes, string label)
+        static void AssignObject(SerializedObject serialized, string propertyName, Object value, List<string> changes, string label)
         {
-            SerializedProperty prop = so.FindProperty(propertyName);
-            if (prop.objectReferenceValue == value) return;
-            prop.objectReferenceValue = value;
+            if (!AssignObject(serialized, propertyName, value)) return;
             changes.Add($"assigned {label}");
         }
 
-        static void AssignMaterialIfChanged(SpriteRenderer renderer, Material material, List<string> changes, string label)
+        static bool AssignObject(SerializedObject serialized, string propertyName, Object value)
         {
-            if (renderer.sharedMaterial == material) return;
-            renderer.sharedMaterial = material;
-            changes.Add(label);
+            SerializedProperty property = serialized.FindProperty(propertyName);
+            if (property.objectReferenceValue == value) return false;
+            property.objectReferenceValue = value;
+            return true;
         }
 
-        static void AssignIfChanged(SpriteRenderer renderer, string current, string value, List<string> changes, string label)
+        static void SetSortingLayer(SpriteRenderer renderer, string value, List<string> changes, string label)
         {
-            if (current == value) return;
+            if (renderer.sortingLayerName == value) return;
             renderer.sortingLayerName = value;
-            changes.Add(label);
+            changes.Add($"set {label} sorting layer");
         }
 
-        static bool SameSprites(SerializedProperty framesProp, Sprite[] frames)
+        static void SetSprite(SpriteRenderer renderer, Sprite value, List<string> changes, string label)
         {
-            if (framesProp.arraySize != frames.Length) return false;
+            if (renderer.sprite == value) return;
+            renderer.sprite = value;
+            changes.Add($"set {label} sprite");
+        }
+
+        static bool SameSprites(SerializedProperty property, Sprite[] frames)
+        {
+            if (property.arraySize != frames.Length) return false;
             for (int i = 0; i < frames.Length; i++)
-                if (framesProp.GetArrayElementAtIndex(i).objectReferenceValue != frames[i]) return false;
+                if (property.GetArrayElementAtIndex(i).objectReferenceValue != frames[i]) return false;
             return true;
         }
     }

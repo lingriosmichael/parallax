@@ -81,15 +81,15 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: -1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: -1416057457, guid: f344cd884216244be9478509f8c0442c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1.301695, y: 1.301695}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
 --- !u!1 &8383936889462940800
 GameObject:
@@ -315,7 +315,7 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1154884260, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+  m_Sprite: {fileID: -1416057457, guid: f344cd884216244be9478509f8c0442c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -340,15 +340,39 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 8539e4fa74c514689ac207c889603612, type: 2}
   bodyRenderer: {fileID: 4730088555036735516}
   outlineRenderer: {fileID: 4787466439438444801}
-  frames:
-  - {fileID: -1154884260, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-  - {fileID: 1937713398, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-  - {fileID: -459493734, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-  - {fileID: -2138857646, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-  - {fileID: -1708634071, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-  - {fileID: -915545832, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-  - {fileID: 27547995, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-  - {fileID: -610704779, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-  - {fileID: 1586847735, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-  - {fileID: 636831742, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+  idleClip:
+    frames:
+    - {fileID: -1416057457, guid: f344cd884216244be9478509f8c0442c, type: 3}
+    fps: 7
+    loop: 1
+  walkClip:
+    frames:
+    - {fileID: -1154884260, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+    - {fileID: 1937713398, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+    - {fileID: -459493734, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+    - {fileID: -2138857646, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+    - {fileID: -1708634071, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+    - {fileID: -915545832, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+    - {fileID: 27547995, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+    - {fileID: -610704779, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+    - {fileID: 1586847735, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+    - {fileID: 636831742, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+    fps: 10
+    loop: 1
+  riseClip:
+    frames:
+    - {fileID: -771626471, guid: 5e5cdb6a23ca64ecf9ddcd8a454f40e9, type: 3}
+    fps: 12
+    loop: 0
+  fallClip:
+    frames:
+    - {fileID: -283901381, guid: 5b44d4b0a92914f858d828203cc542ad, type: 3}
+    fps: 12
+    loop: 0
+  landClip:
+    frames:
+    - {fileID: 1160843105, guid: e29e7310b3e62426a9aa23f8a30682ce, type: 3}
+    fps: 12
+    loop: 0
+  motor: {fileID: -6960851939468905688}
   observer: {fileID: 0}
