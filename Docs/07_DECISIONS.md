@@ -284,6 +284,11 @@ Consequence: If the Gate 3 check finds the assembly shipped, embed the package a
 **Supersedes:** D-021’s cat-relative reading. The virtual stick itself (floating origin, jump button) stands.
 **Consequence:** Confirm on device in PAX-037 when it runs.
 
+### D-050 · 2026-09-21 · Accepted
+**Decision:** (1) A room's id is its checkpoint id; a room is its `RoomDoor` plus the checkpoint markers with that id. (2) Solo rooms live in one reality, set on `RoomManager.soloReality`; doors elsewhere are invalid. (3) Only the current room (`CheckpointManager.Current`) is evaluated. (4) A LocalHuman touch completes the room once; on the same tick the cat is respawned at checkpoint N+1, or, with no door N+1, the level completes.
+**Why:** D-040 defines a room as a checkpoint and a door. Reusing checkpoint ids gives rooms progress and respawn for free. Completing on touch with an instant move keeps the troll loop fast.
+**Consequence:** Walking into a later room's checkpoint marker skips the current room, so level design keeps room N+1's marker unreachable before room N's door. Co-op rooms (doors in two realities) are designed in the co-op update.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)

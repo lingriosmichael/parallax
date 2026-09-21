@@ -519,6 +519,15 @@ a `CheckpointSpawnTable`, and `Respawn(observer)` snaps only the fallen cat via 
 `CheckpointSnapshot` restore above (anchors, puzzle phase, Echo cancel) is **not implemented yet**;
 see D-030. Checkpoint id `0` is reserved for each reality's level spawn.
 
+### 11.1 Rooms (as built PAX-040)
+
+- A room's id is its checkpoint id. A room is the `RoomDoor` with id N plus the checkpoint markers with id N.
+- Solo only: `RoomManager.soloReality` names the one reality that holds doors; a door elsewhere is invalid.
+- Only the current room's door (`CheckpointManager.Current`) is evaluated, from one `ObserverSet.Stepped` handler.
+- A LocalHuman touch completes the room once. On the same tick `CheckpointManager.Activate(N+1)` and `Respawn` put the cat at checkpoint N+1.
+- With no door N+1 the level completes (`LevelCompleted`, logged once).
+- Local only: no transport, no Photon.
+
 ---
 
 ## 12. Sessions (co-op)

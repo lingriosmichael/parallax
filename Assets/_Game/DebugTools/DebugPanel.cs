@@ -5,6 +5,7 @@ using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Transport;
 using Parallax.Gameplay.Echo;
 using Parallax.Gameplay.GravityControl;
+using Parallax.Gameplay.Rooms;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -25,9 +26,10 @@ namespace Parallax.DebugTools
         [SerializeField] GravityControlReceiver receiverA;
         [SerializeField] GravityControlReceiver receiverB;
         [SerializeField] CheckpointManager checkpoints;
+        [SerializeField] RoomManager rooms;
 
         static readonly Rect DbgButtonRect = new Rect(10f, 10f, 70f, 30f);
-        static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 420f);
+        static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 450f);
 
         bool open;
         bool pipOn;
@@ -124,6 +126,7 @@ namespace Parallax.DebugTools
             DrawTransport();
             DrawEcho();
             DrawCheckpoints();
+            DrawRooms();
 
             GUILayout.EndArea();
         }
@@ -141,6 +144,17 @@ namespace Parallax.DebugTools
             {
                 checkpoints.Respawn(observers.Get(switchController.Active));
             }
+        }
+
+        void DrawRooms()
+        {
+            if (rooms == null)
+            {
+                GUILayout.Label("Room: (missing)");
+                return;
+            }
+
+            GUILayout.Label($"Room: {rooms.CurrentRoom} · door: {(rooms.CurrentDoorTouched ? "touched" : "—")}{(rooms.LevelComplete ? " · Level complete" : "")}");
         }
 
         static void DrawControlRow(ObserverId id, CatSeat seat, GravityControlReceiver receiver)
