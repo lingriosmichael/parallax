@@ -2,15 +2,30 @@
 
 Read this file completely before every task.
 
-Before any MCP work, query mcpforunity://instances. If instance_count is 0, stop and report immediately. Do not retry, poll, or investigate around it.
-If any MCP call reports no Unity session, stop and report. A missing Editor is a precondition failure for the human, never something to work around.
-
 ## Project
 
-- **PARALLAX:** a landscape mobile 2D/2.5D puzzle adventure, 1–2 players, two cats, two realities.
+- **PARALLAX:** a landscape mobile 2D troll puzzle platformer (D-040). Puzzles combined with
+  Level Devil-style ragebait: each room is a checkpoint and a door, and the room betrays you.
+- **v1 is solo only (D-047):** one player, one cat (Observer A), one reality (A). Co-op (two cats,
+  two realities, two players) is a later update.
 - **Engine:** Unity 6 LTS · URP 2D Renderer · C# · Input System package.
 - **Platform:** Android first (IL2CPP, ARM64), Landscape Left locked.
-- **Networking:** Photon Fusion 2, Shared Mode. Used only inside `Parallax.Net.Fusion`.
+- **Networking:** none in v1. Photon Fusion 2 (Shared Mode) belongs to the co-op update
+  (PAX-028–035, frozen) and is only ever used inside `Parallax.Net.Fusion`.
+
+## Frozen co-op code
+
+Reality B, Echo, the reality switch, the Control Station and gravity dial, cross-reality anchors,
+`IRealityTransport` / `LocalTransport`, and PAX-028–035 stay in the repo **untouched**.
+
+- **Do not delete, rename or refactor them.** They must keep compiling, and their existing tests
+  must stay green.
+- **Do not build new v1 features on them.** Echo and the switch are dev tooling only (D-038).
+- Touch them only when a ticket names them in its allowed list. If a v1 change seems to require
+  editing frozen code, stop and report.
+- Shared infrastructure that frozen code also uses (`AnchorRegistry`, `ObserverSet`,
+  `GravityReceiver`, `CheckpointManager`) is **not** frozen, but changes to it must not break the
+  frozen features.
 
 ## Source of truth (highest first)
 
@@ -25,7 +40,8 @@ If documents conflict, or a ticket conflicts with the architecture: **stop and r
 
 ## Working rules
 
-- Implement **exactly one approved ticket** (`Docs/TASKS/PAX-XXX.md`) at a time.
+- Implement **exactly one approved ticket** at a time: `Docs/0_TASKS/PAX-XXX.md` (engineering),
+  `Docs/A_TASKS/` (art), `Docs/V_TASKS/` (visual/readability).
 - Modify **only** files in the ticket's allowed list. If another file must change, stop and ask.
 - **Never add features, systems, or "improvements" not requested.**
 - **Never install or update a Unity package** without explicit approval.
@@ -40,18 +56,15 @@ If documents conflict, or a ticket conflicts with the architecture: **stop and r
 - **Do not hand-edit** `.unity`, `.prefab`, `.asset`, `.meta`, or anything in `ProjectSettings/` unless the ticket explicitly permits it. **Having Unity MCP does not create an exception** — see "Unity MCP" below.
 - **Never delete, regenerate, or rename `.meta` files.** To move an asset, tell the developer to move it in the Unity Editor.
 - Scene/prefab wiring goes in the ticket's **"YOU — UNITY EDITOR"** steps. Where setup is repetitive, write an Editor menu script (`PARALLAX/Setup/…`) the developer can run.
+- **A setup menu only changes the open scene in memory.** After any setup menu runs (by you or the
+  developer), the scene must be saved (Cmd+S) and `git status` must list
+  `Sandbox_Realities.unity` as modified before commit. Check `git status` yourself and say in your
+  output whether the scene file shows as modified.
 - Use Unity 6 APIs (e.g. `Rigidbody2D.linearVelocity`, `Rigidbody2D.bodyType`). Do not use deprecated members.
 
-## Unity MCP (MCP for Unity, pinned v10.2.0)
+## Unity MCP (MCP for Unity, pinned v10.0.0)
 
 MCP gives you hands inside the running Editor. It changes **who presses the buttons**, not what is allowed.
-
-### Multiple agents
-
-- One Unity Editor and project folder are shared by every client. The agent holding the current approved ticket is the **only** agent allowed to make MCP calls that change Editor or project state.
-- Other agents may make read-only MCP queries only when they cannot interfere with the ticket holder; otherwise they must not use MCP.
-- Never run concurrent `refresh_unity`, `run_tests`, console-clearing, builds, or other state-changing MCP operations. A domain reload can invalidate another call, Test Runner jobs collide, and clearing the console can erase evidence another agent needs.
-- Commit at every handoff between agents. There are no separate worktrees for Unity's shared project folder.
 
 ### Allowed tool groups
 
@@ -71,8 +84,12 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 ### Compile, tests, console
 
 - Before claiming the project compiles: `refresh_unity` (with compilation), then `validate_script` on changed files, then `read_console`. Quote the relevant console lines.
-- After any change to `Parallax.Core` or `Parallax.Gameplay`: run EditMode tests via `run_tests` / `get_test_job`. Report the **pass count** and the **names** of any failures. Baseline is **110 green** — a lower total is a regression, not a rounding error. Report it.
+- After any change to `Parallax.Core` or `Parallax.Gameplay`: run EditMode tests via `run_tests` / `get_test_job`. Report the **pass count** and the **names** of any failures. The baseline is the total reported by the previous committed ticket; a lower total is a regression, not a rounding error. Report it.
 - Clear the console before an acceptance run so the output you report belongs to that run.
+- **Known console noise.** Exclude these from "zero new warnings", but still quote anything else:
+  - `MCP-FOR-UNITY: [WebSocket] Unexpected receive error: WebSocket is not initialised`
+  - `Error reason is 'NoSubscription' … generators.ai.unity.com`
+  - `connection.state_change … newState=Failed error=Process exited unexpectedly`
 - Use `batch_execute` for long sequences of calls rather than dozens of round trips.
 
 ### What MCP does not do
@@ -91,6 +108,10 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 
 ## Player model
 
+- **v1 (solo, D-038/D-047):** only Observer A is played, as `LocalHuman`, in Reality A
+  (`RoomManager.soloReality`). Observer B exists in code and in the sandbox, but no v1 feature may
+  depend on it.
+- The code model is unchanged, because the co-op update will need it:
 - There are **always exactly two logical Observers: A and B.**
 - **An Observer is NOT a human player or a network peer.**
 - Each Observer has a cat, a reality (`RealityRoot`), a camera, logical state, and a driver whose kind is `LocalHuman`, `RemoteHuman`, `EchoReplay`, or `Inactive`.
@@ -104,11 +125,30 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 - **Cats never physically interact** across realities. All physics queries use the own-reality layer mask.
 - Light2Ds target only their own reality's sorting layers.
 
-## Gravity
+## Gravity and movement
 
 - **Never use or modify `Physics2D.gravity` for cats.** Cats have `gravityScale = 0`.
 - Each cat's gravity comes from its `GravityReceiver`. `CatMotor2D` handles movement, jumping, and grounding **relative to that direction**.
-- Only `GravityReceiver.SetTargetDirection` changes a cat's gravity.
+- Only `GravityReceiver` changes a cat's gravity (`SetTargetDirection`, `Flip()`).
+- **Gravity is up or down only (D-037, D-048).** `GravityReceiver` quantizes every direction to
+  `(0, -1)` or `(0, +1)` and applies it **instantly**; `Flip()` flips from the target. No wall
+  gravity, no arbitrary angles, no tilt (D-045).
+- **Movement is screen-relative (D-049):** right is always screen-right, including upside down,
+  for touch and keyboard.
+- The camera stays world-aligned and never rotates with gravity (D-020).
+
+## Rooms, traps and death (v1)
+
+- **A room is a checkpoint and a door (D-040, D-050).** Room id = checkpoint id. Only the current
+  room is live. A `LocalHuman` touching the live room's door completes it and respawns the cat at
+  checkpoint N+1 on the same tick; no checkpoint N+1 means level complete.
+- **Traps are deterministic (D-040).** The same trigger does the same thing on every attempt. No
+  randomness, no `Time.time`; timing uses ticks. The room is the difficulty, never the controls.
+- **Death resets the current room (D-041).** The cat respawns at the room's checkpoint, and every
+  trap and room-owned anchor in that room returns to its declared initial value. Completed rooms are
+  never reset. Anchor resets go out as **new requests** from the session authority, never as a
+  registry rollback (D-024). Death to regained control: **≤ 0.75 s**, with no fade, screen or reload.
+- **No lives and no death counter** until D-044 is decided.
 
 ## Semantic state and networking
 
@@ -122,7 +162,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 - **Local input feedback never waits for the network.**
 - Puzzles talk only to `IRealityTransport`. They must work unchanged with `LocalTransport` and `FusionTransport`.
 
-## Echo
+## Echo (frozen, dev tooling only)
 
 - Echo is **state-based**: record per-tick frames plus issued requests and control samples. Play back **kinematically**. Never replay inputs through physics.
 - Echo uses tick offsets, never `Time.time`.
@@ -130,7 +170,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 
 ## Scope — not until explicitly approved
 
-No voice chat · no IAP · no matchmaking · no final art · no iOS · no analytics · no cloud saves · nothing beyond the current ticket.
+No co-op or networking work (co-op update) · no lives or death counter (D-044) · no tilt (D-045) · no voice chat · no IAP · no matchmaking · no final art · no iOS · no analytics · no cloud saves · nothing beyond the current ticket.
 
 ## Required output after every task
 
@@ -142,5 +182,6 @@ No voice chat · no IAP · no matchmaking · no final art · no iOS · no analyt
 6. **MCP calls that changed project state**, as a list (menu items executed, builds triggered, assets imported). Read-only queries need not be listed.
 7. **Known limitations** and anything left for a later ticket.
 8. Any conflicts with the docs you noticed.
+9. Whether `git status` shows `Sandbox_Realities.unity` as modified, if any setup menu ran.
 
 **Never claim something was tested on a device, or in the Editor, unless it actually was.** Say "untested" when it is. A green `run_tests` is not device validation.

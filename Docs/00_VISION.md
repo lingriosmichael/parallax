@@ -2,110 +2,136 @@
 
 **Status:** Authoritative. Supersedes the original specification wherever they differ.
 **Precedence:** `07_DECISIONS.md` > **this file** > `02_ARCHITECTURE.md` > `CLAUDE.md` > implementation plan > original spec.
-**Last updated:** 2026-09-10
+**Last updated:** 2026-09-21 (pivot to troll puzzle platformer, D-040; solo-only v1, D-047)
 
 ---
 
 ## 1. One line
 
-**PARALLAX is a landscape mobile puzzle adventure for one or two players. Two cats inhabit two contradictory realities of the same world, and what you do in yours changes theirs.**
+**PARALLAX is a landscape mobile troll puzzle platformer. A small cat crosses a vast, surreal world
+one room at a time, and every room is lying to it.**
 
 ## 2. Core fantasy
 
-> **"Your friend controls your reality."**
+> **"I know what this room is going to do to me now."**
 
-In co-op you never see your partner's world. You only see its consequences in yours, and you have to talk to understand them. In solo, you move between both worlds and cooperate with your own past self.
+Each room looks simple: a checkpoint, a door, an obvious way across. The obvious way is a trap. The
+player dies, laughs or swears, and tries again straight away, because the room behaves exactly the
+same way every time. Winning means reading the room, not out-reflexing it.
 
 ## 3. Pillars
 
-1. **"What do you see?"** Communication is the core mechanic. Puzzles are solved by describing contradictory worlds in qualitative language.
-2. **"I did that to you."** Cause and effect crosses realities, and crosses phones. It must feel immediate, legible, and a little theatrical.
-3. **Cheap, funny failure.** Instant respawns, no death screens. The cats make mistakes charming: scrambling paws, ears back, surprised landings.
-4. **Two worlds, one truth.** Both realities are manifestations of one logical world. A vine in one is an elevator in the other. The player learns the mapping by experimenting.
+1. **The room is the puzzle.** Every room is a small puzzle with one idea. The obvious route is the
+   setup, the betrayal teaches the rule, and the solution uses it.
+2. **Fair betrayal.** Traps are deterministic (D-040): the same trigger does the same thing on every
+   attempt. Nothing is random, nothing depends on frame timing. The room is the difficulty, never the
+   controls.
+3. **Cheap, funny failure.** Death resets the room and puts the cat back at the checkpoint in
+   ≤ 0.75 s, with no fade, death screen or reload (D-041). The cats make mistakes charming:
+   scrambling paws, ears back, surprised landings.
+4. **One verb that changes everything.** Gravity flips between up and down, instantly (D-037,
+   D-048). The same room read upside down is a different room, and the room can flip it on you.
 
-## 4. Player model
+## 4. How a room works
 
-There are always exactly **two logical Observers**, A and B, however many humans are playing.
+- **A room is a checkpoint and a door (D-040, D-050).** The cat starts at the checkpoint and has to
+  reach the door. Touching the door completes the room and the cat appears at the next checkpoint.
+  After the last door, the level is complete.
+- **Anatomy of a room:** setup → obvious route → betrayal → learned solution. Every room should be
+  describable in one sentence of that shape.
+- **Death resets the room (D-041).** The cat respawns at the room's checkpoint and every trap in
+  the room re-arms. Rooms already completed stay completed.
+- **Unlimited retries** are the working assumption. Lives and a per-room death counter are
+  undecided (D-044, proposed; Q-9).
+- **Level-design constraint (D-050):** reaching a later room's checkpoint skips the current room,
+  so room N+1's checkpoint must be unreachable before room N's door.
 
-| | Observer A | Observer B |
-|---|---|---|
-| Cat | Cat A | Cat B |
-| Reality | **Reality A:** warm, organic | **Reality B:** cold, geometric |
-| Controlled by | a human, an Echo, or nobody | a human, an Echo, or nobody |
+## 5. v1 mechanics
 
-### Co-op (flagship)
-Each human controls one Observer on their own phone. Each phone shows **only its own reality**, full-screen. Players talk by voice (an external call during the prototype).
+| Mechanic | What it is |
+|---|---|
+| **Move and jump** | Screen-relative movement (D-049): right is screen-right, even upside down. |
+| **Gravity flip** | Gravity is up or down only, flipped instantly by the player (FLIP / Q) or by a trap. No wall gravity, no tilt (D-045). |
+| **Hazards** | Touching one kills the cat and resets the room. |
+| **Trap kit v1** | Collapsing floor, hidden spikes, falling block, door that moves away, gravity-flip trap (PAX-042). Each trap is armed or fired and re-arms on death. |
+| **Checkpoints and doors** | One checkpoint and one door per room. |
 
-### Solo (first-class)
-One human switches control between A and B. Only one reality is on screen at a time; **there is never a permanent split-screen**. The **Echo** lets the player record a short sequence as one cat, switch, and have that cat replay it while they control the other.
+## 6. Controls
 
-## 5. The spatial model (player-facing)
-
-- Each cat lives in **its own reality with its own geography**. Platforms, walls, and routes differ.
-- The realities are linked only through **anchors**: objects that exist in both worlds in different forms (vine ↔ elevator, statue ↔ monolith, sundial ↔ gravity console).
-- **The cats never physically meet** during normal play. By default they cannot see each other. (A faint "presence" hint is an open question; see §12.)
-- The finale is the one moment the realities **converge**. The split composition from the key art appears on both screens.
-
-## 6. v1 mechanics (vertical slice)
-
-| Mechanic | What it is | Solo |
-|---|---|---|
-| **Anchor Move** | Changing an anchor in one reality changes its counterpart in the other | Native |
-| **Gravity Shift** | A cat at a **Control Station** steers the *other* cat's gravity by tilting the phone or turning an on-screen dial | Adapted (persistent setting, or Echo-recorded choreography) |
-| **Perspective / Shadow** | An object positioned in Reality A casts a "shadow" that becomes solid geometry in Reality B | Native or Adapted |
-| **Echo** (solo) | Record ≤10 s as one cat, switch, and the Echo replays and holds its final state | Solo core |
-
-Each puzzle is tagged `COOP: Native/Exclusive` and `SOLO: Native/Adapted`.
-
-## 7. Controls
-
-- **Movement:** touch left / right / jump-interact.
-- **Gravity control:** tilt (roll) *or* a touch dial, chosen in settings. Only used while seated at a Control Station, so the hands are free.
-- **Solo:** SWITCH and RECORD buttons.
+- **Touch:** floating stick (left), jump button, FLIP button (top-right).
+- **Keyboard (Editor):** A/D or arrows to move, Space to jump, F to interact, Q to flip gravity.
+- **Camera:** world-aligned; it never rotates with gravity (D-020).
 - **Orientation:** landscape, locked.
 
-## 8. Characters and tone
+## 7. Characters and tone
 
-Two small cats in a vast, serious, surreal world. They are not childish. Their small scale makes the architecture feel enormous. They are expressive and physical, and their failures are funny rather than punishing. The warm-reality cat and the cold-reality cat look different but have **identical gameplay dimensions**.
+A small cat in a vast, serious, surreal world. It is not childish. Its small scale makes the
+architecture feel enormous. It is expressive and physical, and its failures are funny rather than
+punishing. The world plays tricks on the cat; the game never plays tricks on the player's hands.
 
-## 9. Visual direction
+## 8. Visual direction
 
 Reference: `Docs/Art/keyart_north_star.png`.
 
-- **Reality A:** sandstone, roots, ruins, cloth banners, vegetation, floating architecture, clouds, warm golden light, dark reflective water.
-- **Reality B:** obsidian, glass, grids, cyan edge light, void, monoliths, wireframes, cold mist, stars.
-- **In-game style:** evokes the key art with fewer layers, stronger silhouettes, and readable contrast at phone scale. The key art's painterly depth is a marketing target, not an in-game requirement.
-- **The split composition** (both realities side by side) is used for the finale, the store page, and trailers only. It is never the normal gameplay view.
+- **v1 is Reality A:** sandstone, roots, ruins, cloth banners, vegetation, floating architecture,
+  clouds, warm golden light, dark reflective water.
+- **Reality B** (co-op update): obsidian, glass, grids, cyan edge light, void, monoliths,
+  wireframes, cold mist, stars.
+- **In-game style:** evokes the key art with fewer layers, stronger silhouettes, and readable
+  contrast at phone scale. The key art's painterly depth is a marketing target, not an in-game
+  requirement.
+- **Traps must read at phone scale after the betrayal.** Before it, a trap may hide; once it has
+  fired, the player must be able to see what happened.
 - **Artwork never decides collision.** Invisible colliders define gameplay surfaces.
 
-## 10. Audio and haptics (brief)
+## 9. Audio and haptics (brief)
 
-Each reality has its own ambient bed: warm/organic vs. cold/tonal. Cross-reality causality gets a sound and a haptic cue on the *causing* phone immediately and on the *receiving* phone on arrival. The finale is a synchronized musical and haptic hit on both devices.
+Warm, organic ambient bed for Reality A. Every trap firing gets a sound and a haptic cue, so the
+betrayal is felt as well as seen. Death and respawn are short and light, never punishing.
 
-## 11. Scope
+## 10. Scope
 
-### In v1 (prototype → vertical slice)
-Android · landscape · 1–2 players · two cats · two realities · anchors · gravity control (tilt + dial) · perspective/shadow puzzle · solo switching + Echo · invite-code co-op via Photon Fusion 2 · checkpoints · reconnect handling · a 10–15 minute slice · greybox first, art after validation.
+### In v1
+Android · landscape · solo · one cat · Reality A · rooms (checkpoint + door) · hazards and room
+reset · trap kit v1 · up/down gravity flip · a short run of greybox rooms first, art after
+validation.
 
 ### Not in v1
-iOS · built-in voice · random matchmaking · payments / friend pass · deep links · cloud saves · cosmetics · achievements · localization · chapters beyond the slice · trailers/store pages.
+Co-op and all networking (co-op update) · Reality B as a play space · Echo and the reality switch as
+player features (dev tooling only, D-038) · Control Station and gravity dial · tilt (removed, D-045)
+· iOS · voice · matchmaking · payments · cloud saves · cosmetics · achievements · localization ·
+store pages and trailers.
 
 ### Removed from the original specification
-3D environments · 3D humanoids · the photo-to-3D-avatar cloud pipeline · 3D mesh portals. Any section of the original spec describing these is void.
+3D environments · 3D humanoids · the photo-to-3D-avatar cloud pipeline · 3D mesh portals. Any section
+of the original spec describing these is void.
+
+## 11. The co-op update (later, parked)
+
+Co-op returns after v1 (D-047). The earlier co-op vision is kept here as direction, not as v1 scope:
+two players, two cats, two contradictory realities of the same world, each phone showing only its
+own reality. Anchors link the worlds (a vine in one is an elevator in the other), and the core line
+was **"What do you see?"**: players solve rooms by describing worlds the partner can't see.
+
+Rules already agreed for it: cross-reality traps change state and never demand timing (D-043); a
+death resets both cats (D-042, deferred). All co-op code (Reality B, Echo, switch, Control Station,
+cross-reality anchors, transport, PAX-028–035) stays in the repo, untouched and frozen.
 
 ## 12. Open questions (resolve by playtest, record in `07_DECISIONS.md`)
 
-1. **Presence hint:** should each player see a faint shimmer where the partner's cat corresponds in their reality, or nothing at all?
-2. **Camera and gravity:** should the camera rotate when a cat's gravity changes, or stay world-aligned?
-3. **Tilt vs. dial:** which do players prefer? Is tilt worth keeping as the default?
-4. **Solo gravity adaptation:** persistent setting, Echo choreography, or both?
-5. **Echo length:** is 10 seconds right? Should Echoes loop for some puzzles?
-6. **Same-room play:** does peeking at the partner's screen hurt or help?
+1. **Lives and death counter (D-044, Q-9):** unlimited retries with a per-room death counter, or
+   something else?
+2. **Cat collider height (Q-10):** 0.8 today vs art ~0.6 (proposed PAX-A04, ~0.62). Settle before
+   the first real rooms (PAX-043); it sets every jump and gap.
+3. **Screen-relative movement on device (D-049):** confirm on the Pixel 8a in PAX-037.
+4. **Partner presence hint (Q-1):** co-op, parked.
 
 ## 13. Success criteria
 
-The vertical slice succeeds when, across 10 co-op pairs and 6–8 solo players:
-- pairs spontaneously ask **"What do you see?"**, laugh at cross-reality effects, grasp cause and effect within one or two attempts, and ask **"Is there another level?"**;
-- solo players find Echo puzzles clever rather than tedious and would play solo again.
+The first greybox rooms (PAX-043) succeed when, across 6–8 solo playtesters:
+- players die to a room's betrayal and retry immediately rather than put the phone down;
+- after a death, players can say what the room did to them;
+- players blame the room, not the controls;
+- players ask **"Is there another room?"**
 
-If these don't happen, no further chapters are built until the game is fixed.
+If these don't happen, no further rooms are built until the game is fixed.
