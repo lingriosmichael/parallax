@@ -52,7 +52,7 @@ namespace Parallax.Gameplay.UI
         {
             if (label == null || switchController == null) return;
 
-            label.text = switchController.Active == ObserverId.A ? "<b>A</b>  |  b" : "a  |  <b>B</b>";
+            label.text = switchController.Active == ObserverId.A ? "DEV <b>A</b>  |  b" : "DEV a  |  <b>B</b>";
         }
 
         public bool ContainsScreenPoint(Vector2 screenPos)

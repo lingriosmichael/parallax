@@ -208,16 +208,75 @@ Consequence: If the Gate 3 check finds the assembly shipped, embed the package a
 **Why:** Facing is purely visual and derivable from motion; two writers fought during replay.
 **Consequence:** Any future gameplay need for facing (for example, directional interact) must come from motor/command state, never from Visual.
 
+### D-035 · 2026-09-21 · Reserved
+**Reserved** for the Gate 3 verdict (PAX-037). Gate 3 is redefined by D-038.
+
+### D-036 · 2026-09-21 · Accepted
+**Decision:** Cat animation state is selected in code: pure `CatAnimStateMachine` in `Parallax.Core`, per-state `Sprite[]` clips on `CatVisualPresenter`. No Unity Animator, Animator Controllers or `.anim` assets. All cat sheets share Walk's PPU and pivot, enforced by `CatSpriteImporter`.
+**Why:** Deterministic, EditMode-testable, reviewable in a diff, and cannot fight the gravity-aligned body rotation. A shared pivot is what keeps frames aligned across states.
+**Supersedes:** Single-frame `idleFrame`/`airFrame` selection from PAX-A01.
+
+### D-037 · 2026-09-21 · Accepted
+**Decision:** Gravity is up or down only. No wall gravity. `GravityDial` becomes a flip, `GravityDebugControl` a single flip key, and the spawn-point validator rejects sideways directions. D-020 (world-aligned camera) stands.
+**Why:** With a world-aligned camera and world-down environment art, a cat on a wall contradicts everything around it. Upside-down reads as a clear idea; sideways does not.
+**Supersedes:** Four-direction gravity (PAX-010, PAX-026 dial). **Reopens D-021:** cat-relative movement was chosen with walls in play; with walls gone, `ScreenRelative` must be re-tested on device before the gravity ticket is built.
+
+### D-038 · 2026-09-21 · Accepted
+**Decision:** Solo is one cat in one reality. Co-op is the two-cat, two-reality mode and remains mandatory two-player. Echo and the reality switch are removed from the player's game and kept as dev-only tooling behind `defineConstraints`. Gate 3 is redefined as local validation of both-cat mechanics using that tooling, still on one phone.
+**Why:** Echo does not explain itself and solo does not need it. Keeping it as tooling preserves one-phone testing of cross-reality mechanics until networking lands at Gate 4.
+**Supersedes:** Q-8 (solo in v1 via Echo); the solo half of D-004's rationale; D-007 and D-026–D-028 as player-facing features. D-035 stays reserved for the Gate 3 verdict.
+
+### D-039 · 2026-09-21 · Accepted
+**Decision:** Solo mode is a rage platformer mixing troll traps (Level Devil style) with precision platforming (Getting Over It / Jump King style).
+**Why:** Gives solo its own identity instead of a reduced co-op.
+**Open:** Room structure and failure rules — see Q-11. Q-9 (nine lives) is now tied to this.
+
+### D-040 · 2026-09-21 · Accepted
+**Decision:** Parallax is a troll puzzle platformer: puzzles combined with Level Devil-style ragebait. The unit of play is a **room**: one checkpoint, one door per cat. A room fits on one screen or close to it and takes roughly 10–20 s once its solution is known. Traps are deterministic: the same trigger gives the same outcome on every attempt. The room is the source of difficulty, never the controls. **Solo:** one cat, one reality, a room of local traps and puzzle logic. **Co-op:** two humans only, two realities. Co-op is harder than solo because each player's actions can trigger traps in the partner's reality through anchors. A room is complete when the solo cat enters its door, or in co-op when both cats have entered theirs.
+**Why:** Every death should teach one rule and be blamed on the room, which is what makes an instant retry feel fair. Precision platforming makes the controls the difficulty and works against that. Puzzles give the rooms a solution to learn instead of an execution to grind.
+**Supersedes:** D-039 (the precision-platforming half, Getting Over It / Jump King). **Resolves:** Q-11 (room structure). `00_VISION.md` §1–3 must be rewritten to match.
+**Consequence:** Anchors in co-op rooms are designed as threats, not gifts. Every level-design ticket describes each room as setup → obvious route → betrayal → learned solution.
+
+### D-041 · 2026-09-21 · Accepted
+**Decision:** Death resets the room. The dead cat respawns at the room's checkpoint, and every trap and anchor owned by that room returns to its initial armed value. The time from death to regained control is at most 0.75 s, with no fade, screen or reload. Anchor resets are issued as **new** requests with fresh sequences from the session authority (the local device in solo, the master client in co-op); the registry is never rolled back (D-024). Completed rooms are not reset.
+**Why:** A trap that stays fired cannot be relearned or tested again, which breaks the troll loop. Resetting through new requests keeps D-024's per-origin ordering valid and works unchanged under Photon.
+**Supersedes:** D-030 (3) "no world rewind" and D-032 "checkpoints restore cats, not the world", for room-scoped state.
+**Consequence:** This is the full restore that D-030's consequence required before the first irreversible anchor; traps are irreversible anchors. Every trap and room-owned anchor declares an initial value and registers with its room.
+
+### D-042 · 2026-09-21 · Proposed
+**Decision:** In co-op, any death resets the room for both players: both cats respawn at their checkpoints, both realities re-arm, Control Stations release their seats, and both cats take their checkpoint gravity.
+**Why:** Rooms are short, so there is little partner progress to protect. A cross-reality trap's trigger lives in one reality and its effect in the other, so resetting only one side leaves the room in a state it was not designed for. A shared reset also drives the "you killed us" comedy that co-op is built on.
+**Alternative considered:** reset only the fallen cat and its own reality (D-030 (2)). Rejected because a partner-triggered trap would re-arm without its trigger re-arming.
+**Supersedes:** D-030 (2) for co-op; D-032's control-stream override on respawn.
+**Status note:** Awaiting the developer's confirmation. Change to Accepted or Rejected before PAX-040 starts.
+
+### D-043 · 2026-09-21 · Accepted
+**Decision:** Cross-reality traps change state; they never demand timing. A trap caused from the other reality may remove a floor, close a door or flip gravity, but it must not require a reaction inside the transport's latency window. Design budget: assume up to 500 ms of variable latency. Timing-precise traps are local only.
+**Why:** Network latency varies. A cross-reality trap with a tight window would feel random, and randomness breaks the deterministic contract of D-040.
+**Consequence:** Level design and the AnchorValidator reviews check every hostile anchor against this rule.
+
+### D-044 · 2026-09-21 · Proposed
+**Decision:** No lives. Retries are unlimited. Deaths are counted per room and shown when the room is cleared.
+**Why:** A lives system turns ragebait into a fail state and contradicts Vision pillar 3 (cheap, funny failure). A death counter keeps the sting as a score, not a punishment.
+**Resolves:** Q-9 and the nine-lives part of Q-11.
+**Status note:** Awaiting the developer's confirmation.
+
+### D-045 · 2026-09-21 · Accepted
+**Decision:** Tilt is removed. Gravity control at a Control Station is a touch flip only (D-037). Plan PAX-025 and ticket PAX-038 (tilt) are cancelled; the number PAX-038 is retired and not reused. `IGravityControlInput` stays as the station's input seam; whether it simplifies to a flip is decided in the gravity ticket.
+**Why:** With binary gravity (D-037), a flip is a button. Tilt would add sensor noise, calibration and a second input mode for no gameplay gain.
+**Supersedes:** D-009 (tilt as an option) and D-029 (1) "tilt plugs into the same interface later". **Resolves:** Q-3.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
 
 - **Q-1** Partner presence hint: shimmer or nothing?
 - ~~**Q-2** Camera rotates with gravity, or stays world-aligned?~~ Resolved by D-020: world-aligned.
-- **Q-3** Tilt or dial as default?
-- **Q-4** Solo gravity adaptation: persistent setting, Echo choreography, or both?
-- **Q-5** Echo length and looping.
-- **Q-6** Effect of same-room screen peeking.
+- ~~**Q-3** Tilt or dial as default?~~ Closed by D-045: tilt removed; gravity control is a touch flip.
+- ~~**Q-4** Solo gravity adaptation: persistent setting, Echo choreography, or both?~~ Closed by D-038: solo has one cat and nothing to steer.
+- ~~**Q-5** Echo length and looping.~~ Moot as a player feature by D-038; Echo is dev tooling only.
+- ~~**Q-8** Is v1 co-op-only?~~ Closed by D-026, superseded by D-038: solo is one cat in one reality.
 - ~~**Q-7** Should a temporary gravity-aligned/snap-rotating camera be introduced in Phase 5 as a deliberate disorientation effect while a Control Station actively steers the other cat's gravity?~~ Closed by D-021: not needed.
-- ~~**Q-8** Is v1 co-op-only?~~ Closed by D-026: solo stays in v1; Echo and solo as a first-class mode remain in scope.
-- **Q-9** Nine lives: shared between both cats or per-cat? Reset per level or per checkpoint? On zero, hard fail or a rating penalty? Note: a hard fail conflicts with Vision pillar 3 (cheap, funny failure, no death screens); resolving Q-9 toward hard fail requires a Vision change. Recorded, not designed.
+- ~~**Q-9** Nine lives: shared or per-cat, per level or per checkpoint, hard fail or rating?~~ Proposed closure by D-044: no lives, per-room death counter.
+- **Q-10 · Cat collider height vs. art silhouette.** Collider is a horizontal capsule, 1.2 × 0.8. Art PPU (196.667) is derived from Walk frame-0 width over collider length, so the art matches length by construction but not height: Walk draws 0.580 u tall, Idle 0.656, Rise 0.702, Fall 0.524, Land 0.447. The standing cat leaves ~0.14 u of empty collider above its back, so ceilings and head bumps read as gaps. Proposed: shrink collider height to ~0.62 as PAX-A04, after A03 Play acceptance and before PAX-037. `CatVisualSetup` places Visual at the collider's bottom edge, so the setup menu must be re-run after any collider change. Blocks level design.
+- ~~**Q-11 · Solo room structure.**~~ Closed by D-040 (room = checkpoint + door, deterministic traps, no precision platforming) and D-044 (no lives, pending confirmation).

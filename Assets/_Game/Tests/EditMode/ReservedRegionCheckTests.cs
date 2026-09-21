@@ -7,6 +7,11 @@ namespace Parallax.Tests
 {
     public class ReservedRegionCheckTests
     {
+        sealed class DestroyableRegion : MonoBehaviour, ITouchReservedRegion
+        {
+            public bool ContainsScreenPoint(Vector2 screenPos) => true;
+        }
+
         sealed class FakeRegion : ITouchReservedRegion
         {
             readonly Rect rect;
@@ -33,6 +38,19 @@ namespace Parallax.Tests
         {
             var regions = new List<ITouchReservedRegion>();
             Assert.IsFalse(ReservedRegionCheck.IsReserved(regions, new Vector2(50f, 50f)));
+        }
+
+        [Test]
+        public void IsReserved_DestroyedRegion_IsSkippedWithoutReserving()
+        {
+            var regionObject = new GameObject("Destroyed Reserved Region");
+            var region = regionObject.AddComponent<DestroyableRegion>();
+            var regions = new List<ITouchReservedRegion> { region };
+
+            Object.DestroyImmediate(regionObject);
+
+            Assert.DoesNotThrow(() => ReservedRegionCheck.IsReserved(regions, Vector2.zero));
+            Assert.IsFalse(ReservedRegionCheck.IsReserved(regions, Vector2.zero));
         }
     }
 }

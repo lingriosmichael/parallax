@@ -33,9 +33,9 @@ namespace Parallax.Gameplay.UI
             if (state == displayedState && tenths == displayedTenths) return;
             displayedState = state;
             displayedTenths = tenths;
-            label.text = state == EchoRecordState.Idle ? "REC"
-                : state == EchoRecordState.Recording ? $"REC {tenths / 10f:F1}"
-                : state == EchoRecordState.Full ? "REC FULL" : "REC --";
+            label.text = state == EchoRecordState.Idle ? "DEV REC"
+                : state == EchoRecordState.Recording ? $"DEV REC {tenths / 10f:F1}"
+                : state == EchoRecordState.Full ? "DEV REC FULL" : "DEV REC --";
         }
         public bool ContainsScreenPoint(Vector2 screenPos) => RectTransformUtility.RectangleContainsScreenPoint(rectTransform, screenPos, null);
     }

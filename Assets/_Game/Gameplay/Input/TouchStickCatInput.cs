@@ -210,7 +210,7 @@ namespace Parallax.Gameplay.Input
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         void OnGUI()
         {
-            if (!showDebugOverlay) return;
+            if (!showDebugOverlay || !Debug.isDebugBuild) return;
 
             Rect safeArea = Screen.safeArea;
 

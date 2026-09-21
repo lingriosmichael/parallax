@@ -11,7 +11,13 @@ namespace Parallax.Gameplay.Input
         {
             for (int i = 0; i < regions.Count; i++)
             {
-                if (regions[i] != null && regions[i].ContainsScreenPoint(screenPos)) return true;
+                ITouchReservedRegion region = regions[i];
+                if (ReferenceEquals(region, null)) continue;
+
+                UnityEngine.Object unityRegion = region as UnityEngine.Object;
+                if (!ReferenceEquals(unityRegion, null) && unityRegion == null) continue;
+
+                if (region.ContainsScreenPoint(screenPos)) return true;
             }
             return false;
         }
