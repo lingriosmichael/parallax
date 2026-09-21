@@ -14,6 +14,8 @@ namespace Parallax.Editor.Setup
 {
     public static class RoomSetup
     {
+        const string DoorArtPath = "Assets/_Game/Art/Doors/A_Door_Exit.png";
+        const int DoorArtSortingOrder = -2;
         static readonly Vector2 DoorSize = new Vector2(0.6f, 1.5f);
 
         [MenuItem("PARALLAX/Setup/Rooms (Sandbox)")]
@@ -85,11 +87,48 @@ namespace Parallax.Editor.Setup
             Transform folder = SetupUtility.EnsureChild(root.transform, "Doors", layer, changes);
             GameObject doorObject = SetupUtility.EnsureChild(folder, $"Door_{id}", layer, changes).gameObject;
             SetupUtility.SetLocalPosition(doorObject.transform, localPosition, changes);
-            SetupUtility.SetVisual(doorObject, root, DoorSize, new Color(0.9f, 0.5f, 1f, 1f), changes);
+            SpriteRenderer greybox = SetupUtility.SetVisual(doorObject, root, DoorSize, new Color(0.9f, 0.5f, 1f, 1f), changes);
+            BuildDoorArt(doorObject.transform, greybox, root, changes);
             RoomDoor door = SetupUtility.Ensure<RoomDoor>(doorObject, changes);
             SetInt(door, "roomId", id, changes);
             SetupUtility.SetVector2(door, "zoneSize", DoorSize, changes);
             SetupUtility.SetObject(door, "manager", manager, changes);
+        }
+
+        static void BuildDoorArt(Transform door, SpriteRenderer greybox, RealityRoot root, List<string> changes)
+        {
+            Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(DoorArtPath);
+            if (sprite == null)
+            {
+                Debug.LogError($"RoomSetup: door art not found at {DoorArtPath}; {door.name} keeps its greybox.");
+                return;
+            }
+
+            Transform art = SetupUtility.EnsureChild(door, "Art", door.gameObject.layer, changes);
+            SetupUtility.SetLocalPosition(art, new Vector2(0f, -DoorSize.y * 0.5f), changes);
+            var renderer = SetupUtility.Ensure<SpriteRenderer>(art.gameObject, changes);
+            if (renderer.sprite != sprite)
+            {
+                renderer.sprite = sprite;
+                changes.Add("set " + door.name + ".Art.sprite");
+            }
+            // Gameplay band like the cat, but order -2 keeps the door behind it and above the midground.
+            string sortingLayer = RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay);
+            if (renderer.sortingLayerName != sortingLayer)
+            {
+                renderer.sortingLayerName = sortingLayer;
+                changes.Add("set " + door.name + ".Art.sortingLayer");
+            }
+            if (renderer.sortingOrder != DoorArtSortingOrder)
+            {
+                renderer.sortingOrder = DoorArtSortingOrder;
+                changes.Add("set " + door.name + ".Art.sortingOrder");
+            }
+            if (greybox != null && greybox.enabled)
+            {
+                greybox.enabled = false;
+                changes.Add("disabled " + door.name + " greybox");
+            }
         }
 
         static void SetInt(Object target, string name, int value, List<string> changes)
