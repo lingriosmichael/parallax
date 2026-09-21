@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEditor;
@@ -7,15 +9,22 @@ using UnityEngine;
 
 namespace Parallax.Editor.Art
 {
-    // Slices an AutoSprite walk export into named, pivoted sprites. Pure import-time
+    // Slices an AutoSprite cat export into named, pivoted sprites. Pure import-time
     // tooling: never runs at play time, never touches gameplay or collider data.
     public static class CatSpriteImporter
     {
         const int CellSize = 256;
         const byte OpaqueAlphaThreshold = 25; // ~10% alpha
-        const string SpriteNamePrefix = "CatA_Walk_";
         const string CatWalkPath = "Assets/_Game/Art/Cats/CatA/CatA_Walk.png";
         const string CatPlayerPrefabPath = "Assets/_Game/Gameplay/Player/Cat_Player.prefab";
+        static readonly string[] CatASheetPaths =
+        {
+            CatWalkPath,
+            "Assets/_Game/Art/Cats/CatA/CatA_Idle.png",
+            "Assets/_Game/Art/Cats/CatA/CatA_Rise.png",
+            "Assets/_Game/Art/Cats/CatA/CatA_Fall.png",
+            "Assets/_Game/Art/Cats/CatA/CatA_Land.png",
+        };
 
         [MenuItem("PARALLAX/Art/Import Cat Sheet")]
         public static void ImportSelected()
@@ -23,7 +32,7 @@ namespace Parallax.Editor.Art
             Texture2D selected = Selection.activeObject as Texture2D;
             if (selected == null)
             {
-                Debug.LogError("CatSpriteImporter: select the CatA_Walk.png texture asset first.");
+                Debug.LogError("CatSpriteImporter: select a cat sprite-sheet texture asset first.");
                 return;
             }
 
@@ -32,6 +41,13 @@ namespace Parallax.Editor.Art
 
         [MenuItem("PARALLAX/Art/Import Cat A Walk")]
         public static void ImportCatAWalk() => Import(CatWalkPath);
+
+        [MenuItem("PARALLAX/Art/Import Cat A Sheets")]
+        public static void ImportCatASheets()
+        {
+            foreach (string path in CatASheetPaths)
+                Import(path);
+        }
 
         static void Import(string path)
         {
@@ -59,6 +75,7 @@ namespace Parallax.Editor.Art
             int columns = Mathf.Max(1, texture.width / CellSize);
             int rows = Mathf.Max(1, texture.height / CellSize);
             int frameCount = columns * rows;
+            string spriteNamePrefix = Path.GetFileNameWithoutExtension(path) + "_";
 
             Color32[] pixels = texture.GetPixels32();
 
@@ -87,13 +104,22 @@ namespace Parallax.Editor.Art
                 return;
             }
 
-            float pixelsPerUnit = frame0OpaqueWidth / colliderLength;
-
             int pawRowLocal = LowestOpaqueRow(pixels, texture.width, frameRects);
-            (int pawMinX, int pawMaxX) = PawSpan(pixels, texture.width, frameRects, pawRowLocal);
-            float pivotXNormalized = (frame0MinX + frame0MaxX + 1) * 0.5f / CellSize;
-            float pivotYNormalized = (pawRowLocal + 0.5f) / CellSize;
-            var pivot = new Vector2(pivotXNormalized, pivotYNormalized);
+            float pixelsPerUnit;
+            Vector2 pivot;
+            if (path == CatWalkPath)
+            {
+                pixelsPerUnit = frame0OpaqueWidth / colliderLength;
+                float pivotXNormalized = (frame0MinX + frame0MaxX + 1) * 0.5f / CellSize;
+                float pivotYNormalized = (pawRowLocal + 0.5f) / CellSize;
+                pivot = new Vector2(pivotXNormalized, pivotYNormalized);
+            }
+            else if (!TryGetWalkImportSettings(out pixelsPerUnit, out pivot))
+            {
+                Debug.LogError(
+                    $"CatSpriteImporter: import '{CatWalkPath}' before '{path}' so every cat frame can share its PPU and pivot.");
+                return;
+            }
 
             importer.spriteImportMode = SpriteImportMode.Multiple;
             importer.spritePixelsPerUnit = pixelsPerUnit;
@@ -115,7 +141,7 @@ namespace Parallax.Editor.Art
             var nameFileIdPairs = new List<SpriteNameFileIdPair>(frameCount);
             for (int i = 0; i < frameCount; i++)
             {
-                string name = $"{SpriteNamePrefix}{i:00}";
+                string name = $"{spriteNamePrefix}{i:00}";
                 GUID spriteID = DeterministicGuid(name);
 
                 spriteRects.Add(new SpriteRect
@@ -138,10 +164,43 @@ namespace Parallax.Editor.Art
             EditorUtility.SetDirty(importer);
             importer.SaveAndReimport();
 
+            string[] importedSpriteNames = AssetDatabase.LoadAllAssetsAtPath(path)
+                .OfType<Sprite>()
+                .Select(sprite => sprite.name)
+                .OrderBy(name => name, System.StringComparer.Ordinal)
+                .ToArray();
+
             Debug.Log(
                 $"CatSpriteImporter: sliced {frameCount} frames ({columns}x{rows}) from '{path}'. " +
-                $"PixelsPerUnit = {pixelsPerUnit:F3} (frame0 opaque width {frame0OpaqueWidth}px / collider length {colliderLength}u). " +
-                $"Pivot = ({pivot.x:F4}, {pivot.y:F4}) normalized (frame0 bounds [{frame0MinX},{frame0MaxX}]px, paw row {pawRowLocal}px). ");
+                $"PixelsPerUnit = {pixelsPerUnit:F3}. " +
+                $"Pivot = ({pivot.x:F4}, {pivot.y:F4}) normalized. " +
+                $"Source frame0 opaque width {frame0OpaqueWidth}px, bounds [{frame0MinX},{frame0MaxX}]px, baseline {pawRowLocal}px. " +
+                $"spriteSheet.sprites = {importedSpriteNames.Length}: [{string.Join(", ", importedSpriteNames)}].");
+        }
+
+        static bool TryGetWalkImportSettings(out float pixelsPerUnit, out Vector2 pivot)
+        {
+            pixelsPerUnit = 0f;
+            pivot = default;
+
+            var importer = AssetImporter.GetAtPath(CatWalkPath) as TextureImporter;
+            if (importer == null || importer.spriteImportMode != SpriteImportMode.Multiple)
+                return false;
+
+            var factory = new SpriteDataProviderFactories();
+            factory.Init();
+            ISpriteEditorDataProvider dataProvider = factory.GetSpriteEditorDataProviderFromObject(importer);
+            dataProvider.InitSpriteEditorDataProvider();
+
+            foreach (SpriteRect spriteRect in dataProvider.GetSpriteRects())
+            {
+                if (spriteRect.name != "CatA_Walk_00") continue;
+                pixelsPerUnit = importer.spritePixelsPerUnit;
+                pivot = spriteRect.pivot;
+                return pixelsPerUnit > 0f;
+            }
+
+            return false;
         }
 
         static float GetCatColliderLength()
@@ -223,26 +282,5 @@ namespace Parallax.Editor.Art
             return lowest == int.MaxValue ? 0 : lowest;
         }
 
-        static (int minX, int maxX) PawSpan(Color32[] pixels, int textureWidth, Rect[] frames, int pawRowLocal)
-        {
-            int minX = int.MaxValue, maxX = int.MinValue;
-
-            foreach (Rect frame in frames)
-            {
-                int x0 = (int)frame.x, y0 = (int)frame.y;
-                int size = (int)frame.width;
-                if (pawRowLocal >= size) continue;
-
-                for (int lx = 0; lx < size; lx++)
-                {
-                    if (!IsOpaque(pixels, textureWidth, x0 + lx, y0 + pawRowLocal)) continue;
-                    if (lx < minX) minX = lx;
-                    if (lx > maxX) maxX = lx;
-                }
-            }
-
-            if (maxX < minX) { minX = 0; maxX = CellSize - 1; }
-            return (minX, maxX);
-        }
     }
 }
