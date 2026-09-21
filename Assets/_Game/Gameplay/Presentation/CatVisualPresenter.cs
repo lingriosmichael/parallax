@@ -6,6 +6,24 @@ using UnityEngine;
 
 namespace Parallax.Gameplay.Presentation
 {
+    [System.Serializable]
+    public sealed class CatAnimationClip
+    {
+        [SerializeField] Sprite[] frames = new Sprite[0];
+        [SerializeField] float fps;
+        [SerializeField] bool loop;
+
+        public CatAnimationClip(float fps, bool loop)
+        {
+            this.fps = fps;
+            this.loop = loop;
+        }
+
+        public Sprite[] Frames => frames;
+        public float Fps => fps;
+        public bool Loop => loop;
+    }
+
     // Purely cosmetic: reads its own transform's motion and the local GravityReceiver,
     // never writes to anything outside Visual, never networked, never read by gameplay.
     [DisallowMultipleComponent]
@@ -14,41 +32,55 @@ namespace Parallax.Gameplay.Presentation
         [SerializeField] CatVisualConfig config;
         [SerializeField] SpriteRenderer bodyRenderer;
         [SerializeField] SpriteRenderer outlineRenderer;
-        [SerializeField] Sprite[] frames;
+        [SerializeField] CatAnimationClip idleClip = new CatAnimationClip(7f, true);
+        [SerializeField] CatAnimationClip walkClip = new CatAnimationClip(10f, true);
+        [SerializeField] CatAnimationClip riseClip = new CatAnimationClip(12f, false);
+        [SerializeField] CatAnimationClip fallClip = new CatAnimationClip(12f, false);
+        [SerializeField] CatAnimationClip landClip = new CatAnimationClip(12f, false);
+        [SerializeField] CatMotor2D motor;
         [SerializeField] ObserverContext observer;
 
         GravityReceiver gravity;
         RealityRoot reality;
         Transform motionRoot;
+        CatAnimStateMachine stateMachine;
 
         bool initialized;
         Vector2 lastWorldPosition;
         Vector2 smoothedVelocity;
-        float walkClock;
-        float walkFps;
-        float belowIdleTime;
-        CatVisualState state = CatVisualState.Idle;
+        float clipClock;
+        int missingClipWarnings;
 
         void Awake()
         {
-            gravity = GetComponentInParent<GravityReceiver>();
-            reality = GetComponentInParent<RealityRoot>();
-            var body = GetComponentInParent<Rigidbody2D>();
-            motionRoot = body != null ? body.transform : null;
-
-            if (config == null || bodyRenderer == null || frames == null || frames.Length == 0)
+            if (config == null || bodyRenderer == null || motor == null)
             {
-                Debug.LogError($"CatVisualPresenter on '{gameObject.name}' is missing its config, body renderer, or frames. Disabling.", this);
+                Debug.LogError(
+                    $"CatVisualPresenter on '{gameObject.name}' is missing its config, body renderer, or motor. Disabling.",
+                    this);
                 enabled = false;
                 return;
             }
 
-            if (gravity == null || motionRoot == null)
+            gravity = motor.GetComponent<GravityReceiver>();
+            reality = motor.GetComponentInParent<RealityRoot>();
+            motionRoot = motor.transform;
+
+            if (gravity == null)
             {
-                Debug.LogError($"CatVisualPresenter on '{gameObject.name}' found no GravityReceiver or Rigidbody2D in its parents. Disabling.", this);
+                Debug.LogError(
+                    $"CatVisualPresenter on '{gameObject.name}' found no GravityReceiver on its assigned motor. Disabling.",
+                    this);
                 enabled = false;
                 return;
             }
+
+            stateMachine = new CatAnimStateMachine(
+                config.RiseExit,
+                config.FallEnter,
+                config.WalkEnter,
+                config.WalkExit,
+                config.LandDuration);
 
             if (outlineRenderer != null)
             {
@@ -88,13 +120,18 @@ namespace Parallax.Gameplay.Presentation
             lastWorldPosition = currentPosition;
 
             bool teleported = delta.magnitude >= config.TeleportDistance;
+            Vector2 measuredVelocity = !teleported && dt > 0f
+                ? delta / dt
+                : Vector2.zero;
+
             if (teleported)
             {
                 smoothedVelocity = Vector2.zero;
+                stateMachine.Reset();
+                clipClock = 0f;
             }
             else
             {
-                Vector2 measuredVelocity = dt > 0f ? delta / dt : Vector2.zero;
                 float smoothing = config.VelocitySmoothingTime > 0f
                     ? 1f - Mathf.Exp(-dt / config.VelocitySmoothingTime)
                     : 1f;
@@ -102,13 +139,20 @@ namespace Parallax.Gameplay.Presentation
             }
 
             Vector2 down = gravity.Direction;
-            float along = GravityFrame.Along(smoothedVelocity, down);
-            float upSpeed = GravityFrame.UpSpeed(smoothedVelocity, down);
+            float rawAlong = GravityFrame.Along(measuredVelocity, down);
+            float rawVelocityAlongGravity = Vector2.Dot(measuredVelocity, down);
+            float smoothedAlong = GravityFrame.Along(smoothedVelocity, down);
 
-            if (!teleported) UpdateFacing(along);
-            UpdateState(along, upSpeed, dt, teleported);
+            if (!teleported) UpdateFacing(smoothedAlong);
+
+            CatAnimState previous = stateMachine.State;
+            CatAnimState next = teleported
+                ? stateMachine.State
+                : stateMachine.Step(motor.IsGrounded, rawAlong, rawVelocityAlongGravity, dt);
+            if (next != previous) clipClock = 0f;
+
             UpdateEchoAlpha();
-            UpdateSprite();
+            UpdateSprite(next, rawAlong, dt);
         }
 
         void UpdateFacing(float along)
@@ -119,20 +163,6 @@ namespace Parallax.Gameplay.Presentation
             Vector3 scale = transform.localScale;
             scale.x = Mathf.Abs(scale.x) * (along > 0f ? 1f : -1f);
             transform.localScale = scale;
-        }
-
-        void UpdateState(float along, float upSpeed, float dt, bool teleported)
-        {
-            CatVisualState next = CatVisualStateLogic.Select(
-                state, along, upSpeed, dt, config.IdleSpeedThreshold, config.AirThreshold,
-                config.IdleDwell, teleported, ref belowIdleTime);
-            if (next == CatVisualState.Walk)
-            {
-                if (state != CatVisualState.Walk) walkClock = 0f;
-                walkFps = FlipbookMath.FpsForSpeed(along, config.ReferenceSpeed, config.WalkFps, config.MinFps, config.MaxFps);
-                walkClock += dt;
-            }
-            state = next;
         }
 
         void UpdateEchoAlpha()
@@ -157,27 +187,65 @@ namespace Parallax.Gameplay.Presentation
             }
         }
 
-        void UpdateSprite()
+        void UpdateSprite(CatAnimState state, float rawAlong, float dt)
         {
-            int index;
-            switch (state)
+            CatAnimationClip clip = ClipFor(state);
+            if (clip == null || clip.Frames == null || clip.Frames.Length == 0)
             {
-                case CatVisualState.Air:
-                    index = config.AirFrame;
-                    break;
-                case CatVisualState.Walk:
-                    index = FlipbookMath.FrameIndex(walkClock, walkFps, config.WalkLoopStart, config.WalkLoopEnd);
-                    break;
-                default:
-                    index = config.IdleFrame;
-                    break;
+                WarnMissingClipOnce(state);
+                return;
             }
 
-            index = Mathf.Clamp(index, 0, frames.Length - 1);
-            Sprite sprite = frames[index];
+            float fps = state == CatAnimState.Walk
+                ? FlipbookMath.FpsForSpeed(
+                    rawAlong,
+                    config.ReferenceSpeed,
+                    clip.Fps,
+                    config.MinFps,
+                    config.MaxFps)
+                : clip.Fps;
+            int index = FrameIndex(clipClock, fps, clip.Frames.Length, clip.Loop);
+            Sprite sprite = clip.Frames[index];
+            if (sprite == null)
+            {
+                WarnMissingClipOnce(state);
+                return;
+            }
 
             bodyRenderer.sprite = sprite;
             if (outlineRenderer != null) outlineRenderer.sprite = sprite;
+            clipClock += dt > 0f ? dt : 0f;
+        }
+
+        CatAnimationClip ClipFor(CatAnimState state)
+        {
+            switch (state)
+            {
+                case CatAnimState.Walk: return walkClip;
+                case CatAnimState.Rise: return riseClip;
+                case CatAnimState.Fall: return fallClip;
+                case CatAnimState.Land: return landClip;
+                default: return idleClip;
+            }
+        }
+
+        void WarnMissingClipOnce(CatAnimState state)
+        {
+            int bit = 1 << (int)state;
+            if ((missingClipWarnings & bit) != 0) return;
+
+            missingClipWarnings |= bit;
+            Debug.LogWarning(
+                $"CatVisualPresenter on '{gameObject.name}' has a missing or empty {state} clip. Keeping the previous state's frame.",
+                this);
+        }
+
+        static int FrameIndex(float elapsed, float fps, int frameCount, bool loop)
+        {
+            if (frameCount <= 1 || fps <= 0f) return 0;
+
+            int frame = Mathf.FloorToInt(elapsed * fps);
+            return loop ? frame % frameCount : Mathf.Min(frame, frameCount - 1);
         }
     }
 }
