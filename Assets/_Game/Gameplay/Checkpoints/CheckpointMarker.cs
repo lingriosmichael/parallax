@@ -22,7 +22,7 @@ namespace Parallax.Gameplay.Checkpoints
         public int Id => checkpointId;
         public ObserverId Reality => root != null ? root.Id : default;
         public Vector2 LocalPosition => root != null ? root.ToLocal(transform.position) : (Vector2)transform.position;
-        public Vector2 GravityDirection => gravityDirection.normalized;
+        public Vector2 GravityDirection => VerticalGravity.Quantize(gravityDirection, Vector2.down);
 
         void OnEnable()
         {
@@ -90,7 +90,7 @@ namespace Parallax.Gameplay.Checkpoints
             Gizmos.DrawWireCube(Vector3.zero, zoneSize);
             Gizmos.matrix = old;
 
-            Vector2 dir = gravityDirection.normalized;
+            Vector2 dir = GravityDirection;
             if (dir.sqrMagnitude > 1e-4f)
             {
                 Vector2 pos = transform.position;

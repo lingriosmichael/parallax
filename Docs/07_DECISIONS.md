@@ -272,6 +272,18 @@ Consequence: If the Gate 3 check finds the assembly shipped, embed the package a
 **Defers:** co-op as a v1 feature (co-op half of D-038), networking (PAX-028–035), D-042 (stays Proposed until the co-op update), PAX-043 (hostile anchor). D-043 remains a rule for the co-op update.
 **Consequence:** Gate 3 is the solo device verdict (D-035). Solo features take an `ObserverId` rather than hard-coding A, and must not break the two-reality sandbox.
 
+### D-048 · 2026-09-21 · Accepted
+**Decision:** Gravity is vertical-only in code. Every direction passed to `GravityReceiver` is quantized to `(0, -1)` or `(0, 1)` (`|y| ≤ 0.1` keeps the current side) and applied instantly, with no turn speed. `GravityReceiver.Flip()` is the flip; the debug control is a single key (Q). Validators reject any serialized non-vertical gravity.
+**Why:** D-037. Turning at 360°/s passed through sideways gravity for ~0.5 s on every flip, pushing the cat sideways, and the 180° turn direction was ambiguous. Quantizing at the receiver means no caller, including untouched co-op code, can produce sideways gravity.
+**Supersedes:** The turn-speed behaviour in `02_ARCHITECTURE.md` §6 (PAX-010).
+**Consequence:** The Control Station dial (co-op, untouched per D-047) can only produce down with its current mapping; the co-op update replaces it with a flip.
+
+### D-049 · 2026-09-21 · Accepted
+**Decision:** Movement is ScreenRelative for touch and keyboard: pushing right moves the cat right on screen in both gravities.
+**Why:** D-021 chose cat-relative because on a wall ScreenRelative has no useful axis. D-037 removed walls, so that case is gone. Screen-relative matches the genre convention (VVVVVV) and removes the “controls reversed” death that ragebait must not have (D-040).
+**Supersedes:** D-021’s cat-relative reading. The virtual stick itself (floating origin, jump button) stands.
+**Consequence:** Confirm on device in PAX-037 when it runs.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)

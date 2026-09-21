@@ -1,3 +1,4 @@
+using Parallax.Core;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Player
@@ -7,32 +8,33 @@ namespace Parallax.Gameplay.Player
     {
         [SerializeField] Vector2 initialDirection = Vector2.down;
         [SerializeField] float strength = 30f;
-        [SerializeField] float turnSpeedDegPerSec = 360f;
 
         Vector2 target;
         public Vector2 Direction { get; private set; }
         public Vector2 TargetDirection => target;
         public float Strength => strength;
+        public GravitySide Side => VerticalGravity.SideOf(Direction, GravitySide.Down);
 
         void Awake()
         {
-            Direction = target = initialDirection.normalized;
+            Direction = target = VerticalGravity.Quantize(initialDirection, Vector2.down);
         }
 
         public void SetTargetDirection(Vector2 dir, bool snap = false)
         {
-            if (dir.sqrMagnitude <= 1e-4f) return;
-
-            target = dir.normalized;
+            target = VerticalGravity.Quantize(dir, target);
             if (snap) Direction = target;
         }
 
         public void FixedTick(float dt)
         {
-            float cur  = Vector2.SignedAngle(Vector2.down, Direction);
-            float goal = Vector2.SignedAngle(Vector2.down, target);
-            float next = Mathf.MoveTowardsAngle(cur, goal, turnSpeedDegPerSec * dt);
-            Direction  = Quaternion.Euler(0f, 0f, next) * Vector2.down;
+            Direction = target;
+        }
+
+        public void Flip()
+        {
+            GravitySide targetSide = VerticalGravity.SideOf(target, GravitySide.Down);
+            SetTargetDirection(VerticalGravity.ToVector(VerticalGravity.Flip(targetSide)));
         }
     }
 }

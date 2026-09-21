@@ -224,20 +224,20 @@ namespace Parallax.DebugTools
             }
 
             string kind = observer.Driver != null ? observer.Driver.Kind.ToString() : "none";
-            GravityReceiverSummary(observer, out float angleDeg, out bool grounded, out float speed);
+            GravityReceiverSummary(observer, out GravitySide side, out bool grounded, out float speed);
 
-            GUILayout.Label($"{id}: {kind}  grav {angleDeg:F0}°  grounded {grounded}  speed {speed:F1}");
+            GUILayout.Label($"{id}: {kind}  grav {side}  grounded {grounded}  speed {speed:F1}");
         }
 
-        static void GravityReceiverSummary(ObserverContext observer, out float angleDeg, out bool grounded, out float speed)
+        static void GravityReceiverSummary(ObserverContext observer, out GravitySide side, out bool grounded, out float speed)
         {
-            angleDeg = 0f;
+            side = GravitySide.Down;
             grounded = false;
             speed = 0f;
 
             if (observer.Gravity != null)
             {
-                angleDeg = Vector2.SignedAngle(Vector2.down, observer.Gravity.Direction);
+                side = observer.Gravity.Side;
             }
 
             if (observer.Cat != null)

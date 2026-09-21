@@ -192,29 +192,11 @@ The Input System's touch controls produce `CatCommand` via `TouchCatInput`. `Key
 
 **As built (PAX-021, D-025):** immediately after stepping the motor with a command, `LocalHumanDriver` calls `CatInteractor.Step` with that same command and Observer context. F produces the same latched/cleared `InteractPressed` edge as jump. Touch has an interact rectangle immediately left of jump: `(0.56, 0.00, 0.18, 0.40)` in normalized safe-area coordinates; a touch beginning there is never claimed by stick or jump.
 
+**As built (PAX-039, D-049):** movement is ScreenRelative for touch and keyboard. In either gravity direction, pushing right moves the cat screen-right and pushing left moves it screen-left; both sources use `VirtualStick.ToMove` for the projection.
+
 ### 5.2 Gravity control input
 
-**As built (PAX-026):** the touch dial ships first through `IGravityControlInput`; tilt is deferred to a later ticket using this same interface.
-
-```csharp
-public interface IGravityControlInput
-{
-    bool  IsAvailable { get; }
-    void  Calibrate();           // capture neutral (tilt); reset (dial)
-    float ReadNormalized();      // -1..1, already filtered
-}
-```
-
-**`TiltGravityInput`**
-- Sensor: `GravitySensor` if present, else `Accelerometer` with low-pass filtering. **No gyroscope needed.** Sensors are disabled by default in the Input System and must be enabled explicitly (`InputSystem.EnableDevice`).
-- Orientation is locked to Landscape Left, so the screen-to-device mapping is constant. Verify that sensor values are compensated to screen orientation (the Input System has a setting for this) and fix the axis mapping once.
-- Roll angle = angle of the gravity vector in the screen's X/Y plane, relative to the calibrated neutral.
-- Pipeline: raw → low-pass → neutral subtraction → **dead zone** (~4°) → **clamp** (~±35°) → normalize → exponential smoothing.
-- Calibrate on entering a Control Station.
-
-**`DialGravityInput`**: an on-screen rotary control that outputs the same normalized value.
-
-The active implementation is chosen in settings. If `TiltGravityInput.IsAvailable` is false, the game falls back to the dial.
+**Superseded by D-045:** tilt and `TiltGravityInput` are removed. Gravity control is a touch flip in the later co-op update; the existing `IGravityControlInput` seam remains until that update changes it.
 
 ### 5.3 Control Station
 
@@ -226,38 +208,11 @@ While seated at a Control Station, the controlling cat's movement is locked and 
 
 ## 6. Cat motor and per-cat gravity
 
-`GravityControlReceiver` applies received gravity-angle samples through `GravityControlMapping` (clockwise-positive, tunable maximum angle and optional snap) using `GravityReceiver.SetTargetDirection`, then holds the last direction.
+`GravityControlReceiver` applies received gravity-angle samples through `GravityControlMapping` using `GravityReceiver.SetTargetDirection`, then holds the last direction. Its untouched co-op dial values are quantized by the receiver and therefore cannot produce sideways gravity.
 
 **`Physics2D.gravity` is never used for cats.** Each cat's `Rigidbody2D.gravityScale` is forced to 0, and the motor applies gravity itself.
 
-```csharp
-[RequireComponent(typeof(Rigidbody2D))]
-public sealed class GravityReceiver : MonoBehaviour
-{
-    [SerializeField] Vector2 initialDirection = Vector2.down;
-    [SerializeField] float strength = 30f;
-    [SerializeField] float turnSpeedDegPerSec = 360f;
-
-    Vector2 target;
-    public Vector2 Direction { get; private set; }
-    public float Strength => strength;
-
-    void Awake() { Direction = target = initialDirection.normalized; }
-
-    public void SetTargetDirection(Vector2 dir)
-    {
-        if (dir.sqrMagnitude > 1e-4f) target = dir.normalized;
-    }
-
-    public void FixedTick(float dt)
-    {
-        float cur  = Vector2.SignedAngle(Vector2.down, Direction);
-        float goal = Vector2.SignedAngle(Vector2.down, target);
-        float next = Mathf.MoveTowardsAngle(cur, goal, turnSpeedDegPerSec * dt);
-        Direction  = Quaternion.Euler(0f, 0f, next) * Vector2.down;
-    }
-}
-```
+**As built (PAX-039, D-048):** `Direction` and target are always exactly `(0, -1)` or `(0, 1)`. `SetTargetDirection` quantizes with a 0.1 Y threshold; flatter requests keep the current side. `FixedTick` applies target instantly, `Flip()` swaps sides, and the debug control is Q = flip.
 
 Motor step (sketch):
 
@@ -290,7 +245,7 @@ void FixedUpdate()
 
 **Gravity sources:** only `GravityReceiver.SetTargetDirection` changes gravity. It is called by the control-stream receiver, checkpoint restore, and debug tools.
 
-Mapping the gravity control value to a direction is a tunable per Control Station, for example `angle = value * maxAngle` around straight down, or discrete snapping to 90° steps.
+Serialized gravity values are validated as vertical-only.
 
 ---
 

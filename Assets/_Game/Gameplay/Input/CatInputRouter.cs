@@ -11,11 +11,13 @@ namespace Parallax.Gameplay.Input
 
         readonly List<ICatCommandSource> validSources = new List<ICatCommandSource>();
         readonly List<TouchStickCatInput> touchSources = new List<TouchStickCatInput>();
+        readonly List<KeyboardCatInput> keyboardSources = new List<KeyboardCatInput>();
 
         void Awake()
         {
             validSources.Clear();
             touchSources.Clear();
+            keyboardSources.Clear();
 
             foreach (MonoBehaviour source in sources)
             {
@@ -28,6 +30,10 @@ namespace Parallax.Gameplay.Input
                     if (source is TouchStickCatInput touchSource)
                     {
                         touchSources.Add(touchSource);
+                    }
+                    if (source is KeyboardCatInput keyboardSource)
+                    {
+                        keyboardSources.Add(keyboardSource);
                     }
                 }
                 else
@@ -50,6 +56,10 @@ namespace Parallax.Gameplay.Input
             for (int i = 0; i < touchSources.Count; i++)
             {
                 touchSources[i].SetGravityFrame(g);
+            }
+            for (int i = 0; i < keyboardSources.Count; i++)
+            {
+                keyboardSources[i].SetGravityFrame(g);
             }
         }
 

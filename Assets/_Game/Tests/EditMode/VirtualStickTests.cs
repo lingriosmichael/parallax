@@ -82,6 +82,20 @@ namespace Parallax.Tests
         }
 
         [Test]
+        public void ToMove_ScreenRelative_CeilingCat_RightStickMovesScreenRight()
+        {
+            float move = VirtualStick.ToMove(Vector2.right, Vector2.left, StickProjection.ScreenRelative);
+            Assert.AreEqual(-1f, move, 1e-5f);
+        }
+
+        [Test]
+        public void ToMove_ScreenRelative_FloorCat_RightStickMovesScreenRight()
+        {
+            float move = VirtualStick.ToMove(Vector2.right, Vector2.right, StickProjection.ScreenRelative);
+            Assert.AreEqual(1f, move, 1e-5f);
+        }
+
+        [Test]
         public void ToMove_ScreenRelative_WallCat_ReturnsStickY()
         {
             Vector2 stick = new Vector2(0.3f, 0.6f);

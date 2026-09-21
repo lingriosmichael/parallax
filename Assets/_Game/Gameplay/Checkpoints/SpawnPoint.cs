@@ -1,4 +1,5 @@
 using UnityEngine;
+using Parallax.Core;
 
 namespace Parallax.Gameplay.Checkpoints
 {
@@ -7,7 +8,7 @@ namespace Parallax.Gameplay.Checkpoints
         [SerializeField] Vector2 gravityDirection = Vector2.down;
 
         public Vector2 Position => transform.position;
-        public Vector2 GravityDirection => gravityDirection.normalized;
+        public Vector2 GravityDirection => VerticalGravity.Quantize(gravityDirection, Vector2.down);
 
         void OnDrawGizmos()
         {

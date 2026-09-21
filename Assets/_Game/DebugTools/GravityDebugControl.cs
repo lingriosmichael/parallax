@@ -1,4 +1,3 @@
-using Parallax.Core;
 using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Player;
@@ -30,30 +29,16 @@ namespace Parallax.DebugTools
             GravityReceiver receiver = ActiveReceiver;
             if (receiver == null) return;
 
-            Vector2? dir = null;
-
             if (keyboard.qKey.wasPressedThisFrame)
             {
-                dir = GravityMath.Rotate90(receiver.TargetDirection, +1);
+                Flip(receiver);
             }
-            else if (keyboard.eKey.wasPressedThisFrame)
-            {
-                dir = GravityMath.Rotate90(receiver.TargetDirection, -1);
-            }
-            else if (keyboard.rKey.wasPressedThisFrame)
-            {
-                dir = Vector2.down;
-            }
-
-            if (dir == null) return;
-
-            Rotate(receiver, dir.Value);
         }
 
-        void Rotate(GravityReceiver receiver, Vector2 dir)
+        void Flip(GravityReceiver receiver)
         {
-            receiver.SetTargetDirection(dir);
-            Debug.Log($"GravityDebug: gravity → ({dir.x:0}, {dir.y:0})");
+            receiver.Flip();
+            Debug.Log($"GravityDebug: gravity → {receiver.Side}");
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -65,19 +50,13 @@ namespace Parallax.DebugTools
             const float buttonSize = 80f;
             const float margin = 16f;
 
-            var ccwRect = new Rect(Screen.width - margin - buttonSize * 2f - margin, margin, buttonSize, buttonSize);
-            var cwRect = new Rect(Screen.width - margin - buttonSize, margin, buttonSize, buttonSize);
+            var flipRect = new Rect(Screen.width - margin - buttonSize, margin, buttonSize, buttonSize);
 
             var style = new GUIStyle(GUI.skin.button) { fontSize = 32 };
 
-            if (GUI.Button(ccwRect, "↺", style))
+            if (GUI.Button(flipRect, "FLIP", style))
             {
-                Rotate(receiver, GravityMath.Rotate90(receiver.TargetDirection, +1));
-            }
-
-            if (GUI.Button(cwRect, "↻", style))
-            {
-                Rotate(receiver, GravityMath.Rotate90(receiver.TargetDirection, -1));
+                Flip(receiver);
             }
         }
 #endif
@@ -93,8 +72,8 @@ namespace Parallax.DebugTools
             const float buttonSize = 80f;
             const float margin = 16f;
 
-            float left = Screen.width - margin - buttonSize * 2f - margin;
-            return new Rect(left, margin, buttonSize * 2f + margin, buttonSize);
+            float left = Screen.width - margin - buttonSize;
+            return new Rect(left, margin, buttonSize, buttonSize);
         }
     }
 }

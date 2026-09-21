@@ -7384,7 +7384,7 @@ MonoBehaviour:
     height: 0.4
   stickRadius: 0.12
   deadZone: 0.15
-  projection: 0
+  projection: 1
   showDebugOverlay: 0
   reservedRegions:
   - {fileID: 1860436324}

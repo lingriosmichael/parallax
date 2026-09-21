@@ -35,6 +35,13 @@ namespace Parallax.Editor.Setup
                 CheckpointManager wiredManager = serialized.FindProperty("manager").objectReferenceValue as CheckpointManager;
                 Object wiredObservers = serialized.FindProperty("observers").objectReferenceValue;
                 int id = serialized.FindProperty("checkpointId").intValue;
+                Vector2 gravityDirection = serialized.FindProperty("gravityDirection").vector2Value;
+
+                if (!VerticalGravity.IsVertical(gravityDirection))
+                {
+                    Debug.LogError($"Checkpoints: marker '{RealityIsolationValidator.Path(marker.transform)}' has non-vertical gravity {gravityDirection}.", marker);
+                    problems++;
+                }
 
                 if (root == null || wiredManager == null || wiredObservers == null || wiredManager != manager)
                 {

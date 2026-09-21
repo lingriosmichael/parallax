@@ -76,7 +76,7 @@ namespace Parallax.DebugTools
             GUILayout.BeginArea(new Rect(legendRect.x + 10f, legendRect.y + 24f, legendRect.width - 20f, legendRect.height - 28f));
             GUILayout.Label("Move: A/D or stick    Jump: Space");
             GUILayout.Label("Interact: F    RECORD: Z    SWITCH: Tab");
-            GUILayout.Label("Gravity: Q / E / R    Rotate: ↺ / ↻");
+            GUILayout.Label("Gravity: Q / FLIP");
             GUILayout.Label("Debug panel: DBG    Checkpoint row");
             GUILayout.Label("Respawn active cat: Debug panel button");
             GUILayout.EndArea();
