@@ -16,6 +16,9 @@ namespace Parallax.Gameplay.Rooms
         RealityRoot reality;
         ContactFilter2D filter;
         readonly Collider2D[] results = new Collider2D[8];
+        [SerializeField] bool armed = true;
+        public bool Armed => armed;
+        public void SetArmed(bool value) => armed = value;
 
         void Reset() => GetComponent<BoxCollider2D>().isTrigger = true;
 
@@ -45,13 +48,14 @@ namespace Parallax.Gameplay.Rooms
 
         public void KillOverlappingCat()
         {
-            if (!enabled || box == null || reality == null || observers == null || roomDeath == null) return;
+            if (!enabled || !armed || box == null || reality == null || observers == null || roomDeath == null) return;
             ObserverContext observer = observers.Get(reality.Id);
             if (observer == null || observer.Cat == null) return;
             Collider2D catCollider = observer.Cat.GetComponent<Collider2D>();
             if (catCollider == null) return;
 
-            int count = Physics2D.OverlapBox(transform.position, box.size, transform.eulerAngles.z, filter, results);
+            Bounds bounds = box.bounds;
+            int count = Physics2D.OverlapBox(bounds.center, bounds.size, 0f, filter, results);
             for (int i = 0; i < count; i++)
             {
                 if (results[i] != catCollider) continue;

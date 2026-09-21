@@ -29,6 +29,7 @@ namespace Parallax.DebugTools
 
         protected override void OnLiveRoomStep()
         {
+            if (State != TrapState.Armed) return;
             if (observers == null) return;
             ObserverContext observer = observers.Get(ObserverId.A);
             if (observer == null || observer.Driver == null || observer.Driver.Kind != InputSourceKind.LocalHuman || observer.Cat == null) return;

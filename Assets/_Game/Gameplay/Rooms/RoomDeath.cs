@@ -67,6 +67,7 @@ namespace Parallax.Gameplay.Rooms
 
             anchorResets.Clear();
             RoomResetResult result = resetRegistry.Reset(room, anchorResets);
+            int anchorsSent = 0;
             if (transportHost == null || transportHost.Transport == null || transportHost.Sequencer == null)
             {
                 if (anchorResets.Count > 0) Debug.LogError("RoomDeath: missing TransportHost; room anchor resets were not requested.", this);
@@ -84,10 +85,11 @@ namespace Parallax.Gameplay.Rooms
                     var request = new AnchorRequest(reset.AnchorId, reset.InitialValue, EventOrigin.System,
                         transportHost.Sequencer.Next(EventOrigin.System));
                     transportHost.Transport.RequestAnchor(request);
+                    anchorsSent++;
                 }
             }
 
-            Died?.Invoke(new DeathInfo(observerId, cause, room, tick, result.TrapsReset, result.AnchorsReset));
+            Died?.Invoke(new DeathInfo(observerId, cause, room, tick, result.TrapsReset, anchorsSent));
         }
     }
 }

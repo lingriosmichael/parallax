@@ -18,6 +18,8 @@ namespace Parallax.Gameplay.Rooms
         readonly Dictionary<int, RoomDoor> doors = new Dictionary<int, RoomDoor>();
         readonly List<RoomTrap> traps = new List<RoomTrap>();
         readonly List<Hazard> hazards = new List<Hazard>();
+        readonly List<RoomTrap> trapSnapshot = new List<RoomTrap>();
+        readonly List<Hazard> hazardSnapshot = new List<Hazard>();
 
         public int CurrentRoom => checkpoints != null ? checkpoints.Current : 0;
         public ObserverId SoloReality => soloReality;
@@ -79,8 +81,12 @@ namespace Parallax.Gameplay.Rooms
 
             // The one ordered room tick is traps -> hazards -> door. Components never subscribe
             // independently, so a dead cat cannot complete a door on this same tick.
-            for (int i = 0; i < traps.Count; i++) traps[i].StepIfLive();
-            for (int i = 0; i < hazards.Count; i++) hazards[i].KillOverlappingCat();
+            trapSnapshot.Clear();
+            trapSnapshot.AddRange(traps);
+            for (int i = 0; i < trapSnapshot.Count; i++) trapSnapshot[i].StepIfLive();
+            hazardSnapshot.Clear();
+            hazardSnapshot.AddRange(hazards);
+            for (int i = 0; i < hazardSnapshot.Count; i++) hazardSnapshot[i].KillOverlappingCat();
 
             int room = checkpoints.Current;
             if (!doors.TryGetValue(room, out RoomDoor door))
