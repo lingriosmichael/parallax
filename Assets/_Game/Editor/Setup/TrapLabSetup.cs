@@ -24,12 +24,16 @@ namespace Parallax.Editor.Setup
             ObserverSet observers = Object.FindAnyObjectByType<ObserverSet>(FindObjectsInactive.Include);
             CatMotorConfig config = AssetDatabase.LoadAssetAtPath<CatMotorConfig>("Assets/_Game/Data/CatMotorConfig_Default.asset");
             if (root == null || checkpoints == null || rooms == null || death == null || observers == null || config == null) { Debug.LogError("TrapLabSetup: missing required solo-room dependencies."); return; }
-            var changes = new List<string>(); Transform parent = SetupUtility.EnsureChild(root.transform, "Rooms_PAX045", root.gameObject.layer, changes);
+            var changes = new List<string>();
+            RoomSafetyConfig safety = SoloRoomsSetup.EnsureRoomSafetyConfig(changes);
+            SoloRoomsSetup.Wire(death, "config", safety, changes);
+            Transform parent = SetupUtility.EnsureChild(root.transform, "Rooms_PAX045", root.gameObject.layer, changes);
             foreach (SoloRoomDefinition room in TrapLabLayout.Rooms)
             {
                 if (!TrapLayoutValidator.TryValidate(room, out string error)) { Debug.LogError("TrapLabSetup: " + error); return; }
                 if (parent.Find($"Room_{room.Id + 1}") == null) SoloRoomsSetup.BuildRoom(parent, root, room, checkpoints, rooms, death, observers, config, changes);
             }
+            SoloRoomsSetup.AssignBounds(rooms, TrapLabLayout.Rooms, root, safety, changes);
             if (changes.Count == 0) { Debug.Log("TrapLabSetup: no changes."); return; }
             EditorSceneManager.MarkSceneDirty(root.gameObject.scene); Debug.Log("TrapLabSetup created: " + string.Join("; ", changes));
         }

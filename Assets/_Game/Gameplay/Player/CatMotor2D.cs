@@ -20,7 +20,28 @@ namespace Parallax.Gameplay.Player
         float coyoteTimer;
         float jumpBufferTimer;
 
+        RigidbodyConstraints2D savedConstraints;
+
         public bool IsGrounded { get; private set; }
+        public bool IsFrozen { get; private set; }
+
+        /// <summary>PAX-047 (D-058): freezes the cat in place for a death hold. Step() no-ops while frozen.</summary>
+        public void Freeze()
+        {
+            if (IsFrozen) return;
+            IsFrozen = true;
+            savedConstraints = body.constraints;
+            body.constraints = RigidbodyConstraints2D.FreezeAll;
+            body.linearVelocity = Vector2.zero;
+            body.angularVelocity = 0f;
+        }
+
+        public void Unfreeze()
+        {
+            if (!IsFrozen) return;
+            IsFrozen = false;
+            body.constraints = savedConstraints;
+        }
 
         void SetCommand(CatCommand cmd)
         {
@@ -68,6 +89,11 @@ namespace Parallax.Gameplay.Player
 
         public void Step(in CatCommand input, float dt)
         {
+            // PAX-047 (D-058): frozen during a death hold — the command is drained by the
+            // driver upstream (so no source's latched edges leak past the hold) but discarded
+            // here; velocity/rotation/gravity stay exactly as Freeze() left them.
+            if (IsFrozen) return;
+
             SetCommand(input);
 
             gravity.FixedTick(dt);

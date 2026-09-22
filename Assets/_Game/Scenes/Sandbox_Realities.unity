@@ -421,6 +421,7 @@ MonoBehaviour:
   checkpoints: {fileID: 56394175}
   observers: {fileID: 1522400323}
   roomDeath: {fileID: 56394177}
+  bounds: []
 --- !u!114 &56394177
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -437,6 +438,7 @@ MonoBehaviour:
   rooms: {fileID: 56394176}
   observers: {fileID: 1522400323}
   transportHost: {fileID: 56394173}
+  config: {fileID: 11400000, guid: 6478eaddf7b754f03bd43bae5439c31e, type: 2}
 --- !u!1 &66769001
 GameObject:
   m_ObjectHideFlags: 0
@@ -2945,6 +2947,12 @@ MonoBehaviour:
   initialState: 0
   roomDeath: {fileID: 56394177}
   rooms: {fileID: 56394176}
+  triggerSource: 0
+  chainSource: {fileID: 0}
+  repeatMode: 0
+  cooldownTicks: 0
+  periodTicks: 1
+  phaseTicks: 0
   observers: {fileID: 1522400323}
   trigger: {fileID: 355841656}
   hazard: {fileID: 529299705}
@@ -5182,6 +5190,12 @@ MonoBehaviour:
   initialState: 0
   roomDeath: {fileID: 56394177}
   rooms: {fileID: 56394176}
+  triggerSource: 0
+  chainSource: {fileID: 0}
+  repeatMode: 0
+  cooldownTicks: 0
+  periodTicks: 1
+  phaseTicks: 0
   observers: {fileID: 1522400323}
   delayTicks: 12
   touchSkin: 0.05
@@ -7329,6 +7343,12 @@ MonoBehaviour:
   initialState: 0
   roomDeath: {fileID: 56394177}
   rooms: {fileID: 56394176}
+  triggerSource: 0
+  chainSource: {fileID: 0}
+  repeatMode: 0
+  cooldownTicks: 0
+  periodTicks: 1
+  phaseTicks: 0
   observers: {fileID: 1522400323}
   mode: 0
   delayTicks: 0
@@ -13467,6 +13487,12 @@ MonoBehaviour:
   initialState: 0
   roomDeath: {fileID: 56394177}
   rooms: {fileID: 56394176}
+  triggerSource: 0
+  chainSource: {fileID: 0}
+  repeatMode: 0
+  cooldownTicks: 0
+  periodTicks: 1
+  phaseTicks: 0
   observers: {fileID: 1522400323}
   zoneSize: {x: 0.8, y: 0.8}
 --- !u!61 &2064404578
@@ -13675,6 +13701,12 @@ MonoBehaviour:
   initialState: 0
   roomDeath: {fileID: 56394177}
   rooms: {fileID: 56394176}
+  triggerSource: 0
+  chainSource: {fileID: 0}
+  repeatMode: 0
+  cooldownTicks: 0
+  periodTicks: 1
+  phaseTicks: 0
   observers: {fileID: 1522400323}
   trigger: {fileID: 1733144522}
   direction: 0
@@ -14046,6 +14078,12 @@ MonoBehaviour:
   initialState: 0
   roomDeath: {fileID: 56394177}
   rooms: {fileID: 56394176}
+  triggerSource: 0
+  chainSource: {fileID: 0}
+  repeatMode: 0
+  cooldownTicks: 0
+  periodTicks: 1
+  phaseTicks: 0
   observers: {fileID: 1522400323}
   trigger: {fileID: 2092065728}
   doorRoot: {fileID: 471412231}

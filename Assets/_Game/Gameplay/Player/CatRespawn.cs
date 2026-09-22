@@ -26,6 +26,10 @@ namespace Parallax.Gameplay.Player
             if (lastRespawnFrame == Time.frameCount) return;
             lastRespawnFrame = Time.frameCount;
 
+            // PAX-047 (D-058): a no-op unless the cat is actually frozen (co-op/dev respawns
+            // never call Freeze(), so this changes nothing for them).
+            motor.Unfreeze();
+
             CatSeat seat = GetComponent<CatSeat>();
             if (seat != null) seat.Release();
 

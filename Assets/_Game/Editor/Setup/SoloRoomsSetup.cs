@@ -17,6 +17,7 @@ namespace Parallax.Editor.Setup
         static readonly Color Ground = new(.72f, .52f, .28f, 1f);
         static readonly Color Red = new(.85f, .12f, .10f, 1f);
         static readonly Color Purple = new(.55f, .22f, .75f, .38f);
+        const string RoomSafetyConfigPath = "Assets/_Game/Data/RoomSafetyConfig.asset";
 
         [MenuItem("PARALLAX/Setup/Solo Rooms (PAX-043)")]
         public static void Configure()
@@ -30,8 +31,11 @@ namespace Parallax.Editor.Setup
             ObserverSet observers = Object.FindAnyObjectByType<ObserverSet>(FindObjectsInactive.Include);
             CatMotorConfig config = AssetDatabase.LoadAssetAtPath<CatMotorConfig>("Assets/_Game/Data/CatMotorConfig_Default.asset");
             if (root == null || checkpoints == null || rooms == null || death == null || observers == null || config == null) { Debug.LogError("SoloRoomsSetup: RealityRoot_A, CheckpointManager, RoomManager, RoomDeath, ObserverSet and CatMotorConfig_Default are required."); return; }
+            RoomSafetyConfig safety = EnsureRoomSafetyConfig(changes);
+            Wire(death, "config", safety, changes);
             Transform parent = SetupUtility.EnsureChild(root.transform, "Rooms_PAX043", root.gameObject.layer, changes);
             foreach (SoloRoomDefinition room in SoloRoomsLayout.Rooms) if (parent.Find($"Room_{room.Id + 1}") == null) BuildRoom(parent, root, room, checkpoints, rooms, death, observers, config, changes);
+            AssignBounds(rooms, SoloRoomsLayout.Rooms, root, safety, changes);
             ObserverContext observer = observers.Get(Parallax.Core.ObserverId.A);
             if (observer?.Cat != null)
             {
@@ -41,6 +45,122 @@ namespace Parallax.Editor.Setup
             if (changes.Count == 0) { Debug.Log("SoloRoomsSetup: no changes."); return; }
             EditorSceneManager.MarkSceneDirty(root.gameObject.scene);
             Debug.Log("SoloRoomsSetup created: " + string.Join("; ", changes));
+        }
+
+        internal static RoomSafetyConfig EnsureRoomSafetyConfig(List<string> changes)
+        {
+            var config = AssetDatabase.LoadAssetAtPath<RoomSafetyConfig>(RoomSafetyConfigPath);
+            if (config != null) return config;
+            var created = ScriptableObject.CreateInstance<RoomSafetyConfig>();
+            AssetDatabase.CreateAsset(created, RoomSafetyConfigPath);
+            changes.Add("created RoomSafetyConfig asset");
+            return created;
+        }
+
+        internal static void AssignBounds(RoomManager rooms, IReadOnlyList<SoloRoomDefinition> layoutRooms, RealityRoot root, RoomSafetyConfig safety, List<string> changes)
+        {
+            var entries = new RoomBoundsEntry[layoutRooms.Count];
+            for (int i = 0; i < layoutRooms.Count; i++)
+            {
+                SoloRoomDefinition room = layoutRooms[i];
+                Bounds local = ComputeRoomBounds(room, safety.BoundsMargin);
+                Vector2 worldCentre = root.ToWorld(new Vector2(local.center.x, local.center.y));
+                entries[i] = new RoomBoundsEntry(room.Id, worldCentre, new Vector2(local.size.x, local.size.y));
+            }
+            WireBounds(rooms, entries, changes);
+        }
+
+        // PAX-047 (D-058) §5: union of every element's AABB (both poses for anything that
+        // moves), plus the margin. Static kinds (Floor/Ceiling/Wall/PitBottom/Hazard/Checkpoint/
+        // Door/HiddenSpikes/CollapsingFloor/GravityFlip) contribute only their authored pose —
+        // HiddenSpikes/CollapsingFloor/GravityFlip never reposition themselves, they arm/disable/
+        // trigger in place. MovingTrap and FallingBlock (incl. periodic) contribute a second pose
+        // at their travel destination. DoorRetreat doesn't move its own element; it moves the
+        // room's Door by its offset, so that combination is handled separately.
+        public static Bounds ComputeRoomBounds(SoloRoomDefinition room, float margin)
+        {
+            bool has = false;
+            Bounds result = default;
+
+            void Include(Vector2 centre, Vector2 size)
+            {
+                var next = new Bounds(centre, new Vector2(Mathf.Max(size.x, 0f), Mathf.Max(size.y, 0f)));
+                if (!has) { result = next; has = true; }
+                else result.Encapsulate(next);
+            }
+
+            SoloRoomElement? door = null;
+            SoloRoomElement? doorRetreat = null;
+
+            foreach (SoloRoomElement e in room.Elements)
+            {
+                Vector2 pos = room.Origin + e.Position;
+                Include(pos, e.Size);
+                if (e.SecondarySize != Vector2.zero) Include(room.Origin + e.SecondaryPosition, e.SecondarySize);
+
+                if (e.Kind == SoloRoomElementKind.MovingTrap) Include(pos + e.Settings.Offset, e.Size);
+                if (e.Kind == SoloRoomElementKind.FallingBlock)
+                {
+                    Vector2 direction = e.Settings.Direction == FallingBlockDirection.Up ? Vector2.up : Vector2.down;
+                    Include(pos + direction * e.Settings.TravelDistance, e.Size);
+                }
+                if (e.Kind == SoloRoomElementKind.Door) door = e;
+                if (e.Kind == SoloRoomElementKind.DoorRetreat) doorRetreat = e;
+            }
+
+            if (door.HasValue && doorRetreat.HasValue)
+            {
+                Vector2 doorPos = room.Origin + door.Value.Position;
+                Include(doorPos + doorRetreat.Value.Settings.Offset, door.Value.Size);
+            }
+
+            if (!has) return new Bounds(room.Origin, Vector3.zero);
+            result.Expand(margin * 2f);
+            return result;
+        }
+
+        static void WireBounds(RoomManager rooms, RoomBoundsEntry[] entries, List<string> changes)
+        {
+            var serialized = new SerializedObject(rooms);
+            SerializedProperty array = serialized.FindProperty("bounds");
+            bool changed = array.arraySize != entries.Length;
+            if (!changed)
+            {
+                for (int i = 0; i < entries.Length; i++)
+                {
+                    SerializedProperty element = array.GetArrayElementAtIndex(i);
+                    if (element.FindPropertyRelative("RoomId").intValue != entries[i].RoomId
+                        || element.FindPropertyRelative("Center").vector2Value != entries[i].Center
+                        || element.FindPropertyRelative("Size").vector2Value != entries[i].Size)
+                    {
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+            if (!changed) return;
+
+            array.arraySize = entries.Length;
+            for (int i = 0; i < entries.Length; i++)
+            {
+                SerializedProperty element = array.GetArrayElementAtIndex(i);
+                element.FindPropertyRelative("RoomId").intValue = entries[i].RoomId;
+                element.FindPropertyRelative("Center").vector2Value = entries[i].Center;
+                element.FindPropertyRelative("Size").vector2Value = entries[i].Size;
+            }
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            changes.Add("wired " + rooms.name + ".bounds");
+        }
+
+        internal static void Wire(Object target, string field, Object value, List<string> changes)
+        {
+            if (target == null || value == null) return;
+            var serialized = new SerializedObject(target);
+            SerializedProperty property = serialized.FindProperty(field);
+            if (property == null || property.objectReferenceValue == value) return;
+            property.objectReferenceValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            changes.Add("wired " + target.name + "." + field);
         }
 
         internal static void BuildRoom(Transform parent, RealityRoot root, SoloRoomDefinition room, CheckpointManager checkpoints, RoomManager rooms, RoomDeath death, ObserverSet observers, CatMotorConfig config, List<string> changes)

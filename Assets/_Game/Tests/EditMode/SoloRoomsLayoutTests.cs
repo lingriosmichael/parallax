@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -12,6 +13,8 @@ namespace Parallax.Tests.EditMode
     public sealed class SoloRoomsLayoutTests
     {
         static readonly Type LayoutType = Type.GetType("Parallax.Editor.Setup.SoloRoomsLayout, Parallax.Editor");
+        static readonly Type LabLayoutType = Type.GetType("Parallax.Editor.Setup.TrapLabLayout, Parallax.Editor");
+        static readonly Type SetupType = Type.GetType("Parallax.Editor.Setup.SoloRoomsSetup, Parallax.Editor");
 
         [Test]
         public void Rule6_TriggersStayClearOfCheckpointSpawnFootprints()
@@ -757,6 +760,134 @@ namespace Parallax.Tests.EditMode
         static bool IsGameplayElement(Element e) => e.Kind == "Door" || e.Kind == "Hazard" || e.Kind == "CollapsingFloor" || e.Kind == "HiddenSpikes" || e.Kind == "FallingBlock" || e.Kind == "GravityFlip" || e.Kind == "DoorRetreat" || e.Kind == "MovingTrap";
         static Rect Bounds(Element e) => new(e.Position - e.Size * .5f, e.Size);
         static object Field(object value, string name) => value.GetType().GetField(name, BindingFlags.Public | BindingFlags.Instance).GetValue(value);
+        static IEnumerable LabRooms() { Assert.NotNull(LabLayoutType); return (IEnumerable)LabLayoutType.GetField("Rooms", BindingFlags.Public | BindingFlags.Static).GetValue(null); }
+        static IEnumerable AllRooms() => Rooms().Cast<object>().Concat(LabRooms().Cast<object>());
+
+        static Bounds ComputeRoomBounds(object room, float margin)
+        {
+            Assert.NotNull(SetupType);
+            MethodInfo method = SetupType.GetMethod("ComputeRoomBounds", BindingFlags.Public | BindingFlags.Static);
+            Assert.NotNull(method, "SoloRoomsSetup.ComputeRoomBounds not found");
+            return (Bounds)method.Invoke(null, new object[] { room, margin });
+        }
+
+        // ---------- PAX-047 (D-058) §8 test 6: bounds contain every element, both poses ----------
+
+        [Test]
+        public void Bounds_ContainEveryElementAndBothMovingPoses_ForEveryRoom()
+        {
+            foreach (object room in AllRooms())
+            {
+                // ComputeRoomBounds works in room.Origin + element-position space (it's what
+                // gets converted to world space afterwards), so every comparison here must add
+                // the same room.Origin before checking containment.
+                Vector2 origin = (Vector2)Field(room, "Origin");
+                Bounds bounds = ComputeRoomBounds(room, margin: 0f);
+
+                foreach (Element e in Elements(room))
+                {
+                    Rect primary = Offset(Bounds(e), origin);
+                    Assert.IsTrue(Contains(bounds, primary), $"Room {Field(room, "Id")}: {e.Name} primary pose escapes the bounds union.");
+
+                    if (e.SecondarySize != Vector2.zero)
+                    {
+                        Rect trigger = Offset(new Rect(e.SecondaryPosition - e.SecondarySize * .5f, e.SecondarySize), origin);
+                        Assert.IsTrue(Contains(bounds, trigger), $"Room {Field(room, "Id")}: {e.Name}'s trigger box escapes the bounds union.");
+                    }
+
+                    if (e.Kind == "MovingTrap")
+                    {
+                        Rect moved = primary; moved.position += e.Offset;
+                        Assert.IsTrue(Contains(bounds, moved), $"Room {Field(room, "Id")}: {e.Name}'s moved pose escapes the bounds union.");
+                    }
+                    if (e.Kind == "FallingBlock")
+                    {
+                        Vector2 direction = e.Direction == "Up" ? Vector2.up : Vector2.down;
+                        Rect rest = primary; rest.position += direction * e.TravelDistance;
+                        Assert.IsTrue(Contains(bounds, rest), $"Room {Field(room, "Id")}: {e.Name}'s rest pose escapes the bounds union.");
+                    }
+                }
+
+                Element[] elements = Elements(room);
+                Element? door = elements.Where(e => e.Kind == "Door").Cast<Element?>().FirstOrDefault();
+                Element? doorRetreat = elements.Where(e => e.Kind == "DoorRetreat").Cast<Element?>().FirstOrDefault();
+                if (door.HasValue && doorRetreat.HasValue)
+                {
+                    Rect retreated = Offset(Bounds(door.Value), origin); retreated.position += doorRetreat.Value.Offset;
+                    Assert.IsTrue(Contains(bounds, retreated), $"Room {Field(room, "Id")}: the retreated door escapes the bounds union.");
+                }
+            }
+        }
+
+        static Rect Offset(Rect rect, Vector2 by) { rect.position += by; return rect; }
+
+        [Test]
+        public void Bounds_MarginExpandsEachSideByExactlyTheMarginAmount()
+        {
+            const float margin = 2f;
+            foreach (object room in AllRooms())
+            {
+                Bounds tight = ComputeRoomBounds(room, margin: 0f);
+                Bounds expanded = ComputeRoomBounds(room, margin);
+                Assert.That(expanded.min.x, Is.EqualTo(tight.min.x - margin).Within(.001f));
+                Assert.That(expanded.min.y, Is.EqualTo(tight.min.y - margin).Within(.001f));
+                Assert.That(expanded.max.x, Is.EqualTo(tight.max.x + margin).Within(.001f));
+                Assert.That(expanded.max.y, Is.EqualTo(tight.max.y + margin).Within(.001f));
+            }
+        }
+
+        // ---------- PAX-047 (D-058) §8 test 10: checkpoint and door lie inside the bounds ----------
+
+        [Test]
+        public void CheckpointAndDoor_LieInsideRoomBoundsWithDefaultMargin()
+        {
+            const float defaultMargin = 2f; // RoomSafetyConfig's default BoundsMargin
+            foreach (object room in AllRooms())
+            {
+                Vector2 origin = (Vector2)Field(room, "Origin");
+                Bounds bounds = ComputeRoomBounds(room, defaultMargin);
+                Element checkpoint = ElementOfKind(room, "Checkpoint");
+                Element door = ElementOfKind(room, "Door");
+                Assert.IsTrue(bounds.Contains((Vector3)(checkpoint.Position + origin)), $"Room {Field(room, "Id")}: checkpoint sits outside the room's bounds.");
+                Assert.IsTrue(Contains(bounds, Offset(Bounds(door), origin)), $"Room {Field(room, "Id")}: door sits outside the room's bounds.");
+            }
+        }
+
+        // A standing jump's apex must not itself count as "out of bounds": either the room's
+        // bounds (with the default margin) already reach that high, or a ceiling/frame element
+        // physically caps the ascent below that height, so the cat can never actually get there.
+        [Test]
+        public void JumpApex_FromEveryStandableFloor_StaysInsideBoundsOrIsCappedByACeiling()
+        {
+            const float defaultMargin = 2f; // RoomSafetyConfig's default BoundsMargin
+            float jumpHeight = Config().JumpHeight;
+            var failures = new List<string>();
+
+            foreach (object room in AllRooms())
+            {
+                Vector2 origin = (Vector2)Field(room, "Origin");
+                Bounds bounds = ComputeRoomBounds(room, defaultMargin);
+                Element[] elements = Elements(room);
+                Rect[] ceilings = elements.Where(e => e.Kind == "Ceiling").Select(e => Offset(Bounds(e), origin)).ToArray();
+
+                foreach (Element floor in elements.Where(e => e.Kind == "Floor"))
+                {
+                    Rect floorRect = Offset(Bounds(floor), origin);
+                    float apex = floorRect.yMax + jumpHeight;
+                    if (apex <= bounds.max.y) continue;
+
+                    bool cappedByCeiling = ceilings.Any(c => c.xMin <= floorRect.xMax && c.xMax >= floorRect.xMin && c.yMin <= apex);
+                    if (cappedByCeiling) continue;
+
+                    failures.Add($"Room {Field(room, "Id")} {floor.Name}: floor top {floorRect.yMax:F2} + jump height {jumpHeight:F2} = apex {apex:F2} exceeds the room bounds top {bounds.max.y:F2} by {apex - bounds.max.y:F2}, and no ceiling covers this x-range low enough to cap it first.");
+                }
+            }
+
+            Assert.IsEmpty(failures, "Jump apex escapes room bounds with nothing to stop it:\n" + string.Join("\n", failures));
+        }
+
+        static bool Contains(Bounds bounds, Rect rect) =>
+            bounds.Contains(new Vector3(rect.xMin, rect.yMin)) && bounds.Contains(new Vector3(rect.xMax, rect.yMax));
 
         readonly struct Element
         {

@@ -1,4 +1,4 @@
 namespace Parallax.Core
 {
-    public enum DeathCause { Fall, Hazard }
+    public enum DeathCause { Fall, Hazard, OutOfBounds }
 }
