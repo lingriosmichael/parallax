@@ -343,6 +343,37 @@ finding a value only and are never saved to the scene. Supersedes D-053's clause
 tuned in the scene after scaffolding; the rest of D-053 stands.
 **Why:** Layout tests only mean something if the scene equals the data they check. Scene-side
 tuning would silently diverge from the tests and be lost on the next rebuild.
+
+### D-055 · 2026-09-22 · Accepted
+**Decision:** Trap kit v2 (PAX-045).
+(1) Trigger source. Every trap fires from exactly one source: Overlap (its own trigger box, as
+in v1) or Chain (another trap in the same room firing). A trap "fires" at the tick its effect
+starts: trigger tick + delay for Overlap, source fire tick + delay for Chain. A chained trap's
+delay is at least 1 tick, so tick-list order never changes the result. Chains are acyclic and
+stay inside one room; setup and tests reject cycles and cross-room links.
+(2) Repeat mode. Once (v1 default): fires once per room life. Rearm: after firing, the trap
+returns to its authored state when its cooldown ends (snap, no return animation in v2) and can
+fire again from its trigger source. Periodic: fires every P ticks, counted from room start
+(tick 0 of the room life) plus a phase offset; it has no trigger. Motion is a pure function of
+ticks since the latest fire.
+(3) Moving trap. A new trap moves a body from its authored pose by an offset over M ticks, holds
+H ticks, and optionally returns over R ticks. Kind Hazard: kills on overlap, tested against its
+pose computed for that tick, not physics state. Kind Solid: kinematic geometry moved with
+MovePosition; a cat whose collider overlaps the solid's tick pose shrunk by crushDepth on every
+side dies through RoomDeath (a crush).
+(4) Room reset restores every trap's authored pose, arming, chain state and repeat counters.
+**Amends:** D-051's "fire once per room life unless explicitly re-armable": repeat mode is the
+explicit mechanism. `GravityFlipTrap`'s existing `rearmOnExit` stays as is.
+**Why:** Level Devil rooms mutate as you solve them. Chains, moving and repeating traps are the
+three gaps PAX-044 found; defining them on ticks keeps every room deterministic and learnable
+(D-040, D-050).
+
+Cooldown means ticks from a fire until the trap returns to its authored state, for Rearm and
+Periodic alike. A Periodic trap needs cooldown < period. A MovingTrap's cooldown is at least
+M + H + R. An Overlap trap re-fires while armed if the cat is inside its trigger (presence,
+sampled each tick, as in v1); leaving and re-entering is not required. A Rearm chain target
+that is not armed when its source fires ignores that fire.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)

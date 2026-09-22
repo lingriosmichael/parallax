@@ -22,7 +22,9 @@ namespace Parallax.Gameplay.Rooms
             if (box == null || visual == null || Reality == null || observers == null) { enabled = false; return; }
             filter = new ContactFilter2D { useLayerMask = true, layerMask = Reality.PhysicsMask, useTriggers = false }; countdown = new TrapCountdown(delayTicks);
         }
-        protected override void OnLiveRoomStep() { if (!enabled) return; Bounds bounds = box.bounds; bounds.Expand(touchSkin * 2f); bool touched = IsLocalHumanOverlapping(bounds, observers, filter, results, out _); if (countdown.Step(touched)) { State = TrapState.Fired; box.enabled = false; visual.enabled = false; } }
+        protected override int DelayTicks => delayTicks;
+        protected override void OnLiveRoomStep() { if (!enabled) return; Bounds bounds = box.bounds; bounds.Expand(touchSkin * 2f); bool touched = IsLocalHumanOverlapping(bounds, observers, filter, results, out _); if (StepTiming(touched)) { box.enabled = false; visual.enabled = false; } }
         protected override void OnReset() { countdown.Reset(); box.enabled = true; visual.enabled = true; }
+        protected override void OnTimingRearmed() { box.enabled = true; visual.enabled = true; }
     }
 }

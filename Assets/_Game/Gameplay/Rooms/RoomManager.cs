@@ -25,6 +25,9 @@ namespace Parallax.Gameplay.Rooms
         public ObserverId SoloReality => soloReality;
         public bool LevelComplete => progress.LevelComplete;
         public bool CurrentDoorTouched { get; private set; }
+        public int RoomLifeTick { get; private set; }
+        int roomLifeRoom = -1;
+        bool roomLifeStartsNextStep;
 
         public event Action<int> RoomCompleted;
         public event Action LevelCompleted;
@@ -34,11 +37,13 @@ namespace Parallax.Gameplay.Rooms
         void OnEnable()
         {
             if (observers != null) observers.Stepped += OnStepped;
+            if (roomDeath != null) roomDeath.Died += OnDied;
         }
 
         void OnDisable()
         {
             if (observers != null) observers.Stepped -= OnStepped;
+            if (roomDeath != null) roomDeath.Died -= OnDied;
         }
 
         public void Register(RoomDoor door)
@@ -78,12 +83,18 @@ namespace Parallax.Gameplay.Rooms
         void OnStepped(int tick)
         {
             if (progress.LevelComplete || checkpoints == null) return;
+            if (roomLifeRoom != checkpoints.Current || roomLifeStartsNextStep) { roomLifeRoom = checkpoints.Current; RoomLifeTick = 0; roomLifeStartsNextStep = false; }
+            else RoomLifeTick++;
 
             // The one ordered room tick is traps -> hazards -> door. Components never subscribe
             // independently, so a dead cat cannot complete a door on this same tick.
             trapSnapshot.Clear();
             trapSnapshot.AddRange(traps);
-            for (int i = 0; i < trapSnapshot.Count; i++) trapSnapshot[i].StepIfLive();
+            for (int i = 0; i < trapSnapshot.Count; i++)
+            {
+                trapSnapshot[i].StepIfLive();
+                if (roomDeath != null && roomDeath.WasKilledThisTick(soloReality, tick)) return;
+            }
             hazardSnapshot.Clear();
             hazardSnapshot.AddRange(hazards);
             for (int i = 0; i < hazardSnapshot.Count; i++) hazardSnapshot[i].KillOverlappingCat();
@@ -121,6 +132,11 @@ namespace Parallax.Gameplay.Rooms
                 Debug.Log("Level complete");
                 if (LevelCompleted != null) LevelCompleted.Invoke();
             }
+        }
+
+        void OnDied(DeathInfo death)
+        {
+            if (death.Room == CurrentRoom) roomLifeStartsNextStep = true;
         }
     }
 }

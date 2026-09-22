@@ -15,18 +15,18 @@ namespace Parallax.Gameplay.Rooms
             base.Awake(); body = GetComponent<Rigidbody2D>(); box = GetComponent<BoxCollider2D>();
             if (body == null) Debug.LogError($"{GetType().Name} on '{name}': missing Rigidbody2D", this);
             if (box == null) Debug.LogError($"{GetType().Name} on '{name}': missing BoxCollider2D", this);
-            if (trigger == null) Debug.LogError($"{GetType().Name} on '{name}': missing Trigger", this);
+            if (trigger == null && UsesOverlapSource && !IsPeriodic) Debug.LogError($"{GetType().Name} on '{name}': missing Trigger", this);
             if (Reality == null) Debug.LogError($"{GetType().Name} on '{name}': missing RealityRoot", this);
             if (observers == null) Debug.LogError($"{GetType().Name} on '{name}': missing ObserverSet", this);
-            if (body == null || box == null || trigger == null || Reality == null || observers == null) { enabled = false; return; }
+            if (body == null || box == null || Reality == null || observers == null || (UsesOverlapSource && !IsPeriodic && trigger == null)) { enabled = false; return; }
             body.bodyType = RigidbodyType2D.Kinematic; filter = new ContactFilter2D { useLayerMask = true, layerMask = Reality.PhysicsMask, useTriggers = false }; countdown = new TrapCountdown(delayTicks); start = body.position;
         }
         protected override void OnLiveRoomStep()
         {
             if (!enabled) return;
-            if (countdown.Step(IsLocalHumanOverlapping(trigger, observers, filter, results, out _))) State = TrapState.Fired;
-            if (countdown.State != TrapCountdownState.Fired) return;
-            float travel = TrapMotion.Travel(countdown.TicksSinceFired, unitsPerTick, travelDistance);
+            StepTiming(trigger != null && IsLocalHumanOverlapping(trigger, observers, filter, results, out _));
+            if (!IsTimingEffectActive) return;
+            float travel = TrapMotion.Travel(RoomLifeTick - LatestFireTick, unitsPerTick, travelDistance);
             Vector2 dir = direction == FallingBlockDirection.Up ? Vector2.up : Vector2.down;
             body.MovePosition(start + dir * travel);
             if (travel >= travelDistance) return;
@@ -34,5 +34,7 @@ namespace Parallax.Gameplay.Rooms
             if (IsLocalHumanOverlapping(bounds, observers, filter, results, out _)) Death.Kill(Reality.Id, DeathCause.Hazard);
         }
         protected override void OnReset() { countdown.Reset(); body.position = start; }
+        protected override void OnTimingRearmed() { body.position = start; }
+        protected override int DelayTicks => delayTicks;
     }
 }

@@ -148,6 +148,35 @@ namespace Parallax.Editor.Setup
             return transform.GetComponent<BoxCollider2D>();
         }
 
+        internal static MovingTrap BuildMovingTrapCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, Color color, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, Vector2 triggerLocalPosition, Vector2 triggerSize, SoloRoomTrapSettings settings, CrushConfig crushConfig, int? sortingOrder, List<string> changes)
+        {
+            GameObject go = CreateTrap<MovingTrap>(parent, root, name, position, size, color, roomId, rooms, death, observers, false, sortingOrder, changes);
+            BoxCollider2D bodyBox = go.GetComponent<BoxCollider2D>();
+            bool shouldBeTrigger = settings.MovingKind == MovingTrapKind.Hazard;
+            if (bodyBox.isTrigger != shouldBeTrigger) { bodyBox.isTrigger = shouldBeTrigger; changes.Add("set " + name + ".isTrigger"); }
+            Rigidbody2D body = SetupUtility.Ensure<Rigidbody2D>(go, changes); SetupUtility.SetBodyType(body, RigidbodyType2D.Kinematic, changes);
+            BoxCollider2D trigger = settings.TriggerSource == TrapTriggerSource.Overlap ? CreateTrigger(go.transform, root, settings.TriggerName, triggerLocalPosition, triggerSize, changes) : null;
+            MovingTrap trap = go.GetComponent<MovingTrap>();
+            Write(trap, changes, ("trigger", trigger), ("kind", (int)settings.MovingKind), ("offset", settings.Offset), ("moveTicks", settings.MoveTicks), ("holdTicks", settings.HoldTicks), ("returnTicks", settings.ReturnTicks), ("crushDepth", settings.CrushDepth), ("crushConfig", crushConfig));
+            return trap;
+        }
+
+        internal static void ConfigureTiming(RoomTrap trap, SoloRoomTrapSettings settings, Transform roomRoot, List<string> changes)
+        {
+            RoomTrap source = null;
+            if (settings.TriggerSource == TrapTriggerSource.Chain)
+                foreach (RoomTrap candidate in roomRoot.GetComponentsInChildren<RoomTrap>(true)) if (candidate.name == settings.ChainSource) { source = candidate; break; }
+            Write(trap, changes, ("triggerSource", (int)settings.TriggerSource), ("chainSource", source), ("repeatMode", (int)settings.RepeatMode), ("cooldownTicks", settings.CooldownTicks), ("periodTicks", settings.PeriodTicks), ("phaseTicks", settings.PhaseTicks));
+            if (settings.TriggerSource == TrapTriggerSource.Overlap && settings.RepeatMode != TrapRepeatMode.Periodic) return;
+            Transform trigger = trap.transform.Find(settings.TriggerName);
+            if (trigger != null) { Object.DestroyImmediate(trigger.gameObject); changes.Add("removed " + trap.name + "." + settings.TriggerName); }
+            else if (trap is DoorRetreatTrap)
+            {
+                BoxCollider2D box = trap.GetComponent<BoxCollider2D>();
+                if (box != null) { Object.DestroyImmediate(box); changes.Add("removed " + trap.name + ".trigger"); }
+            }
+        }
+
         internal static void Write(Object target, List<string> changes, params (string name, object value)[] values)
         {
             SerializedObject serialized = new(target);

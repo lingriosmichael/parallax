@@ -18,10 +18,12 @@ namespace Parallax.Gameplay.Rooms
             if (hazard == null) Debug.LogError($"{GetType().Name} on '{name}': missing Hazard", this);
             if (Reality == null) Debug.LogError($"{GetType().Name} on '{name}': missing RealityRoot", this);
             if (observers == null) Debug.LogError($"{GetType().Name} on '{name}': missing ObserverSet", this);
-            if (box == null || visual == null || hazard == null || Reality == null || observers == null) { enabled = false; return; }
+            if (box == null || visual == null || hazard == null || Reality == null || observers == null || (UsesOverlapSource && !IsPeriodic && trigger == null)) { enabled = false; return; }
             filter = new ContactFilter2D { useLayerMask = true, layerMask = Reality.PhysicsMask, useTriggers = false }; countdown = new TrapCountdown(revealDelayTicks); hazard.SetArmed(false); visual.enabled = false;
         }
-        protected override void OnLiveRoomStep() { if (!enabled) return; if (countdown.Step(IsLocalHumanOverlapping(trigger, observers, filter, results, out _))) { State = TrapState.Fired; hazard.SetArmed(true); visual.enabled = true; } }
+        protected override int DelayTicks => revealDelayTicks;
+        protected override void OnLiveRoomStep() { if (!enabled) return; if (StepTiming(trigger != null && IsLocalHumanOverlapping(trigger, observers, filter, results, out _))) { hazard.SetArmed(true); visual.enabled = true; } }
         protected override void OnReset() { countdown.Reset(); hazard.SetArmed(false); visual.enabled = false; }
+        protected override void OnTimingRearmed() { hazard.SetArmed(false); visual.enabled = false; }
     }
 }
