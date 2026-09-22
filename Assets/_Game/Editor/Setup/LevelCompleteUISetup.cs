@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Parallax.Gameplay.Checkpoints;
 using Parallax.Gameplay.Input;
+using Parallax.Gameplay.Levels;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Rooms;
 using Parallax.Gameplay.UI;
@@ -14,7 +15,9 @@ namespace Parallax.Editor.Setup
 {
     /// <summary>PAX-049 (D-061). Idempotent find-or-create + rewire, like the other PARALLAX/Setup
     /// menus. The first setup menu with a scene guard: it refuses to run outside Level_Solo01,
-    /// since this screen is player-facing (not Sandbox_Realities/frozen-co-op tooling).</summary>
+    /// since this screen is player-facing (not Sandbox_Realities/frozen-co-op tooling).
+    /// PAX-050 (D-063): also creates/wires the Next level button and LevelListConfig reference.
+    /// Run PARALLAX/Setup/Level List (PAX-050) first, or this logs an error and skips that part.</summary>
     public static class LevelCompleteUISetup
     {
         const string RequiredSceneName = "Level_Solo01";
@@ -26,7 +29,9 @@ namespace Parallax.Editor.Setup
         const string RowTemplateName = "RowTemplate";
         const string TotalName = "Total";
         const string RestartButtonName = "RestartButton";
+        const string NextLevelButtonName = "NextLevelButton";
         const string ScreenControllerName = "LevelCompleteScreenController";
+        const string LevelListConfigPath = "Assets/_Game/Data/LevelListConfig.asset";
 
         [MenuItem("PARALLAX/Setup/Level Complete UI (PAX-049)")]
         public static void Configure()
@@ -66,7 +71,7 @@ namespace Parallax.Editor.Setup
             GameObject titleGO = EnsureChild(panelGO.transform, TitleName, changes);
             SetAnchors((RectTransform)titleGO.transform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(20f, -80f), new Vector2(-20f, -20f), changes, TitleName);
             var titleText = EnsureComponent<Text>(titleGO, changes, "Text", TitleName);
-            ConfigureText(titleText, "Level complete", 48, TextAnchor.MiddleCenter, changes, TitleName);
+            ConfigureText(titleText, "Level complete", 48, TextAnchor.MiddleCenter, Color.white, changes, TitleName);
 
             GameObject rowsGO = EnsureChild(panelGO.transform, RowsContainerName, changes);
             SetAnchors((RectTransform)rowsGO.transform, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(40f, 120f), new Vector2(-40f, -140f), changes, RowsContainerName);
@@ -84,16 +89,16 @@ namespace Parallax.Editor.Setup
             var rowTemplateRect = (RectTransform)rowTemplateGO.transform;
             if (rowTemplateRect.sizeDelta != new Vector2(0f, 44f)) { rowTemplateRect.sizeDelta = new Vector2(0f, 44f); changes.Add($"sized {RowTemplateName}"); }
             var rowTemplateText = EnsureComponent<Text>(rowTemplateGO, changes, "Text", RowTemplateName);
-            ConfigureText(rowTemplateText, "Room 0 — 0 deaths", 32, TextAnchor.MiddleCenter, changes, RowTemplateName);
+            ConfigureText(rowTemplateText, "Room 0 — 0 deaths", 32, TextAnchor.MiddleCenter, Color.white, changes, RowTemplateName);
             SetActive(rowTemplateGO, false, changes, RowTemplateName); // cloned per room at runtime, never shown itself
 
             GameObject totalGO = EnsureChild(panelGO.transform, TotalName, changes);
             SetAnchors((RectTransform)totalGO.transform, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(20f, 70f), new Vector2(-20f, 120f), changes, TotalName);
             var totalText = EnsureComponent<Text>(totalGO, changes, "Text", TotalName);
-            ConfigureText(totalText, "Total: 0 deaths", 36, TextAnchor.MiddleCenter, changes, TotalName);
+            ConfigureText(totalText, "Total: 0 deaths", 36, TextAnchor.MiddleCenter, Color.white, changes, TotalName);
 
             GameObject restartGO = EnsureChild(panelGO.transform, RestartButtonName, changes);
-            SetAnchors((RectTransform)restartGO.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-110f, 10f), new Vector2(110f, 65f), changes, RestartButtonName);
+            SetAnchors((RectTransform)restartGO.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-340f, 10f), new Vector2(-120f, 65f), changes, RestartButtonName);
             var restartImage = EnsureComponent<Image>(restartGO, changes, "Image", RestartButtonName);
             SetColor(restartImage, Color.white, changes, $"{RestartButtonName} Image");
             var restartButtonComponent = EnsureComponent<Button>(restartGO, changes, "Button", RestartButtonName);
@@ -107,11 +112,37 @@ namespace Parallax.Editor.Setup
             GameObject restartLabelGO = EnsureChild(restartGO.transform, "Label", changes);
             SetAnchors((RectTransform)restartLabelGO.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, "RestartButton/Label");
             var restartLabel = EnsureComponent<Text>(restartLabelGO, changes, "Text", "RestartButton/Label");
-            ConfigureText(restartLabel, "Restart", 32, TextAnchor.MiddleCenter, changes, "RestartButton/Label");
-            if (restartLabel.color != Color.black) { restartLabel.color = Color.black; changes.Add("set RestartButton/Label color = black"); }
+            ConfigureText(restartLabel, "Restart", 32, TextAnchor.MiddleCenter, Color.black, changes, "RestartButton/Label");
 
             var restartButton = EnsureComponent<RestartButton>(restartGO, changes, "RestartButton", RestartButtonName);
             WireField(restartButton, "button", restartButtonComponent, changes, "RestartButton.button = Button");
+
+            GameObject nextLevelGO = EnsureChild(panelGO.transform, NextLevelButtonName, changes);
+            SetAnchors((RectTransform)nextLevelGO.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(120f, 10f), new Vector2(340f, 65f), changes, NextLevelButtonName);
+            var nextLevelImage = EnsureComponent<Image>(nextLevelGO, changes, "Image", NextLevelButtonName);
+            SetColor(nextLevelImage, Color.white, changes, $"{NextLevelButtonName} Image");
+            var nextLevelButtonComponent = EnsureComponent<Button>(nextLevelGO, changes, "Button", NextLevelButtonName);
+            if (nextLevelButtonComponent.navigation.mode != Navigation.Mode.None)
+            {
+                var navigation = nextLevelButtonComponent.navigation;
+                navigation.mode = Navigation.Mode.None;
+                nextLevelButtonComponent.navigation = navigation;
+                changes.Add($"set {NextLevelButtonName} Button.navigation.mode = None");
+            }
+            GameObject nextLevelLabelGO = EnsureChild(nextLevelGO.transform, "Label", changes);
+            SetAnchors((RectTransform)nextLevelLabelGO.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, "NextLevelButton/Label");
+            var nextLevelLabel = EnsureComponent<Text>(nextLevelLabelGO, changes, "Text", "NextLevelButton/Label");
+            ConfigureText(nextLevelLabel, "Next level", 32, TextAnchor.MiddleCenter, Color.black, changes, "NextLevelButton/Label");
+
+            var nextLevelButton = EnsureComponent<NextLevelButton>(nextLevelGO, changes, "NextLevelButton", NextLevelButtonName);
+            WireField(nextLevelButton, "button", nextLevelButtonComponent, changes, "NextLevelButton.button = Button");
+            SetActive(nextLevelGO, false, changes, NextLevelButtonName); // shown only when LevelCompleteScreen finds a next level
+
+            LevelListConfig levelList = AssetDatabase.LoadAssetAtPath<LevelListConfig>(LevelListConfigPath);
+            if (levelList == null)
+            {
+                Debug.LogError($"LevelCompleteUISetup: no LevelListConfig at '{LevelListConfigPath}'. Run PARALLAX/Setup/Level List (PAX-050) first.");
+            }
 
             GameObject screenGO = GameObject.Find(ScreenControllerName);
             if (screenGO == null)
@@ -130,6 +161,8 @@ namespace Parallax.Editor.Setup
             WireField(screen, "rowTemplate", rowTemplateText, changes, "LevelCompleteScreen.rowTemplate = RowTemplate");
             WireField(screen, "totalText", totalText, changes, "LevelCompleteScreen.totalText = Total");
             WireField(screen, "restartButton", restartButton, changes, "LevelCompleteScreen.restartButton = RestartButton");
+            WireField(screen, "nextLevelButton", nextLevelButton, changes, "LevelCompleteScreen.nextLevelButton = NextLevelButton");
+            if (levelList != null) WireField(screen, "levelList", levelList, changes, "LevelCompleteScreen.levelList = LevelListConfig");
 
             // Reserved regions: append RestartButton, don't replace. TouchStickCatInput lives on
             // DeviceInput. Re-running SwitchSetup on this scene would still overwrite this array
@@ -144,6 +177,7 @@ namespace Parallax.Editor.Setup
             else
             {
                 AppendReservedRegion(touchInput, restartButton, changes);
+                AppendReservedRegion(touchInput, nextLevelButton, changes);
             }
 
             if (changes.Count == 0)
@@ -193,14 +227,19 @@ namespace Parallax.Editor.Setup
             changes.Add($"set {label}.color");
         }
 
-        static void ConfigureText(Text text, string content, int fontSize, TextAnchor alignment, List<string> changes, string label)
+        // PAX-050 review fix: the color parameter used to be hardcoded to white here, while
+        // RestartButton/Label and NextLevelButton/Label separately forced themselves to black
+        // right after calling this -- so every re-run of the menu flipped each label white then
+        // black again and never converged to "no changes". Taking the desired color as a
+        // parameter removes that fight.
+        static void ConfigureText(Text text, string content, int fontSize, TextAnchor alignment, Color color, List<string> changes, string label)
         {
             bool changed = false;
             if (text.font == null) { text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); changed = true; }
             if (text.text != content) { text.text = content; changed = true; }
             if (text.fontSize != fontSize) { text.fontSize = fontSize; changed = true; }
             if (text.alignment != alignment) { text.alignment = alignment; changed = true; }
-            if (text.color != Color.white) { text.color = Color.white; changed = true; }
+            if (text.color != color) { text.color = color; changed = true; }
             if (changed) changes.Add($"configured {label} Text");
         }
 
@@ -232,21 +271,21 @@ namespace Parallax.Editor.Setup
             }
         }
 
-        static void AppendReservedRegion(TouchStickCatInput touchInput, RestartButton restartButton, List<string> changes)
+        static void AppendReservedRegion<T>(TouchStickCatInput touchInput, T region, List<string> changes) where T : Component
         {
             var so = new SerializedObject(touchInput);
             var prop = so.FindProperty("reservedRegions");
 
             for (int i = 0; i < prop.arraySize; i++)
             {
-                if (prop.GetArrayElementAtIndex(i).objectReferenceValue == (Object)restartButton) return; // already present
+                if (prop.GetArrayElementAtIndex(i).objectReferenceValue == (Object)region) return; // already present
             }
 
             int index = prop.arraySize;
             prop.arraySize++;
-            prop.GetArrayElementAtIndex(index).objectReferenceValue = restartButton;
+            prop.GetArrayElementAtIndex(index).objectReferenceValue = region;
             so.ApplyModifiedPropertiesWithoutUndo();
-            changes.Add("appended RestartButton to TouchStickCatInput.reservedRegions");
+            changes.Add($"appended {typeof(T).Name} to TouchStickCatInput.reservedRegions");
         }
     }
 }

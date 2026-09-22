@@ -498,7 +498,7 @@ D-061 · 2026-09-22 · Accepted
 Decision: Death count UI (PAX-049, completes D-044). Per-room deaths are shown once, on a level-complete screen: one row per room in level order, the total, and a Restart button. Nothing is shown during play or when a single room is cleared, so a door still moves the cat to the next room on the same tick (D-050). Counts last for one play of the level: they are not saved, and Restart resets them. Restart reloads the level scene; death resets stay reload-free (D-041). Each room clear and the level summary are also logged with the prefix PARALLAX_STATS, for playtest data.
 Why: An end screen gives the score without interrupting the troll loop. Saving waits until there are levels worth saving. Log lines give playtest numbers without extra tooling.
 
-D-062 · 2026-09-22 · Proposed
+D-062 · 2026-09-22 · Proposed (level-is-one-room and Flow clauses split out and accepted as D-063; the rest of this entry — hard tier, luck, business model, audio/haptics — stays Proposed)
 
 Decision: v1 definition.
 
@@ -522,4 +522,56 @@ Why: A finite, written finish line turns "until the game is done" into a countab
 
 Supersedes / amends: D-040's determinism and D-056's limits apply to the novice tier only; the hard tier gets its own rules (above). Vision §10 (store pages, iOS, payments now in scope as stated). CLAUDE.md's "no IAP" scope line lifts when the monetization ticket starts.
 
+**Supersedes / amends:** D-062 (the gating sentence in its Consequence), D-049's "confirm on
+device in PAX-037 when it runs" (still true, now in Phase H), Vision §13 timing.
+**Consequence:** D-062 can move to Accepted with that sentence struck. `00_VISION.md` §12–13 and
+`CLAUDE.md`'s scope section are updated in the same commit. `08_V1_ROADMAP.md` replaces the
+Phase A validation block with Phase H.
+D-062 · 2026-09-22 · Accepted (amended by D-063, D-064)
+…
+Consequence: 00_VISION.md §3 (pillar 2), §10 and §13, and CLAUDE.md's scope section are updated to match. ~~The playtest (PAX-037) still gates content: no levels are built beyond the current prototype until it passes.~~ Struck by D-064. OPEN items: hard-tier numbers → D-065 (PAX-057); free levels and price → D-067 (before PAX-066).
+
+### D-063 · 2026-09-22 · Accepted
+
+**Decision:** Level structure and flow for Phase B (PAX-050). Splits D-062 (Proposed): promotes only its level-is-one-room and Flow clauses to Accepted; D-062's content/hard-tier/luck/business-model/audio clauses are untouched and stay Proposed for their own later tickets.
+(1) A level is one room: one checkpoint, one door, one screen or close to it (D-062). `Level_Solo01`'s existing multi-room sequence is dev/test scaffolding for room mechanics (trap kit, chains, gravity flips) built before this decision; it is not a template for a shipped level and is not renamed or restructured by this ticket.
+(2) Level order and identity are data, not build-settings order or a hardcoded switch: an ordered list of level entries (id, scene name, display name) in a single ScriptableObject config under `Assets/_Game/Data`, following the existing config convention (e.g. `RoomSafetyConfig`).
+(3) Level complete → Next level: the level-complete screen offers **Next level** (when one exists in order) alongside the existing **Restart**. Next level loads that level's scene by name (`SceneManager.LoadScene`), the same mechanism `RestartButton` already uses.
+(4) Progress is saved on the device: per level, whether unlocked and the best (lowest) death count. Completing a level unlocks the next one in order. Saved via `PlayerPrefs` (first use of device persistence in the project), keyed so it survives app restarts; no cloud save. Pure unlock/best-deaths logic lives in `Parallax.Core` and is EditMode-tested there; only the `PlayerPrefs` read/write adapter lives in `Parallax.Gameplay`.
+(5) Level select, pause and settings screens are **not** part of this decision or PAX-050; they stay open Phase B work.
+
+**Why:** Phase B needs a real next-level and progress-save path now, and D-062 already answered exactly this shape (level = one room; Flow's level-complete/progress-save clause) as its newest, most specific statement on the subject. The rest of D-062 (hard-tier numbers, randomness, monetization, audio) depends on the device session and later phases and isn't needed to unblock this ticket.
+
+**Consequence:** A future ticket that adds real Phase D content (levels 1–10+) populates the level-list data with real one-room scenes; PAX-050 itself adds no new level content, since only `Level_Solo01` exists today.
+
 Consequence: 00_VISION.md §3 (pillar 2), §10 and §13, and CLAUDE.md's scope section are updated to match. The playtest (PAX-037) still gates content: no levels are built beyond the current prototype until it passes.
+
+
+### D-064 · 2026-09-22 · Accepted
+**Decision:** All player-facing validation moves to the end of v1 production. The device session
+(PAX-037), the blind playtest (Gate 3) and every other phone or outside-player test run once, as
+Phase H, after all 50 levels, the front end (menus, pause, settings), final art, audio, haptics
+and the paid unlock are built. Until then, acceptance for every ticket is EditMode tests plus
+the developer's own Editor play.
+1. D-062's clause "the playtest (PAX-037) still gates content" is removed. Content (Phase D) is
+   not gated on any playtest. Vision §13's "no further rooms are built until the game is fixed"
+   no longer applies before Phase H; §13's criteria become Phase H's pass criteria.
+2. D-062's OPEN hard-tier numbers (slack, max jump) get **provisional** values from the Editor
+   (D-065, PAX-057). They live in one config asset, every layout test reads them from there, and
+   PAX-069 replaces them with device-derived values in Phase H. A level that fails the final
+   numbers is fixed in Phase H, not before.
+3. Device-only behaviour (touch feel, D-049 on device, safe areas, haptics, frame time and
+   thermals, real Play Billing) is built to spec and checked in the Editor where possible
+   (Device Simulator, IAP fake store), but is recorded as **unverified** until Phase H. No ticket
+   claims device validation before then.
+4. The Google Play closed test required before production access doubles as the blind playtest
+   (PAX-070), so the two are not run twice.
+
+**Why:** The developer's call: finish the game first, then test the whole thing once with real
+visuals and real content, instead of re-validating a greybox that will change.
+
+**Risk accepted:** Hard-tier levels are authored against touch precision that has not been
+measured. If the device numbers turn out stricter than the provisional ones, some hard levels
+need rework in Phase H. Keeping the numbers in one asset and checking every level against them
+in tests makes that rework a list, not a search.
+

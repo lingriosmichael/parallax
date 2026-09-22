@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using Parallax.Core;
 using Parallax.Gameplay.Checkpoints;
+using Parallax.Gameplay.Levels;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Rooms;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Parallax.Gameplay.UI
@@ -14,7 +16,11 @@ namespace Parallax.Gameplay.UI
     /// level_complete summary line itself is logged by RoomManager, in place of its old bare
     /// "Level complete" message). Pure row/total/format math lives in Parallax.Core
     /// (LevelSummary, LevelStatsLog); this script only reacts to events and drives uGUI, so it
-    /// stays a thin Parallax.Gameplay MonoBehaviour.</summary>
+    /// stays a thin Parallax.Gameplay MonoBehaviour.
+    /// PAX-050 (D-063): also shows a Next level button when LevelListConfig has an entry after
+    /// the active scene's level; hidden otherwise (today: always, since only one level exists).
+    /// Recording completion into LevelProgress happens on that button's click, not here — see
+    /// NextLevelButton.</summary>
     public sealed class LevelCompleteScreen : MonoBehaviour
     {
         [SerializeField] RoomManager rooms;
@@ -26,6 +32,8 @@ namespace Parallax.Gameplay.UI
         [SerializeField] Text rowTemplate;
         [SerializeField] Text totalText;
         [SerializeField] RestartButton restartButton;
+        [SerializeField] LevelListConfig levelList;
+        [SerializeField] NextLevelButton nextLevelButton;
 
         readonly Dictionary<int, int> roomStartTick = new Dictionary<int, int>();
         readonly List<GameObject> spawnedRows = new List<GameObject>();
@@ -97,6 +105,23 @@ namespace Parallax.Gameplay.UI
             IsShown = true;
             if (panel != null) panel.SetActive(true);
             PopulateRows(LastSummary, total);
+            ConfigureNextLevelButton(total);
+        }
+
+        void ConfigureNextLevelButton(int total)
+        {
+            if (nextLevelButton == null) return;
+
+            bool hasNext = false;
+            if (levelList != null
+                && levelList.TryGetBySceneName(SceneManager.GetActiveScene().name, out LevelEntry current)
+                && levelList.TryGetNext(current.Id, out LevelEntry next))
+            {
+                nextLevelButton.Configure(current.Id, total, next.SceneName, levelList.OrderedIds());
+                hasNext = true;
+            }
+
+            nextLevelButton.gameObject.SetActive(hasNext);
         }
 
         void PopulateRows(RoomSummaryRow[] rowsData, int total)
