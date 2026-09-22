@@ -374,6 +374,31 @@ M + H + R. An Overlap trap re-fires while armed if the cat is inside its trigger
 sampled each tick, as in v1); leaving and re-entering is not required. A Rearm chain target
 that is not armed when its source fires ignores that fire.
 
+### D-056 · 2026-09-22 · Accepted
+**Decision:** Rooms v3 layout rules for trap kit v2 (PAX-046).
+(1) Timing slack. Every survive case that depends on timing (periodic windows, chain delays,
+moving traps, collapse delays) leaves at least 12 ticks (0.2 s at 60 Hz) of slack beyond the
+minimum the cat needs, computed from the measured movement numbers. Where the obvious move is
+to stop and wait (periodic hazards, closing walls), the minimum is computed from rest, with the
+measured acceleration, not at full run speed. Touch input on a phone cannot be tighter than that.
+(2) Platforms. Every jump the solution requires is a RequiredJump in layout data and passes the
+reachability contract (D ≤ 0.75 reach), including jumps between platforms at different heights.
+Difficulty comes from what the room does, never from a jump near the limit.
+(3) Moving solids. A moving Solid's swept path (authored pose to authored pose + offset, full
+size) overlaps no fixed geometry; touching is allowed. A cat is only ever crushed against
+geometry the layout names as the crush partner. A Solid that carries the cat upward launches it
+when it stops (rise = v²/2g, v = its upward speed): the launch box, from the Solid's stopped
+pose up by the rise plus the cat height, touches no hazard, and a launch is never a betrayal.
+(4) Disguise. Before it fires, a betraying trap looks like ordinary level geometry or like
+nothing: collapsing floors and moving Solids use the floor/wall look, hidden spikes are
+invisible, chained traps have no visible trigger. Honest hazards (visible spikes, visibly
+moving hazards) are allowed and are not counted as betrayals.
+(5) Learnability. After a death the player can see what killed them: every betrayal leaves a
+visible result (a gap, revealed spikes, a moved block) until the room resets.
+**Why:** Kit v2 lets rooms mutate (D-055). These rules keep the mutation fair on a phone:
+enough slack for touch, platforming that is never the hard part, no physics surprises, and
+deaths that teach (D-040, D-053).
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
