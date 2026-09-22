@@ -63,6 +63,10 @@ namespace Parallax.Gameplay.Rooms
 
         public void Kill(ObserverId observerId, DeathCause cause)
         {
+            // PAX-049 (D-061): once the level is complete, no further death is recorded, held,
+            // or raised. `rooms` is null in Sandbox_Realities (frozen co-op), which keeps its
+            // existing behaviour untouched.
+            if (rooms != null && rooms.LevelComplete) return;
             if (observers == null || checkpoints == null) return;
             ObserverContext observer = observers.Get(observerId);
             if (observer == null || observer.Driver == null || observer.Driver.Kind != InputSourceKind.LocalHuman) return;

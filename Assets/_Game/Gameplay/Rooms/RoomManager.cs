@@ -48,6 +48,17 @@ namespace Parallax.Gameplay.Rooms
 
         public bool IsLive(int roomId) => !progress.LevelComplete && roomId == CurrentRoom;
 
+        // PAX-049 (D-061): level order is the ascending sort of the same registered-door ids
+        // RoomSequence.HasNext already reads; this exposes that single source of truth instead
+        // of inventing a second one. Room NUMBER (1-based display position) is the caller's job
+        // (its index in this list + 1), since it is deliberately not the same as RoomId.
+        public IReadOnlyList<int> RoomIdsInOrder()
+        {
+            var ids = new List<int>(doors.Keys);
+            ids.Sort();
+            return ids;
+        }
+
         public bool TryGetBounds(int roomId, out Bounds roomBounds)
         {
             for (int i = 0; i < bounds.Length; i++)
@@ -187,7 +198,17 @@ namespace Parallax.Gameplay.Rooms
             else
             {
                 progress.MarkLevelComplete();
-                Debug.Log("Level complete");
+                // PAX-049 (D-061): replaces the old bare "Level complete" line with the
+                // PARALLAX_STATS summary (per-room deaths in level order, plus the total).
+                if (roomDeath != null)
+                {
+                    RoomSummaryRow[] rows = LevelSummary.BuildRows(RoomIdsInOrder(), roomDeath.DeathsIn);
+                    Debug.Log(LevelStatsLog.LevelComplete(rows, LevelSummary.Total(rows)));
+                }
+                else
+                {
+                    Debug.Log("Level complete");
+                }
                 if (LevelCompleted != null) LevelCompleted.Invoke();
             }
         }

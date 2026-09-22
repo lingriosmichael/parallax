@@ -497,3 +497,29 @@ D-061 · 2026-09-22 · Accepted
 
 Decision: Death count UI (PAX-049, completes D-044). Per-room deaths are shown once, on a level-complete screen: one row per room in level order, the total, and a Restart button. Nothing is shown during play or when a single room is cleared, so a door still moves the cat to the next room on the same tick (D-050). Counts last for one play of the level: they are not saved, and Restart resets them. Restart reloads the level scene; death resets stay reload-free (D-041). Each room clear and the level summary are also logged with the prefix PARALLAX_STATS, for playtest data.
 Why: An end screen gives the score without interrupting the troll loop. Saving waits until there are levels worth saving. Log lines give playtest numbers without extra tooling.
+
+D-062 · 2026-09-22 · Proposed
+
+Decision: v1 definition.
+
+Content. Solo v1 ships 50 levels. A level is one room (Level Devil style): one checkpoint, one door, one screen or close to it. Levels 1–10 are the novice tier; levels 11–50 are the hard tier.
+Novice tier keeps every current rule: deterministic traps (D-040), D-056's slack and reachability, D-057's lead, D-060's door clearance. Novice rooms are real troll rooms, not tutorials (D-053).
+Hard tier is extremely hard and uses three sources of difficulty:
+Memory: longer chains of betrayals, the same deterministic rules as novice.
+Execution: tighter timing and jumps than D-056 allows. Hard-tier slack and reach limits are set after the device session (PAX-037), because touch precision on the phone decides what "tight but fair" means. OPEN: hard-tier slack (ticks) and max jump (fraction of reach).
+Luck: bounded randomness, under these guardrails:
+randomness only chooses between authored variants of a trap (e.g. which side the arrows come from, which floor tile collapses), never timing, speed or hitbox size;
+every variant is survivable on its own and passes the hard-tier rules;
+the chosen variant is visible at least D-057's lead before it can kill;
+it is seeded per attempt from the level id and attempt number, and the seed is logged, so any death can be reproduced in the Editor;
+novice levels never use it.
+Flow: title screen, level select (locked until the previous level is cleared, best death count shown), level complete with Next level and Restart, pause (resume, restart, level select), settings (music and sound volume, haptics, touch stick size/position), progress saved on the device (unlocked levels, best death counts). No cloud saves.
+Business model: free download with a one-time paid unlock. OPEN: which levels are free (proposal: the 10 novice levels plus the first 5 hard levels) and the price. No ads, no consumables.
+Platforms: Android on Google Play for v1. iOS on the App Store follows as its own phase after the Android release.
+Audio and haptics are in v1: an ambient bed, a sound and haptic cue for every trap firing, short death/respawn sounds (Vision §9).
+
+Why: A finite, written finish line turns "until the game is done" into a countable list. One-room levels keep 50 levels achievable for a solo developer. The hard tier's rules are bounded so that deaths still read as the room's fault, which is what keeps players retrying.
+
+Supersedes / amends: D-040's determinism and D-056's limits apply to the novice tier only; the hard tier gets its own rules (above). Vision §10 (store pages, iOS, payments now in scope as stated). CLAUDE.md's "no IAP" scope line lifts when the monetization ticket starts.
+
+Consequence: 00_VISION.md §3 (pillar 2), §10 and §13, and CLAUDE.md's scope section are updated to match. The playtest (PAX-037) still gates content: no levels are built beyond the current prototype until it passes.
