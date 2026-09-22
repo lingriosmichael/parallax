@@ -47,14 +47,8 @@ namespace Parallax.Editor.Setup
         {
             Transform roomRoot = SetupUtility.EnsureChild(parent, $"Room_{room.Id + 1}", root.gameObject.layer, changes);
             foreach (SoloRoomElement element in room.Elements) BuildElement(roomRoot, root, room, element, checkpoints, rooms, death, observers, config, changes);
-            if (room.Id == 3)
-            {
-                BuildGeometry(roomRoot, root, "Ceiling_Left", room.Origin + new Vector2(5.5f, 7.5f), new Vector2(11f, 1f), changes);
-                BuildGeometry(roomRoot, root, "Ceiling_Right", room.Origin + new Vector2(19f, 7.5f), new Vector2(10f, 1f), changes);
-            }
-            else BuildGeometry(roomRoot, root, "Ceiling", room.Origin + new Vector2(12f, 7.5f), new Vector2(24f, 1f), changes);
             BuildGeometry(roomRoot, root, "Wall_Left", room.Origin + new Vector2(-.5f, 2f), new Vector2(1f, 12f), changes);
-            BuildGeometry(roomRoot, root, "Wall_Right", room.Origin + new Vector2(24.5f, 2f), new Vector2(1f, 12f), changes);
+            BuildGeometry(roomRoot, root, "Wall_Right", room.Origin + new Vector2(room.Width + .5f, 2f), new Vector2(1f, 12f), changes);
         }
 
         static void BuildElement(Transform parent, RealityRoot root, SoloRoomDefinition room, SoloRoomElement e, CheckpointManager checkpoints, RoomManager rooms, RoomDeath death, ObserverSet observers, CatMotorConfig config, List<string> changes)
@@ -62,15 +56,15 @@ namespace Parallax.Editor.Setup
             Vector2 position = room.Origin + e.Position;
             switch (e.Kind)
             {
-                case SoloRoomElementKind.Floor: case SoloRoomElementKind.PitBottom: BuildGeometry(parent, root, e.Name, position, e.Size, changes); break;
+                case SoloRoomElementKind.Floor: case SoloRoomElementKind.Ceiling: case SoloRoomElementKind.Wall: case SoloRoomElementKind.PitBottom: BuildGeometry(parent, root, e.Name, position, e.Size, changes); break;
                 case SoloRoomElementKind.Checkpoint: CheckpointSetup.BuildMarkerCore(parent, root, e.Name, checkpoints, observers, room.Id, position + Vector2.up * -config.ColliderBottom, Vector2.down, changes); break;
                 case SoloRoomElementKind.Door: RoomSetup.BuildDoorCore(parent, root, e.Name, rooms, room.Id, position, e.Size, new Color(.9f,.5f,1f,1f), -2, changes); break;
                 case SoloRoomElementKind.Hazard: HazardSetup.BuildHazardCore(parent, root, e.Name, death, observers, rooms, position, e.Size, Red, -2, changes); break;
-                case SoloRoomElementKind.CollapsingFloor: TrapKitSetup.BuildCollapsingFloorCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, 12, -2, changes); break;
-                case SoloRoomElementKind.HiddenSpikes: TrapKitSetup.BuildHiddenSpikesCore(parent, root, e.Name, position, e.Size, Red, room.Id, rooms, death, observers, "Trigger", e.SecondaryPosition - e.Position, e.SecondarySize, 0, -2, changes); break;
-                case SoloRoomElementKind.FallingBlock: TrapKitSetup.BuildFallingBlockCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, "Trigger", e.SecondaryPosition - e.Position, e.SecondarySize, FallingBlockDirection.Down, 3, .3f, 5.5f, -2, changes); break;
-                case SoloRoomElementKind.GravityFlip: TrapKitSetup.BuildGravityFlipCore(parent, root, e.Name, position, e.Size, e.Name == "FlipTool" ? Purple : Color.clear, room.Id, rooms, death, observers, e.Name == "HiddenFlip" ? GravityFlipMode.ForceUp : GravityFlipMode.Flip, 0, e.Name == "FlipTool", e.Name == "FlipTool" ? -2 : null, changes); break;
-                case SoloRoomElementKind.DoorRetreat: TrapKitSetup.BuildDoorRetreatCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, parent.Find($"Door_{room.Id}") ?? parent.Find($"Door_{room.Id + 1}"), room.Id == 3 ? new Vector2(0f,5.5f) : new Vector2(10f,0f), 10, 0, changes); break;
+                case SoloRoomElementKind.CollapsingFloor: TrapKitSetup.BuildCollapsingFloorCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings.DelayTicks, -2, changes); break;
+                case SoloRoomElementKind.HiddenSpikes: TrapKitSetup.BuildHiddenSpikesCore(parent, root, e.Name, position, e.Size, Red, room.Id, rooms, death, observers, e.Settings.TriggerName, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings.RevealDelayTicks, -2, changes); break;
+                case SoloRoomElementKind.FallingBlock: TrapKitSetup.BuildFallingBlockCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings.TriggerName, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings.Direction, e.Settings.DelayTicks, e.Settings.UnitsPerTick, e.Settings.TravelDistance, -2, changes); break;
+                case SoloRoomElementKind.GravityFlip: TrapKitSetup.BuildGravityFlipCore(parent, root, e.Name, position, e.Size, e.Settings.RendererEnabled ? Purple : Color.clear, room.Id, rooms, death, observers, e.Settings.GravityMode, e.Settings.DelayTicks, e.Settings.RearmOnExit, e.Settings.RendererEnabled ? -2 : null, changes); break;
+                case SoloRoomElementKind.DoorRetreat: TrapKitSetup.BuildDoorRetreatCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, parent.GetComponentInChildren<RoomDoor>(true)?.transform, e.Settings.Offset, e.Settings.MoveTicks, e.Settings.DelayTicks, changes); break;
             }
         }
 
