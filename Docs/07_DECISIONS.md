@@ -444,3 +444,56 @@ reviewed.
 **Why:** The death frame is never rendered, so "visible after death" was unachievable with the
 kit as built. 6 ticks is long enough to see and shorter than a human reaction (≈ 15 ticks), so
 a betrayal still kills the first time but the player saw what did it.
+
+### D-059 · 2026-09-22 · Accepted
+**Decision:** PAX-047 (D-058) as built. (1) `DeathHold` (`Parallax.Core`) is the pure hold
+countdown: `Begin()` at the kill tick, `Step()` once per subsequent tick, reporting
+`Live`/`Holding`/`ResetNow`. `RoomDeath` owns one `DeathHold` plus a new `DeathCounter`
+(`Parallax.Core`, per-room, never `IRoomResettable` so a room reset never clears it — this is
+the "minimal death counter" D-058 pre-approved; it has no UI and does not resolve D-044). (2)
+`RoomDeath.Kill` counts the death and either runs the reset immediately (`HoldTicks` 0,
+byte-for-byte the old synchronous path) or freezes the cat and defers the reset to
+`StepHold()`. The reset (`checkpoints.Respawn`, trap/anchor reset, `Died`) is unified into one
+`PerformReset()` run either way, so `Died` now fires at reset completion — synchronously for
+`HoldTicks` 0, at hold-end otherwise — carrying the original kill tick and cause.
+`RoomManager.OnDied` is unchanged and remains the single `roomLifeStartsNextStep` setter.
+(3) `RoomManager.OnStepped` gates on `RoomDeath.IsHolding` at the top: while holding, `RoomLifeTick`
+does not advance and the trap/hazard/bounds/door phases do not run at all that tick.
+(4) `CatMotor2D.Freeze()`/`Unfreeze()` hold `RigidbodyConstraints2D.FreezeAll` + zero velocity,
+restoring the exact pre-freeze constraints; `Step()` no-ops while frozen, so a command still
+drained by the (unchanged) input router that tick has no effect. `CatRespawn.RespawnAt` now
+unfreezes (no-op unless frozen) before every respawn — co-op/dev respawns are unaffected since
+`Freeze` is only ever called from `RoomDeath.Kill`'s solo branch. (5) Out-of-bounds: each room's
+kill bounds are computed once, at setup time, from `SoloRoomsLayout`/`TrapLabLayout` data —
+the union of every element's AABB (both poses for `MovingTrap`/`FallingBlock`; the room's `Door`
+element's retreated pose for a `DoorRetreat` pairing) plus a margin — and serialized as a
+world-space `RoomBoundsEntry[]` on `RoomManager`, via a new `RoomSafetyConfig` asset
+(`HoldTicks` default 30, `BoundsMargin` default 2) created/assigned by `SoloRoomsSetup`/
+`TrapLabSetup`. The runtime check compares the cat's collider **world bounds centre**
+(`Collider2D.bounds.center`, not `transform.position + offset`, since the offset's world
+direction flips with gravity) against the room's bounds on **x/y only**
+(`RoomManager.ContainsXY`) — room bounds are always `z = [0,0]`, so a plain `Bounds.Contains`
+would reject any point whose z isn't exactly 0; the cat's z is 0 in `Level_Solo01` today, so
+this was latent, not live-broken, but must stay xy-only regardless. A missing `RoomSafetyConfig`
+on `RoomDeath` logs a `Debug.LogWarning` (not an error) and falls back to `HoldTicks` 30 —
+downgraded from error because `Sandbox_Realities` (frozen co-op) also carries a `RoomDeath`
+component, from earlier trap-kit work, with no config and no PAX-047 setup menu ever run
+against it; that scene is untouched and out of scope.
+**Why:** Deaths must teach (D-040, D-053) and no layout mistake may soft-lock a room (D-058).
+Reusing one `PerformReset` for both `HoldTicks` 0 and N keeps the two paths from silently
+drifting apart. Bounds baked at setup time (not computed at runtime) keep the per-tick check a
+plain comparison with no allocation or reality-space conversion.
+**Consequence:** `Sandbox_Realities` now logs a (harmless, expected) warning instead of an
+error on load, until someone wires a `RoomSafetyConfig` there or removes the leftover
+component — not this ticket's concern.
+
+D-060 · 2026-09-22 · Accepted
+
+Decision: Door clearance (PAX-048). A door is never entered over a hazard. In every room, the Door element's footprint, both authored and retreated (including the retreat's swept path), keeps at least 0.1 u (one tick at run speed) from every volume that can kill, in every pose and swept path and every armed state. A grounded cat can always touch the door without touching a hazard. Enforced by a general layout test over SoloRoomsLayout and TrapLabLayout.
+Why: Room 3's retreat put its door over ExitSpikes. The only grounded touch was a 0.05 u sliver, and an airborne touch depended on where the cat entered a flip zone. The door ends a room's troll; reaching it must not be the precision test (D-040, D-056).
+Amends: D-056 (adds the door rule).
+
+D-061 · 2026-09-22 · Accepted
+
+Decision: Death count UI (PAX-049, completes D-044). Per-room deaths are shown once, on a level-complete screen: one row per room in level order, the total, and a Restart button. Nothing is shown during play or when a single room is cleared, so a door still moves the cat to the next room on the same tick (D-050). Counts last for one play of the level: they are not saved, and Restart resets them. Restart reloads the level scene; death resets stay reload-free (D-041). Each room clear and the level summary are also logged with the prefix PARALLAX_STATS, for playtest data.
+Why: An end screen gives the score without interrupting the troll loop. Saving waits until there are levels worth saving. Log lines give playtest numbers without extra tooling.

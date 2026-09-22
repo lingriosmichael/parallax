@@ -147,12 +147,19 @@ namespace Parallax.Editor.Setup
             AddPit(elements,1,4.5f,13f);
             AddPit(elements,2,16f,18f);
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_A",(19f,3f),(1f,2f),settings:new SoloRoomTrapSettings(gravityMode:GravityFlipMode.Flip,rearmOnExit:true,rendererEnabled:true)));
-            elements.Add(E(SoloRoomElementKind.Hazard,"FloorHazard",(23.5f,.15f),(7f,.3f),hazardRole:SoloRoomHazardRole.UnjumpableFloor));
+            // PAX-048 (D-060): shortened from 7 to 5.5 to clear a 1 u margin for the door on both
+            // sides (see Door below). Still unjumpable: 5.5 exceeds both the code assertion's
+            // 4.54 u threshold and the stricter ~5.3 u measured full-speed reach (see PAX-048
+            // review notes).
+            elements.Add(E(SoloRoomElementKind.Hazard,"FloorHazard",(22.75f,.15f),(5.5f,.3f),hazardRole:SoloRoomHazardRole.UnjumpableFloor));
             elements.Add(E(SoloRoomElementKind.FallingBlock,"PeriodicUp",(25.5f,1f),(1f,1f),settings:new SoloRoomTrapSettings(unitsPerTick:.3f,travelDistance:5.5f,direction:FallingBlockDirection.Up,repeatMode:TrapRepeatMode.Periodic,cooldownTicks:48,periodTicks:96,phaseTicks:24)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"CeilingSpikes",(27.5f,6.85f),(1.5f,.3f),(24f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             // Flip_B begins beyond the ceiling jump's landing footprint.
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_B",(30.5f,4f),(1f,2f),settings:new SoloRoomTrapSettings(gravityMode:GravityFlipMode.Flip,rearmOnExit:true,rendererEnabled:true)));
-            elements.Add(E(SoloRoomElementKind.Door,"Door",(28.5f,.75f),(.6f,1.5f)));
+            // PAX-048 (D-060): moved from 28.5 so the retreated pose (offset unchanged, still a
+            // full 1 u retreat) clears ExitSpikes by 1 u, and the authored pose clears the
+            // shortened FloorHazard by 1 u. Never entered over a hazard in either pose.
+            elements.Add(E(SoloRoomElementKind.Door,"Door",(26.9f,.75f),(.6f,1.5f)));
             elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(29f,3.5f),(.5f,7f),settings:new SoloRoomTrapSettings(delayTicks:12,moveTicks:24,offset:new Vector2(1f,0f),triggerSource:TrapTriggerSource.Chain,chainSource:"CeilingSpikes")));
             // A straight drop after Flip_B lands in revealed spikes; shift right to safety, then jump left to the door.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"ExitSpikes",(29.75f,.15f),(1f,.3f),(30.5f,4f),(1f,2f),new SoloRoomTrapSettings(revealDelayTicks:6)));

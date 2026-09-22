@@ -2,7 +2,7 @@
 
 **Status:** Authoritative. Supersedes the original specification wherever they differ.
 **Precedence:** `07_DECISIONS.md` > **this file** > `02_ARCHITECTURE.md` > `CLAUDE.md` > implementation plan > original spec.
-**Last updated:** 2026-09-21 (pivot to troll puzzle platformer, D-040; solo-only v1, D-047)
+**Last updated:** 2026-09-22 (death hold and out-of-bounds kill, D-058/D-059)
 
 ---
 
@@ -26,9 +26,10 @@ same way every time. Winning means reading the room, not out-reflexing it.
 2. **Fair betrayal.** Traps are deterministic (D-040): the same trigger does the same thing on every
    attempt. Nothing is random, nothing depends on frame timing. The room is the difficulty, never the
    controls.
-3. **Cheap, funny failure.** Death resets the room and puts the cat back at the checkpoint in
-   ≤ 0.75 s, with no fade, death screen or reload (D-041). The cats make mistakes charming:
-   scrambling paws, ears back, surprised landings.
+3. **Cheap, funny failure.** Death briefly freezes the room exactly as it killed you — the gap,
+   the revealed spikes, the block that landed — then resets and puts the cat back at the
+   checkpoint, in ≤ 0.75 s total, with no fade, death screen or reload (D-041, D-058). The cats
+   make mistakes charming: scrambling paws, ears back, surprised landings.
 4. **One verb that changes everything.** Gravity flips between up and down, instantly (D-037,
    D-048). The same room read upside down is a different room, and the room can flip it on you.
 
@@ -39,10 +40,14 @@ same way every time. Winning means reading the room, not out-reflexing it.
   After the last door, the level is complete.
 - **Anatomy of a room:** setup → obvious route → betrayal → learned solution. Every room should be
   describable in one sentence of that shape.
-- **Death resets the room (D-041).** The cat respawns at the room's checkpoint and every trap in
-  the room re-arms. Rooms already completed stay completed.
-- **Unlimited retries** are the working assumption. Lives and a per-room death counter are
-  undecided (D-044, proposed; Q-9).
+- **Death resets the room (D-041).** A short hold (0.5 s default, D-058) freezes the room in its
+  fired state first, so the player sees what killed them; then the cat respawns at the room's
+  checkpoint and every trap re-arms. Rooms already completed stay completed.
+- **Leaving the room's bounds kills you too (D-058).** A hole in the layout is a death, not an
+  endless fall — the room computes its own kill bounds from its geometry.
+- **Unlimited retries** are the working assumption. A per-room death count is now tracked
+  internally (D-058) but has no UI or persistence yet; lives stay undecided (D-044, proposed;
+  Q-9).
 - **Level-design constraint (D-050):** reaching a later room's checkpoint skips the current room,
   so room N+1's checkpoint must be unreachable before room N's door.
 

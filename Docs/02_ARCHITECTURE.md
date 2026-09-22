@@ -2,7 +2,7 @@
 
 **Status:** Authoritative for technical design. Changes require a `07_DECISIONS.md` entry.
 **Precedence:** `07_DECISIONS.md` > `00_VISION.md` > **this file** > `CLAUDE.md` > implementation plan > original spec.
-**Last updated:** 2026-09-10
+**Last updated:** 2026-09-22 (PAX-047 death hold and out-of-bounds kill, D-058/D-059)
 
 > The code in this document is **interface sketches**. It shows intent, names, and contracts, not final implementations. Tickets refine them.
 
@@ -539,6 +539,31 @@ readonly non-Unity-serializable struct.
 then hazards overlap-test, then the current door is tested. `Hazard` and `RoomTrap` never subscribe
 to `Stepped` themselves, so a trap cannot fire outside its live room and death deterministically wins
 over a same-tick door touch; `DeathTickGuard` permits one death per Observer/tick.
+
+**As built (PAX-047, D-058, D-059):** a death now **freezes** the room before that reset runs,
+instead of resetting synchronously. `RoomDeath` owns a pure `DeathHold` (`Parallax.Core`:
+`Begin()`/`Step()` → `Live`/`Holding`/`ResetNow`) and a `DeathCounter` (per room, never
+`IRoomResettable`). `RoomManager.OnStepped` gates on `RoomDeath.IsHolding` at the very top: while
+holding, `RoomLifeTick` does not advance and the trap/hazard/bounds/door phases do not run at
+all that tick; `RoomDeath.StepHold()` runs the deferred reset itself once the hold ends.
+`CatMotor2D.Freeze()`/`Unfreeze()` hold the cat with `RigidbodyConstraints2D.FreezeAll` and zero
+velocity, restoring the exact pre-freeze constraints; `Step()` no-ops while frozen, so a command
+still drained by the unchanged input router has no effect. `CatRespawn.RespawnAt` unfreezes
+(no-op unless frozen) before every respawn, so co-op/dev respawn paths — which never call
+`Freeze` — are unaffected. The room's own reset (trap/anchor reset, `checkpoints.Respawn`) is
+unchanged in substance, just deferred; `HoldTicks = 0` (in the new `RoomSafetyConfig` asset)
+reproduces the old synchronous behaviour exactly, same tick.
+
+Each room also has **kill bounds**: a world-space `RoomBoundsEntry[]` on `RoomManager`, baked at
+setup time by `SoloRoomsSetup`/`TrapLabSetup` from `SoloRoomsLayout`/`TrapLabLayout` data (union
+of every element's AABB, both poses for `MovingTrap`/`FallingBlock`, the room's `Door` element's
+retreated pose for a `DoorRetreat` pairing, plus `RoomSafetyConfig.BoundsMargin`, default 2 u).
+Checked once per live tick against the cat's collider **world bounds centre**
+(`Collider2D.bounds.center`, not `transform.position + offset` — the offset's world direction
+flips with gravity), on **x/y only** (`RoomManager.ContainsXY`; room bounds are always
+`z = [0,0]`, so a plain `Bounds.Contains` would reject any non-zero-z point). A cat outside is
+killed through the normal (now-held) death path with cause `OutOfBounds`, plus one
+`Debug.LogWarning` naming the room and position.
 
 ---
 

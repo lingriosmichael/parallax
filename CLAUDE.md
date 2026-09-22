@@ -113,6 +113,10 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   - `MCP-FOR-UNITY: [WebSocket] Unexpected receive error: WebSocket is not initialised`
   - `Error reason is 'NoSubscription' … generators.ai.unity.com`
   - `connection.state_change … newState=Failed error=Process exited unexpectedly`
+  - `RoomDeath: no RoomSafetyConfig assigned; using default HoldTicks 30.` in `Sandbox_Realities`
+    only (frozen co-op sandbox carries an unconfigured `RoomDeath` from earlier trap-kit work,
+    D-059) — in `Level_Solo01`/`Sandbox_TrapLab` this means the setup menu hasn't been run and is
+    a real problem, not noise
 - Use `batch_execute` for long sequences of calls rather than dozens of round trips.
 
 ### What MCP does not do
@@ -167,11 +171,18 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   checkpoint N+1 on the same tick; no checkpoint N+1 means level complete.
 - **Traps are deterministic (D-040).** The same trigger does the same thing on every attempt. No
   randomness, no `Time.time`; timing uses ticks. The room is the difficulty, never the controls.
-- **Death resets the current room (D-041).** The cat respawns at the room's checkpoint, and every
-  trap and room-owned anchor in that room returns to its declared initial value. Completed rooms are
-  never reset. Anchor resets go out as **new requests** from the session authority, never as a
-  registry rollback (D-024). Death to regained control: **≤ 0.75 s**, with no fade, screen or reload.
-- **No lives and no death counter** until D-044 is decided.
+- **Death holds, then resets the current room (D-041, D-058).** A death freezes the room —
+  `RoomLifeTick`, traps, hazards, door and bounds checks all gated off via `RoomDeath.IsHolding` —
+  for `RoomSafetyConfig.HoldTicks` (default 30 = 0.5 s), showing the room exactly as it killed
+  the player, then runs the same reset as before: the cat respawns at the room's checkpoint, and
+  every trap and room-owned anchor in that room returns to its declared initial value. Completed
+  rooms are never reset. Anchor resets go out as **new requests** from the session authority,
+  never as a registry rollback (D-024). `HoldTicks = 0` reproduces the old synchronous reset
+  exactly. Death to regained control: **≤ 0.75 s** total, with no fade, screen or reload. A cat
+  whose collider centre leaves its room's computed kill bounds dies the same way, cause
+  `OutOfBounds` (D-058) — never build a room whose intended play space isn't inside its bounds.
+- **A minimal per-room death count exists (D-058)**, in `RoomDeath`/`DeathCounter`, with no UI.
+  Whether/how it's shown, persisted, or turned into lives is still D-044 (undecided).
 
 ## Semantic state and networking
 

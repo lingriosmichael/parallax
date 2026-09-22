@@ -889,6 +889,77 @@ namespace Parallax.Tests.EditMode
         static bool Contains(Bounds bounds, Rect rect) =>
             bounds.Contains(new Vector3(rect.xMin, rect.yMin)) && bounds.Contains(new Vector3(rect.xMax, rect.yMax));
 
+        // ---------- PAX-048 (D-060): a door is never entered over a hazard ----------
+
+        [Test]
+        public void DoorClearance_BothPosesAndRetreatSweep_StayClearOfEveryKillVolume()
+        {
+            const float margin = .1f; // D-060: one tick at run speed (.1 u/tick)
+            var failures = new List<string>();
+
+            foreach (object room in AllRooms())
+            {
+                Element[] elements = Elements(room);
+                Element? doorOpt = elements.Where(e => e.Kind == "Door").Cast<Element?>().FirstOrDefault();
+                if (!doorOpt.HasValue) continue;
+                Rect authored = Bounds(doorOpt.Value);
+                Element? retreatOpt = elements.Where(e => e.Kind == "DoorRetreat").Cast<Element?>().FirstOrDefault();
+                Rect retreated = authored;
+                if (retreatOpt.HasValue) retreated.position += retreatOpt.Value.Offset;
+                Rect sweep = Envelope(authored, retreated);
+
+                foreach (Element e in elements)
+                foreach (Rect kill in KillVolumes(e))
+                {
+                    Rect expanded = Grow(kill, margin);
+                    if (expanded.Overlaps(authored))
+                        failures.Add($"Room {Field(room, "Id")}: door (authored pose) is within {margin} u of {e.Name}'s kill volume.");
+                    if (expanded.Overlaps(sweep))
+                        failures.Add($"Room {Field(room, "Id")}: door (retreated pose or retreat sweep) is within {margin} u of {e.Name}'s kill volume.");
+                }
+            }
+
+            Assert.IsEmpty(failures, "Door clearance violations (D-060):\n" + string.Join("\n", failures));
+        }
+
+        static Rect Envelope(Rect a, Rect b) => Rect.MinMaxRect(Mathf.Min(a.xMin, b.xMin), Mathf.Min(a.yMin, b.yMin), Mathf.Max(a.xMax, b.xMax), Mathf.Max(a.yMax, b.yMax));
+        static Rect Grow(Rect r, float m) => Rect.MinMaxRect(r.xMin - m, r.yMin - m, r.xMax + m, r.yMax + m);
+
+        // Kill volumes per D-060: hazards, armed hidden spikes, and Hazard-kind moving/falling
+        // bodies, covering every pose and the swept path between them. Solids never kill by
+        // simple overlap (only by crush), so MovingTrap Solids are excluded. CollapsingFloor
+        // disables its own collider on touch and never calls Death.Kill directly, so it is
+        // excluded too; the pit hazard beneath it is what carries the kill volume.
+        static IEnumerable<Rect> KillVolumes(Element e)
+        {
+            switch (e.Kind)
+            {
+                case "Hazard":
+                    yield return Bounds(e);
+                    break;
+                case "HiddenSpikes":
+                    // Treated as always armed: this is a static layout check, and once revealed
+                    // a spike trap stays lethal for the rest of the room's life.
+                    yield return Bounds(e);
+                    break;
+                case "FallingBlock":
+                {
+                    Rect primary = Bounds(e);
+                    Vector2 direction = e.Direction == "Up" ? Vector2.up : Vector2.down;
+                    Rect rest = primary; rest.position += direction * e.TravelDistance;
+                    yield return Envelope(primary, rest);
+                    break;
+                }
+                case "MovingTrap" when e.MovingKind == "Hazard":
+                {
+                    Rect primary = Bounds(e);
+                    Rect moved = primary; moved.position += e.Offset;
+                    yield return Envelope(primary, moved);
+                    break;
+                }
+            }
+        }
+
         readonly struct Element
         {
             readonly object value; public string Kind => Field(value, "Kind").ToString(); public string Name => (string)Field(value, "Name"); public Vector2 Position => (Vector2)Field(value, "Position"); public Vector2 Size => (Vector2)Field(value, "Size"); public Vector2 SecondaryPosition => (Vector2)Field(value, "SecondaryPosition"); public Vector2 SecondarySize => (Vector2)Field(value, "SecondarySize");
