@@ -399,6 +399,25 @@ visible result (a gap, revealed spikes, a moved block) until the room resets.
 enough slack for touch, platforming that is never the hard part, no physics surprises, and
 deaths that teach (D-040, D-053).
 
+### D-058 · 2026-09-22 · Accepted
+**Decision:** Death hold and out-of-bounds kill (PAX-047).
+(1) Death hold. A death freezes the room for HoldTicks (default 30 = 0.5 s at 60 Hz, in a config
+asset) before the existing reset runs. During the hold: no trap steps and RoomLifeTick does not
+advance (the room shows the exact state at the kill); the cat is frozen where it died and takes
+no input; input given during the hold is discarded, so nothing pressed during the hold (e.g. a
+buffered jump) acts after the reset; further kills, door touches and trigger entries are
+ignored. The death counts once, at the kill. HoldTicks 0 reproduces today's synchronous reset.
+(2) Out-of-bounds kill. Each room has kill bounds computed from its layout (every element's
+bounds plus a margin, default 2 u). The room's checkpoint and door always lie inside its bounds.
+A cat whose centre leaves the bounds of its current room is killed through the normal death
+path (hold, then reset) and a warning names the room and position, because it means the layout
+has a hole.
+(3) Learnability. With the hold, D-056 (5) applies again as written: every betrayal's result is
+visible after the death until the reset. D-057's 6-tick visible lead before a kill stays in
+force.
+**Why:** Deaths must teach (D-040, D-053): the player needs to see what killed them. And no
+layout mistake may soft-lock a room.
+
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)

@@ -62,6 +62,29 @@ If documents conflict, or a ticket conflicts with the architecture: **stop and r
   output whether the scene file shows as modified.
 - Use Unity 6 APIs (e.g. `Rigidbody2D.linearVelocity`, `Rigidbody2D.bodyType`). Do not use deprecated members.
 
+## AutoSprite art pipeline
+
+- `Docs/Art/AutoSprite_workflow.md` is the procedure for AutoSprite REST generation. Use it only
+  within an approved art ticket; PAX-A06 authorizes the local tooling, not replacement of a
+  Unity asset. The developer provides art prompts. Derive each target's dimensions, PPU, pivot,
+  and path from the approved ticket and `Docs/Art/A02_asset_manifest.md`; for a new slot, define
+  those values explicitly before generating. Compare `Docs/Art/Reference/` and existing game art.
+- Keep the API key only in the local `AUTOSPRITE_API_KEY` environment variable. A placeholder is
+  acceptable for offline work. Never write the real key to the repo, a spec, a log, a ticket,
+  or client-side Unity code.
+- The developer's spending limit is **20 AutoSprite credits per asset, including retries**.
+  Check the plan and the local ledger before paid calls; preserve the same ledger/work directory
+  across attempts. Do not reset or bypass it to continue generating. Use no paid operation whose
+  cost cannot be bounded within that limit.
+- Keep raw downloads, candidates, contact sheets, and the credit ledger outside `Assets/`.
+  Check exact pixel size, alpha, proportions, pivot, and phone-scale readability against the
+  references. Iterate prompts and processing within the credit cap. Copy an approved candidate
+  into Unity only under an asset-specific ticket, using the existing importer and setup rules;
+  never overwrite an existing Unity asset as part of a generation attempt.
+- Cat animation remains a code-driven flipbook with the existing `CatSpriteImporter`: no Animator,
+  `.anim` assets, or new Unity package. After a real asset completes the generation, review,
+  import, and Editor/device checks, capture the tested pattern in a Codex agent skill.
+
 ## Unity MCP (MCP for Unity, pinned v10.0.0)
 
 MCP gives you hands inside the running Editor. It changes **who presses the buttons**, not what is allowed.
