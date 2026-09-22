@@ -413,3 +413,15 @@ deaths that teach (D-040, D-053).
 - **Q-9** ~~Nine lives~~ → resolved by D-044 (no lives, unlimited retries, per-room death count).
 - **Q-10 · Cat collider height vs. art silhouette.** Collider is a horizontal capsule, 1.2 × 0.8. Art PPU (196.667) is derived from Walk frame-0 width over collider length, so the art matches length by construction but not height: Walk draws 0.580 u tall, Idle 0.656, Rise 0.702, Fall 0.524, Land 0.447. The standing cat leaves ~0.14 u of empty collider above its back, so ceilings and head bumps read as gaps. Proposed: shrink collider height to ~0.62 as PAX-A04, after A03 Play acceptance and before PAX-037. `CatVisualSetup` places Visual at the collider's bottom edge, so the setup menu must be re-run after any collider change. Blocks level design.
 - ~~**Q-11 · Solo room structure.**~~ Closed by D-040 (room = checkpoint + door, deterministic traps, no precision platforming) and D-044 (no lives, pending confirmation).
+
+### D-057 · 2026-09-22 · Accepted
+**Decision:** Amends D-056 (5). Death reset stays synchronous (RoomDeath.Kill), so nothing is
+visible after a death. Learnability is therefore met before the kill: every betrayal that can
+kill shows its visible change (a gap opening, spikes revealed, a block or Solid moving, a door
+moving) at least 6 ticks (0.1 s at 60 Hz) before it can kill. The other betrayals keep D-056 (5)
+as written: their result stays visible until the room resets. A death hold that shows the fired
+room state after a death is a separate runtime ticket (PAX-047); once it lands, this rule is
+reviewed.
+**Why:** The death frame is never rendered, so "visible after death" was unachievable with the
+kit as built. 6 ticks is long enough to see and shorter than a human reaction (≈ 15 ticks), so
+a betrayal still kills the first time but the player saw what did it.
