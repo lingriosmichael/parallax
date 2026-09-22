@@ -334,6 +334,15 @@ disguised betrayals are what make the troll loop work, and a soft-lock would bre
 cheap-retry promise of D-044.
 **Consequence:** New rooms are reviewed against these rules. The first playtest found the
 PAX-043 rooms too easy; PAX-044 raises the density to 4–6 chained betrayals per room.
+
+### D-054 · 2026-09-22 · Accepted
+**Decision:** Solo room layouts are data. `SoloRoomsLayout` is the single source of truth for
+geometry and every trap setting; the scene is always rebuilt from it (delete `Room_N`, rerun the
+setup menu, save). Tuning means editing the layout data; Inspector tweaks in Play mode are for
+finding a value only and are never saved to the scene. Supersedes D-053's clause that rooms are
+tuned in the scene after scaffolding; the rest of D-053 stands.
+**Why:** Layout tests only mean something if the scene equals the data they check. Scene-side
+tuning would silently diverge from the tests and be lost on the next rebuild.
 ---
 
 ## Open questions (to be resolved by playtest → new D-entries)
