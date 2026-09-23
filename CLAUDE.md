@@ -197,6 +197,8 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   reordering levels in `LevelListConfig`, run `PARALLAX/Setup/Levels/Sync Build Scene List`.
 - Every runtime scene load goes through `LevelSceneLoader.Load(sceneName)`. Never call
   `SceneManager.LoadScene` directly, and never add an Editor-only load path.
+- Every `Time.timeScale` write goes through `RunningState` (D-073). Never assign
+  `Time.timeScale` anywhere else.
 - Level UI is built on `_LevelTemplate` only (D-070), then `Rebuild All Levels`.
   `Level_Solo01` is frozen and gets no new UI.
 

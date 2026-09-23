@@ -823,3 +823,70 @@ exist on disk. `LevelSetup.NewLevel`'s log line only reports a successful sync; 
 but it is not added to Build Settings until `Sync Build Scene List` is run again after fixing the
 cause.
 
+### D-073 · 2026-09-23 · Accepted
+
+**Decision:** A level can be paused from a HUD button in a reserved touch region (top-right, inset
+below the dev-only FLIP button), and it pauses itself when the app goes to the background. While
+paused, no game state advances and input is ignored; resume continues exactly where it stopped,
+with no input carried over from before the pause. The pause menu offers Resume, Restart and
+Levels. Restart and Levels abandon the current attempt: nothing is recorded, and best deaths
+remains the fewest deaths in one completed run (the pause panel's Levels button is its own
+component, `PausePanel.GoToLevelSelect`, and never reuses `LevelsButton`, which records a
+completion). Every scene load restores the running state, so no scene starts paused. Pausing is
+refused once the level is complete, and the complete screen hides the pause button.
+
+**Mechanism: (c), time scale plus a pause gate** (PAX-054).
+- `Time.timeScale = 0` is the global stop. Physics (`Physics2D.simulationMode` = FixedUpdate),
+  every `FixedUpdate` including frozen co-op code, and `deltaTime`-driven presentation (camera
+  `SmoothDamp`, cat flipbook) stop with it. UI keeps working: the EventSystem and
+  `InputSystemUIInputModule` run in `Update` (default dynamic-update input), so Resume is
+  clickable.
+- Every write to `Time.timeScale` goes through one seam, `Parallax.Gameplay.Levels.RunningState`
+  (`Freeze` = 0, `Restore` = 1; `SetTimeScale` is swappable for tests). `LevelPause` and
+  `LevelSceneLoader` are its only callers.
+- `ObserverSet.FixedUpdate` checks an optional `pauseGate` (a `MonoBehaviour` implementing
+  `IPauseGate`; `LevelPause` in level scenes) before `Tick++`, so the level tick owner itself
+  honours the pause — cat movement, the room tick (traps, trap timers, hazards, bounds, door,
+  `RoomLifeTick`), the death hold, respawn and the death count all hang off it. A null gate
+  (`Sandbox_Realities`, `Level_Solo01`) changes nothing.
+- `LevelSceneLoader.Load` calls `RunningState.Restore()` after the Build Settings refusal and
+  before `LoadScene`, so a refused load leaves a paused level paused.
+- `LevelPause.OnDestroy` restores the running state only if that instance froze it and never
+  resumed (a paused level torn down some other way, e.g. leaving Play mode).
+- Pure logic in `Parallax.Core`: `PauseState` (Pause, Resume, ApplyPendingResume, IsPaused) and
+  `AutoPausePolicy`.
+
+**Input.** Resume takes effect at the end of the frame it's requested in, after all input has
+been read for that frame: `Resume()` only sets a pending flag, and `LevelPause.LateUpdate` applies
+it (hide the panel, restore the running state, then `CatInputRouter.ResetTransientState()`).
+Input read in that frame and every latch left over from before the pause are dropped. A Pause
+after a Resume in the same frame cancels it; two Resumes in one frame apply once. The motor's
+`jumpBufferTimer` and `coyoteTimer` are game state: they freeze and continue after resume. Keys
+still physically held after resume are live input from the next frame (`KeyboardCatInput` polls
+`isPressed` every frame). A finger held through the pause (stick or jump) is dropped by
+`ResetTransientState` and must be lifted and put down again, since fingers are only claimed on
+their `Began`. While shown, the pause panel is one full-screen reserved touch region, so no touch
+that begins while paused — including the tap on Resume, which begins while the panel is still
+active — is ever claimed: its `Began` is reserved, and after the resume it has no new `Began`.
+Pause UI buttons are never selectable (Navigation None, as on the complete screen), and the
+EventSystem selection (a serialized reference on `LevelPause`) is cleared on pause and resume, so
+keyboard and gamepad Submit and Navigate can't reach them.
+
+**Auto-pause.** `OnApplicationPause(true)` (background) always pauses. `OnApplicationFocus(false)`
+pauses only when `LevelPause.IgnoreFocusLoss` is false; it is set from `Application.isEditor` in
+`Awake`, so focus loss pauses on device but not in the Editor (clicking the Console or Inspector
+would otherwise pause constantly). Coming back never resumes; the player taps Resume.
+
+**Known limitation.** The dev-only keyboard tools (`KeyboardSwitchInput` Tab, `KeyboardEchoInput`
+Z, `DebugPanel`) keep reading keys in `Update` while paused. They are frozen co-op/dev tooling,
+removed from non-debug builds, and are left untouched.
+
+**Why:** Time scale alone would work at runtime but leaves nothing of ours to test; a pause flag
+alone would leave the dynamic cat body and the frozen anchor presenters moving. The deferred
+resume closes a real frame-order gap: the EventSystem runs at execution order −1000, before
+`TouchStickCatInput`, and a tap that presses and releases in one frame surfaces its `Began` in
+that same frame, so an immediate resume would have hidden the panel before the touch was checked.
+
+**Consequence:** New level UI goes through `PARALLAX/Setup/Levels/Pause Menu` on `_LevelTemplate`
+only (D-070), then Rebuild All Levels. `Level_Solo01` has no pause menu. Any future code that
+changes `Time.timeScale` must go through `RunningState`.
