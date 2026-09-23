@@ -2,7 +2,7 @@
 
 **Status:** Authoritative. Supersedes the original specification wherever they differ.
 **Precedence:** `07_DECISIONS.md` > **this file** > `02_ARCHITECTURE.md` > `CLAUDE.md` > implementation plan > original spec.
-**Last updated:** 2026-09-22 (death hold and out-of-bounds kill, D-058/D-059)
+**Last updated:** 2026-09-23 (precision sections, D-069)
 
 ---
 
@@ -17,15 +17,17 @@ one room at a time, and every room is lying to it.**
 
 Each room looks simple: a checkpoint, a door, an obvious way across. The obvious way is a trap. The
 player dies, laughs or swears, and tries again straight away, because the room behaves exactly the
-same way every time. Winning means reading the room, not out-reflexing it.
+same way every time. Winning means reading the room first. In the hardest levels it also means
+executing what you've read: tight jumps across thin platforms while the room keeps lying.
 
 ## 3. Pillars
 
 1. **The room is the puzzle.** Every room is a small puzzle with one idea. The obvious route is the
    setup, the betrayal teaches the rule, and the solution uses it.
 2. **Fair betrayal.** Traps are deterministic (D-040): the same trigger does the same thing on every
-   attempt. Nothing is random, nothing depends on frame timing. The room is the difficulty, never the
-   controls.
+   attempt. Nothing is random, nothing depends on frame timing. In novice levels the room is the
+   whole difficulty. Hard levels add precision sections where execution counts, but a required
+   jump is never impossible and a trap is never invisible before it can kill (D-069).
 3. **Cheap, funny failure.** Death briefly freezes the room exactly as it killed you — the gap,
    the revealed spikes, the block that landed — then resets and puts the cat back at the
    checkpoint, in ≤ 0.75 s total, with no fade, death screen or reload (D-041, D-058). The cats
@@ -50,6 +52,10 @@ same way every time. Winning means reading the room, not out-reflexing it.
   Q-9).
 - **Level-design constraint (D-050):** reaching a later room's checkpoint skips the current room,
   so room N+1's checkpoint must be unreachable before room N's door.
+- **Two kinds of section (D-069).** Troll-route sections have comfortable jumps; the danger is
+  which platforms and routes are real. Precision sections (hard tier only) are runs of thin,
+  narrow platforms where execution matters. Rooms with a precision section may be wider than one
+  screen, with the camera following the cat.
 
 ## 5. v1 mechanics
 

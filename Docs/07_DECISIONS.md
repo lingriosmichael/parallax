@@ -236,6 +236,7 @@ Consequence: If the Gate 3 check finds the assembly shipped, embed the package a
 **Why:** Every death should teach one rule and be blamed on the room, which is what makes an instant retry feel fair. Precision platforming makes the controls the difficulty and works against that. Puzzles give the rooms a solution to learn instead of an execution to grind.
 **Supersedes:** D-039 (the precision-platforming half, Getting Over It / Jump King). **Resolves:** Q-11 (room structure). `00_VISION.md` §1–3 must be rewritten to match.
 **Consequence:** Anchors in co-op rooms are designed as threats, not gifts. Every level-design ticket describes each room as setup → obvious route → betrayal → learned solution.
+**Amended by:** D-069 (precision sections in hard-tier levels; larger rooms allowed for them).
 
 ### D-041 · 2026-09-21 · Accepted
 **Decision:** Death resets the room. The dead cat respawns at the room's checkpoint, and every trap and anchor owned by that room returns to its initial armed value. The time from death to regained control is at most 0.75 s, with no fade, screen or reload. Anchor resets are issued as **new** requests with fresh sequences from the session authority (the local device in solo, the master client in co-op); the registry is never rolled back (D-024). Completed rooms are not reset.
@@ -398,6 +399,7 @@ visible result (a gap, revealed spikes, a moved block) until the room resets.
 **Why:** Kit v2 lets rooms mutate (D-055). These rules keep the mutation fair on a phone:
 enough slack for touch, platforming that is never the hard part, no physics surprises, and
 deaths that teach (D-040, D-053).
+**Amended by:** D-069 (rules (1) and (2) use tier thresholds inside marked precision sections).
 
 ### D-058 · 2026-09-22 · Accepted
 **Decision:** Death hold and out-of-bounds kill (PAX-047).
@@ -431,7 +433,7 @@ layout mistake may soft-lock a room.
 - ~~**Q-7** Should a temporary gravity-aligned/snap-rotating camera be introduced in Phase 5 as a deliberate disorientation effect while a Control Station actively steers the other cat's gravity?~~ Closed by D-021: not needed.
 - **Q-9** ~~Nine lives~~ → resolved by D-044 (no lives, unlimited retries, per-room death count).
 - **Q-10 · Cat collider height vs. art silhouette.** Collider is a horizontal capsule, 1.2 × 0.8. Art PPU (196.667) is derived from Walk frame-0 width over collider length, so the art matches length by construction but not height: Walk draws 0.580 u tall, Idle 0.656, Rise 0.702, Fall 0.524, Land 0.447. The standing cat leaves ~0.14 u of empty collider above its back, so ceilings and head bumps read as gaps. Proposed: shrink collider height to ~0.62 as PAX-A04, after A03 Play acceptance and before PAX-037. `CatVisualSetup` places Visual at the collider's bottom edge, so the setup menu must be re-run after any collider change. Blocks level design.
-- ~~**Q-11 · Solo room structure.**~~ Closed by D-040 (room = checkpoint + door, deterministic traps, no precision platforming) and D-044 (no lives, pending confirmation).
+- ~~**Q-11 · Solo room structure.**~~ Closed by D-040 (room = checkpoint + door, deterministic traps) and D-044 (no lives, pending confirmation). Precision platforming, first excluded by D-040, is allowed in hard-tier precision sections by D-069.
 
 ### D-057 · 2026-09-22 · Accepted
 **Decision:** Amends D-056 (5). Death reset stays synchronous (RoomDeath.Kill), so nothing is
@@ -613,4 +615,41 @@ rooms already use and are already tested against, so splitting them into standal
 **Consequence:** A future ticket authoring `L005`–`L050` adds one file each under
 `Assets/_Game/Editor/Levels` plus a `LevelLayouts` entry; no tooling change is needed unless a
 level needs an element kind that doesn't exist yet.
+
+### D-069 · 2026-09-23 · Accepted
+**Decision:** A room is built from two kinds of section.
+(1) **Troll-route section.** Jumps are comfortable; the danger is which platforms and routes are
+real. All D-055–D-060 rules apply unchanged. A section may offer several routes, some of which
+fail (collapsing or fake platforms, dead ends, triggered traps).
+(2) **Precision section.** A marked run of narrow, thin platforms where execution is part of the
+difficulty. Allowed only in hard-tier levels (after the novice levels, D-062). Inside a precision
+section:
+  (a) Reach and timing slack use tier thresholds (D-065, PAX-057) instead of D-056's 0.75 reach
+  and 12-tick slack. They may be tighter but never reach the limit: every required jump stays
+  strictly inside the reachability contract and every timing case keeps positive slack. Until
+  D-065 sets the numbers, the D-056 values apply.
+  (b) Traps and arrows may be mixed in. D-056 (4)–(5) and D-057's 6-tick reveal lead apply
+  unchanged: a trap that can kill during a precision jump is revealed at least 6 ticks before it
+  can kill.
+  (c) The section is marked in layout data. `LevelLayoutValidator` applies precision thresholds
+  only to jumps inside marked sections.
+Every level, in both kinds of section, has at least one valid route that passes the validator.
+**Room size:** D-040's "one screen or close to it, 10–20 s once known" stays the default. A room
+with a precision section may be wider than one screen (the camera follows the cat) and take up to
+about 40 s once known. One checkpoint, one door, and death resets the room: D-040 and D-041 are
+unchanged.
+**Why:** The designer's play of L001–L004 (6 deaths across 4 levels) was too easy. The target is
+Level Devil troll rooms plus Jump King-style execution, and D-062 already names execution as one
+source of hard-level difficulty. Positive thresholds and telegraphed traps keep D-040's core rule:
+every death can be blamed on the room or on a readable execution mistake, never on an invisible
+trap or an impossible jump.
+**Supersedes:** D-040 in part: the clause "the room is the source of difficulty, never the
+controls", and the room size/time limit for rooms with a precision section. D-056 (1) and (2)
+inside precision sections only. Restores the precision half of D-039, bounded by the rules above.
+D-040's anatomy (setup → obvious route → betrayal → learned solution) still applies to every
+troll-route section.
+**Consequence:** The level camera (PAX-052) follows the cat through rooms wider than one screen and
+keeps the next landing and any trap's reveal on screen. Precision thresholds come from a Pixel 8a
+session with the touch stick, not from the Editor. The element types (moved to
+`SoloRoomElementTypes.cs` by D-066) gain a section marker in a kit ticket.
 

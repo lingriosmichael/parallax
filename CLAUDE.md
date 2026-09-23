@@ -6,6 +6,7 @@ Read this file completely before every task.
 
 - **PARALLAX:** a landscape mobile 2D troll puzzle platformer (D-040). Puzzles combined with
   Level Devil-style ragebait: each room is a checkpoint and a door, and the room betrays you.
+  Hard-tier levels add precision sections with tighter, still-validated jumps (D-069).
 - **v1 is solo only (D-047):** one player, one cat (Observer A), one reality (A). Co-op (two cats,
   two realities, two players) is a later update.
 - **Engine:** Unity 6 LTS · URP 2D Renderer · C# · Input System package.

@@ -1,20 +1,34 @@
 # PARALLAX — v1 roadmap (after PAX-050)
 
-Rev. 2026-09-22, per D-062 and D-064: build everything first, test once at the end.
+Rev. 2026-09-23, per D-062, D-064 and D-069: build everything first, test once at the end.
 Tickets run one at a time in this order unless noted. Numbers after PAX-059 may shift if a
 kit-gap ticket is inserted during Phase D.
+
+### Phase B · One-room levels, flow and trap kit
+
+| Order | Ticket | What | Decision |
+|---|---|---|---|
+| ✓ | PAX-051 | One-room level authoring pipeline, L001–L004 seeds | D-066 |
+| 1 | PAX-052 (refreshed) | Level camera: follows the cat through rooms wider than one screen, keeps the next landing and trap reveals on screen. Scaffolding menus target `_LevelTemplate`; `Rebuild All Levels` regenerates each scene as template + layout. Test reading baked `RoomManager` bounds from the `Level_00N` scenes. Background placement per level. | — |
+| 2 | PAX-053 | Level select | — |
+| 3 | PAX-054 | Pause menu | — |
+| 4 | KIT-1 (PAX-073) | Trap fixes and platform geometry: trigger zones cover every approach to the danger, including jump arcs (fixes the falling ceiling you can jump past); thin, narrow floating platform element; validator rule for trigger coverage. | — |
+| 5 | KIT-2 (PAX-074) | Arrow trap, fired left→right and right→left: deterministic (zone/jump-triggered or periodic), visible tell ≥ 6 ticks (D-057), door clearance (D-060), validator support. | — |
+| 6 | KIT-3 (PAX-075) | Troll-route sections: 10–12-platform sections with several routes, some failing; validator proves at least one valid route. | — |
+| 7 | KIT-4 (PAX-076) | Precision sections: section marker in the element types, per-section validator thresholds, first precision level, Pixel 8a play session. | D-069 as built |
+| 8 | PAX-057 | Tiers: novice / hard configs, including precision thresholds from the KIT-4 device session | D-065 |
+| 9 | PAX-058 | Bounded randomness | D-067 |
+
+**Decision placeholders:** D-065 hard-tier numbers (now also precision thresholds) · D-066 level
+format ✓ · D-067 randomness · D-068 free levels and price · D-069 precision sections ✓
+
+KIT-1–KIT-4 take PAX-073–PAX-076 (the next free PAX numbers at time of writing), ordered ahead of
+PAX-057 in this phase's build order even though their numbers are higher; PAX-055 and PAX-056
+(the old "Trap kit v3a/v3b" plan) are superseded by KIT-1–KIT-4 above and are not used.
 
 | Phase | Ticket | What | Depends on |
 |---|---|---|---|
 | B · Levels & flow | PAX-050 | Level list, next level, progress save (in progress) | PAX-049 |
-| | PAX-051 | One-room level authoring pipeline; Level_001–004 seeds | PAX-050 |
-| | PAX-052 | Single-room camera framing | PAX-051 |
-| | PAX-053 | Menu scene: title screen + level select | PAX-051 |
-| | PAX-054 | Pause menu + settings (+ settings store) | PAX-053 |
-| C · Kit v3 & hard tier | PAX-055 | Trap kit v3a: arrow launchers | PAX-051 |
-| | PAX-056 | Trap kit v3b: carrying platforms | PAX-055 |
-| | PAX-057 | Difficulty tiers + provisional hard-tier rules (D-065) | PAX-056 |
-| | PAX-058 | Bounded randomness: seeded trap variants (D-066) | PAX-057 |
 | D · Content | PAX-059 | Levels 1–10 (novice) | PAX-052, PAX-057 |
 | | PAX-060 | Levels 11–20 (hard, batch 1) | PAX-058, PAX-059 |
 | | PAX-061 | Levels 21–30 (hard, batch 2) | PAX-060 |
