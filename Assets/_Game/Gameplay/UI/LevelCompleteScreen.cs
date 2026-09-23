@@ -35,6 +35,7 @@ namespace Parallax.Gameplay.UI
         [SerializeField] LevelListConfig levelList;
         [SerializeField] NextLevelButton nextLevelButton;
         [SerializeField] LevelsButton levelsButton;
+        [SerializeField] GameObject pauseButton;
 
         readonly Dictionary<int, int> roomStartTick = new Dictionary<int, int>();
         readonly List<GameObject> spawnedRows = new List<GameObject>();
@@ -105,6 +106,8 @@ namespace Parallax.Gameplay.UI
 
             IsShown = true;
             if (panel != null) panel.SetActive(true);
+            // PAX-054 (D-073): the pause button can't be used once the level is complete.
+            if (pauseButton != null) pauseButton.SetActive(false);
             PopulateRows(LastSummary, total);
             ConfigureNextLevelButton(total);
             ConfigureLevelsButton(total);

@@ -40,6 +40,9 @@ namespace Parallax.Gameplay.Levels
                 Debug.LogError($"LevelSceneLoader: '{sceneName}' is not in Build Settings; staying on the current screen.");
                 return false;
             }
+            // PAX-054 (D-073): only an accepted load restores the running state, so no scene
+            // starts paused; a refused load leaves a paused level paused.
+            RunningState.Restore();
             LoadScene(sceneName);
             return true;
         }

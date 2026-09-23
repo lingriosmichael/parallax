@@ -296,6 +296,118 @@ namespace Parallax.Tests.EditMode
             Assert.IsFalse((bool)method.Invoke(null, new object[] { "_LevelTemplate" }));
         }
 
+        // ---------- PAX-054 (D-073) §5.8 / §5.9 pause menu ----------
+
+        static readonly Type PauseMenuSetupType = Type.GetType("Parallax.Editor.Setup.PauseMenuSetup, Parallax.Editor");
+
+        [Test]
+        public void PauseMenuGuard_RefusesEverySceneExceptTemplate()
+        {
+            Assert.NotNull(PauseMenuSetupType, "Parallax.Editor.Setup.PauseMenuSetup not found.");
+            MethodInfo method = PauseMenuSetupType.GetMethod("RefusesToRun", BindingFlags.Public | BindingFlags.Static);
+            Assert.NotNull(method, "PauseMenuSetup.RefusesToRun not found.");
+
+            Assert.IsTrue((bool)method.Invoke(null, new object[] { "Level_Solo01" }));
+            Assert.IsTrue((bool)method.Invoke(null, new object[] { "Level_001" }));
+            Assert.IsTrue((bool)method.Invoke(null, new object[] { "Sandbox_Realities" }));
+            Assert.IsTrue((bool)method.Invoke(null, new object[] { "LevelSelect" }));
+            Assert.IsFalse((bool)method.Invoke(null, new object[] { "_LevelTemplate" }));
+        }
+
+        [Test]
+        public void EachListedLevelScene_HasAPauseMenu_WiredIntoGateCompleteScreenAndReservedRegions()
+        {
+            Type buttonType = Type.GetType("UnityEngine.UI.Button, UnityEngine.UI");
+            Type eventSystemType = Type.GetType("UnityEngine.EventSystems.EventSystem, UnityEngine.UI");
+            string[] setup = EditorSceneManager.GetSceneManagerSetup().Select(s => s.path).ToArray();
+            try
+            {
+                foreach (LevelEntry entry in Config().Levels)
+                {
+                    string scenePath = $"{LevelsFolder}/{entry.SceneName}.unity";
+                    if (AssetDatabase.LoadAssetAtPath<Object>(scenePath) == null) continue;
+
+                    Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+                    string id = entry.Id;
+
+                    var levelPause = FindComponentAnywhere<LevelPause>(scene);
+                    Assert.NotNull(levelPause, id + ": scene has no LevelPause.");
+                    var pauseButton = FindComponentAnywhere<Parallax.Gameplay.UI.PauseButton>(scene);
+                    Assert.NotNull(pauseButton, id + ": scene has no PauseButton.");
+                    var pausePanel = FindComponentAnywhere<Parallax.Gameplay.UI.PausePanel>(scene);
+                    Assert.NotNull(pausePanel, id + ": scene has no PausePanel.");
+                    Assert.IsFalse(pausePanel.gameObject.activeSelf, id + ": the pause panel must start hidden.");
+
+                    var pauseSo = new SerializedObject(levelPause);
+                    Assert.AreEqual(pausePanel.gameObject, pauseSo.FindProperty("panel").objectReferenceValue, id + ": LevelPause.panel is not this scene's PausePanel.");
+                    Assert.AreEqual(FindComponentAnywhere<RoomManager>(scene), pauseSo.FindProperty("rooms").objectReferenceValue, id + ": LevelPause.rooms is not this scene's RoomManager.");
+                    Assert.AreEqual(FindComponentAnywhere<Parallax.Gameplay.Input.CatInputRouter>(scene), pauseSo.FindProperty("router").objectReferenceValue, id + ": LevelPause.router is not this scene's CatInputRouter.");
+                    Object eventSystem = pauseSo.FindProperty("eventSystem").objectReferenceValue;
+                    Assert.NotNull(eventSystem, id + ": LevelPause.eventSystem is not wired.");
+                    Assert.AreEqual(FindComponentAnywhere(scene, eventSystemType), eventSystem, id + ": LevelPause.eventSystem is not this scene's EventSystem.");
+
+                    var observers = FindComponentAnywhere<Parallax.Gameplay.Observers.ObserverSet>(scene);
+                    Assert.AreEqual(levelPause, new SerializedObject(observers).FindProperty("pauseGate").objectReferenceValue, id + ": ObserverSet.pauseGate is not this scene's LevelPause.");
+
+                    var screen = FindComponentAnywhere<Parallax.Gameplay.UI.LevelCompleteScreen>(scene);
+                    Assert.NotNull(screen, id + ": scene has no LevelCompleteScreen.");
+                    Assert.AreEqual(pauseButton.gameObject, new SerializedObject(screen).FindProperty("pauseButton").objectReferenceValue, id + ": LevelCompleteScreen.pauseButton is not this scene's PauseButton.");
+
+                    var buttonRect = (RectTransform)pauseButton.transform;
+                    Assert.AreEqual(Vector2.one, buttonRect.anchorMin, id + ": the pause button must be anchored top-right.");
+                    Assert.AreEqual(Vector2.one, buttonRect.anchorMax, id + ": the pause button must be anchored top-right.");
+
+                    var buttonSo = new SerializedObject(pauseButton);
+                    Assert.AreEqual(levelPause, buttonSo.FindProperty("levelPause").objectReferenceValue, id + ": PauseButton.levelPause is not wired.");
+                    var panelSo = new SerializedObject(pausePanel);
+                    Assert.AreEqual(levelPause, panelSo.FindProperty("levelPause").objectReferenceValue, id + ": PausePanel.levelPause is not wired.");
+
+                    var buttons = new[]
+                    {
+                        ("PauseButton", buttonSo.FindProperty("button").objectReferenceValue),
+                        ("Resume", panelSo.FindProperty("resumeButton").objectReferenceValue),
+                        ("Restart", panelSo.FindProperty("restartButton").objectReferenceValue),
+                        ("Levels", panelSo.FindProperty("levelsButton").objectReferenceValue),
+                    };
+                    foreach ((string label, Object button) in buttons)
+                    {
+                        Assert.NotNull(button, id + ": " + label + " button is not wired.");
+                        Assert.AreEqual(buttonType, button.GetType(), id + ": " + label + " is not a Button.");
+                        Assert.AreEqual(0, new SerializedObject(button).FindProperty("m_Navigation.m_Mode").intValue, id + ": " + label + " must use Navigation None.");
+                    }
+
+                    GameObject deviceInputGO = FindGameObject(scene, "DeviceInput");
+                    Assert.NotNull(deviceInputGO, id + ": no 'DeviceInput' GameObject found.");
+                    var touchInput = deviceInputGO.GetComponent<Parallax.Gameplay.Input.TouchStickCatInput>();
+                    Assert.NotNull(touchInput, id + ": 'DeviceInput' has no TouchStickCatInput.");
+                    SerializedProperty reservedRegions = new SerializedObject(touchInput).FindProperty("reservedRegions");
+                    bool buttonReserved = false, panelReserved = false;
+                    for (int i = 0; i < reservedRegions.arraySize; i++)
+                    {
+                        Object region = reservedRegions.GetArrayElementAtIndex(i).objectReferenceValue;
+                        if (region == (Object)pauseButton) buttonReserved = true;
+                        if (region == (Object)pausePanel) panelReserved = true;
+                    }
+                    Assert.IsTrue(buttonReserved, id + ": PauseButton is not in TouchStickCatInput.reservedRegions.");
+                    Assert.IsTrue(panelReserved, id + ": PausePanel is not in TouchStickCatInput.reservedRegions.");
+                }
+            }
+            finally
+            {
+                RestoreSetup(setup);
+            }
+        }
+
+        static Component FindComponentAnywhere(Scene scene, Type type)
+        {
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                Component found = root.GetComponentInChildren(type, true);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
         static void RestoreSetup(string[] paths)
         {
             if (paths.Length == 0) return;
