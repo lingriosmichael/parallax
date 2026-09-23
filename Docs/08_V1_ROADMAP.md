@@ -14,7 +14,7 @@ kit-gap ticket is inserted during Phase D.
 | 3 | PAX-054 | Pause menu | — |
 | 4 | KIT-1 (PAX-073) | Trap fixes and platform geometry: trigger zones cover every approach to the danger, including jump arcs (fixes the falling ceiling you can jump past); thin, narrow floating platform element; validator rule for trigger coverage. | — |
 | 4a | PAX-077 | Tick rate: one source, 50 Hz. `TickTime` seam for every seconds↔ticks conversion, guard test pinning the 0.02 s fixed step, door clearance derived as one tick at run speed. No tick-count threshold changes. | D-075 |
-| 4b | PAX-078 | 50 Hz timing gaps: L002 Lift slack (10.88 < 12 ticks) and the L004 final room (Block_1 vs Flip_A). Removes the two PAX-078 60 Hz pins in `SoloRoomsLayoutTests`. | D-075 (7) |
+| ✓ | PAX-078 | 50 Hz timing gaps: L002 Lift trigger moved (slack 12.96 ticks); L004 `Flip_A` moved out of `Block_1`'s column and blocks retimed (fast-flip window 14.8 ticks). Shipped levels checked at the real rate; the two `SoloRoomsLayoutTests` 60 Hz pins stay as a documented exception. | D-076 |
 | 5 | KIT-2 (PAX-074) | Arrow trap, fired left→right and right→left: deterministic (zone/jump-triggered or periodic), visible tell ≥ 6 ticks (D-057), door clearance (D-060), validator support. | — |
 | 6 | KIT-3 (PAX-075) | Troll-route sections: 10–12-platform sections with several routes, some failing; validator proves at least one valid route. | — |
 | 7 | KIT-4 (PAX-076) | Precision sections: section marker in the element types, per-section validator thresholds, first precision level, Pixel 8a play session. | D-069 as built |

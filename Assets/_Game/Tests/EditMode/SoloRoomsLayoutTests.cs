@@ -543,7 +543,7 @@ namespace Parallax.Tests.EditMode
                 Bounds(lift).yMax + Config().ColliderSize.y);
             Assert.IsTrue(liftTrigger.Overlaps(standingCat), "A cat standing on the Lift must trigger it.");
             float fullyOffFloorCentre = Bounds(floorC).xMax + Config().ColliderSize.x * .5f;
-            TickTime.SecondsPerTickSource = () => 1f / 60f; // PAX-078: 50 Hz layout gap (D-075). Remove in PAX-078.
+            TickTime.SecondsPerTickSource = () => 1f / 60f; // D-076: permanent exception. Frozen SoloRoomsLayout keeps its 60 Hz-era timing; L002/L004 are checked at 50 Hz in ShippedLevelTimingTests.
             float approachTicks = (firstTriggerCentre - fullyOffFloorCentre) / (Config().MaxSpeed * TickTime.SecondsPerTick);
             float fallTicks = Mathf.Sqrt(2f * (Bounds(floorC).yMax - Bounds(lift).yMax)
                 / GravityStrength()) * TickTime.TicksPerSecond;
@@ -712,7 +712,7 @@ namespace Parallax.Tests.EditMode
             object room = Rooms().Cast<object>().Single(r => (int)Field(r, "Id") == 3);
             Element source = ElementByName(room, "SourceSpikes"), first = ElementByName(room, "Block_1");
             Element second = ElementByName(room, "Block_2"), flip = ElementByName(room, "Flip_A");
-            TickTime.SecondsPerTickSource = () => 1f / 60f; // PAX-078: 50 Hz layout gap (D-075). Remove in PAX-078.
+            TickTime.SecondsPerTickSource = () => 1f / 60f; // D-076: permanent exception. Frozen SoloRoomsLayout keeps its 60 Hz-era timing; L002/L004 are checked at 50 Hz in ShippedLevelTimingTests.
             float runPerTick = Config().MaxSpeed * TickTime.SecondsPerTick;
             float sourceToFlip = (flip.Position.x - (source.SecondaryPosition.x - source.SecondarySize.x * .5f - .5f)) / runPerTick;
             float flipToBlock = (Bounds(second).xMin - .5f - flip.Position.x) / runPerTick;

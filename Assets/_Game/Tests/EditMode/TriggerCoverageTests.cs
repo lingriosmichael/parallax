@@ -140,10 +140,10 @@ namespace Parallax.Tests.EditMode
             Assert.IsEmpty(bypasses, "No trap in L001-L004 may be a learned bypass without the developer's approval by name:\n" + string.Join("\n", bypasses));
         }
 
-        // ---------- R6: the extended Lift trigger fires on the same tick for a standing cat ----------
+        // ---------- R6: the extended Lift trigger still catches a standing cat (D-076) ----------
 
         [Test]
-        public void L002Lift_ExtendedTrigger_KeepsTheStandingCatOverlapOfSoloRoomsLayout()
+        public void L002Lift_ExtendedTrigger_StillCatchesAStandingCatOnTheLift()
         {
             object level = ((IDictionary)Registry())["L002"];
             object solo = ((IEnumerable)SoloLayoutType.GetField("Rooms", BindingFlags.Public | BindingFlags.Static).GetValue(null)).Cast<object>().ElementAt(1);
@@ -154,8 +154,8 @@ namespace Parallax.Tests.EditMode
             // A cat standing on the Lift occupies y [lift top, lift top + collider height].
             float standTop = liftBody.yMax + motor.ColliderSize.y;
             float ceilingUnderside = Body(level, "Ceiling").yMin;
-            Assert.AreEqual(soloTrigger.xMin, levelTrigger.xMin, 1e-4f, "x-span (entry edge) must not change.");
-            Assert.AreEqual(soloTrigger.xMax, levelTrigger.xMax, 1e-4f, "x-span (far edge) must not change.");
+            Assert.IsTrue(Mathf.Abs(levelTrigger.xMin - 19.65f) <= 1e-4f && Mathf.Abs(levelTrigger.xMax - 19.95f) <= 1e-4f && levelTrigger.xMax <= liftBody.xMax,
+                $"D-076: the Lift trigger moved +0.25 u for 50 Hz landing slack; fires 2 ticks later than SoloRoomsLayout. Expected x [19.65, 19.95] inside the Lift's top (xMax {liftBody.xMax:F2}), was x [{levelTrigger.xMin:F2}, {levelTrigger.xMax:F2}].");
             Assert.AreEqual(soloTrigger.yMin, levelTrigger.yMin, 1e-4f, "the trigger's bottom must not change.");
             Assert.Greater(soloTrigger.yMax, standTop, "the original trigger already covered a standing cat.");
             Assert.Greater(levelTrigger.yMax, standTop, "the extended trigger still covers a standing cat.");

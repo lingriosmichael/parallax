@@ -123,6 +123,8 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
     wasn't rebuilt, and is a real problem.
   - `LevelSceneLoader` error naming the active scene when pressing Restart in a scene that isn't
     in Build Settings (`_LevelTemplate`, sandboxes): expected, same as on device.
+  - `LevelSceneLoader: 'Level_003' is not in Build Settings; staying on the current screen.`, printed
+    by `LevelSceneLoaderTests`/`PauseLoaderTests` on purpose (their tests pass).
   - `CatPlayerSetup: Rigidbody2D on 'Assets/_Game/Gameplay/Player/Cat_Player.prefab' has no
     serialized 'config' field. Stopping without saving.`, printed by `CatColliderConfigTests` (its
     tests pass).

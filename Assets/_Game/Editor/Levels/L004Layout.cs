@@ -25,9 +25,11 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.MovingTrap,"FalseLanding",(20.5f,-.5f),(3f,1f),(20.5f,3.5f),(1f,3f),new SoloRoomTrapSettings(offset:new Vector2(-3f,0f),moveTicks:24,movingKind:MovingTrapKind.Solid)));
             elements.Add(E(SoloRoomElementKind.Floor,"Floor_D",(27f,-.5f),(10f,1f)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"SourceSpikes",(24f,.15f),(1f,.3f),(20.5f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_1",(26.5f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:37,unitsPerTick:.3f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"SourceSpikes")));
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_2",(29f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:25,unitsPerTick:.3f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_1")));
-            elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_A",(26.5f,3f),(.5f,2f),settings:new SoloRoomTrapSettings(gravityMode:GravityFlipMode.Flip,rearmOnExit:true,rendererEnabled:true)));
+            // PAX-078 (D-076): retimed for 50 Hz (Block_1 delay 37 -> 28, Block_2 25 -> 4) and Flip_A moved
+            // x 26.5 -> 25.0, out of Block_1's column, so the full-speed flip is survivable.
+            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_1",(26.5f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:28,unitsPerTick:.3f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"SourceSpikes")));
+            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_2",(29f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:4,unitsPerTick:.3f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_1")));
+            elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_A",(25f,3f),(.5f,2f),settings:new SoloRoomTrapSettings(gravityMode:GravityFlipMode.Flip,rearmOnExit:true,rendererEnabled:true)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"CeilingHiddenSpikes",(28.75f,6.85f),(1f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:8,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_2")));
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_B",(31.5f,4f),(1f,2f),settings:new SoloRoomTrapSettings(gravityMode:GravityFlipMode.Flip,rearmOnExit:true,rendererEnabled:true)));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(31.5f,.75f),(.6f,1.5f)));

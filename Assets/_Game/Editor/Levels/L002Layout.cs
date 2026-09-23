@@ -22,7 +22,8 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Floor,"Platform_B",(8.5f,1f),(3f,1f)));
             elements.Add(E(SoloRoomElementKind.Floor,"Floor_C",(14f,0f),(4f,1f)));
             AddPit(elements,1,5f,24f);
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Lift",(18f,-.25f),(4f,.5f),(19.55f,3.375f),(.3f,7.25f),new SoloRoomTrapSettings(offset:new Vector2(0f,1.5f),moveTicks:36,movingKind:MovingTrapKind.Solid)));
+            // PAX-078 (D-076): trigger centre x 19.55 -> 19.80 for 12 ticks of landing slack at 50 Hz.
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Lift",(18f,-.25f),(4f,.5f),(19.8f,3.375f),(.3f,7.25f),new SoloRoomTrapSettings(offset:new Vector2(0f,1.5f),moveTicks:36,movingKind:MovingTrapKind.Solid)));
             elements.Add(E(SoloRoomElementKind.Floor,"Receiver",(21f,.25f),(2f,2.5f)));
             elements.Add(E(SoloRoomElementKind.FallingBlock,"ReceiverBlock",(20.5f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:50,unitsPerTick:.3f,travelDistance:4f,triggerSource:TrapTriggerSource.Chain,chainSource:"Lift")));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Collapse_C",(23f,-.5f),(2f,1f),settings:new SoloRoomTrapSettings(delayTicks:12)));

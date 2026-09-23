@@ -1006,3 +1006,67 @@ door (`doorRoot.position` per tick) do not, and `LevelCameraFollow` updates in `
 assumed 60 Hz, so every seconds↔ticks conversion was 20% off. KIT-2's arrow tell and KIT-4's
 per-section thresholds are counted in ticks, so the rate is fixed in one place first.
 Rejected: 60 Hz to match 60 Hz displays — a feel change that belongs to Phase H.
+
+### D-076 · 2026-09-23 · Accepted
+
+**Decision:** L002 and L004 retimed for 50 Hz (PAX-078).
+(1) **L002.** `Lift` trigger centre x 19.55 → 19.80 (xMin 19.40 → 19.65). A full-speed cat off
+`Floor_C` lands on the Lift 12.96 ticks before the trigger fires (continuous model; was 10.88), and
+14–15 ticks stepped per tick (was exactly 12, zero margin). At 60 Hz, for the record: 15.56. The
+betrayal is unchanged: `ReceiverBlock` is timed from the Lift's fire.
+The trigger now fires 2 ticks later than `SoloRoomsLayout`'s. `TriggerCoverageTests.L002Lift_ExtendedTrigger_…`
+(PAX-073) pinned its x-span to `SoloRoomsLayout`; it is renamed
+`L002Lift_ExtendedTrigger_StillCatchesAStandingCatOnTheLift` and asserts x [19.65, 19.95] inside the
+Lift's top, with the bottom and full-height asserts unchanged (R13).
+(2) **L004.** `Flip_A` x 26.5 → 25.0 (box x 24.75–25.25, y 2–4 unchanged), `Block_1` delay 37 → 28,
+`Block_2` delay 25 → 4. At 37/25, with `Flip_A` inside `Block_1`'s column, every full-speed flip
+was killed by `Block_1` (or `Block_2`), and no delay pair kept the floor-run kill with a flip window
+of 12 ticks and ±2 margin. Now:
+- the right-holding fast-flip window is **14.83 ticks** at the worst trigger phase (15.83 at the
+  best); 18.7 if the cat reacts 15 ticks after `CeilingHiddenSpikes` is revealed (simulator);
+  18.8–19.8 at 60 Hz, for the record;
+- every hop over `SourceSpikes` is forced into `Flip_A` (its box starts at x 24.75, just past the
+  spikes' right edge 24.5), so there is no floor run and no floor bypass. The betrayal changes from
+  "`Block_1` crushes the floor runner" to "`Block_1` kills the early flipper" (R15): full-speed
+  take-offs from the trigger crossing onward flip and are killed by `Block_1` over a band
+  5.67–6.33 ticks wide (worst phase 5.67), and `Block_1` is visibly moving for 13–14 ticks before it
+  can first overlap an early flipper (D-057 ≥ 6). `FalseLanding`, `SourceSpikes`, `Block_1` (early
+  flip) and `CeilingHiddenSpikes` still stack;
+- with the 15-tick reaction the window stays ≥ 12 for `Block_1` delays 25–31 (simulator);
+- standing still left of `SourceSpikes` for 0–139 ticks before the hop still survives;
+- `Block_2` never overlaps a cat on 3,096 simulated routes, so its D-057 lead is unbounded;
+- walking the ceiling without jumping is killed by `CeilingHiddenSpikes`; 120 of 128 ceiling
+  landings have a route to the door; the other 8 land 0.07 u from the spikes and die on them (a
+  reset, not a soft-lock) within the searched policies;
+- no floor-only route skips the ceiling, so `CeilingHiddenSpikes` stays on every route to the door;
+- `FalseLanding` and `SourceSpikes` are unchanged. Door clearance, coverage, platform sizes and
+  baked bounds are unchanged.
+(3) **Checked at the real rate.** `ShippedLevelTimingTests` reads L002/L004 through `LevelLayouts`,
+with no pin: the L002 landing slack (continuous), and for L004 a per-tick stepper (`RoomStepper`)
+that asserts no full-speed take-off crosses `SourceSpikes` without flipping, the early-flip band
+killed by `Block_1` (≥ 5 ticks), and the ≥ 12-tick window (a ceiling landing counts only once
+`Block_2` has fired and is below the cat). Stepper model: per tick, motor step, then
+the room step on poses from the previous physics step, then physics; the cat is a 1 × 0.56 box;
+static blocks (hanging and landed) are solid; a moving `FallingBlock` kills on overlap of its box
+with its size shrunk by 0.04 (0.02 per side, `Bounds.Expand(-.04f)`), with no push-out; moving
+Solids neither carry nor crush the cat; gravity flips on first overlap; Once timing only; the
+stretch ends before the door. The stepper
+holds right; the reaction and steering numbers above come from the Python simulator used in
+Phase 1 and are evidence, not tested.
+(4) **Scenes.** `LevelSceneTimingTests` checks that every configured trap's serialized delay and
+cooldown/period/phase in each `Level_00N.unity` equals its layout, so a stale scene fails. It is
+red between a layout edit and `Rebuild All Levels`. Known gap: no scene test compares element
+positions with the layout, so a position-only change (like `Flip_A`) is not caught if a scene is
+left stale.
+(5) **Frozen scaffolding.** `SoloRoomsLayout` and `Level_Solo01` keep their 60 Hz-era timing. Their
+two narrative tests (`V3_RoomTwoLanding…`, `V3_FinalFastFlip…`) stay pinned to 60 Hz as a permanent,
+documented exception, not a to-do. Their flip-at-centre model is about 6 ticks lenient: a flip
+starts at first overlap with `Flip_A` (cat centre 25.75 at the old position), not at its centre (26.5).
+`SplitFidelity` lists `("L004","Flip_A")` in `PositionExceptions`. It doesn't compare trap
+settings, so L004's delays now differ from `SoloRoomsLayout`'s without an entry.
+(6) **Limit.** Timing gaps of this kind (a route's slack against a chain of traps) are caught only
+by per-level tests until KIT-3's route validator. `LevelLayoutValidator` has no rule for them.
+(7) **Evidence still open.** No pre-change developer play (R11b). The developer's §9 play checks the
+simulator's predictions; if it contradicts one, PAX-078 is reopened.
+**Why:** At the real 50 Hz both rooms were unfair: the L002 landing had no timing margin, and the
+L004 learned fast flip killed every full-speed player.
