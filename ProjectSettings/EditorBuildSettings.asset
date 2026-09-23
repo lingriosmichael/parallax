@@ -5,18 +5,9 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
-  - enabled: 0
-    path: Assets/_Game/Scenes/Bootstrap.unity
-    guid: 759925cf71236486bbb7d10a5a7662f2
-  - enabled: 0
-    path: Assets/_Game/Scenes/Sandbox_Player.unity
-    guid: 804fdb3fe3cfd43a8a8b2fddac6e9120
   - enabled: 1
-    path: Assets/_Game/Scenes/Sandbox_Realities.unity
-    guid: a8be6261c8f1543fa9b5a0a425fc5b9e
+    path: Assets/_Game/Scenes/LevelSelect.unity
+    guid: d73094dffa266480f93b5b11dfff9ed6
   - enabled: 1
     path: Assets/_Game/Scenes/Levels/Level_001.unity
     guid: 2c37e46d6c6be4a74b101723569fd942
@@ -29,6 +20,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Game/Scenes/Levels/Level_004.unity
     guid: 21dd0fd6971fc4978865e0cd7d4e1dba
+  - enabled: 0
+    path: Assets/Scenes/SampleScene.unity
+    guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 0
+    path: Assets/_Game/Scenes/Bootstrap.unity
+    guid: 759925cf71236486bbb7d10a5a7662f2
+  - enabled: 0
+    path: Assets/_Game/Scenes/Sandbox_Player.unity
+    guid: 804fdb3fe3cfd43a8a8b2fddac6e9120
+  - enabled: 1
+    path: Assets/_Game/Scenes/Sandbox_Realities.unity
+    guid: a8be6261c8f1543fa9b5a0a425fc5b9e
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
