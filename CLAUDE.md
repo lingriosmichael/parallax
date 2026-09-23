@@ -123,6 +123,9 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
     wasn't rebuilt, and is a real problem.
   - `LevelSceneLoader` error naming the active scene when pressing Restart in a scene that isn't
     in Build Settings (`_LevelTemplate`, sandboxes): expected, same as on device.
+  - `CatPlayerSetup: Rigidbody2D on 'Assets/_Game/Gameplay/Player/Cat_Player.prefab' has no
+    serialized 'config' field. Stopping without saving.`, printed by `CatColliderConfigTests` (its
+    tests pass).
 - Use `batch_execute` for long sequences of calls rather than dozens of round trips.
 
 ### What MCP does not do
@@ -179,14 +182,21 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   randomness, no `Time.time`; timing uses ticks. The room is the difficulty, never the controls.
 - **Death holds, then resets the current room (D-041, D-058).** A death freezes the room —
   `RoomLifeTick`, traps, hazards, door and bounds checks all gated off via `RoomDeath.IsHolding` —
-  for `RoomSafetyConfig.HoldTicks` (default 30 = 0.5 s), showing the room exactly as it killed
-  the player, then runs the same reset as before: the cat respawns at the room's checkpoint, and
-  every trap and room-owned anchor in that room returns to its declared initial value. Completed
-  rooms are never reset. Anchor resets go out as **new requests** from the session authority,
-  never as a registry rollback (D-024). `HoldTicks = 0` reproduces the old synchronous reset
-  exactly. Death to regained control: **≤ 0.75 s** total, with no fade, screen or reload. A cat
-  whose collider centre leaves its room's computed kill bounds dies the same way, cause
-  `OutOfBounds` (D-058) — never build a room whose intended play space isn't inside its bounds.
+  for `RoomSafetyConfig.HoldTicks` (default 30 = 0.6 s at 50 Hz), showing the room exactly as it
+  killed the player, then runs the same reset as before: the cat respawns at the room's
+  checkpoint, and every trap and room-owned anchor in that room returns to its declared initial
+  value. Completed rooms are never reset. Anchor resets go out as **new requests** from the
+  session authority, never as a registry rollback (D-024). `HoldTicks = 0` reproduces the old
+  synchronous reset exactly. Death to regained control: **≤ 0.75 s** total, with no fade, screen
+  or reload. A cat whose collider centre leaves its room's computed kill bounds dies the same way,
+  cause `OutOfBounds` (D-058) — never build a room whose intended play space isn't inside its
+  bounds.
+- **The tick is 50 Hz (D-075):** one `FixedUpdate` of 0.02 s, owned by `ObserverSet.FixedUpdate`.
+  No seconds↔ticks conversion hard-codes a rate (`60f`, `/3600f`, `.1f` u/tick). Validators,
+  layout tests and new code convert through `Parallax.Core.TickTime`; existing runtime reads of
+  `Time.fixedDeltaTime` (drivers, Echo, DebugPanel) stay as they are. Tests swap
+  `TickTime.SecondsPerTickSource` and restore it in `[TearDown]`; nothing writes
+  `Time.fixedDeltaTime`. Changing the tick rate is a new decision.
 - **A minimal per-room death count exists (D-058)**, in `RoomDeath`/`DeathCounter`, with no UI.
   Whether/how it's shown, persisted, or turned into lives is still D-044 (undecided).
 

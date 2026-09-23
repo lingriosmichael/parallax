@@ -19,8 +19,6 @@ namespace Parallax.Editor.Setup
     {
         // D-056: SoloRoomsLayout.RequiredJumpReachFraction.
         public const float RequiredJumpReachFraction = .75f;
-        // D-060: one tick at run speed (.1 u/tick).
-        public const float DoorClearanceMargin = .1f;
         // D-057: six ticks of visible lead before a trap can kill.
         public const int RevealLeadTicks = 6;
         // D-056: a Periodic trap's safe window must clear a from-rest crossing by 12 ticks.
@@ -113,13 +111,18 @@ namespace Parallax.Editor.Setup
             Rect retreated = authored;
             if (retreatOpt.HasValue) retreated.position += retreatOpt.Value.Settings.Offset;
             Rect sweep = Envelope(authored, retreated);
+            // D-060/D-075: one tick at run speed, 0.12 u at 50 Hz. Door clearance ran without a
+            // motor config before PAX-077, so a missing one is an error, not a silent skip.
+            CatMotorConfig config = Config();
+            if (config == null) { errors.Add($"{levelId}: no CatMotorConfig; door clearance (one tick at run speed) is undefined."); return; }
+            float margin = config.MaxSpeed * TickTime.SecondsPerTick;
 
             foreach (SoloRoomElement e in room.Elements)
             foreach (Rect kill in KillVolumes(e, room.Origin))
             {
-                Rect expanded = Grow(kill, DoorClearanceMargin);
-                if (expanded.Overlaps(authored)) errors.Add($"{levelId}: door (authored pose) is within {DoorClearanceMargin} u of {e.Name}'s kill volume.");
-                if (expanded.Overlaps(sweep)) errors.Add($"{levelId}: door (retreated pose or retreat sweep) is within {DoorClearanceMargin} u of {e.Name}'s kill volume.");
+                Rect expanded = Grow(kill, margin);
+                if (expanded.Overlaps(authored)) errors.Add($"{levelId}: door (authored pose) is within {margin:F2} u of {e.Name}'s kill volume.");
+                if (expanded.Overlaps(sweep)) errors.Add($"{levelId}: door (retreated pose or retreat sweep) is within {margin:F2} u of {e.Name}'s kill volume.");
             }
         }
 
@@ -197,8 +200,10 @@ namespace Parallax.Editor.Setup
         {
             CatMotorConfig config = Config();
             if (config == null) return;
-            float tickAcceleration = config.Acceleration / 3600f;
-            float tickSpeed = config.MaxSpeed / 60f;
+            // D-075: per-tick motion through the one tick source.
+            float secondsPerTick = TickTime.SecondsPerTick;
+            float tickAcceleration = config.Acceleration * secondsPerTick * secondsPerTick;
+            float tickSpeed = config.MaxSpeed * secondsPerTick;
             if (tickAcceleration <= 0f || tickSpeed <= 0f) return;
             float accelerateTicks = tickSpeed / tickAcceleration;
             float accelerationDistance = tickSpeed * tickSpeed / (2f * tickAcceleration);

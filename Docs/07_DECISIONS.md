@@ -955,3 +955,54 @@ tunnelled. The cat's Rigidbody2D is also already Continuous, and its physics is 
 - `SoloRoomsLayout` and `TrapLabLayout` are not checked.
 **Why:** A trigger that can be jumped past isn't a troll, it's a hole in the room. Thin platforms
 are needed by KIT-3 and KIT-4.
+
+### D-075 · 2026-09-23 · Accepted
+
+**Decision:** One tick source at 50 Hz (PAX-077).
+(1) **The tick.** The game ticks at 50 Hz: one tick is one `FixedUpdate` of 0.02 s, and
+`ObserverSet.FixedUpdate` owns it. Changing the tick rate is a new decision: every trap speed is
+per tick (a FallingBlock at 0.3 u/tick falls at 15 u/s), so it changes every level's feel.
+(2) **Rules keep their tick counts.** 12 ticks of timing slack (0.24 s), a 6-tick visible lead
+(0.12 s), `HoldTicks` 30 (0.6 s). The seconds in D-056, D-057 and D-058 ("at 60 Hz") are
+superseded by these; those entries are not edited.
+(3) **One source.** Every seconds↔ticks conversion goes through `Parallax.Core.TickTime`
+(`SecondsPerTick`, `TicksPerSecond`, `ToTicks`, `ToSeconds`; unrounded floats, no integer API),
+which reads `Time.fixedDeltaTime`. Tests swap `TickTime.SecondsPerTickSource` and restore it in
+`[TearDown]`; nothing writes `Time.fixedDeltaTime`. No seconds↔ticks conversion hard-codes a rate.
+A literal dt passed as input to a pure step function in a unit test is not a conversion.
+`TickTimeTests.FixedTimestep_OnDiskAndLoaded_IsTwentyMilliseconds` parses
+`ProjectSettings/TimeManager.asset` from disk (0.02 within 1e-6) and checks `Time.fixedDeltaTime`
+equals it (1e-7); both are needed because Unity's default is also 0.02.
+(4) **Stored step.** Unity 6's re-save (abb55f9) stores the step as 2822399/141120000 =
+0.0199999929 s: it truncated 0.02f × 141120000 = 2822399.94. The float is 0.019999992. Accepted
+as is. Side effect: `CatMotor2D` counts coyote and jump buffer down by dt (`CatMotor2D.cs:110-111`)
+and fires while both are > 0. At dt 0.02f the coyote window allows a jump on 4 airborne ticks
+and the jump buffer lasts 5 ticks including the press tick; at the stored step,
+0.1 − 5 × 0.019999992 = 4.5e-8 > 0, so they are 5 and 6. abb55f9 moved both windows by one tick.
+No code change. For the same reason a `CeilToInt` of a whole-second value gains a tick
+(0.6 s / step = 30.00001); `TickTime` does not round.
+(5) **Door clearance (supersedes D-060's 0.1 u).** The margin is one tick at run speed,
+`MaxSpeed × TickTime.SecondsPerTick` = 0.12 u, from the same `CatMotorConfig` periodic slack
+uses. The tightest door in L001–L004, `SoloRoomsLayout` and `TrapLabLayout` is 0.20 u from a kill
+volume, so no result changed. A missing `CatMotorConfig` is a validator error, not a skip (door
+clearance ran without one before).
+(6) **Death to control (D-041).** Kill at tick T, hold steps T+1..T+30, respawn at T+30, first
+input-driven step at T+31: 31 ticks = 0.62 s. Worst case with `FallResetVolume` ordering: 32 ticks
+= 0.64 s ≤ 0.75 s (`TickTimeTests.DeathToRegainedControl_WorstCase_…`).
+(7) **50 Hz layout gaps (PAX-078).** Two `SoloRoomsLayout` narrative tests pass only at 60 Hz and
+pin `TickTime` to 60 Hz with a `PAX-078` comment until PAX-078 fixes the rooms:
+- L002 / Solo room 1 `Lift`: a full-speed cat lands on the Lift with 10.88 ticks of slack before
+  its trigger fires (0.218 s), below 12.
+- L004 / Solo room 3 final room: a full-speed cat reaches `Flip_A` while `Block_1` is still
+  falling (block top 2.53 vs paw 1.44); `Block_2`'s visible fall before contact is 0.75 ticks
+  (< 6) and it is not cleared (paw − block top −3.90).
+The generic validator does not catch either gap; only the `SoloRoomsLayout` narrative tests see
+them.
+(8) **Presentation (Phase H device check, D-064).** The cat's Rigidbody2D interpolates;
+FallingBlock and MovingTrap bodies (every level scene: `m_Interpolate: 0`) and the DoorRetreat
+door (`doorRoot.position` per tick) do not, and `LevelCameraFollow` updates in `LateUpdate`. On a
+60 or 120 Hz screen those 50 Hz bodies can judder. Not changed.
+**Why:** Every level and trap was tuned and played at 50 Hz, while the docs and the validator
+assumed 60 Hz, so every seconds↔ticks conversion was 20% off. KIT-2's arrow tell and KIT-4's
+per-section thresholds are counted in ticks, so the rate is fixed in one place first.
+Rejected: 60 Hz to match 60 Hz displays — a feel change that belongs to Phase H.

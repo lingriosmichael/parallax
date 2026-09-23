@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using Parallax.Core;
 using Parallax.Gameplay.Player;
 using UnityEditor;
 using UnityEngine;
@@ -12,6 +13,9 @@ namespace Parallax.Tests.EditMode
 {
     public sealed class SoloRoomsLayoutTests
     {
+        // PAX-077 (D-075): the two PAX-078 tests pin TickTime to 60 Hz; restore the real source after every test.
+        [TearDown] public void RestoreTickTime() => TickTime.ResetToDefault();
+
         static readonly Type LayoutType = Type.GetType("Parallax.Editor.Setup.SoloRoomsLayout, Parallax.Editor");
         static readonly Type LabLayoutType = Type.GetType("Parallax.Editor.Setup.TrapLabLayout, Parallax.Editor");
         static readonly Type SetupType = Type.GetType("Parallax.Editor.Setup.SoloRoomsSetup, Parallax.Editor");
@@ -394,8 +398,8 @@ namespace Parallax.Tests.EditMode
         public void V3_PeriodicRouteHasTwelveTicksBeyondFromRestCrossing()
         {
             CatMotorConfig config = Config();
-            float tickAcceleration = config.Acceleration / 3600f;
-            float tickSpeed = config.MaxSpeed / 60f;
+            float tickAcceleration = config.Acceleration * TickTime.SecondsPerTick * TickTime.SecondsPerTick;
+            float tickSpeed = config.MaxSpeed * TickTime.SecondsPerTick;
             float accelerateTicks = tickSpeed / tickAcceleration;
             float accelerationDistance = tickSpeed * tickSpeed / (2f * tickAcceleration);
             foreach (object room in Rooms())
@@ -432,7 +436,7 @@ namespace Parallax.Tests.EditMode
                     if (offset.y == 0f || (offset.y < 0f && mover.ReturnTicks == 0)) continue;
                     int upwardTicks = offset.y > 0f ? mover.MoveTicks : mover.ReturnTicks;
                     Assert.Greater(upwardTicks, 0, mover.Name + " upward leg duration");
-                    float speed = Mathf.Abs(offset.y) / upwardTicks * 60f;
+                    float speed = Mathf.Abs(offset.y) / upwardTicks * TickTime.TicksPerSecond;
                     float rise = speed * speed / (2f * gravity);
                     float stoppedTop = start.yMax + Mathf.Max(offset.y, 0f);
                     Rect launch = Rect.MinMaxRect(sweep.xMin - config.ColliderSize.x * .5f, stoppedTop,
@@ -476,7 +480,7 @@ namespace Parallax.Tests.EditMode
                     {
                         Rect hazard = Bounds(groundHazard);
                         if (hazard.xMin < slab.xMax) continue;
-                        float separationTicks = (hazard.xMin - slab.xMax) / .1f;
+                        float separationTicks = (hazard.xMin - slab.xMax) / (Config().MaxSpeed * TickTime.SecondsPerTick);
                         Assert.GreaterOrEqual(separationTicks, 6f, collapse.Name + " opens too close to " + groundHazard.Name);
                     }
                 }
@@ -539,9 +543,10 @@ namespace Parallax.Tests.EditMode
                 Bounds(lift).yMax + Config().ColliderSize.y);
             Assert.IsTrue(liftTrigger.Overlaps(standingCat), "A cat standing on the Lift must trigger it.");
             float fullyOffFloorCentre = Bounds(floorC).xMax + Config().ColliderSize.x * .5f;
-            float approachTicks = (firstTriggerCentre - fullyOffFloorCentre) / (Config().MaxSpeed / 60f);
+            TickTime.SecondsPerTickSource = () => 1f / 60f; // PAX-078: 50 Hz layout gap (D-075). Remove in PAX-078.
+            float approachTicks = (firstTriggerCentre - fullyOffFloorCentre) / (Config().MaxSpeed * TickTime.SecondsPerTick);
             float fallTicks = Mathf.Sqrt(2f * (Bounds(floorC).yMax - Bounds(lift).yMax)
-                / GravityStrength()) * 60f;
+                / GravityStrength()) * TickTime.TicksPerSecond;
             Assert.GreaterOrEqual(approachTicks - fallTicks, 12f,
                 "Even at full speed, the cat must land on the Lift with timing slack before its trigger fires.");
         }
@@ -581,7 +586,7 @@ namespace Parallax.Tests.EditMode
             float dropToSpikes = Bounds(flip).yMax - Bounds(spikes).yMax;
             float timeToSpikes = (-downwardSpeedAtFlip
                 + Mathf.Sqrt(downwardSpeedAtFlip * downwardSpeedAtFlip + 2f * gravity * dropToSpikes)) / gravity;
-            Assert.GreaterOrEqual(timeToSpikes * 60f - spikes.RevealDelayTicks, 6f,
+            Assert.GreaterOrEqual(TickTime.ToTicks(timeToSpikes) - spikes.RevealDelayTicks, 6f,
                 "ExitSpikes must visibly reveal before a straight drop can die.");
         }
 
@@ -643,10 +648,10 @@ namespace Parallax.Tests.EditMode
             Element lift = ElementByName(room, "Lift"), receiver = ElementByName(room, "Receiver"), block = ElementByName(room, "ReceiverBlock");
             float movedTop = Bounds(lift).yMax + lift.Offset.y;
             Assert.That(movedTop, Is.EqualTo(Bounds(receiver).yMax).Within(.001f));
-            float launchSpeed = lift.Offset.y / lift.MoveTicks * 60f;
+            float launchSpeed = lift.Offset.y / lift.MoveTicks * TickTime.TicksPerSecond;
             float rise = launchSpeed * launchSpeed / (2f * GravityStrength());
-            Assert.That(launchSpeed, Is.EqualTo(2.5f).Within(.001f));
-            Assert.That(rise, Is.EqualTo(.10417f).Within(.002f));
+            Assert.That(launchSpeed, Is.EqualTo(2.0833f).Within(.001f));
+            Assert.That(rise, Is.EqualTo(.0723f).Within(.002f));
             Assert.That(Bounds(block).yMin - 4f, Is.EqualTo(movedTop).Within(.001f),
                 "The chained block must land flush on the Receiver.");
         }
@@ -661,8 +666,9 @@ namespace Parallax.Tests.EditMode
             float triggerEntryCentre = falseLanding.SecondaryPosition.x - falseLanding.SecondarySize.x * .5f - .5f;
             float initialSupport = Bounds(falseLanding).xMax - (triggerEntryCentre - .5f);
             float retreatPerTick = -falseLanding.Offset.x / falseLanding.MoveTicks;
-            float firstLossTick = initialSupport / (retreatPerTick + .1f);
-            float firstPermanentFloorTick = (Bounds(floor).xMin - .5f - triggerEntryCentre) / .1f;
+            float runPerTick = Config().MaxSpeed * TickTime.SecondsPerTick;
+            float firstLossTick = initialSupport / (retreatPerTick + runPerTick);
+            float firstPermanentFloorTick = (Bounds(floor).xMin - .5f - triggerEntryCentre) / runPerTick;
             Assert.GreaterOrEqual(firstLossTick, 6f, "The movement needs D-057 visible lead.");
             Assert.Less(firstLossTick, firstPermanentFloorTick, "A runner must lose the false floor before reaching permanent ground.");
             Element highPlatform = ElementByName(room, "Platform_C");
@@ -681,7 +687,7 @@ namespace Parallax.Tests.EditMode
             Assert.Less(pawAtTrigger, trigger.yMax, "The full-speed leap must enter the trigger before landing.");
             Assert.Greater(pawAtTrigger + Config().ColliderSize.y, trigger.yMin);
             float landingX = takeoffX + Config().MaxSpeed * directFlight;
-            float remainingTicks = (directFlight - crossingTime) * 60f;
+            float remainingTicks = TickTime.ToTicks(directFlight - crossingTime);
             float movingRightEdge = Bounds(falseLanding).xMax
                 + falseLanding.Offset.x * Mathf.Min(1f, remainingTicks / falseLanding.MoveTicks);
             Assert.Greater(remainingTicks, 6f, "The slide must be visible before the unsupported landing.");
@@ -706,13 +712,15 @@ namespace Parallax.Tests.EditMode
             object room = Rooms().Cast<object>().Single(r => (int)Field(r, "Id") == 3);
             Element source = ElementByName(room, "SourceSpikes"), first = ElementByName(room, "Block_1");
             Element second = ElementByName(room, "Block_2"), flip = ElementByName(room, "Flip_A");
-            float sourceToFlip = (flip.Position.x - (source.SecondaryPosition.x - source.SecondarySize.x * .5f - .5f)) / .1f;
-            float flipToBlock = (Bounds(second).xMin - .5f - flip.Position.x) / .1f;
+            TickTime.SecondsPerTickSource = () => 1f / 60f; // PAX-078: 50 Hz layout gap (D-075). Remove in PAX-078.
+            float runPerTick = Config().MaxSpeed * TickTime.SecondsPerTick;
+            float sourceToFlip = (flip.Position.x - (source.SecondaryPosition.x - source.SecondarySize.x * .5f - .5f)) / runPerTick;
+            float flipToBlock = (Bounds(second).xMin - .5f - flip.Position.x) / runPerTick;
             float secondFire = source.RevealDelayTicks + first.DelayTicks + second.DelayTicks;
             float elapsedFall = sourceToFlip + flipToBlock - secondFire;
             float blockTopAtContact = Bounds(second).yMax - Mathf.Min(second.TravelDistance, elapsedFall * second.UnitsPerTick);
             float minimumFlipPaw = Bounds(flip).yMin - Config().ColliderSize.y;
-            float minimumPawAtContact = minimumFlipPaw + GravityStrength() * Mathf.Pow(flipToBlock / 60f, 2f) * .5f;
+            float minimumPawAtContact = minimumFlipPaw + GravityStrength() * Mathf.Pow(TickTime.ToSeconds(flipToBlock), 2f) * .5f;
             float firstTopAtFlip = Bounds(first).yMax - Mathf.Min(first.TravelDistance,
                 (sourceToFlip - source.RevealDelayTicks - first.DelayTicks) * first.UnitsPerTick);
             Assert.Greater(minimumFlipPaw, firstTopAtFlip,
@@ -894,7 +902,7 @@ namespace Parallax.Tests.EditMode
         [Test]
         public void DoorClearance_BothPosesAndRetreatSweep_StayClearOfEveryKillVolume()
         {
-            const float margin = .1f; // D-060: one tick at run speed (.1 u/tick)
+            float margin = Config().MaxSpeed * TickTime.SecondsPerTick; // D-060/D-075: one tick at run speed
             var failures = new List<string>();
 
             foreach (object room in AllRooms())

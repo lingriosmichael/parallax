@@ -42,7 +42,7 @@ executing what you've read: tight jumps across thin platforms while the room kee
   After the last door, the level is complete.
 - **Anatomy of a room:** setup → obvious route → betrayal → learned solution. Every room should be
   describable in one sentence of that shape.
-- **Death resets the room (D-041).** A short hold (0.5 s default, D-058) freezes the room in its
+- **Death resets the room (D-041).** A short hold (0.6 s default, D-058, D-075) freezes the room in its
   fired state first, so the player sees what killed them; then the cat respawns at the room's
   checkpoint and every trap re-arms. Rooms already completed stay completed.
 - **Leaving the room's bounds kills you too (D-058).** A hole in the layout is a death, not an
