@@ -1070,3 +1070,20 @@ by per-level tests until KIT-3's route validator. `LevelLayoutValidator` has no 
 simulator's predictions; if it contradicts one, PAX-078 is reopened.
 **Why:** At the real 50 Hz both rooms were unfair: the L002 landing had no timing margin, and the
 L004 learned fast flip killed every full-speed player.
+
+### D-077 · 2026-09-24 · Accepted
+
+**Decision:** Coyote time and the jump buffer are counted in whole ticks (PAX-079). Each window's
+length is `TickTime.ToWholeTicks(seconds)`, the config's seconds divided by the tick length and
+rounded half up, computed on every Step. At 50 Hz, coyote allows a jump on the first 5 airborne
+steps after leaving the ground, and the buffer honours a press on its own step and the next 5. A
+grounded cat can always jump when a press is buffered, including with CoyoteTime 0 (the old float
+code refused that case; no config uses it). The logic is the pure `Parallax.Core` `JumpWindows`,
+and it counts Step calls, not dt. `CatMotor2D` keeps `coyoteTimer` and `jumpBufferTimer` as floats
+holding whole ticks, so the two reflection tests are unchanged. An equivalence test proves the new
+logic matches the old float logic at the committed step for every input sequence tested. Rounding
+half up means a config value that is a whole hundredth of a second (0–1 s) gives the same count at
+0.02 and at the committed step. Freeze (D-059) and pause (D-073) are unchanged: Step doesn't run,
+so the windows hold and continue. Supersedes: D-075 (3) 'no integer API' and D-075 (4) 'does not
+round', for ToWholeTicks only; and the float countdown described in D-075 (4). The rest of D-075
+stands.

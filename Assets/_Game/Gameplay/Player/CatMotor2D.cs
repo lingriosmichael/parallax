@@ -17,6 +17,9 @@ namespace Parallax.Gameplay.Player
         ContactFilter2D groundFilter;
         readonly RaycastHit2D[] groundHits = new RaycastHit2D[4];
 
+        // PAX-079 (D-077): whole ticks remaining, 0 = closed; JumpWindows does the arithmetic in int.
+        // Kept as floats with these names because CatMotor2DFreezeTests (reads jumpBufferTimer) and
+        // PauseInputTests (sets coyoteTimer) reach them by reflection.
         float coyoteTimer;
         float jumpBufferTimer;
 
@@ -46,11 +49,6 @@ namespace Parallax.Gameplay.Player
         void SetCommand(CatCommand cmd)
         {
             command = cmd;
-
-            if (config != null && cmd.JumpPressed)
-            {
-                jumpBufferTimer = config.JumpBufferTime;
-            }
         }
 
         public void ResetMotion()
@@ -107,8 +105,12 @@ namespace Parallax.Gameplay.Player
 
             UpdateGrounded(down, fall);
 
-            coyoteTimer = IsGrounded ? config.CoyoteTime : Mathf.Max(0f, coyoteTimer - dt);
-            jumpBufferTimer = Mathf.Max(0f, jumpBufferTimer - dt);
+            int coyote = (int)coyoteTimer;
+            int buffer = (int)jumpBufferTimer;
+            bool jump = JumpWindows.Step(ref coyote, ref buffer, IsGrounded, command.JumpPressed,
+                TickTime.ToWholeTicks(config.CoyoteTime), TickTime.ToWholeTicks(config.JumpBufferTime));
+            coyoteTimer = (float)coyote;
+            jumpBufferTimer = (float)buffer;
 
             float target = command.Move * config.MaxSpeed;
             float accelRate = Mathf.Abs(command.Move) > 0.01f ? config.Acceleration : config.Deceleration;
@@ -116,11 +118,9 @@ namespace Parallax.Gameplay.Player
 
             fall += gravity.Strength * dt;
 
-            if (jumpBufferTimer > 0f && coyoteTimer > 0f)
+            if (jump)
             {
                 fall = -JumpMath.SpeedForHeight(config.JumpHeight, gravity.Strength);
-                jumpBufferTimer = 0f;
-                coyoteTimer = 0f;
             }
 
             fall = Mathf.Min(fall, config.MaxFallSpeed);

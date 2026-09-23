@@ -199,6 +199,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   `Time.fixedDeltaTime` (drivers, Echo, DebugPanel) stay as they are. Tests swap
   `TickTime.SecondsPerTickSource` and restore it in `[TearDown]`; nothing writes
   `Time.fixedDeltaTime`. Changing the tick rate is a new decision.
+  Motor windows (coyote, jump buffer) are whole ticks derived from seconds via `TickTime` (D-077).
 - **A minimal per-room death count exists (D-058)**, in `RoomDeath`/`DeathCounter`, with no UI.
   Whether/how it's shown, persisted, or turned into lives is still D-044 (undecided).
 
