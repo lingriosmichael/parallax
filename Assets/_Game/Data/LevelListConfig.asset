@@ -13,6 +13,15 @@ MonoBehaviour:
   m_Name: LevelListConfig
   m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Levels.LevelListConfig
   levels:
-  - Id: Level_Solo01
-    SceneName: Level_Solo01
+  - Id: L001
+    SceneName: Level_001
     DisplayName: Level 1
+  - Id: L002
+    SceneName: Level_002
+    DisplayName: Level 2
+  - Id: L003
+    SceneName: Level_003
+    DisplayName: Level 3
+  - Id: L004
+    SceneName: Level_004
+    DisplayName: Level 4

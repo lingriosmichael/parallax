@@ -575,3 +575,42 @@ measured. If the device numbers turn out stricter than the provisional ones, som
 need rework in Phase H. Keeping the numbers in one asset and checking every level against them
 in tests makes that rework a list, not a search.
 
+### D-066 · 2026-09-23 · Accepted
+
+**Decision:** Level format for the one-room authoring pipeline (PAX-051). A level layout is
+code-as-data in the Editor assembly, not a ScriptableObject and not JSON: one static class per
+level under `Assets/_Game/Editor/Levels` (`L001Layout`, `L002Layout`, …), each exposing one
+`SoloRoomDefinition` built with the existing readonly element/definition types (moved verbatim
+out of `SoloRoomsLayout.cs` into `SoloRoomElementTypes.cs`, unchanged, no new fields, no
+`readonly` removed). `LevelLayouts` is the single id → layout registry, checked against
+`LevelListConfig` both ways. A level's room lives in its own local space: room id 0, origin
+`(0,0)`. Nothing reads a layout at runtime — the scene is built from it once by a setup menu
+(`SoloRoomBuilder`, extracted from `SoloRoomsSetup`), and anything runtime needs (kill bounds) is
+baked into `RoomManager` at that same setup time, exactly as D-059 already does for
+`SoloRoomsLayout`. `LevelLayoutValidator` reimplements the D-055–D-058/D-060 generic rules
+(chain acyclicity, reach/timing slack, 6-tick reveal lead, room-frame containment, door
+clearance) without changing any threshold, so a level layout can be checked outside a specific
+room's narrative test assertions; the existing `SoloRoomsLayoutTests.cs` narrative tests are
+untouched. A level's scene is a copy of `_LevelTemplate.unity` with its one room built by
+`SoloRoomBuilder`, via `PARALLAX/Setup/Levels/New Level...` (first build) or
+`Rebuild Current Level`/`Rebuild All Levels` (later relayout).
+
+A `LevelLayout` ScriptableObject (rev A of this ticket) was rejected: every element/definition
+type (`SoloRoomElement`, `SoloRoomTrapSettings`, `SoloRoomOpening`, `RequiredJump`,
+`RequiredStep`, `SoloRoomDefinition`) is declared with `public readonly` fields set only through
+a constructor, and Unity's built-in serializer silently drops `readonly` fields — a ScriptableObject
+built from them unchanged would save every authored value as blank/default with no error.
+Forking parallel mutable types, or serializing through an opaque JSON string field, were also
+rejected: both still require either changing the reference types or losing native Inspector
+editing, for no benefit, since nothing ever needs a layout after its one-time scene build.
+
+**Why:** The scene, not the layout, is what the game reads at runtime (D-054); a level's
+data only has to survive from the Editor menu that builds the scene to that build finishing.
+Code-as-data keeps the exact same constructors, structs and validation the four `SoloRoomsLayout`
+rooms already use and are already tested against, so splitting them into standalone levels
+(`L001`–`L004`) needed no format conversion — only a translated `Origin` and room id.
+
+**Consequence:** A future ticket authoring `L005`–`L050` adds one file each under
+`Assets/_Game/Editor/Levels` plus a `LevelLayouts` entry; no tooling change is needed unless a
+level needs an element kind that doesn't exist yet.
+
