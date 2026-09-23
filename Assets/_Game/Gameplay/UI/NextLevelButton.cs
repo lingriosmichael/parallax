@@ -3,7 +3,6 @@ using Parallax.Core;
 using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Levels;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Parallax.Gameplay.UI
@@ -11,7 +10,8 @@ namespace Parallax.Gameplay.UI
     /// <summary>PAX-050 (D-063): on click, records the just-finished level's completion (best
     /// death count, next-level unlock) and loads the next level's scene. Mirrors RestartButton's
     /// ITouchReservedRegion pattern; unlike Restart it has no Editor keyboard shortcut, so it
-    /// never double-binds Enter with Restart.</summary>
+    /// never double-binds Enter with Restart. PAX-053 (D-072) §2.2: routes through
+    /// LevelSceneLoader, the one seam every level/menu scene change goes through.</summary>
     [RequireComponent(typeof(RectTransform))]
     public sealed class NextLevelButton : MonoBehaviour, ITouchReservedRegion
     {
@@ -37,7 +37,7 @@ namespace Parallax.Gameplay.UI
         {
             if (string.IsNullOrEmpty(nextSceneName)) return;
             RecordAndSaveProgress();
-            SceneManager.LoadScene(nextSceneName);
+            LevelSceneLoader.Load(nextSceneName);
         }
 
         // Split out from GoToNextLevel so tests can verify the recording side effect without

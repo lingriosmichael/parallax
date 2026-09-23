@@ -34,6 +34,7 @@ namespace Parallax.Gameplay.UI
         [SerializeField] RestartButton restartButton;
         [SerializeField] LevelListConfig levelList;
         [SerializeField] NextLevelButton nextLevelButton;
+        [SerializeField] LevelsButton levelsButton;
 
         readonly Dictionary<int, int> roomStartTick = new Dictionary<int, int>();
         readonly List<GameObject> spawnedRows = new List<GameObject>();
@@ -106,6 +107,7 @@ namespace Parallax.Gameplay.UI
             if (panel != null) panel.SetActive(true);
             PopulateRows(LastSummary, total);
             ConfigureNextLevelButton(total);
+            ConfigureLevelsButton(total);
         }
 
         void ConfigureNextLevelButton(int total)
@@ -122,6 +124,25 @@ namespace Parallax.Gameplay.UI
             }
 
             nextLevelButton.gameObject.SetActive(hasNext);
+        }
+
+        // PAX-053 (D-072) §2.4: unlike Next level, Levels is shown on every level-complete
+        // screen, including the last listed level - but only once the active scene actually
+        // resolves to a listed level; symmetric with ConfigureNextLevelButton so an unlisted
+        // scene (or a missing levelList) leaves it hidden rather than in whatever state the
+        // hierarchy happened to start in.
+        void ConfigureLevelsButton(int total)
+        {
+            if (levelsButton == null) return;
+
+            bool hasCurrent = false;
+            if (levelList != null && levelList.TryGetBySceneName(SceneManager.GetActiveScene().name, out LevelEntry current))
+            {
+                levelsButton.Configure(current.Id, total, levelList.OrderedIds());
+                hasCurrent = true;
+            }
+
+            levelsButton.gameObject.SetActive(hasCurrent);
         }
 
         void PopulateRows(RoomSummaryRow[] rowsData, int total)

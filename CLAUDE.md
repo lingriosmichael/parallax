@@ -118,6 +118,11 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
     only (frozen co-op sandbox carries an unconfigured `RoomDeath` from earlier trap-kit work,
     D-059) — in `Level_Solo01`/`Sandbox_TrapLab` this means the setup menu hasn't been run and is
     a real problem, not noise
+  - `LevelCameraFollow` zero-frame warning (logged once) when playing `_LevelTemplate` directly:
+    the template's camera frame is never baked (D-071). In a `Level_NNN` scene it means the level
+    wasn't rebuilt, and is a real problem.
+  - `LevelSceneLoader` error naming the active scene when pressing Restart in a scene that isn't
+    in Build Settings (`_LevelTemplate`, sandboxes): expected, same as on device.
 - Use `batch_execute` for long sequences of calls rather than dozens of round trips.
 
 ### What MCP does not do
@@ -184,6 +189,16 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   `OutOfBounds` (D-058) — never build a room whose intended play space isn't inside its bounds.
 - **A minimal per-room death count exists (D-058)**, in `RoomDeath`/`DeathCounter`, with no UI.
   Whether/how it's shown, persisted, or turned into lives is still D-044 (undecided).
+
+### Scenes, Build Settings and loading (D-072)
+
+- `BuildSceneList.Sync()` is the only code that writes `EditorBuildSettings.scenes`. Never assign
+  the list anywhere else, and never add scenes by hand in Build Profiles. After adding or
+  reordering levels in `LevelListConfig`, run `PARALLAX/Setup/Levels/Sync Build Scene List`.
+- Every runtime scene load goes through `LevelSceneLoader.Load(sceneName)`. Never call
+  `SceneManager.LoadScene` directly, and never add an Editor-only load path.
+- Level UI is built on `_LevelTemplate` only (D-070), then `Rebuild All Levels`.
+  `Level_Solo01` is frozen and gets no new UI.
 
 ## Semantic state and networking
 

@@ -759,3 +759,67 @@ vertical follow at all. `LevelCameraMathTests`' clamp/look-ahead/vertical-lock a
 synthetic frame rather than a built level for that reason, not because follow mode itself is
 unexercised.
 
+### D-072 · 2026-09-23 · Accepted
+
+**Decision:** The Build Settings scene list is generated (PAX-053). `BuildSceneList.Compute
+(currentEntries, configScenePaths, levelsFolder)` (`Parallax.Editor.Setup`) is a pure function:
+`LevelSelect.unity` first (enabled), then every `LevelListConfig` entry's scene in list order
+(enabled), then every other scene already in `currentEntries` kept with its own enabled state and
+relative order (`Sandbox_Realities` and the disabled dev scenes) — deduplicated so a stray repeat
+of `LevelSelect` or a listed level can never demote the canonical, first-placed entry. Any scene
+under `Assets/_Game/Scenes/Levels/` that isn't a listed level's scene (the template, or an
+unlisted `Level_NNN`) is always dropped; scenes outside that folder (`Level_Solo01.unity`,
+`Sandbox_Realities.unity`) are untouched and never removed. `BuildSceneList.Sync()` is the thin,
+impure wrapper `PARALLAX/Setup/Levels/Sync Build Scene List` runs: it first checks every scene
+`Compute` would need actually exists on disk (`LevelSelect.unity` and each listed level's scene),
+writing nothing and logging an error if any is missing, then calls `Compute`, assigns
+`EditorBuildSettings.scenes`, and persists the change immediately with `AssetDatabase.SaveAssets()`
+— named explicitly because `EditorBuildSettings.scenes = ...` alone only dirties the in-memory
+list; without an explicit save the change can be lost, which is what actually happened to
+`Level_004` after PAX-051/052 (fixed by hand in commit `PAX-051 fix: Level_004 in Build Settings,
+_LevelTemplate removed`). This targets the classic global `EditorBuildSettings.scenes` because no
+Build Profile in this project overrides the scene list (`Library/BuildProfiles/*.asset` all carry
+empty `m_Scenes` and no `overrideGlobalScenes`); a future ticket that introduces an overriding
+Build Profile must revisit this decision. `Sync()` is the only code that writes
+`EditorBuildSettings.scenes` — `LevelSetup`'s old `AddToBuildSettings` (a plain append, never
+saved) is deleted, and `New Level…`, `PARALLAX/Setup/Levels/Level Select`, and
+`Sync Build Scene List` itself all call `Sync()` instead. Every runtime level/menu scene load
+(Restart, Next level, Levels, and loading from `LevelSelect`) goes through one loader,
+`Parallax.Gameplay.Levels.LevelSceneLoader.Load(sceneName)`, which refuses and logs an error naming
+the scene when `Application.CanStreamedLevelBeLoaded` returns false, instead of calling
+`SceneManager.LoadScene` directly — so a scene that isn't in the Build Settings list fails in the
+Editor with an error naming it, the same way it would fail on the device.
+
+Two different failure modes, two different catches. In the Editor, the loader's
+`CanStreamedLevelBeLoaded` pre-check reads Unity's **in-memory** `EditorBuildSettings.scenes` list
+(a player build has no `EditorBuildSettings`; it reads the baked scene list instead, which is why
+both resolve identically once Build Settings is saved) — the same list a `SceneManager.LoadScene`
+call would consult — so it catches "this scene isn't in the list at all" regardless of whether
+that in-memory list has ever been saved to disk; this is what makes a scene missing from the list
+fail the same way in the Editor as on the device. The `Level_004` drift was the other failure
+mode: the scene was in the in-memory list but never saved, so this check passed; Sync's explicit
+save and the on-disk §5.3 test catch that one. Put precisely: the pre-check does **not** detect
+"the in-memory list disagrees with what's saved to `ProjectSettings/EditorBuildSettings.asset`" —
+an Editor session with an unsaved change resolves every load correctly right up until the Editor
+restarts (or a fresh clone/CI checkout reads only the committed file), which is exactly the state
+`Level_004` was left in after PAX-051/052. That failure mode — unsaved drift — is caught instead
+by `Sync()`'s explicit `AssetDatabase.SaveAssets()` (never leaving the list only dirtied) plus
+`BuildSceneListTests.RealProject_CurrentBuildSettingsOnDisk_IsAFixedPointOfCompute` (§5.3), which
+parses the **on-disk** file directly and fails if it and `Compute`'s output ever disagree — a check
+the loader's runtime pre-check cannot perform, since it only ever sees whatever is currently in
+memory.
+
+**Why:** A hand-maintained or half-saved Build Settings list breaks silently as the level count
+grows (PAX-051's `Level_004` drift, and `_LevelTemplate` ending up in the in-memory list); this
+ticket also needed a level select screen, which must always be build index 0. Making the list a
+pure function of `LevelListConfig` plus the scenes already present makes drift a test failure
+(`BuildSceneListTests.RealProject_CurrentBuildSettingsOnDisk_IsAFixedPointOfCompute`, which parses
+`ProjectSettings/EditorBuildSettings.asset` from disk) instead of a manual `grep`.
+
+**Consequence:** Adding level 5–50 no longer needs a manual Build Settings edit — `New Level…`
+calls `Sync()` automatically, provided `LevelSelect.unity` and every already-listed level's scene
+exist on disk. `LevelSetup.NewLevel`'s log line only reports a successful sync; if `Sync()` refuses
+(e.g. `LevelSelect.unity` not yet built), the level's own scene is still created and regenerated,
+but it is not added to Build Settings until `Sync Build Scene List` is run again after fixing the
+cause.
+

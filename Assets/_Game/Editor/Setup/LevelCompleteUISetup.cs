@@ -14,13 +14,14 @@ using Object = UnityEngine.Object;
 namespace Parallax.Editor.Setup
 {
     /// <summary>PAX-049 (D-061). Idempotent find-or-create + rewire, like the other PARALLAX/Setup
-    /// menus. The first setup menu with a scene guard: it refuses to run outside Level_Solo01,
-    /// since this screen is player-facing (not Sandbox_Realities/frozen-co-op tooling).
-    /// PAX-050 (D-063): also creates/wires the Next level button and LevelListConfig reference.
-    /// Run PARALLAX/Setup/Level List (PAX-050) first, or this logs an error and skips that part.</summary>
+    /// menus. PAX-050 (D-063): also creates/wires the Next level button and LevelListConfig
+    /// reference. Run PARALLAX/Setup/Level List (PAX-050) first, or this logs an error and skips
+    /// that part. PAX-053 (D-070) §2.4.1: retargeted to _LevelTemplate only - Level_Solo01 keeps
+    /// its existing UI and is never touched by this menu again. Also creates/wires the Levels
+    /// button (goes to LevelSelect, shown on every level, including the last).</summary>
     public static class LevelCompleteUISetup
     {
-        const string RequiredSceneName = "Level_Solo01";
+        const string RequiredSceneName = "_LevelTemplate";
         const string HudCanvasName = "HUD";
         const string DeviceInputName = "DeviceInput";
         const string PanelName = "LevelCompletePanel";
@@ -30,14 +31,17 @@ namespace Parallax.Editor.Setup
         const string TotalName = "Total";
         const string RestartButtonName = "RestartButton";
         const string NextLevelButtonName = "NextLevelButton";
+        const string LevelsButtonName = "LevelsButton";
         const string ScreenControllerName = "LevelCompleteScreenController";
         const string LevelListConfigPath = "Assets/_Game/Data/LevelListConfig.asset";
+
+        public static bool RefusesToRun(string activeSceneName) => activeSceneName != RequiredSceneName;
 
         [MenuItem("PARALLAX/Setup/Level Complete UI (PAX-049)")]
         public static void Configure()
         {
             string sceneName = EditorSceneManager.GetActiveScene().name;
-            if (sceneName != RequiredSceneName)
+            if (RefusesToRun(sceneName))
             {
                 Debug.LogError($"LevelCompleteUISetup: refuses to run outside '{RequiredSceneName}' (active scene is '{sceneName}').");
                 return;
@@ -138,6 +142,28 @@ namespace Parallax.Editor.Setup
             WireField(nextLevelButton, "button", nextLevelButtonComponent, changes, "NextLevelButton.button = Button");
             SetActive(nextLevelGO, false, changes, NextLevelButtonName); // shown only when LevelCompleteScreen finds a next level
 
+            GameObject levelsGO = EnsureChild(panelGO.transform, LevelsButtonName, changes);
+            SetAnchors((RectTransform)levelsGO.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(360f, 10f), new Vector2(580f, 65f), changes, LevelsButtonName);
+            var levelsImage = EnsureComponent<Image>(levelsGO, changes, "Image", LevelsButtonName);
+            SetColor(levelsImage, Color.white, changes, $"{LevelsButtonName} Image");
+            var levelsButtonComponent = EnsureComponent<Button>(levelsGO, changes, "Button", LevelsButtonName);
+            if (levelsButtonComponent.navigation.mode != Navigation.Mode.None)
+            {
+                var navigation = levelsButtonComponent.navigation;
+                navigation.mode = Navigation.Mode.None;
+                levelsButtonComponent.navigation = navigation;
+                changes.Add($"set {LevelsButtonName} Button.navigation.mode = None");
+            }
+            GameObject levelsLabelGO = EnsureChild(levelsGO.transform, "Label", changes);
+            SetAnchors((RectTransform)levelsLabelGO.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, "LevelsButton/Label");
+            var levelsLabel = EnsureComponent<Text>(levelsLabelGO, changes, "Text", "LevelsButton/Label");
+            ConfigureText(levelsLabel, "Levels", 32, TextAnchor.MiddleCenter, Color.black, changes, "LevelsButton/Label");
+
+            var levelsButton = EnsureComponent<LevelsButton>(levelsGO, changes, "LevelsButton", LevelsButtonName);
+            WireField(levelsButton, "button", levelsButtonComponent, changes, "LevelsButton.button = Button");
+            // Shown on every level (including the last, which has no Next level button), so -
+            // unlike NextLevelButton - it starts active, matching RestartButton's own pattern.
+
             LevelListConfig levelList = AssetDatabase.LoadAssetAtPath<LevelListConfig>(LevelListConfigPath);
             if (levelList == null)
             {
@@ -162,6 +188,7 @@ namespace Parallax.Editor.Setup
             WireField(screen, "totalText", totalText, changes, "LevelCompleteScreen.totalText = Total");
             WireField(screen, "restartButton", restartButton, changes, "LevelCompleteScreen.restartButton = RestartButton");
             WireField(screen, "nextLevelButton", nextLevelButton, changes, "LevelCompleteScreen.nextLevelButton = NextLevelButton");
+            WireField(screen, "levelsButton", levelsButton, changes, "LevelCompleteScreen.levelsButton = LevelsButton");
             if (levelList != null) WireField(screen, "levelList", levelList, changes, "LevelCompleteScreen.levelList = LevelListConfig");
 
             // Reserved regions: append RestartButton, don't replace. TouchStickCatInput lives on
@@ -178,6 +205,7 @@ namespace Parallax.Editor.Setup
             {
                 AppendReservedRegion(touchInput, restartButton, changes);
                 AppendReservedRegion(touchInput, nextLevelButton, changes);
+                AppendReservedRegion(touchInput, levelsButton, changes);
             }
 
             if (changes.Count == 0)

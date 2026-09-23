@@ -27,6 +27,7 @@ namespace Parallax.Gameplay.Cameras
         Vector2 velocity;
         float lastTargetX;
         float lastDirection;
+        bool warnedUnbakedFrame;
 
         void Awake()
         {
@@ -67,6 +68,7 @@ namespace Parallax.Gameplay.Cameras
             // PAX-047 (D-058)/§2.2.3: still camera during the death hold - RoomManager gates its
             // whole tick on the same flag, this gates the whole position/size update the same way.
             if (roomDeath != null && roomDeath.IsHolding) return;
+            if (!HasBakedFrame()) return;
 
             transform.position = ToVector3(Resolve(transform.position, immediate: false));
             lastTargetX = target.position.x;
@@ -77,9 +79,28 @@ namespace Parallax.Gameplay.Cameras
             if (target == null || config == null) return;
             if (cam == null) cam = GetComponent<Camera>();
             if (cam == null) return;
+            if (!HasBakedFrame()) return;
+
             transform.position = ToVector3(Resolve(transform.position, immediate: true));
             velocity = Vector2.zero;
             lastTargetX = target.position.x;
+        }
+
+        // PAX-053 (Phase 1 finding): frameCenter/frameSize are only baked by LevelSetup at
+        // regeneration time - never on _LevelTemplate itself (D-071). A zero (unbaked) frame
+        // would otherwise resolve to CameraMath.ResolveViewHeight(Vector2.zero, ...) == 0, i.e.
+        // Camera.orthographicSize = 0, a degenerate view volume that a Screen Space - Camera
+        // canvas' raycasting logs every frame as "Screen position out of view frustum". Skip
+        // instead, and log once (not every frame this runs).
+        bool HasBakedFrame()
+        {
+            if (frameSize != Vector2.zero) return true;
+            if (!warnedUnbakedFrame)
+            {
+                warnedUnbakedFrame = true;
+                Debug.LogWarning($"LevelCameraFollow: '{name}' has an unbaked (zero) camera frame; skipping until it's regenerated.");
+            }
+            return false;
         }
 
         Vector3 ToVector3(Vector2 xy) => new Vector3(xy.x, xy.y, transform.position.z);

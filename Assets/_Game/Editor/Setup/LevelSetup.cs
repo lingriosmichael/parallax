@@ -120,7 +120,8 @@ namespace Parallax.Editor.Setup
             if (!RegenerateScene(scenePath, layout, changes)) return;
 
             if (existingIndex < 0) AppendToLevelList(config, levelId, sceneName, DefaultDisplayName(levelId), changes);
-            AddToBuildSettings(scenePath, changes);
+            if (BuildSceneList.Sync()) changes.Add("synced Build Scene List");
+            else changes.Add("Build Scene List NOT synced - see the error above; run Sync Build Scene List once its cause is fixed");
 
             Debug.Log("LevelSetup: built " + levelId + " (" + scenePath + "). " + string.Join("; ", changes));
         }
@@ -283,17 +284,6 @@ namespace Parallax.Editor.Setup
             entry.FindPropertyRelative("DisplayName").stringValue = displayName;
             so.ApplyModifiedPropertiesWithoutUndo();
             changes.Add("appended " + id + " to LevelListConfig");
-        }
-
-        static void AddToBuildSettings(string scenePath, List<string> changes)
-        {
-            EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
-            if (scenes.Any(s => s.path == scenePath)) return;
-            var updated = new EditorBuildSettingsScene[scenes.Length + 1];
-            scenes.CopyTo(updated, 0);
-            updated[scenes.Length] = new EditorBuildSettingsScene(scenePath, true);
-            EditorBuildSettings.scenes = updated;
-            changes.Add("added " + scenePath + " to Build Settings");
         }
 
         static bool SceneFileExists(string id) => AssetDatabase.LoadAssetAtPath<Object>(ScenePathFor(id)) != null;

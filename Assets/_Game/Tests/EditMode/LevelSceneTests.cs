@@ -24,6 +24,8 @@ namespace Parallax.Tests.EditMode
         const string SoloScenePath = "Assets/_Game/Scenes/Level_Solo01.unity";
         static readonly Type LevelSetupType = Type.GetType("Parallax.Editor.Setup.LevelSetup, Parallax.Editor");
         static readonly Type LevelCameraSetupType = Type.GetType("Parallax.Editor.Setup.LevelCameraSetup, Parallax.Editor");
+        static readonly Type LevelSelectSetupType = Type.GetType("Parallax.Editor.Setup.LevelSelectSetup, Parallax.Editor");
+        static readonly Type LevelCompleteUISetupType = Type.GetType("Parallax.Editor.Setup.LevelCompleteUISetup, Parallax.Editor");
 
         static LevelListConfig Config()
         {
@@ -165,6 +167,50 @@ namespace Parallax.Tests.EditMode
             }
         }
 
+        // PAX-053 §5.6: like EachListedLevelScene_HasLevelCameraOnCameraA_... above, this reads
+        // the committed scenes, so - same as RealProject_CurrentBuildSettingsOnDisk_IsAFixedPoint
+        // Of Compute (BuildSceneListTests) - it is red until the developer has run
+        // PARALLAX/Setup/Level Complete UI on _LevelTemplate and then Rebuild All Levels.
+        [Test]
+        public void EachListedLevelScene_HasALevelsButton_WiredIntoLevelCompleteScreenAndReservedRegions()
+        {
+            string[] setup = EditorSceneManager.GetSceneManagerSetup().Select(s => s.path).ToArray();
+            try
+            {
+                foreach (LevelEntry entry in Config().Levels)
+                {
+                    string scenePath = $"{LevelsFolder}/{entry.SceneName}.unity";
+                    if (AssetDatabase.LoadAssetAtPath<Object>(scenePath) == null) continue;
+
+                    Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+
+                    GameObject levelsGO = FindGameObject(scene, "LevelsButton");
+                    Assert.NotNull(levelsGO, entry.Id + ": no 'LevelsButton' GameObject found.");
+                    var levelsButton = levelsGO.GetComponent<Parallax.Gameplay.UI.LevelsButton>();
+                    Assert.NotNull(levelsButton, entry.Id + ": 'LevelsButton' has no LevelsButton component.");
+
+                    var screen = FindComponentAnywhere<Parallax.Gameplay.UI.LevelCompleteScreen>(scene);
+                    Assert.NotNull(screen, entry.Id + ": scene has no LevelCompleteScreen.");
+                    Object wiredLevelsButton = new SerializedObject(screen).FindProperty("levelsButton").objectReferenceValue;
+                    Assert.AreEqual(levelsButton, wiredLevelsButton, entry.Id + ": LevelCompleteScreen.levelsButton is not this scene's own LevelsButton.");
+
+                    GameObject deviceInputGO = FindGameObject(scene, "DeviceInput");
+                    Assert.NotNull(deviceInputGO, entry.Id + ": no 'DeviceInput' GameObject found.");
+                    var touchInput = deviceInputGO.GetComponent<Parallax.Gameplay.Input.TouchStickCatInput>();
+                    Assert.NotNull(touchInput, entry.Id + ": 'DeviceInput' has no TouchStickCatInput.");
+                    SerializedProperty reservedRegions = new SerializedObject(touchInput).FindProperty("reservedRegions");
+                    bool registered = false;
+                    for (int i = 0; i < reservedRegions.arraySize; i++)
+                        if (reservedRegions.GetArrayElementAtIndex(i).objectReferenceValue == (Object)levelsButton) registered = true;
+                    Assert.IsTrue(registered, entry.Id + ": LevelsButton is not in TouchStickCatInput.reservedRegions.");
+                }
+            }
+            finally
+            {
+                RestoreSetup(setup);
+            }
+        }
+
         [Test]
         public void EachListedLevel_BuildSettingsGuidResolvesToItsScenePath()
         {
@@ -200,6 +246,49 @@ namespace Parallax.Tests.EditMode
             Assert.NotNull(LevelCameraSetupType, "Parallax.Editor.Setup.LevelCameraSetup not found.");
             MethodInfo method = LevelCameraSetupType.GetMethod("RefusesToRun", BindingFlags.Public | BindingFlags.Static);
             Assert.NotNull(method, "LevelCameraSetup.RefusesToRun not found.");
+
+            Assert.IsTrue((bool)method.Invoke(null, new object[] { "Level_Solo01" }));
+            Assert.IsTrue((bool)method.Invoke(null, new object[] { "Level_001" }));
+            Assert.IsTrue((bool)method.Invoke(null, new object[] { "Sandbox_Realities" }));
+            Assert.IsFalse((bool)method.Invoke(null, new object[] { "_LevelTemplate" }));
+        }
+
+        // PAX-053 §2.3.1/§5.7: the level select setup menu's guard accepts only "LevelSelect".
+        [Test]
+        public void LevelSelectGuard_RefusesEverySceneExceptLevelSelect()
+        {
+            Assert.NotNull(LevelSelectSetupType, "Parallax.Editor.Setup.LevelSelectSetup not found.");
+            MethodInfo method = LevelSelectSetupType.GetMethod("RefusesToRun", BindingFlags.Public | BindingFlags.Static);
+            Assert.NotNull(method, "LevelSelectSetup.RefusesToRun not found.");
+
+            Assert.IsTrue((bool)method.Invoke(null, new object[] { "Level_Solo01" }));
+            Assert.IsTrue((bool)method.Invoke(null, new object[] { "_LevelTemplate" }));
+            Assert.IsTrue((bool)method.Invoke(null, new object[] { "Sandbox_Realities" }));
+            Assert.IsFalse((bool)method.Invoke(null, new object[] { "LevelSelect" }));
+        }
+
+        // PAX-053 review fix: the bootstrap path (LevelSelect.unity doesn't exist yet) replaces
+        // the active scene in memory without saving it - it must refuse when that scene is dirty,
+        // the same rule LevelSetup.RegenerateScene already enforces for its own scene swaps.
+        [Test]
+        public void LevelSelectSetup_RefusesToCreateTheScene_WhenTheOpenSceneHasUnsavedChanges()
+        {
+            Assert.NotNull(LevelSelectSetupType, "Parallax.Editor.Setup.LevelSelectSetup not found.");
+            MethodInfo method = LevelSelectSetupType.GetMethod("RefusesToCreate", BindingFlags.Public | BindingFlags.Static);
+            Assert.NotNull(method, "LevelSelectSetup.RefusesToCreate not found.");
+
+            Assert.IsTrue((bool)method.Invoke(null, new object[] { true }), "a dirty active scene must refuse scene creation");
+            Assert.IsFalse((bool)method.Invoke(null, new object[] { false }), "a clean active scene must not be refused");
+        }
+
+        // PAX-053 §2.4.1 (D-070): LevelCompleteUISetup is retargeted to _LevelTemplate only -
+        // Level_Solo01 keeps its existing UI and is never touched by this menu again.
+        [Test]
+        public void LevelCompleteUIGuard_RefusesEverySceneExceptTemplate()
+        {
+            Assert.NotNull(LevelCompleteUISetupType, "Parallax.Editor.Setup.LevelCompleteUISetup not found.");
+            MethodInfo method = LevelCompleteUISetupType.GetMethod("RefusesToRun", BindingFlags.Public | BindingFlags.Static);
+            Assert.NotNull(method, "LevelCompleteUISetup.RefusesToRun not found.");
 
             Assert.IsTrue((bool)method.Invoke(null, new object[] { "Level_Solo01" }));
             Assert.IsTrue((bool)method.Invoke(null, new object[] { "Level_001" }));
