@@ -35,5 +35,52 @@ namespace Parallax.Core.Cameras
 
             return result;
         }
+
+        // PAX-052 (D-071): the level camera's fit/follow decision and sizing. frameSize is the
+        // room's content bounds plus ViewMargin (baked per level at regeneration time, never a
+        // runtime layout read, D-066). Fit mode requires the whole frame - width AND height - to
+        // fit in a view no taller than maxViewHeight at the current aspect; follow mode's view
+        // height then only depends on the frame's own height, since horizontal coverage comes
+        // from panning, not from sizing wider.
+        public static float RequiredFitViewHeight(Vector2 frameSize, float aspect)
+        {
+            float safeAspect = Mathf.Max(aspect, 0.0001f);
+            return Mathf.Max(frameSize.y, frameSize.x / safeAspect);
+        }
+
+        public static bool IsFitMode(Vector2 frameSize, float maxViewHeight, float aspect) =>
+            RequiredFitViewHeight(frameSize, aspect) <= maxViewHeight;
+
+        public static float FollowViewHeight(Vector2 frameSize, float maxViewHeight) =>
+            Mathf.Min(frameSize.y, maxViewHeight);
+
+        public static float ResolveViewHeight(Vector2 frameSize, float maxViewHeight, float aspect) =>
+            IsFitMode(frameSize, maxViewHeight, aspect)
+                ? RequiredFitViewHeight(frameSize, aspect)
+                : FollowViewHeight(frameSize, maxViewHeight);
+
+        // direction > 0 shifts the dead-zone target right by lookAhead, < 0 shifts it left, 0
+        // leaves it unchanged (the caller holds the last non-zero direction across frames so the
+        // shift doesn't snap back to centre the instant the cat stops).
+        public static Vector2 ApplyLookAhead(Vector2 target, float direction, float lookAhead)
+        {
+            if (direction > 0f) target.x += lookAhead;
+            else if (direction < 0f) target.x -= lookAhead;
+            return target;
+        }
+
+        // Composes dead zone -> look-ahead -> (optional) vertical lock -> bounds clamp into the
+        // one follow-mode position the level camera resolves every step. verticalFollow is false
+        // whenever the room isn't taller than the current view (§2.2.2): the camera then stays
+        // locked to the frame's vertical centre instead of tracking the cat's height.
+        public static Vector2 ResolveFollowCentre(Vector2 currentCentre, Vector2 target, float direction,
+            Vector2 deadZoneHalfExtents, float lookAhead, Vector2 halfView, Vector2 frameCentre,
+            Vector2 frameMin, Vector2 frameMax, bool verticalFollow)
+        {
+            Vector2 desired = ResolveDeadZone(currentCentre, target, deadZoneHalfExtents);
+            desired = ApplyLookAhead(desired, direction, lookAhead);
+            if (!verticalFollow) desired.y = frameCentre.y;
+            return ClampToBounds(desired, halfView, frameMin, frameMax);
+        }
     }
 }

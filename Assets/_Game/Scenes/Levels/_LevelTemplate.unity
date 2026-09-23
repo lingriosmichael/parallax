@@ -340,7 +340,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 20.82712, y: 10.972882}
+  m_Size: {x: 20.82712, y: 16.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -2414,17 +2414,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 519420028}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b320b6eb7cc44ee8bb2a37cfd80ade36, type: 3}
+  m_Script: {fileID: 11500000, guid: d9ea53903fa034686af40d723bc73d50, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Cameras.CatCameraFollow
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Cameras.LevelCameraFollow
   target: {fileID: 895099153}
-  deadZoneHalfExtents: {x: 2, y: 1.6}
-  smoothTime: 0.18
-  maxSpeed: 40
-  useBounds: 0
-  boundsMin: {x: 0, y: 0}
-  boundsMax: {x: 0, y: 0}
+  roomDeath: {fileID: 56394177}
   respawn: {fileID: 895099147}
+  config: {fileID: 11400000, guid: a73b15e30c79c4c2c882860086b29c57, type: 2}
+  frameCenter: {x: 0, y: 0}
+  frameSize: {x: 0, y: 0}
 --- !u!1001 &589262362
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2686,7 +2684,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 20.82712, y: 13.789831}
+  m_Size: {x: 20.82712, y: 16.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -3043,7 +3041,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 20.82712, y: 11.908475}
+  m_Size: {x: 20.82712, y: 16.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -3632,7 +3630,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 20.82712, y: 11.908475}
+  m_Size: {x: 20.82712, y: 16.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -3871,7 +3869,7 @@ MonoBehaviour:
   realityCamera: {fileID: 519420031}
   screenSpeed: 0.15
   tileWidth: 20.82712
-  tileOffsetY: -0.0007624626
+  tileOffsetY: 0
   tiles:
   - {fileID: 663417229}
   - {fileID: 2116232258}
@@ -4893,7 +4891,7 @@ MonoBehaviour:
   realityCamera: {fileID: 519420031}
   screenSpeed: 0.35
   tileWidth: 20.82712
-  tileOffsetY: -0.00008440018
+  tileOffsetY: 0
   tiles:
   - {fileID: 1424073268}
   - {fileID: 616481284}
@@ -6774,7 +6772,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 20.82712, y: 13.789831}
+  m_Size: {x: 20.82712, y: 16.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -8166,7 +8164,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 20.82712, y: 10.972882}
+  m_Size: {x: 20.82712, y: 16.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -8589,7 +8587,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 20.82712, y: 10.972882}
+  m_Size: {x: 20.82712, y: 16.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -9469,7 +9467,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 20.82712, y: 13.789831}
+  m_Size: {x: 20.82712, y: 16.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -9706,7 +9704,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
-  m_Size: {x: 20.82712, y: 11.908475}
+  m_Size: {x: 20.82712, y: 16.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1

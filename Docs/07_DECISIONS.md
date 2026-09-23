@@ -653,3 +653,109 @@ keeps the next landing and any trap's reveal on screen. Precision thresholds com
 session with the touch stick, not from the Editor. The element types (moved to
 `SoloRoomElementTypes.cs` by D-066) gain a section marker in a kit ticket.
 
+### D-070 · 2026-09-23 · Accepted
+**Decision:** Level scenes are generated (PAX-052, rev B). `_LevelTemplate` is the only source of
+a level's non-room content (HUD, level-complete UI, camera, background/foreground). `New Level…`,
+`Rebuild Current Level` and `Rebuild All Levels` funnel through one function, `LevelSetup.
+RegenerateScene`: the target `Level_NNN.unity`'s file bytes on disk are overwritten with
+`_LevelTemplate.unity`'s current bytes (`File.Copy`, the target's own `.meta`/GUID is never
+touched, so Build Settings and every existing GUID reference keep working), reimported
+(`AssetDatabase.ImportAsset(ForceUpdate)`), reopened, then the room is built from that level's
+`LevelLayouts` entry via `SoloRoomBuilder` and the camera frame/background are baked via
+`LevelCameraBuilder`. `New Level…` still creates the scene file via `AssetDatabase.CopyAsset` only
+when it doesn't exist yet, then calls the same regeneration function. `RegenerateScene` refuses if
+the template, the target, or whatever scene is currently active/loaded has unsaved changes (it
+replaces the active scene in memory without saving). `Build Level Template` stays bootstrap-only:
+it errors if the template already exists; there is no template "rebuild" path, since from now on
+the template — not `Level_Solo01` — holds scaffolding changes. Every scaffolding menu that
+configures level content (the Level Camera menu, D-071) has a scene guard that accepts only
+`_LevelTemplate`; the regeneration menus refuse `Sandbox_Realities`, `Level_Solo01` and
+`_LevelTemplate` itself (`LevelSetup.IsGuardedScene`).
+
+**Determinism, amended from rev B's original wording.** Whole-scene regeneration is deterministic
+at the *data* level, not the byte level: the room subtree is destroyed-and-rebuilt from
+`SoloRoomBuilder` on every regeneration (as it already was pre-PAX-052, for the room alone), and
+Unity assigns each freshly-constructed GameObject a new fileID from its own session-internal
+counter, which is not stable run to run. Verified empirically during this ticket: running
+`Rebuild All Levels` twice in a row, with nothing else changed, produced two *different* diffs —
+same objects, same components, same values, different fileIDs — never an empty one. Non-room
+scaffolding copied verbatim from the template (HUD, camera config reference, background layer
+objects) *is* byte-stable across runs, since it's never destroyed and rebuilt. "Deterministic"
+therefore means: the same set of objects, components and serialized values every run, checked by
+data-level tests — `LevelLayoutTests`' `BakedBounds_…`/`SplitFidelity_…` (layout data, not the
+scene), and `LevelSceneTests`' scene-read bounds test plus its camera-wiring test, which reads the
+baked `frameCenter`/`frameSize` themselves (non-zero, matching the scene's own kill bounds centre
+and margin-adjusted size) rather than only checking that the reference fields are wired — not
+`git diff --stat` showing nothing. The developer
+checklist (§9 of the ticket) is amended to match: after two `Rebuild All Levels` runs, expect a
+diff confined to room-subtree fileIDs (no added/removed objects, no changed values), not an empty
+one; no `.meta` file changes in either run, which still holds exactly as written.
+
+**Why:** 50 level scenes can't be hand-fixed every time scaffolding changes (PAX-051's own review
+found `Rebuild All Levels` only ever touched the room). Overwriting the target's bytes from the
+template, rather than copying GameObjects between scenes, avoids cross-scene reference breakage
+and fileID churn on the *non-room* content, which is the content actually shared across all 50
+levels; the room's own fileID churn is accepted because nothing outside that scene ever references
+a room GameObject by fileID (bounds and the camera frame are baked as values, not references).
+**Supersedes:** D-066's "`Rebuild Current Level`/`Rebuild All Levels` (later relayout)" description
+insofar as it now regenerates the whole scene, not only the room.
+
+### D-071 · 2026-09-23 · Accepted
+**Decision:** The level camera (PAX-052). A new component, `Parallax.Gameplay.Cameras.
+LevelCameraFollow`, on `Camera_A` only — `CatCameraFollow` (`Sandbox_Realities`/`Level_Solo01`,
+frozen-adjacent per D-047) is untouched, and `Camera_B` stays disabled and unmodified. Pure math
+lives in `Parallax.Core.Cameras.CameraMath` (extended, not forked): `IsFitMode`/
+`RequiredFitViewHeight`/`FollowViewHeight`/`ResolveViewHeight`/`ApplyLookAhead`/
+`ResolveFollowCentre`.
+1. **Frame, not kill bounds.** The camera reads a frame baked onto the component itself
+   (`frameCenter`/`frameSize`), computed at regeneration time as `SoloRoomBuilder.
+   ComputeRoomBounds(layout, ViewMargin)` — the room's content bounds plus `ViewMargin`, not
+   `RoomManager`'s (differently-margined) kill bounds. Baked the same way D-059 bakes
+   `RoomManager.bounds`; never a runtime layout read (D-066).
+2. **Fit vs follow.** Fit mode requires the frame — width *and* height, via the current aspect —
+   to fit in a view no taller than `MaxViewHeight`; its view height is the minimum that shows the
+   whole frame (`RequiredFitViewHeight`). Otherwise follow mode: view height is `min(frame height,
+   MaxViewHeight)` (only the frame's height, since horizontal coverage comes from panning, not
+   sizing wider); the camera resolves a dead-zone target, applies horizontal look-ahead in the
+   cat's direction of travel, locks to the frame's vertical centre unless the frame is taller than
+   the view (§2.2.2), and clamps to the frame. Recomputed every step, so aspect changes (16:9,
+   20:9, 4:3) reselect mode and size live.
+3. **Snap, not smoothed.** `SnapToTarget()` (no `SmoothDamp`) runs on `Start()` and on
+   `CatRespawn.Respawned` — the same hook `CatCameraFollow` already used, since `CatRespawn.
+   RespawnAt` sets position before firing the event, same tick as the checkpoint respawn. The
+   whole per-step update (position *and* size) is skipped while `RoomDeath.IsHolding`, mirroring
+   `RoomManager.OnStepped`'s own hold gate, so the death hold never produces a camera swoosh.
+4. **Constants**, one place (`LevelCameraConfig`, a `ScriptableObject` asset, `PARALLAX/Level
+   Camera Config`): `ViewMargin` 0.5, `MaxViewHeight` 16, `LookAhead` 2.5, dead zone (2, 1.6),
+   `smoothTime` 0.18, `maxSpeed` 40 — the dead zone/smoothing/max-speed values are `CatCameraFollow`'s
+   existing ones. L001–L004's shipped camera frame is 33×13 (32×12 content + `ViewMargin` 0.5/side);
+   at `MaxViewHeight` 16 the required fit height (`max(frame height, frame width / aspect)`) is
+   14.85 at 20:9 — **fit** — but 18.56 at 16:9 and 24.75 at 4:3 — **follow** at both. So today's four
+   levels are fit-mode only at aspects at or above roughly 20:9; narrower phones see them pan
+   horizontally in follow mode. `LevelCameraMathTests.SameRoom_At20x9_IsFit_At16x9And4x3_IsFollow`
+   asserts exactly this split. Provisional; tuned on device later (out of scope here, per D-064) —
+   whether that's the intended novice-tier feel on a 16:9/4:3 device, or `MaxViewHeight` should rise
+   (≥ ~18.6 would make 16:9 fit too), is an open call for the developer, not decided here.
+5. **Setup menu.** `PARALLAX/Setup/Levels/Level Camera` configures `Camera_A` in `_LevelTemplate`
+   only (guard: `LevelCameraSetup.RefusesToRun`): adds `LevelCameraFollow`, wires
+   `target`/`respawn`/`roomDeath` (looked up by name/type in the open scene, not hardcoded),
+   removes the template's copied-in `CatCameraFollow`, and sizes/offsets the three tiled
+   background layers (`BG_00_Sky`/`BG_01_Far`/`MG_01_Mid`) for `MaxViewHeight` via the existing
+   `ParallaxMath.BackgroundTileOffsetY` (no code change to `ParallaxLayer`/`ParallaxMath` — same
+   sprite, tiled taller; `maxAbsCameraY` 0 since no room triggers vertical follow yet). The
+   regeneration step (D-070) then bakes each level's own frame and repositions the background
+   layers' (and `Foreground/FG_01`'s) vertical placement from that frame — horizontal placement
+   stays `ParallaxLayer`'s existing runtime job.
+6. **Trap-reveal visibility** in follow-mode rooms is the validator's job (KIT-2, KIT-4), not the
+   camera's — the camera guarantees the frame is on screen, not that every reveal lands inside the
+   current view before a kill.
+**Why:** A world-aligned camera (D-020) that shows a whole troll room at once by default (D-040),
+and follows through D-069's wider precision rooms without hiding the next landing or a trap's
+reveal, while never risking `Sandbox_Realities`' existing camera behaviour.
+**Consequence:** L001–L004 already exercise follow mode below ~20:9 aspect (see §4), so follow mode
+is not untested in practice — but no *novice-tier* room has been played through it on a real device
+yet (D-064 defers all device validation to Phase H), and no room is wide/tall enough to need
+vertical follow at all. `LevelCameraMathTests`' clamp/look-ahead/vertical-lock assertions use a
+synthetic frame rather than a built level for that reason, not because follow mode itself is
+unexercised.
+
