@@ -123,7 +123,8 @@ namespace Parallax.Editor.Setup
             }
         }
 
-        static IEnumerable<Rect> KillVolumes(SoloRoomElement e, Vector2 origin)
+        // PAX-073: internal so TriggerCoverage uses the same danger volumes (D-074).
+        internal static IEnumerable<Rect> KillVolumes(SoloRoomElement e, Vector2 origin)
         {
             switch (e.Kind)
             {
@@ -212,6 +213,31 @@ namespace Parallax.Editor.Setup
                 if (trap.Settings.PeriodTicks - trap.Settings.CooldownTicks < crossing + PeriodicSlackTicks)
                     errors.Add($"{levelId}: {trap.Name} periodic slack is below {PeriodicSlackTicks} ticks beyond its from-rest crossing (D-056).");
             }
+        }
+
+        // PAX-073 (D-074): trigger coverage. Deliberately not part of Validate(): it runs over
+        // LevelLayouts entries only, and SoloRoomsLayout (checked through Validate() by the Parity
+        // test) keeps the L001 Spikes_A gap on purpose. Learned bypasses are appended to
+        // learnedBypasses as "{levelId}: learned bypass: {trap} — {reason}".
+        public static List<string> ValidateTriggerCoverage(string levelId, SoloRoomDefinition room, CatMotorConfig motor, float gravityStrength, List<string> learnedBypasses)
+        {
+            var errors = new List<string>();
+            TriggerCoverage.Check(levelId, room, motor, gravityStrength, errors, learnedBypasses);
+            return errors;
+        }
+
+        // PAX-073 (D-074): every Floor is at least limits.MinThickness thick and limits.MinWidth wide.
+        public static List<string> ValidatePlatformSizes(string levelId, SoloRoomDefinition room, PlatformSizeConfig limits)
+        {
+            var errors = new List<string>();
+            if (limits == null) { errors.Add($"{levelId}: no PlatformSizeConfig given."); return errors; }
+            const float tolerance = 1e-4f;
+            foreach (SoloRoomElement e in room.Elements.Where(e => e.Kind == SoloRoomElementKind.Floor))
+            {
+                if (e.Size.y < limits.MinThickness - tolerance) errors.Add($"{levelId}: {e.Name} thickness {e.Size.y:F2} is below the minimum {limits.MinThickness:F2} (PlatformSizeConfig).");
+                if (e.Size.x < limits.MinWidth - tolerance) errors.Add($"{levelId}: {e.Name} width {e.Size.x:F2} is below the minimum {limits.MinWidth:F2} (PlatformSizeConfig).");
+            }
+            return errors;
         }
 
         static CatMotorConfig Config() => AssetDatabase.LoadAssetAtPath<CatMotorConfig>("Assets/_Game/Data/CatMotorConfig_Default.asset");

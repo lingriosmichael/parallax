@@ -26,7 +26,7 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Floor,"Floor_D",(26f,-.5f),(12f,1f)));
             AddPit(elements,1,6f,14f);
             AddPit(elements,2,18f,20f);
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_A",(25f,.15f),(1.5f,.3f),(20f,.5f),(1f,1f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_A",(25f,.15f),(1.5f,.3f),(21f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_A",(28f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:78,unitsPerTick:.3f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_A")));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(29f,.75f),(.6f,1.5f)));
             elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(27f,3.5f),(.5f,7f),settings:new SoloRoomTrapSettings(delayTicks:12,moveTicks:24,offset:new Vector2(2f,0f),triggerSource:TrapTriggerSource.Chain,chainSource:"Block_A")));

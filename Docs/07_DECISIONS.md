@@ -890,3 +890,68 @@ that same frame, so an immediate resume would have hidden the panel before the t
 **Consequence:** New level UI goes through `PARALLAX/Setup/Levels/Pause Menu` on `_LevelTemplate`
 only (D-070), then Rebuild All Levels. `Level_Solo01` has no pause menu. Any future code that
 changes `Time.timeScale` must go through `RunningState`.
+
+### D-074 · 2026-09-23 · Accepted
+
+**Decision:** Trigger coverage and thin platforms (PAX-073, KIT-1).
+(1) **Coverage.** Every trap fired from an Overlap trigger must catch the cat before it can reach
+the trap's danger, from every approach: walking in from either side, jumping, falling in from
+above, and the mirrored cases with gravity up. `LevelLayoutValidator.ValidateTriggerCoverage`
+enforces this for every `LevelLayouts` entry (geometry in `Editor/Setup/TriggerCoverage.cs`). It
+is not part of `Validate()`.
+(2) **Danger set.** A trap's `KillVolumes` (the door-clearance definition), plus every chain
+descendant's `KillVolumes`, plus the door sweep of a `DoorRetreat` descendant. Chains are
+followed.
+(3) **The check.** The trigger must be a cut. Over its x-span, its y-span covers the lowest
+standable top, where pit interiors count as death, up to the underside of the ceiling over it
+(epsilon 1e-3). Pit interiors are an opening's `PitBottom` and any top under its `OpeningBottom`
+hazard; a Floor sunk inside a pit still counts as standable. Every danger must lie beyond the
+trigger's near edge, as seen from the checkpoint. Alternatively, the **flip-entry clause**
+applies: a danger on a floor stretch that is
+bounded by `UnjumpableFloor` hazards or the room's ends, doesn't contain the checkpoint, and has
+nothing standable above its floor is covered when the trigger contains every gravity flip whose
+drop can land in the stretch. The drop is taken as full run speed for a fall from the flip's top.
+The clause applies only to dangers below a gravity-up cat's reach from the ceiling (ceiling
+underside − collider height − jump height = 3.24 in a 7-high room); a gravity-up cat can walk the
+ceiling into the stretch without any flip.
+A trigger that moves with its trap is checked at its authored pose. That covers Rearm traps
+completely, since D-055 snaps a Rearm trap back to its authored state before it can fire again.
+Collapsing floors and gravity flips trigger on their own body and are covered by construction.
+Periodic traps have no trigger. Per-tick sampling can't skip a cut: the cat is 1.0 × 0.56 and
+moves at most 0.12 / 0.40 / 0.277 u per 0.02 s tick (run / max fall / jump take-off).
+(4) **Learned bypass.** `SoloRoomTrapSettings.LearnedBypassReason`, an optional last constructor
+parameter, null by default. A non-null reason skips the rule, and the validator lists the trap.
+An empty reason is rejected. No trap in L001–L004 is a learned bypass.
+(5) **Levels fixed.**
+- L001 `Spikes_A`: trigger (20, 0.5) 1×1 → (21, 3.5) 0.5×7. It was the falling-ceiling gap: a
+  full-speed jump over `Collapse_C` cleared the floor-height trigger, so `Spikes_A`, `Block_A` and
+  `Retreat` never fired.
+- L002 `Lift`: trigger (19.55, 0.25) 0.3×1 → (19.55, 3.375) 0.3×7.25. The x-span and bottom are
+  unchanged, so a standing cat fires it on the same tick. A direct jump to the Receiver used to
+  skip it and with it `ReceiverBlock`.
+
+Baked bounds are unchanged. `SoloRoomsLayout` and `Level_Solo01` keep the `Spikes_A` and `Lift`
+gaps on purpose (frozen). `LevelLayoutTests.SplitFidelity_…` exempts exactly
+`{("L001","Spikes_A"), ("L002","Lift")}` from its trigger-box comparison and fails if either
+entry goes stale.
+(6) **Thin platforms** are ordinary `Floor` elements with the floor look: solid, two-sided, no
+effector. `LevelLayoutValidator.ValidatePlatformSizes` rejects any `Floor` thinner than 0.5 or
+narrower than 1.0, naming it. The limits live in `Assets/_Game/Data/PlatformSizeConfig.asset`,
+created by `PARALLAX/Setup/Levels/Platform Size Config`. At 0.5, the minimum thickness is at
+least the cat's maximum fall per physics step (20 u/s × 0.02 s = 0.4 u), so no platform can be
+tunnelled. The cat's Rigidbody2D is also already Continuous, and its physics is unchanged.
+**Limits (not checked):**
+- betrayals that don't kill, e.g. a Solid that moves away (L004 `FalseLanding`);
+- an Overlap `DoorRetreat` that is itself the root has no danger of its own and is skipped (the
+  door sweep counts only for chain descendants, as ruled); none exists in L001–L004;
+- the `UnjumpableFloor` role is trusted, not validated: the flip-entry clause assumes such a
+  hazard really can't be jumped;
+- the flip-entry gravity-up reach check uses the highest ceiling spanning the danger and assumes
+  one ceiling height over the stretch;
+- rooms with no ceiling over the trap: rejected as "coverage band undefined", with no fallback
+  band;
+- the flip-entry clause ignores upward speed when a cat enters a flip, treats `FallingBlock`s as
+  non-standable, and handles floor stretches only;
+- `SoloRoomsLayout` and `TrapLabLayout` are not checked.
+**Why:** A trigger that can be jumped past isn't a troll, it's a hole in the room. Thin platforms
+are needed by KIT-3 and KIT-4.

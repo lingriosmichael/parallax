@@ -11,6 +11,7 @@ namespace Parallax.Editor.Setup
         public static readonly IReadOnlyList<SoloRoomDefinition> Rooms = new[]
         {
             Room(0, 0f, new[] {
+                E(SoloRoomElementKind.Floor,"ThinPlatform",(3.5f,1.75f),(1f,.5f)),
                 E(SoloRoomElementKind.HiddenSpikes,"SourceSpikes",(6f,.15f),(2f,.3f),(5f,.5f),(.5f,1f),new SoloRoomTrapSettings(revealDelayTicks:6)),
                 E(SoloRoomElementKind.FallingBlock,"Block_1",(8f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:6,unitsPerTick:.3f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"SourceSpikes")),
                 E(SoloRoomElementKind.FallingBlock,"Block_2",(14f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:6,unitsPerTick:.3f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_1")),

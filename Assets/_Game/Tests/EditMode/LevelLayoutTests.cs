@@ -137,6 +137,9 @@ namespace Parallax.Tests.EditMode
 
         static readonly (string levelId, int soloRoomIndex)[] SeedPairs = { ("L001", 0), ("L002", 1), ("L003", 2), ("L004", 3) };
 
+        // PAX-073 (D-074, R7): the only L00N trigger boxes allowed to differ from SoloRoomsLayout.
+        static readonly (string levelId, string name)[] TriggerBoxExceptions = { ("L001", "Spikes_A"), ("L002", "Lift") };
+
         [Test]
         public void SplitFidelity_L00NEqualsSoloRoomsLayoutRoomNUpToTranslationAndRoomId()
         {
@@ -161,9 +164,20 @@ namespace Parallax.Tests.EditMode
                     Assert.AreEqual(soloElements[i].Kind, levelElements[i].Kind, levelId + " element " + i + " kind");
                     Assert.AreEqual(soloElements[i].Position, levelElements[i].Position, levelId + " element " + i + " position");
                     Assert.AreEqual(soloElements[i].Size, levelElements[i].Size, levelId + " element " + i + " size");
+                    // PAX-073 (D-074, R7): the approved trigger-coverage fixes change only these traps'
+                    // trigger boxes, so only their SecondaryPosition/SecondarySize may differ, and they
+                    // must differ (no stale entries).
+                    if (TriggerBoxExceptions.Contains((levelId, levelElements[i].Name)))
+                    {
+                        Assert.IsFalse(soloElements[i].SecondaryPosition == levelElements[i].SecondaryPosition && soloElements[i].SecondarySize == levelElements[i].SecondarySize,
+                            levelId + " " + levelElements[i].Name + " is in TriggerBoxExceptions but its trigger box still equals SoloRoomsLayout's (stale entry).");
+                        continue;
+                    }
                     Assert.AreEqual(soloElements[i].SecondaryPosition, levelElements[i].SecondaryPosition, levelId + " element " + i + " secondary position");
                     Assert.AreEqual(soloElements[i].SecondarySize, levelElements[i].SecondarySize, levelId + " element " + i + " secondary size");
                 }
+                foreach ((string _, string exceptionName) in TriggerBoxExceptions.Where(x => x.levelId == levelId))
+                    Assert.IsTrue(levelElements.Any(e => e.Name == exceptionName), levelId + " has no element " + exceptionName + " listed in TriggerBoxExceptions.");
             }
         }
 
