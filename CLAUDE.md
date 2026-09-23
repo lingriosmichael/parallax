@@ -198,9 +198,16 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 - Every runtime scene load goes through `LevelSceneLoader.Load(sceneName)`. Never call
   `SceneManager.LoadScene` directly, and never add an Editor-only load path.
 - Every `Time.timeScale` write goes through `RunningState` (D-073). Never assign
-  `Time.timeScale` anywhere else.
+  `Time.timeScale` anywhere else. New tests swap `RunningState.SetTimeScale` and never write the
+  real `Time.timeScale`.
 - Level UI is built on `_LevelTemplate` only (D-070), then `Rebuild All Levels`.
   `Level_Solo01` is frozen and gets no new UI.
+- Every HUD or overlay button that can be tapped during play is an `ITouchReservedRegion`,
+  appended to `TouchStickCatInput.reservedRegions` by its setup menu (D-023, D-073).
+- Level UI buttons use `Navigation.Mode.None`, so keyboard and gamepad Submit and Navigate can't
+  reach them (D-073).
+- A button that leaves a level must not reuse `LevelsButton` unless it's meant to record a
+  completion; `LevelsButton` saves progress before loading (D-073).
 
 ## Semantic state and networking
 

@@ -135,7 +135,7 @@ public sealed class ObserverContext : MonoBehaviour
 
 `ObserverSet` holds both contexts (`Get(ObserverId)`). Systems receive it from the composition root. There is no global singleton.
 
-**Tick ownership (D-022, as built in PAX-014):** `ObserverSet.FixedUpdate` is the only per-tick entry point. It owns `Tick` and runs, in order: `Tick++` → Observer A `Step(Tick)` → Observer B `Step(Tick)` → `Stepped(Tick)` event (PAX-019). `CatMotor2D` has no `FixedUpdate`; it exposes `Step(in CatCommand input, float dt)`, called only by drivers. `LocalHumanDriver` reads `CatInputRouter` exactly once per tick; `InactiveDriver` steps with `CatCommand.None`. `EchoReplay` and `RemoteHuman` exist as enum members only, and their driver classes are written in their own tickets.
+**Tick ownership (D-022, as built in PAX-014):** `ObserverSet.FixedUpdate` is the only per-tick entry point. It owns `Tick` and runs, in order: `Tick++` → Observer A `Step(Tick)` → Observer B `Step(Tick)` → `Stepped(Tick)` event (PAX-019). Since PAX-054 it first returns without doing any of this while its optional `pauseGate` is paused (§11.3, D-073). `CatMotor2D` has no `FixedUpdate`; it exposes `Step(in CatCommand input, float dt)`, called only by drivers. `LocalHumanDriver` reads `CatInputRouter` exactly once per tick; `InactiveDriver` steps with `CatCommand.None`. `EchoReplay` and `RemoteHuman` exist as enum members only, and their driver classes are written in their own tickets.
 
 ### 4.1 Commands
 
@@ -485,7 +485,7 @@ public interface IRealityTransport
 
 ## 10. Time
 
-- **Solo:** `Tick` = count of `FixedUpdate` steps since the level loaded, owned by `ObserverSet` (D-022).
+- **Solo:** `Tick` = count of `FixedUpdate` steps since the level loaded, owned by `ObserverSet` (D-022). Paused steps don't count: the level pauses with `Time.timeScale = 0` plus `ObserverSet`'s pause gate (§11.3, D-073).
 - **Co-op:** `Tick` = Fusion's network tick.
 - Echo uses tick offsets, never `Time.time`.
 - Cues use absolute ticks.
@@ -587,7 +587,33 @@ naming it and stays on the current screen. That check reads the in-memory list; 
 memory and disk is caught by `Sync` saving and by the on-disk test.
 
 The level complete screen shows Restart, Next level (not on the last listed level) and Levels.
-Levels records completion like Next level, then loads `LevelSelect`.
+Levels records completion like Next level, then loads `LevelSelect`. Since PAX-054 the loader
+also restores the running state (`RunningState.Restore()`) after the Build Settings refusal and
+before loading, so no scene starts paused and a refused load leaves a paused level paused.
+
+### 11.3 Pause (as built PAX-054, D-073)
+
+- **Core:** `PauseState` (`Pause`, `Resume`, `ApplyPendingResume`, `IsPaused`; Resume only sets a
+  pending flag) and `AutoPausePolicy` (background always pauses; focus loss unless ignored).
+- **Gameplay:** `RunningState` is the single `Time.timeScale` writer (`Freeze` = 0, `Restore` = 1,
+  swappable `SetTimeScale` for tests). `LevelPause` (one per level scene, root object) owns the
+  `PauseState` and implements `IPauseGate`.
+- **Pause:** `LevelPause.Pause()` freezes the running state, shows the panel and clears the
+  EventSystem selection. It is refused once the level is complete.
+- **Resume:** `Resume()` only requests; `LevelPause.LateUpdate` calls `ApplyPendingResume()`, which
+  hides the panel, restores the running state, calls `CatInputRouter.ResetTransientState()` and
+  clears the selection.
+- **Tick gate:** `ObserverSet.FixedUpdate` returns before `Tick++` while its optional `pauseGate`
+  (`IPauseGate`) is paused; a null gate changes nothing.
+- **UI:** `PauseButton` (HUD, top-right) and `PausePanel` (full screen; Resume, Restart, Levels)
+  are reserved touch regions; their buttons use Navigation None. Restart and Levels call
+  `LevelSceneLoader.Load` directly and record nothing. `LevelCompleteScreen` hides the pause
+  button on completion.
+- **Auto-pause:** `OnApplicationPause(true)` and, unless `IgnoreFocusLoss` (set from
+  `Application.isEditor`), `OnApplicationFocus(false)` call `Pause()`; returning never resumes.
+  `OnDestroy` restores the running state only if this instance froze it.
+- **Setup:** `PARALLAX/Setup/Levels/Pause Menu` builds and wires it on `_LevelTemplate`, then
+  Rebuild All Levels.
 
 ---
 
