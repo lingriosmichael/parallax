@@ -25,7 +25,8 @@ namespace Parallax.Gameplay.Cameras
 
         Camera cam;
         Vector2 velocity;
-        float lastTargetX;
+        // PAX-082 follow-up: where the look-ahead direction last changed (CameraMath.ResolveLookDirection).
+        float directionAnchorX;
         float lastDirection;
         bool warnedUnbakedFrame;
 
@@ -47,12 +48,12 @@ namespace Parallax.Gameplay.Cameras
             // camera must not resume with a stale look-ahead direction or SmoothDamp velocity.
             velocity = Vector2.zero;
             lastDirection = 0f;
-            lastTargetX = target != null ? target.position.x : 0f;
+            directionAnchorX = target != null ? target.position.x : 0f;
         }
 
         void Start()
         {
-            if (target != null) lastTargetX = target.position.x;
+            if (target != null) directionAnchorX = target.position.x;
             SnapToTarget();
         }
 
@@ -71,7 +72,6 @@ namespace Parallax.Gameplay.Cameras
             if (!HasBakedFrame()) return;
 
             transform.position = ToVector3(Resolve(transform.position, immediate: false));
-            lastTargetX = target.position.x;
         }
 
         public void SnapToTarget()
@@ -83,7 +83,7 @@ namespace Parallax.Gameplay.Cameras
 
             transform.position = ToVector3(Resolve(transform.position, immediate: true));
             velocity = Vector2.zero;
-            lastTargetX = target.position.x;
+            directionAnchorX = target.position.x;
         }
 
         // PAX-053 (Phase 1 finding): frameCenter/frameSize are only baked by LevelSetup at
@@ -121,8 +121,7 @@ namespace Parallax.Gameplay.Cameras
             else
             {
                 Vector2 targetPos = target.position;
-                float dx = targetPos.x - lastTargetX;
-                float direction = dx > 0f ? 1f : (dx < 0f ? -1f : lastDirection);
+                float direction = CameraMath.ResolveLookDirection(targetPos.x, ref directionAnchorX, lastDirection, config.LookAheadFlipDistance);
                 lastDirection = direction;
                 bool verticalFollow = frameSize.y > viewHeight + 0.001f;
 

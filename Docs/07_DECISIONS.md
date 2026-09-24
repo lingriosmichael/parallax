@@ -1310,3 +1310,19 @@ on it. Address it before touch input feeds measured windows (KIT-4 thresholds, P
 Its removal belongs to the cleanup ticket.
 (6) **Developer feel feedback**, recorded but not acted on here: falling blocks fall too slowly; the
 jump is far too high; the run speed is too fast.
+
+### D-084 · 2026-09-24 · Accepted
+
+**Decision:** Level camera judder fix (PAX-082 follow-up). D-083 stays reserved for KIT-4.
+(1) **Cause:** `LevelCameraFollow` took the look-ahead side from the sign of the cat's x change since the last
+frame. A cat at rest still moves by a float step between frames (interpolated Transform), which flipped the
+side and swung the camera's target by up to ~9 u (2.5 look-ahead + 2 dead zone, each side). Measured live:
+the cat still at x 13.5679893 while the camera moved 15.01 → 12.40.
+(2) **Fix:** `CameraMath.ResolveLookDirection`: the side changes only after the cat travels more than
+`LevelCameraConfig.lookAheadFlipDistance` (default 0.1 u, under one tick of running) the other way from the
+furthest point it reached. Frame-rate independent. Only the direction choice changed; the dead zone, the
+look-ahead offset, the bounds clamp and SmoothDamp are unchanged. Runtime files: `CameraMath.cs` (Core),
+`LevelCameraFollow.cs`, `LevelCameraConfig.cs` (Gameplay).
+(3) **Tests:** `CameraLookAheadTests` (4), all seen red against the old sign rule; the camera-level test
+failed with a 5 u jump of the target from a one-float-step jitter.
+

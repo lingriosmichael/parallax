@@ -69,6 +69,20 @@ namespace Parallax.Core.Cameras
             return target;
         }
 
+        // The look-ahead direction with hysteresis. The direction changes only once the target has
+        // moved more than flipDistance from anchorX, the point where the direction last changed (or the
+        // furthest point reached since, in the current direction). A cat at rest, whose interpolated
+        // position can still differ by a float step between frames, never flips it. Frame-rate
+        // independent: it measures distance travelled, not per-frame deltas.
+        public static float ResolveLookDirection(float targetX, ref float anchorX, float lastDirection, float flipDistance)
+        {
+            float delta = targetX - anchorX;
+            if (delta > flipDistance) { anchorX = targetX; return 1f; }
+            if (delta < -flipDistance) { anchorX = targetX; return -1f; }
+            if ((lastDirection > 0f && delta > 0f) || (lastDirection < 0f && delta < 0f)) anchorX = targetX;
+            return lastDirection;
+        }
+
         // Composes dead zone -> look-ahead -> (optional) vertical lock -> bounds clamp into the
         // one follow-mode position the level camera resolves every step. verticalFollow is false
         // whenever the room isn't taller than the current view (§2.2.2): the camera then stays
