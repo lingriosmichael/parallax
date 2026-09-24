@@ -9,8 +9,8 @@ kit-gap ticket is inserted during Phase D.
 - **Done (committed):** PAX-050, PAX-051, PAX-052, PAX-053, PAX-054, KIT-1 (PAX-073), PAX-077,
   PAX-078, PAX-079, KIT-2 (PAX-074), KIT-3a (PAX-075), KIT-3b (PAX-080), PAX-081, PAX-082, KIT-4 (PAX-076), PAX-083. Acceptance so far is EditMode tests plus Editor checks (D-064); none of it is
   device-validated yet. EditMode baseline after PAX-083: 685.
-- **Next:** PAX-058.
-- **Remaining in Phase B:** PAX-058.
+- **Next:** PAX-059 (levels 1–10). Phase B is complete; PAX-058 was dropped by D-067.
+- **Remaining in Phase B:** none.
 - **Remaining after Phase B:** Phase D content (PAX-059–063), Phase E art, Phase F audio and
   haptics, Phase G release prep, Phase H validation, then Phase I (iOS) and the co-op update.
 - **Open developer checks:** PAX-078 §9 play check of L002 and L004 (D-076 (7)); PAX-079 §9 play
@@ -38,12 +38,12 @@ kit-gap ticket is inserted during Phase D.
 | ✓ | PAX-082 | Movement feel: jump height 3.2 → 1.6, every moving trap 20% faster; L001–L004 and Trap Lab 3–4 rebuilt around the new cat; harness pins re-measured once; movement readout. Camera judder fix alongside. | D-082, D-084 |
 | ✓ | KIT-4 (PAX-076) | Precision sections: section marker, per-section thresholds from one config asset (provisional 0.85 / 8 until PAX-069), the level-band check (no precision in levels 1–10), bait gaps, Trap Lab room 5, the camera tell rule (`CameraMath.Step` shared with the level camera); Trap Lab rooms 0–2 refitted to the 1.6 jump and the Trap Lab menu now updates existing rooms. No device session (deferred to Phase H). | D-083, enforces D-065 |
 | ✓ | PAX-083 | Cleanup after KIT-4: PAX-075 and KIT-4 reviewer nits (route-session fingerprint by identity, the camera rule's short-replay guard), clean scenes after the level-select tests, known-noise lines, the split chain message, L001 `Retreat` as a Recovers betrayal, saved-scene sync tests for `Sandbox_TrapLab` and `Level_00N`, and every unproven PAX-080/KIT-4 test seen red. No runtime or layout change. | D-080 |
-| 1 · next | PAX-058 | Bounded randomness | D-067 |
+| ✗ | PAX-058 | Bounded randomness: dropped by D-067 (no randomness in v1; traps are learned by dying). | D-067 |
 
 PAX-057 (tiers) dropped by D-065.
 
 **Decisions:** D-065 difficulty bands ✓ · D-066 level format ✓ ·
-D-067 randomness · D-068 free levels and price · D-069 precision sections ✓ (thresholds: D-083) ·
+D-067 no randomness ✓ · D-068 free levels and price · D-069 precision sections ✓ (thresholds: D-083) ·
 D-070–D-080 written with PAX-052–PAX-080 ✓ · D-081 ✓ · D-082 movement feel ✓ · D-083 precision sections (KIT-4) ✓ ·
 D-084 camera judder ✓
 
@@ -54,8 +54,8 @@ PAX-058 in this phase's build order even though their numbers are higher; PAX-05
 | Phase | Ticket | What | Depends on |
 |---|---|---|---|
 | B · Levels & flow | PAX-050 ✓ | Level list, next level, progress save (done, 0b2ff77) | PAX-049 |
-| D · Content | PAX-059 | Levels 1–10 (easy band, D-065) | PAX-052, PAX-076 |
-| | PAX-060 | Levels 11–20 (hard, batch 1) | PAX-058, PAX-059 |
+| D · Content | PAX-059 · next | Levels 1–10 (easy band, D-065) | PAX-052, PAX-076 |
+| | PAX-060 | Levels 11–20 (hard, batch 1) | PAX-059 |
 | | PAX-061 | Levels 21–30 (hard, batch 2) | PAX-060 |
 | | PAX-062 | Levels 31–40 (hard, batch 3) | PAX-061 |
 | | PAX-063 | Levels 41–50 (hard, batch 4) | PAX-062 |
@@ -81,12 +81,11 @@ Phase E (art) and the art tickets can run alongside B–D, as today; they don't 
 
 ## Decisions still to write
 
-- **D-067** (in PAX-058): randomness as built.
 - **D-068** (before PAX-066): which levels are free, and the price.
 - **D-044 follow-up:** whether and how the per-room death count is shown or persisted, decided
   with the ticket that shows it.
-- **D-062** is still Proposed for luck, business model and audio/haptics; D-067 and D-068 settle
-  those parts. Its tier clauses are replaced by D-065's difficulty bands.
+- **D-062** is still Proposed for luck, business model and audio/haptics; D-067 (no randomness) settles
+  luck and D-068 will settle the business model. Its tier clauses are replaced by D-065's difficulty bands.
 
 ## Lead-time items to start early (not tickets)
 

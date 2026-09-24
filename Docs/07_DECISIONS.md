@@ -1452,3 +1452,13 @@ look-ahead offset, the bounds clamp and SmoothDamp are unchanged. Runtime files:
 (3) **Tests:** `CameraLookAheadTests` (4), all seen red against the old sign rule; the camera-level test
 failed with a 5 u jump of the target from a one-float-step jitter.
 
+
+### D-067 · 2026-09-25 · Accepted
+
+**Decision:** No randomness in v1. Levels teach through deterministic traps that the player learns by dying and
+memorising where they are (pillar 2, D-040): the same trigger does the same thing on every attempt, so every death
+teaches something that holds on the next try. Bounded randomness (PAX-058, seeded trap variants) is dropped. Hard
+levels get their difficulty from precision sections (D-069, D-083) and betrayal design, never from luck. This settles
+D-062's luck clause.
+**Consequence:** PAX-058 is dropped; PAX-059 (levels 1–10) is next. PAX-060 no longer depends on PAX-058. Any later
+randomness needs a new decision.
