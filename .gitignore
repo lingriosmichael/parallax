@@ -128,3 +128,5 @@ InitTestScene*.unity*
 # Unity MCP generated logs
 /Assets/UnityMCP/
 /Assets/UnityMCP.meta
+Assets/_Recovery/
+Assets/_Recovery.meta
