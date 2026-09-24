@@ -578,6 +578,29 @@ measured. If the device numbers turn out stricter than the provisional ones, som
 need rework in Phase H. Keeping the numbers in one asset and checking every level against them
 in tests makes that rework a list, not a search.
 
+### D-065 · 2026-09-24 · Accepted
+(Number reserved earlier for PAX-057; written 2026-09-24.)
+**Decision:** No difficulty tiers. The difficulty curve comes from the level number alone.
+- Levels 1–10 are easy. D-056's defaults apply (0.75 reach, 12-tick slack). No precision
+  sections.
+- Level 11 onward is extremely hard. Precision sections are allowed (D-069), using the hard
+  thresholds from KIT-4's config asset. They are provisional until the PAX-069 device
+  session sets them.
+- Hard stays fair. D-069 (2)(a)–(b) and D-057 still apply: every required jump stays inside
+  the reachability contract, every timing case keeps positive slack, and every trap that
+  can kill is revealed at least 6 ticks before it can.
+**Why:** The developer's call: a fixed, simple curve (an easy run-in, then hard) instead of
+selectable tiers with their own configs.
+**Supersedes:** D-069 (2) in part: "Allowed only in hard-tier levels (after the novice
+levels, D-062)" now reads "allowed only in levels 11 and up"; "(D-065, PAX-057)" in (2)(a)
+now means this decision plus KIT-4's config. D-062's Content clause, "Levels 1–10 are the
+novice tier; levels 11–50 are the hard tier", now reads as these two bands, not as tiers; its
+OPEN "hard-tier slack (ticks) and max jump (fraction of reach)" is answered by KIT-4's config.
+PAX-057 (tiers) is dropped.
+**Consequence:** KIT-4 (PAX-076) makes the validator reject a precision-section marker in
+levels 1–10, holds one set of hard thresholds, and exempts the Trap Lab (not a numbered
+level). L001–L004 are in the easy band. Phase D content follows the two bands.
+
 ### D-066 · 2026-09-23 · Accepted
 
 **Decision:** Level format for the one-room authoring pipeline (PAX-051). A level layout is

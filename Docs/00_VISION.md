@@ -25,9 +25,10 @@ executing what you've read: tight jumps across thin platforms while the room kee
 1. **The room is the puzzle.** Every room is a small puzzle with one idea. The obvious route is the
    setup, the betrayal teaches the rule, and the solution uses it.
 2. **Fair betrayal.** Traps are deterministic (D-040): the same trigger does the same thing on every
-   attempt. Nothing is random, nothing depends on frame timing. In novice levels the room is the
-   whole difficulty. Hard levels add precision sections where execution counts, but a required
-   jump is never impossible and a trap is never invisible before it can kill (D-069).
+   attempt. Nothing is random, nothing depends on frame timing. In levels 1–10 (the easy band,
+   D-065) the room is the whole difficulty. Levels 11 and up add precision sections where
+   execution counts, but a required jump is never impossible and a trap is never invisible
+   before it can kill (D-069).
 3. **Cheap, funny failure.** Death briefly freezes the room exactly as it killed you — the gap,
    the revealed spikes, the block that landed — then resets and puts the cat back at the
    checkpoint, in ≤ 0.75 s total, with no fade, death screen or reload (D-041, D-058). The cats
@@ -53,9 +54,9 @@ executing what you've read: tight jumps across thin platforms while the room kee
 - **Level-design constraint (D-050):** reaching a later room's checkpoint skips the current room,
   so room N+1's checkpoint must be unreachable before room N's door.
 - **Two kinds of section (D-069).** Troll-route sections have comfortable jumps; the danger is
-  which platforms and routes are real. Precision sections (hard tier only) are runs of thin,
-  narrow platforms where execution matters. Rooms with a precision section may be wider than one
-  screen, with the camera following the cat.
+  which platforms and routes are real. Precision sections (levels 11 and up only, D-065) are
+  runs of thin, narrow platforms where execution matters. Rooms with a precision section may be
+  wider than one screen, with the camera following the cat.
 
 ## 5. v1 mechanics
 
