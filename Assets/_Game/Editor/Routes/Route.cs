@@ -77,14 +77,33 @@ namespace Parallax.Editor.Routes
         }
     }
 
+    // PAX-080 (D-080): how a betrayal route ends. Dies: at its killer, with a lead from RevealedBy. Recovers: the
+    // room completes after RevealedBy has visibly changed (a dead end that isn't a soft-lock on its authored path).
+    public enum BetrayalOutcome { Dies, Recovers }
+
     public sealed class Betrayal
     {
         public readonly string Name, Killer, RevealedBy;
         public readonly DeathCause Cause;
         public readonly Route Route;
+        public readonly BetrayalOutcome Outcome;
         public Betrayal(string name, string killer, DeathCause cause, Route route, string revealedBy = null)
         {
-            Name = name; Killer = killer; Cause = cause; Route = route; RevealedBy = revealedBy ?? killer;
+            Name = name; Killer = killer; Cause = cause; Route = route; RevealedBy = revealedBy ?? killer; Outcome = BetrayalOutcome.Dies;
+        }
+
+        Betrayal(string name, string revealedBy, Route route)
+        {
+            Name = name; RevealedBy = revealedBy; Route = route; Outcome = BetrayalOutcome.Recovers;
+        }
+
+        // The route's goal is RoomComplete(), whatever the route it's built from declares.
+        public static Betrayal Recovers(string name, string revealedBy, Route route)
+        {
+            if (string.IsNullOrEmpty(revealedBy)) throw new ArgumentException($"Betrayal.Recovers '{name}': revealedBy is required.");
+            var steps = new RouteStep[route.Steps.Count];
+            for (int i = 0; i < steps.Length; i++) steps[i] = route.Steps[i];
+            return new Betrayal(name, revealedBy, new Route(route.Name, R.RoomComplete(), steps));
         }
     }
 

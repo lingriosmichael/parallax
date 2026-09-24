@@ -121,7 +121,7 @@ namespace Parallax.Editor.Setup
 
         // HiddenSpikes and DoorRetreat fall back to their own box at runtime; FallingBlock and
         // MovingTrap disable themselves without a trigger box.
-        static bool TryTrigger(SoloRoomElement trap, out Rect trigger)
+        internal static bool TryTrigger(SoloRoomElement trap, out Rect trigger)
         {
             if (trap.SecondarySize != Vector2.zero) { trigger = new Rect(trap.SecondaryPosition - trap.SecondarySize * .5f, trap.SecondarySize); return true; }
             trigger = Box(trap);
@@ -155,7 +155,7 @@ namespace Parallax.Editor.Setup
         }
 
         // The underside of the highest Ceiling element spanning the trigger's whole x-span.
-        static bool TryCeilingUnderside(SoloRoomDefinition room, Rect trigger, out float underside)
+        internal static bool TryCeilingUnderside(SoloRoomDefinition room, Rect trigger, out float underside)
         {
             underside = float.NegativeInfinity;
             foreach (SoloRoomElement e in room.Elements.Where(e => e.Kind == SoloRoomElementKind.Ceiling))
@@ -169,7 +169,7 @@ namespace Parallax.Editor.Setup
         // The lowest top the cat can stand on anywhere under the x-span: a solid's top counts when
         // no other solid covers it. Pit interiors are death: an opening's closure (its PitBottom)
         // and any top under an OpeningBottom hazard never count; every other solid does.
-        static float BandLow(SoloRoomDefinition room, Rect span)
+        internal static float BandLow(SoloRoomDefinition room, Rect span)
         {
             var samples = new List<float> { span.xMin + Epsilon, span.center.x, span.xMax - Epsilon };
             foreach (SoloRoomElement e in room.Elements.Where(IsSolid))
@@ -231,7 +231,7 @@ namespace Parallax.Editor.Setup
             e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall || e.Kind == SoloRoomElementKind.PitBottom || e.Kind == SoloRoomElementKind.CollapsingFloor
             || (e.Kind == SoloRoomElementKind.MovingTrap && e.Settings.MovingKind == MovingTrapKind.Solid);
 
-        static string UncoveredBands(Rect trigger, float low, float ceiling)
+        internal static string UncoveredBands(Rect trigger, float low, float ceiling)
         {
             var bands = new List<string>();
             if (trigger.yMin > low + Epsilon) bands.Add($"uncovered y [{low:F2}, {Mathf.Min(trigger.yMin, ceiling):F2}]");

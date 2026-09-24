@@ -57,6 +57,21 @@ namespace Parallax.Editor.Setup
             return trap;
         }
 
+        // PAX-080 (D-080): a fake platform is a CollapsingFloorTrap whose body is a trigger, so it never holds the
+        // cat up; with delay 0 it vanishes on the first tick the cat touches it (the collapse's touchSkin). The
+        // builder forces Overlap, Once, delay 0; ValidateFakePlatformSettings keeps the data from disagreeing.
+        internal static readonly SoloRoomTrapSettings FakePlatformSettings = new(delayTicks: 0);
+
+        internal static CollapsingFloorTrap BuildFakePlatformCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, Color color, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, int? sortingOrder, List<string> changes)
+        {
+            GameObject go = CreateTrap<CollapsingFloorTrap>(parent, root, name, position, size, color, roomId, rooms, death, observers, true, sortingOrder, changes);
+            BoxCollider2D box = go.GetComponent<BoxCollider2D>();
+            if (!box.isTrigger) { box.isTrigger = true; changes.Add("set " + name + ".isTrigger"); }
+            CollapsingFloorTrap trap = go.GetComponent<CollapsingFloorTrap>();
+            Write(trap, changes, ("delayTicks", 0));
+            return trap;
+        }
+
         static void BuildGravityFlip(Transform parent, RealityRoot root, RoomManager rooms, RoomDeath death, ObserverSet observers, float top, List<string> changes) =>
             BuildGravityFlipCore(parent, root, "GravityFlip", new(-4f, top + .75f), new(1f, 1.5f), FlipPurple, 0, rooms, death, observers, GravityFlipMode.Flip, 0, false, null, changes);
 

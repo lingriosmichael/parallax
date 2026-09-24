@@ -7,7 +7,9 @@ namespace Parallax.Editor.Setup
     // PAX-051 (D-066): moved verbatim out of SoloRoomsLayout.cs so level-layout classes and
     // SoloRoomsLayout can both build SoloRoomDefinitions from the same types. No field, no
     // readonly modifier, and no behaviour changed by the move.
-    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow }
+    // PAX-080 (D-080): FakePlatform is appended so every earlier value keeps its number. It looks like a Floor
+    // and isn't solid; the builder makes it a CollapsingFloorTrap with a trigger body, Overlap, Once, delay 0.
+    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform }
     public enum SoloRoomOpeningKind { Pit, Recess }
     public enum SoloRoomHazardRole { Normal, OpeningBottom, OpeningCap, CeilingForceUpCoverage, UnjumpableFloor }
     public enum RequiredJumpKind { Pit, Hazard }

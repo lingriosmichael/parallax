@@ -22,6 +22,9 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Floor,"Platform_B",(8f,.5f),(4f,1f)));
             elements.Add(E(SoloRoomElementKind.Floor,"Platform_C",(14f,1.5f),(4f,1f)));
             AddPit(elements,1,4f,22f);
+            // PAX-080: claimed as a false landing, but no route is betrayed by it (PAX-075: a full-speed take-off from
+            // x >= 15.28 skips it; the solution's braked landing stays below its trigger). Its trigger doesn't cut the
+            // band, so it is LevelLayoutValidator.SurfaceCoverageExemptions' one entry. No layout change (D-069, PAX-078 R15).
             elements.Add(E(SoloRoomElementKind.MovingTrap,"FalseLanding",(20.5f,-.5f),(3f,1f),(20.5f,3.5f),(1f,3f),new SoloRoomTrapSettings(offset:new Vector2(-3f,0f),moveTicks:24,movingKind:MovingTrapKind.Solid)));
             elements.Add(E(SoloRoomElementKind.Floor,"Floor_D",(27f,-.5f),(10f,1f)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"SourceSpikes",(24f,.15f),(1f,.3f),(20.5f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));

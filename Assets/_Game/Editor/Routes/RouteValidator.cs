@@ -7,7 +7,8 @@ namespace Parallax.Editor.Routes
     // PAX-075 (D-079): the route rule. Per room: (a) the solution completes, every timed step keeps a
     // window of >= 12 surviving start ticks (R3) and every margin holds (R7); (b) each betrayal dies at
     // its expected killer and cause with a measured lead >= 6 (R5, R6); (c) two replays of the solution
-    // give the same per-tick record.
+    // give the same per-tick record. PAX-080 (D-080): a Recovers betrayal instead completes the room after its
+    // RevealedBy has visibly changed; a replay that ends alive at a tick cap is a possible soft-lock (D-053).
     public static class RouteValidator
     {
         public const int WindowTicks = 12;       // D-056 (1)
@@ -54,7 +55,8 @@ namespace Parallax.Editor.Routes
             foreach (Betrayal betrayal in routes.Betrayals)
             {
                 report.Replays++;
-                report.Leads.Add(CheckBetrayal(session, levelId, room, betrayal, report.Errors));
+                if (betrayal.Outcome == BetrayalOutcome.Recovers) report.Recoveries.Add(CheckRecovery(session, levelId, room, betrayal, report.Errors));
+                else report.Leads.Add(CheckBetrayal(session, levelId, room, betrayal, report.Errors));
             }
 
             report.Seconds = clock.Elapsed.TotalSeconds;
@@ -68,6 +70,24 @@ namespace Parallax.Editor.Routes
             LeadResult lead = Lead(replay, betrayal);
             errors.AddRange(BetrayalErrors(levelId, betrayal, replay, lead));
             return lead;
+        }
+
+        // PAX-080 (D-080): one Recovers betrayal alone.
+        public static RecoveryResult CheckRecovery(RouteSession session, string levelId, SoloRoomDefinition room, Betrayal betrayal, List<string> errors)
+        {
+            ReplayResult replay = RouteHarness.Replay(session, room, betrayal.Route);
+            var result = new RecoveryResult
+            {
+                Betrayal = betrayal.Name, RevealedBy = betrayal.RevealedBy, Died = replay.Kill != null, Completed = replay.Completed,
+                FirstVisibleTick = replay.FirstVisibleChange(betrayal.RevealedBy), Failure = replay.Failure,
+                CompletionTick = replay.Completed ? replay.Records[replay.Records.Count - 1].Tick : -1,
+            };
+            string name = $"{levelId}: betrayal '{betrayal.Name}'";
+            if (result.Died) errors.Add($"{name} should recover but dies ({Why(replay)}).");
+            else if (!result.Completed) errors.Add($"{name} should recover but doesn't complete the room ({Why(replay)}).");
+            if (result.FirstVisibleTick < 0) errors.Add($"{name}: {betrayal.RevealedBy} never changes visibly, so the betrayal never happened.");
+            else if (result.Completed && result.FirstVisibleTick >= result.CompletionTick) errors.Add($"{name}: {betrayal.RevealedBy} changes visibly at t{result.FirstVisibleTick}, not before the room completes at t{result.CompletionTick}.");
+            return result;
         }
 
         // R3/R7: each timed step alone, walking outward from d = 0 until the first failure or the range.
@@ -164,7 +184,10 @@ namespace Parallax.Editor.Routes
             return (a.Kill == null) == (b.Kill == null) && (a.Kill == null || (a.Kill.Tick == b.Kill.Tick && a.Kill.Killer == b.Kill.Killer));
         }
 
-        static string Why(ReplayResult r) =>
-            r.Failure ?? (r.Kill != null ? $"died at t{r.Kill.Tick}, killer {r.Kill.Killer ?? "ambiguous: " + string.Join("/", r.Kill.Candidates)}" : "goal not reached");
+        static string Why(ReplayResult r)
+        {
+            if (r.AliveAtCap && r.Records.Count > 0) return $"ends alive at t{r.Records[r.Records.Count - 1].Tick} ({r.Failure}): possible soft-lock (D-053)";
+            return r.Failure ?? (r.Kill != null ? $"died at t{r.Kill.Tick}, killer {r.Kill.Killer ?? "ambiguous: " + string.Join("/", r.Kill.Candidates)}" : "goal not reached");
+        }
     }
 }

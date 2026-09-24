@@ -565,6 +565,13 @@ flips with gravity), on **x/y only** (`RoomManager.ContainsXY`; room bounds are 
 killed through the normal (now-held) death path with cause `OutOfBounds`, plus one
 `Debug.LogWarning` naming the room and position.
 
+**Room element kinds** (`SoloRoomElementKind`, `Parallax.Editor.Setup`): `Floor`, `Ceiling`, `Wall`,
+`PitBottom`, `Checkpoint`, `Door`, `Hazard`, `CollapsingFloor`, `HiddenSpikes`, `FallingBlock`,
+`GravityFlip`, `DoorRetreat`, `MovingTrap`, `Arrow` (D-078) and `FakePlatform` (D-080). A
+`FakePlatform` looks like a `Floor` and isn't solid. `SoloRoomBuilder` builds it as a
+`CollapsingFloorTrap` with a trigger body, Overlap, Once, delay 0; it vanishes on the trap step
+after the cat first touches it, and resets with the room. No runtime class is specific to it.
+
 ### 11.2 Level flow and scene loading (as built PAX-053, D-072)
 
 The device build starts in `LevelSelect.unity` (Build Settings index 0). Its grid is generated at
@@ -671,6 +678,7 @@ PiP toggle (visible only while the panel is open, default off): when on, the **i
   - `Route` holds the steps and conditions; `RouteValidator` checks the windows, margins, leads and determinism.
 - `Editor/Levels`: `L00NRoutes`, `LevelRoutes` (keyed like `LevelLayouts`) and `TrapLabRoutes`.
 - `LevelLayoutValidator.ValidateRoutes` runs a level's routes; it is not part of `Validate()`. The arrow rules now live in `LevelLayoutValidator.Arrows.cs`, a partial class of the same type.
+- D-080: a `Betrayal` is Dies or Recovers (`Betrayal.Recovers`, results in `RouteReport.Recoveries`). `LevelLayoutValidator.Surfaces.cs` holds `ValidateSurfaceCoverage` (non-lethal betraying surfaces), `ValidateFakePlatformSettings` and `SurfaceCoverageExemptions` (only L004 `FalseLanding`).
 
 ---
 

@@ -26,6 +26,10 @@ namespace Parallax.Editor.Routes
         // Start-state override (R18): the cat's collider centre, room-local, and its velocity before tick 1.
         public Vector2? StartCentre;
         public Vector2 StartVelocity;
+        // PAX-080: after a kill, keep stepping with no input and recording for this many ticks (the death hold
+        // and the room reset), before the cause is resolved. 0 = stop at the kill tick, as before. The cause is
+        // still resolved afterwards: RoomDeath reports it at the reset, which these ticks may already have passed.
+        public int RecordAfterDeathTicks;
     }
 
     // PAX-075 (D-079): replays a route through the real game code, one tick at a time, in the session's
@@ -72,7 +76,7 @@ namespace Parallax.Editor.Routes
 
             for (int k = 1; ; k++)
             {
-                if (k > options.MaxTicks) { result.Failure = $"tick cap {options.MaxTicks} reached"; break; }
+                if (k > options.MaxTicks) { result.Failure = $"tick cap {options.MaxTicks} reached"; result.AliveAtCap = true; break; }
                 if (!runner.Next(view, k, out CatCommand command)) break;
                 rig.Input.Queue(rig.ToCatFrame(command));
 
@@ -89,6 +93,13 @@ namespace Parallax.Editor.Routes
 
                 if (result.Kill != null)
                 {
+                    for (int after = 1; after <= options.RecordAfterDeathTicks; after++)
+                    {
+                        rig.Input.Queue(default);
+                        ObserverSetFixedUpdate.Invoke(rig.Observers, null);
+                        Physics2D.Simulate(Time.fixedDeltaTime);
+                        result.Records.Add(rig.Snapshot(k + after, default));
+                    }
                     if (options.ResolveCause) ResolveCause(rig, result.Kill);
                     break;
                 }
@@ -446,6 +457,7 @@ namespace Parallax.Editor.Routes
                         if (tick - result.StepStartTick[index] >= UntilCapTicks)
                         {
                             result.Failure = $"step #{index} {step.Label} not reached within {UntilCapTicks} ticks";
+                            result.AliveAtCap = true;
                             command = default;
                             return false;
                         }

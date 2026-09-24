@@ -4,8 +4,10 @@ using static Parallax.Editor.Routes.R;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-075 (D-079): L004's anatomy. The solution is PAX-078's Flip_A route. FalseLanding and Block_1 are
-    // PAX-080's (§8, §11 R19 (c)); Block_2 never kills and the floor run is gone (R9).
+    // PAX-075 (D-079): L004's anatomy. The solution is PAX-078's Flip_A route. FalseLanding has no betrayal route:
+    // no route is betrayed by it (full-speed take-offs from x 15.28 skip it; the braked landing stays below its
+    // trigger), PAX-080. Block_1 is disputed: the harness finds no kill, the developer's play did (2026-09-24);
+    // see PAX-081. Block_2 never kills and the floor run is gone (R9).
     static class L004Routes
     {
         public static RoomRoutes Build()

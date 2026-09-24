@@ -209,6 +209,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   Whether/how it's shown, persisted, or turned into lives is still D-044 (undecided).
 - Arrows: tell ≥ 6 ticks, harmless when stopped, lane checked by the validator (D-078).
 - Every room declares a solution route and its betrayal routes; `ValidateRoutes` replays them through the real game code (D-079).
+- A betrayal route Dies (killer, lead ≥ 6) or Recovers (the room completes after the reveal); non-lethal betraying surfaces need trigger coverage, and a fake platform is never a landing surface (D-080).
 
 ### Scenes, Build Settings and loading (D-072)
 

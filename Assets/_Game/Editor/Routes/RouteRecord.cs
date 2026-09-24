@@ -65,6 +65,7 @@ namespace Parallax.Editor.Routes
         public bool Completed;                          // the route's goal was reached with no death
         public KillInfo Kill;
         public string Failure;                          // harness-level reason (tick cap, forced start before tick 1)
+        public bool AliveAtCap;                         // PAX-080: the cat was alive and the goal unreached at the 1500-tick or 600-tick step cap
         public Dictionary<string, int> ArrowFirstLethalTick = new();   // R5: arrows expose fire + tell (harness ticks)
 
         public int FirstTick(System.Func<TickRecord, bool> test)
@@ -110,6 +111,17 @@ namespace Parallax.Editor.Routes
         public override string ToString() => $"{Betrayal}: killer {Killer ?? "?"} ({(CauseKnown ? Cause.ToString() : "?")}), kill t{KillTick}, first lethal t{FirstLethalTick}, {RevealedBy} visible t{FirstVisibleTick}, lead {Lead}";
     }
 
+    // PAX-080 (D-080): a Recovers betrayal. It passes with no death, the room complete, and RevealedBy
+    // visibly changed before the completion tick.
+    public sealed class RecoveryResult
+    {
+        public string Betrayal, RevealedBy, Failure;
+        public bool Died, Completed;
+        public int FirstVisibleTick = -1, CompletionTick = -1;
+        public bool Passed => !Died && Completed && FirstVisibleTick >= 0 && FirstVisibleTick < CompletionTick;
+        public override string ToString() => $"{Betrayal}: recovers {(Passed ? "yes" : "NO")} ({RevealedBy} visible t{FirstVisibleTick}, complete t{CompletionTick}{(Died ? ", died" : "")}{(Failure != null ? ", " + Failure : "")})";
+    }
+
     public sealed class RouteReport
     {
         public string LevelId;
@@ -118,6 +130,7 @@ namespace Parallax.Editor.Routes
         public List<WindowResult> Windows = new();
         public List<MarginResult> Margins = new();
         public List<LeadResult> Leads = new();
+        public List<RecoveryResult> Recoveries = new();
         public int Replays; public double Seconds;
         public string Summary()
         {
@@ -125,6 +138,7 @@ namespace Parallax.Editor.Routes
             foreach (WindowResult w in Windows) sb.AppendLine("  " + w);
             foreach (MarginResult m in Margins) sb.AppendLine("  " + m);
             foreach (LeadResult l in Leads) sb.AppendLine("  " + l);
+            foreach (RecoveryResult r in Recoveries) sb.AppendLine("  " + r);
             foreach (string e in Errors) sb.AppendLine("  ERROR " + e);
             return sb.ToString();
         }

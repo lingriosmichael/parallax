@@ -1200,3 +1200,66 @@ V3 narratives (D-076 (5)).
   open.
 - A route session swaps scenes, so it can't run over a dirty scene; tests recreate the Test Runner's
   own untitled scratch scene first.
+
+### D-080 · 2026-09-24 · Accepted
+
+**Decision:** Troll-route kit (PAX-080, KIT-3b).
+(1) **The fake platform.** A new element kind, `SoloRoomElementKind.FakePlatform`, appended to the
+enum. It is builder-only: `TrapKitSetup.BuildFakePlatformCore` builds a `CollapsingFloorTrap` whose
+body collider is a trigger, with Overlap, Once and delay 0 forced by the builder; no runtime class
+changed. It has a Floor's colour, sorting order and size from the same rect, so it looks like a
+floor, and it never holds the cat up (the motor's ground cast ignores triggers). It reveals by
+vanishing on the first trap step after the first physics step that leaves the cat touching it
+("touch + 1", the same ordering as a `CollapsingFloor`): contact is the cat's capsule against the
+fake's box grown by the collapse's touch skin (0.05 u). It resets with the room (D-041).
+`ValidateFakePlatformSettings` rejects a fake whose data has non-default trap settings or a trigger
+box. `ValidateReach` rejects a `RequiredJump` that lands on a fake (by destination name, or by its
+landing point on a fake's top). A fake is neither a chain source (the existing chain validator
+rejects it) nor a chain target (the settings rule rejects it). It counts as a gameplay element
+for D-058 containment.
+(2) **Betrayal outcomes** (extends D-079). A betrayal route ends one of two ways. **Dies**: at its
+declared killer and cause, with a lead of at least 6 from `revealedBy` (the existing constructor).
+**Recovers** (`Betrayal.Recovers(name, revealedBy, route)`, goal forced to `RoomComplete()`,
+`revealedBy` required): no death, the room completes, and `revealedBy` changes visibly before the
+completion tick; results go to `RouteReport.Recoveries`, so `Leads` holds deaths only. A solution
+or betrayal that ends alive at the 1500-tick replay cap or the 600-tick step cap fails with
+"possible soft-lock (D-053)".
+(3) **Non-lethal coverage** (extends D-074; `LevelLayoutValidator.ValidateSurfaceCoverage`). The
+betraying surfaces are fake platforms, collapsing floors, and Solid `MovingTrap`s that move down
+or sideways at all (stricter than "no longer cover their top strip's x span"; no result in scope
+changes). A surface's danger is its top strip: the element's width, one cat-collider height tall.
+Fake platforms and Overlap, non-periodic, unchained collapsing floors cover themselves by touch.
+Every other betraying surface needs its trigger (for a chained surface, its chain root's trigger)
+to be D-074's cut against the strip: over the trigger's x span it covers the cat's band from the
+lowest standable top to the ceiling underside, and the strip lies beyond its near edge as seen
+from the checkpoint. Periodic surfaces are left to `ValidatePeriodicSlack`; none is in scope.
+Scope: L001–L004 and Trap Lab rooms 3 and 4. The one exemption is L004 `FalseLanding`
+(`SurfaceCoverageExemptions`): its trigger doesn't cut the band. Setting a learned-bypass reason on
+it instead (the ruling's branch (a)) was ruled out because `TriggerCoverageTests` asserts that
+L001–L004 have no learned bypass, so branch (b), a named exemption, was taken.
+(4) **Dev room: Trap Lab room 4.** Ten platforms on one screen. The valid route is Start_Floor →
+Up_1 → Up_2 → Exit_Perch, where the door sits on the raised perch. The betrayals:
+- `Stone_A`, a fake that looks like the start floor going on: dies in the pit.
+- `Thin_Collapse`, a thin collapsing stone between Up_1 and Up_2: dies in the pit.
+- `Ledge_End`, a fake that looks like Up_2 going on: drops the cat into the Gutter, a dead end it
+  climbs out of back to Up_2. It recovers.
+- The `Bridge`, the low route on past the exit: crossing `ArrowD`'s trigger fires the arrow over
+  it, then the Bridge collapses (chained from the arrow, D-078): dies in the pit.
+The door sits left of `ArrowD`'s full-band trigger because (3) needs that cut and the solution must
+never fire the arrow. "Exactly one valid route" holds by design and play, not by proof: there is no
+route search. Measured: the Up_1→Up_2 jump window is 22 ticks (d −10..11) and the Up_2→Exit_Perch
+window 21 (d −5..15); leads are `Stone_A` 26, `Thin_Collapse` 28 and the Bridge (revealed by
+`ArrowD`) 45; `Ledge_End` recovers. The solution never fires or visibly changes any betrayal
+element.
+(5) **L001–L004.** Their route results are unchanged from D-079 (5), pinned exactly.
+`FalseLanding` and L002 `Block_A` are claimed but aren't a betrayal of any route; `FalseLanding` is
+exempt from surface coverage ((3), branch (b)). L004 `Block_1` is disputed: the harness finds no
+kill, but two developer plays were killed on an early hop (PAX-078 and 2026-09-24). PAX-081
+resolves it. There is no layout change (D-069, PAX-078 R15).
+(6) **Process.** PAX-075's code/docs commit split was waived for PAX-075 only; e23cc0d holds both
+and is not rewritten (PAX-080 pre-flight A1).
+(7) **Limits.**
+- Recovers proves only the authored path; there is no search for other soft-locks.
+- Contact is the touch skin, not a zero-distance overlap.
+- A fake platform is neither a chain source nor a chain target.
+- Not play-tested yet: whether the fakes read as floor, the Thin_Collapse hop and the Bridge lure.

@@ -39,7 +39,49 @@ namespace Parallax.Editor.Setup
                 E(SoloRoomElementKind.Arrow,"ArrowA",(7.75f,.3f),(.5f,.4f),settings:new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,.3f,14f),new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:120,phaseTicks:30,cooldownTicks:60))),
                 E(SoloRoomElementKind.Arrow,"ArrowB",(22.25f,.3f),(.5f,.4f),(17.25f,3.5f),(.5f,7f),new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,.3f,14.5f,disguised:true),new SoloRoomTrapSettings(delayTicks:0))),
                 E(SoloRoomElementKind.Arrow,"ArrowC",(27.25f,3.3f),(.5f,.4f),(21.25f,3.3f),(11.5f,.4f),new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,3.3f,15.5f),new SoloRoomTrapSettings(delayTicks:0))) })
+            // PAX-080 (D-080): the troll-route room (leading comma so room 3's line stays unchanged).
+            , Room4()
         };
+
+        // One valid route: Start_Floor -> Up_1 -> Up_2 -> Exit_Perch (door). Betrayals: Stone_A (fake, looks like the
+        // start floor going on) and Thin_Collapse (the stone between Up_1 and Up_2) drop the cat into the pit;
+        // Ledge_End (fake, looks like Up_2 going on) drops it into the Gutter, a dead end it climbs out of back to
+        // Up_2; running on from the Gutter crosses ArrowD's trigger: the arrow fires over the Bridge, then the
+        // Bridge goes. The door sits left of ArrowD's trigger, so the valid route never fires it; the Exit_Perch is
+        // too high to reach from the Gutter.
+        static SoloRoomDefinition Room4()
+        {
+            var elements = new[] {
+                E(SoloRoomElementKind.Ceiling,"Ceiling",(16f,7.5f),(32f,1f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint",(2f,0),(0,0)),
+                E(SoloRoomElementKind.Floor,"Start_Floor",(2.5f,-.5f),(5f,1f)),
+                E(SoloRoomElementKind.Wall,"Pit_L",(4.5f,-2.5f),(1f,3f)),
+                E(SoloRoomElementKind.Wall,"Pit_R",(31.5f,-2.5f),(1f,3f)),
+                E(SoloRoomElementKind.PitBottom,"Pit_Bottom",(18f,-3.5f),(26f,1f)),
+                new SoloRoomElement(SoloRoomElementKind.Hazard,"Pit_Hazard",new Vector2(18f,-2.85f),new Vector2(26f,.3f),hazardRole:SoloRoomHazardRole.OpeningBottom),
+                E(SoloRoomElementKind.FakePlatform,"Stone_A",(6f,-.25f),(2f,.5f)),
+                E(SoloRoomElementKind.Floor,"Up_1",(8.5f,1.75f),(3f,.5f)),
+                E(SoloRoomElementKind.CollapsingFloor,"Thin_Collapse",(11.5f,1.75f),(1f,.5f),settings:new SoloRoomTrapSettings(delayTicks:12)),
+                E(SoloRoomElementKind.Floor,"Up_2",(14.5f,1.75f),(3f,.5f)),
+                E(SoloRoomElementKind.FakePlatform,"Ledge_End",(17f,1.75f),(2f,.5f)),
+                E(SoloRoomElementKind.Floor,"Exit_Perch",(20f,3.25f),(3f,.5f)),
+                E(SoloRoomElementKind.Door,"Door",(21f,4.25f),(.6f,1.5f)),
+                E(SoloRoomElementKind.Floor,"Gutter",(19.75f,-.5f),(7.5f,1f)),
+                E(SoloRoomElementKind.Wall,"Stop_D",(23.75f,3.25f),(.5f,3.5f)),
+                E(SoloRoomElementKind.Wall,"Backstop",(31.5f,3.25f),(1f,3.5f)),
+                E(SoloRoomElementKind.Floor,"Far_Floor",(31.5f,-.5f),(1f,1f)),
+                E(SoloRoomElementKind.Arrow,"ArrowD",(31.25f,2.5f),(.5f,.4f),(23.75f,3.5f),(.5f,7f),new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,2.5f,24f),new SoloRoomTrapSettings(delayTicks:0))),
+                E(SoloRoomElementKind.CollapsingFloor,"Bridge",(27.5f,-.5f),(7f,1f),settings:new SoloRoomTrapSettings(delayTicks:24,triggerSource:TrapTriggerSource.Chain,chainSource:"ArrowD")),
+            };
+            var openings = new[] { new SoloRoomOpening(SoloRoomOpeningKind.Pit, 5f, 31f, "Pit_L", "Pit_R", "Pit_Bottom", "Pit_Hazard") };
+            var jumps = new[] {
+                new RequiredJump("Pit_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,4.5f,7.5f,0f,2f,2.5f,sourceName:"Start_Floor",destinationName:"Up_1"),
+                new RequiredJump("Pit_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,9.5f,13.5f,2f,2f,3f,sourceName:"Up_1",destinationName:"Up_2"),
+                new RequiredJump("Pit_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,15.5f,19f,2f,3.5f,3f,sourceName:"Up_2",destinationName:"Exit_Perch"),
+                new RequiredJump("Pit_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Left,17.5f,15.5f,0f,2f,1.5f,sourceName:"Gutter",destinationName:"Up_2"),
+            };
+            return new SoloRoomDefinition(4, 180f, 32f, elements, openings, jumps);
+        }
 
         static SoloRoomDefinition Room(int id, float origin, SoloRoomElement[] traps)
         {

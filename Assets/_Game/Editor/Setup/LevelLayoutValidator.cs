@@ -88,7 +88,7 @@ namespace Parallax.Editor.Setup
             return (minY, maxY);
         }
 
-        static bool IsGameplayElement(SoloRoomElement e) => e.Kind == SoloRoomElementKind.Door || e.Kind == SoloRoomElementKind.Hazard || e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.HiddenSpikes || e.Kind == SoloRoomElementKind.FallingBlock || e.Kind == SoloRoomElementKind.GravityFlip || e.Kind == SoloRoomElementKind.DoorRetreat || e.Kind == SoloRoomElementKind.MovingTrap || e.Kind == SoloRoomElementKind.Checkpoint;
+        static bool IsGameplayElement(SoloRoomElement e) => e.Kind == SoloRoomElementKind.Door || e.Kind == SoloRoomElementKind.Hazard || e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.HiddenSpikes || e.Kind == SoloRoomElementKind.FallingBlock || e.Kind == SoloRoomElementKind.GravityFlip || e.Kind == SoloRoomElementKind.DoorRetreat || e.Kind == SoloRoomElementKind.MovingTrap || e.Kind == SoloRoomElementKind.Checkpoint || e.Kind == SoloRoomElementKind.FakePlatform;
 
         // D-058: the checkpoint and door also sit inside the baked bounds (ComputeRoomBounds
         // with RoomSafetyConfig's default margin) — the same volume RoomManager checks at
@@ -166,6 +166,8 @@ namespace Parallax.Editor.Setup
 
             foreach (RequiredJump jump in room.RequiredJumps)
             {
+                // PAX-080 (D-080): a fake platform is never a landing surface.
+                if (LandsOnFakePlatform(room, byName, jump, out string fake)) { errors.Add($"{levelId}: {jump.ReferenceName} jump lands on {fake}, a fake platform; it can't be a landing surface (D-080)."); continue; }
                 float takeoff = jump.TakeoffX, landing = jump.LandingX;
                 float runway = jump.Runway, deltaHeight = jump.LandingPawHeight - jump.TakeoffPawHeight;
                 float vy = Mathf.Sqrt(2f * gravity * config.JumpHeight);

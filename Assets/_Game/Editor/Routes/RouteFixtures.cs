@@ -102,6 +102,87 @@ namespace Parallax.Editor.Routes
                 return new SoloRoomElement(e.Kind, e.Name, e.Position, e.Size, e.SecondaryPosition, e.SecondarySize, new SoloRoomTrapSettings(lane, e.Settings), e.HazardRole);
             });
 
+        // ---------- PAX-080 (D-080) ----------
+
+        // A 10 u floor, then a 2 u fake platform at floor height over a pit (hazard at its bottom), then floor again.
+        public static SoloRoomDefinition FakeOverPitRoom(bool solid = false) => Room(30f,
+            El(SoloRoomElementKind.Floor, "Floor_Left", 5f, -.5f, 10f, 1f),
+            El(solid ? SoloRoomElementKind.Floor : SoloRoomElementKind.FakePlatform, "Fake", 11f, -.25f, 2f, .5f),
+            El(SoloRoomElementKind.PitBottom, "Pit_Bottom", 15f, -3.5f, 10f, 1f),
+            El(SoloRoomElementKind.Hazard, "Pit_Hazard", 15f, -2.85f, 10f, .3f),
+            El(SoloRoomElementKind.Floor, "Floor_Right", 25f, -.5f, 10f, 1f),
+            El(SoloRoomElementKind.Door, "Door", 28f, .75f, .6f, 1.5f));
+
+        // A 10 u ledge 2 u up ending in a 2 u fake platform, over a floor that runs to the door: stepping on the
+        // fake drops the cat somewhere safe.
+        public static SoloRoomDefinition FakeOverFloorRoom(bool solid = false) => Room(30f,
+            El(SoloRoomElementKind.Floor, "Ledge", 5f, 1.75f, 10f, .5f),
+            El(solid ? SoloRoomElementKind.Floor : SoloRoomElementKind.FakePlatform, "Fake", 11f, 1.75f, 2f, .5f),
+            El(SoloRoomElementKind.Floor, "Floor", 15f, -.5f, 30f, 1f),
+            El(SoloRoomElementKind.Door, "Door", 28f, .75f, .6f, 1.5f)).WithCheckpointAt(2f, 2f);
+
+        public static Route WalkRightUntilDead() => new("walk right until dead", Hold(Right), Until(Dead()));
+        public static Route WalkRightToTheDoor() => new("walk right to the door", Hold(Right), Until(RoomComplete()));
+        // Runs right, brakes once the collider centre passes x, and waits: from 8.9 its right edge stops short of
+        // x 9.95 (the fake's edge minus its touch skin); from 9.6 it stops inside it.
+        public static Route BrakeFrom(float x) => new("brake from " + x.ToString(System.Globalization.CultureInfo.InvariantCulture), Hold(Right), Until(XAtLeast(x)), Release(), Until(Still()), For(60));
+        // Alive and never done: the 600-tick step cap, and the 1500-tick replay cap.
+        public static Route IdleAtTheStepCap() => new("idle at the step cap", Until(XAtLeast(100f)));
+        public static Route IdleAtTheTickCap() => new("idle at the tick cap", For(2000));
+
+        // R3: a Solid platform over a pit that slides 3 u left when its trigger fires. The trigger at x 8.5-9 is a
+        // full-height cut (y 0-7), or leaves a gap: y 2-5.
+        public static SoloRoomDefinition MovingAwaySolidRoom(bool gap) => Room(30f,
+            El(SoloRoomElementKind.Floor, "Floor_Left", 5f, -.5f, 10f, 1f),
+            new SoloRoomElement(SoloRoomElementKind.MovingTrap, "Slide", new Vector2(11.5f, -.5f), new Vector2(3f, 1f), new Vector2(8.75f, 3.5f), new Vector2(.5f, gap ? 3f : 7f),
+                new SoloRoomTrapSettings(offset: new Vector2(-3f, 0f), moveTicks: 24, movingKind: MovingTrapKind.Solid)),
+            El(SoloRoomElementKind.PitBottom, "Pit_Bottom", 16.5f, -3.5f, 13f, 1f),
+            El(SoloRoomElementKind.Hazard, "Pit_Hazard", 16.5f, -2.85f, 13f, .3f),
+            El(SoloRoomElementKind.Floor, "Floor_Right", 26.5f, -.5f, 7f, 1f),
+            El(SoloRoomElementKind.Door, "Door", 28f, .75f, .6f, 1.5f));
+
+        // R3: contact-triggered surfaces only (a fake platform and an Overlap collapsing floor).
+        public static SoloRoomDefinition ContactSurfacesRoom() => Room(30f,
+            El(SoloRoomElementKind.Floor, "Floor_Left", 5f, -.5f, 10f, 1f),
+            El(SoloRoomElementKind.FakePlatform, "Fake", 11f, -.25f, 2f, .5f),
+            new SoloRoomElement(SoloRoomElementKind.CollapsingFloor, "Collapse", new Vector2(14f, -.5f), new Vector2(2f, 1f), settings: new SoloRoomTrapSettings(delayTicks: 12)),
+            El(SoloRoomElementKind.Floor, "Floor_Right", 25f, -.5f, 10f, 1f),
+            El(SoloRoomElementKind.Door, "Door", 28f, .75f, .6f, 1.5f));
+
+        // R1: a fake platform whose data disagrees with the builder (a 5-tick delay), and one with a trigger box.
+        public static SoloRoomDefinition FakeWithDelayRoom() => Room(30f,
+            new SoloRoomElement(SoloRoomElementKind.FakePlatform, "Fake", new Vector2(11f, -.25f), new Vector2(2f, .5f), settings: new SoloRoomTrapSettings(delayTicks: 5)),
+            El(SoloRoomElementKind.Door, "Door", 28f, .75f, .6f, 1.5f));
+        public static SoloRoomDefinition FakeWithTriggerBoxRoom() => Room(30f,
+            new SoloRoomElement(SoloRoomElementKind.FakePlatform, "Fake", new Vector2(11f, -.25f), new Vector2(2f, .5f), new Vector2(11f, 1f), new Vector2(1f, 1f)),
+            El(SoloRoomElementKind.Door, "Door", 28f, .75f, .6f, 1.5f));
+
+        // R1 limit: a FallingBlock chained from a fake platform (rejected: a fake is not a chain source), or, as the
+        // control, from an Overlap collapsing floor of the same rect (accepted).
+        public static SoloRoomDefinition ChainedFromRoom(bool fromFake) => Room(30f,
+            new SoloRoomElement(fromFake ? SoloRoomElementKind.FakePlatform : SoloRoomElementKind.CollapsingFloor, "Source", new Vector2(11f, -.25f), new Vector2(2f, .5f),
+                settings: fromFake ? default : new SoloRoomTrapSettings(delayTicks: 12)),
+            new SoloRoomElement(SoloRoomElementKind.FallingBlock, "Block", new Vector2(14f, 6f), new Vector2(1f, 1f),
+                settings: new SoloRoomTrapSettings(delayTicks: 6, unitsPerTick: .3f, travelDistance: 5.5f, triggerSource: TrapTriggerSource.Chain, chainSource: "Source")),
+            El(SoloRoomElementKind.Door, "Door", 28f, .75f, .6f, 1.5f));
+
+        // R1: a RequiredJump from a floor onto a fake platform (named, or found by its landing point).
+        public static SoloRoomDefinition JumpOntoFakeRoom(bool named)
+        {
+            SoloRoomDefinition room = FakeOverPitRoom();
+            var jump = new RequiredJump("Pit_Bottom", RequiredJumpKind.Pit, RequiredJumpFrame.Floor, RequiredJumpDirection.Right, 9.5f, 10.5f, 0f, 0f, 3f,
+                sourceName: "Floor_Left", destinationName: named ? "Fake" : null);
+            return new SoloRoomDefinition(room.Id, room.Origin.x, room.Width, room.Elements, room.Openings, new[] { jump });
+        }
+
+        // R5: Trap Lab room 4 with Stone_A made a solid Floor of the same rect.
+        public static SoloRoomDefinition TrapLabRoom4WithSolidStoneA() =>
+            Replace(TrapLabLayout.Rooms[4], "Stone_A", e => new SoloRoomElement(SoloRoomElementKind.Floor, e.Name, e.Position, e.Size, e.SecondaryPosition, e.SecondarySize, e.Settings, e.HazardRole));
+
+        static SoloRoomDefinition WithCheckpointAt(this SoloRoomDefinition room, float x, float y) =>
+            new(room.Id, room.Origin.x, room.Width, room.Elements.Select(e => e.Kind == SoloRoomElementKind.Checkpoint ? new SoloRoomElement(e.Kind, e.Name, new Vector2(x, y), e.Size) : e).ToArray(),
+                room.Openings, room.RequiredJumps, room.RequiredSteps);
+
         static SoloRoomDefinition Layout(string id) =>
             LevelLayouts.TryGet(id, out SoloRoomDefinition room) ? room : throw new ArgumentException("no layout " + id);
 

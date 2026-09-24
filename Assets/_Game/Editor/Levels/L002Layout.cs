@@ -32,6 +32,8 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Floor,"Floor_DRight",(31.5f,-.5f),(1f,1f)));
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Sweep",(30.5f,.45f),(1f,.3f),(26f,3.5f),(.5f,7f),new SoloRoomTrapSettings(offset:new Vector2(-2f,0f),moveTicks:40,holdTicks:12,returnTicks:40,movingKind:MovingTrapKind.Hazard,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:92)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_A",(29.5f,.15f),(1f,.3f),(25.5f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // PAX-080: claimed as a betrayal, but no replayed route dies on it (PAX-075: take-offs 25.2-28.4, waits
+            // 0-30, no brake); the Sweep kills the cat that runs on. No layout change (D-069, PAX-078 R15).
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_A",(30.5f,6f),(.75f,.75f),settings:new SoloRoomTrapSettings(delayTicks:26,unitsPerTick:.3f,travelDistance:5.625f,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_A")));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(31.5f,.75f),(.6f,1.5f)));
             var jumps = new List<RequiredJump> {
