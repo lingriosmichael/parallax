@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Parallax.Core;
 using Parallax.Gameplay.Checkpoints;
 using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Player;
@@ -19,6 +20,10 @@ namespace Parallax.Editor.Setup
         static readonly Color Ground = new(.72f, .52f, .28f, 1f);
         static readonly Color Red = new(.85f, .12f, .10f, 1f);
         static readonly Color Purple = new(.55f, .22f, .75f, .38f);
+        // PAX-074 (D-078): an honest arrow launcher (the trap kit's block grey) and the arrow itself.
+        static readonly Color LauncherGrey = new(.20f, .20f, .23f, 1f);
+        // Every fixed geometry element is built with this colour; a disguised launcher copies it from its host.
+        static Color GeometryColor => Ground;
 
         public static RoomSafetyConfig EnsureRoomSafetyConfig(string assetPath, List<string> changes)
         {
@@ -174,15 +179,76 @@ namespace Parallax.Editor.Setup
                 case SoloRoomElementKind.FallingBlock: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildFallingBlockCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings.TriggerName, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings.Direction, e.Settings.DelayTicks, e.Settings.UnitsPerTick, e.Settings.TravelDistance, -2, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.GravityFlip: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildGravityFlipCore(parent, root, e.Name, position, e.Size, e.Settings.RendererEnabled ? Purple : Color.clear, room.Id, rooms, death, observers, e.Settings.GravityMode, e.Settings.DelayTicks, e.Settings.RearmOnExit, e.Settings.RendererEnabled ? -2 : null, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.DoorRetreat: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildDoorRetreatCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, parent.GetComponentInChildren<RoomDoor>(true)?.transform, e.Settings.Offset, e.Settings.MoveTicks, e.Settings.DelayTicks, changes), e.Settings, parent, changes); break;
+                case SoloRoomElementKind.Arrow: TrapKitSetup.ConfigureTiming(BuildArrow(parent, root, room, e, rooms, death, observers, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.MovingTrap: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildMovingTrapCore(parent, root, e.Name, position, e.Size, e.Settings.MovingKind == MovingTrapKind.Hazard ? Red : Ground, room.Id, rooms, death, observers, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings, AssetDatabase.LoadAssetAtPath<CrushConfig>("Assets/_Game/Data/CrushConfig_Default.asset"), -2, changes), e.Settings, parent, changes); break;
             }
+        }
+
+        // PAX-074 (D-078): the launcher (sprite, no collider, ArrowTrap), its child "Arrow" (sprite only,
+        // hidden until the fire) and, for a non-Periodic Overlap arrow only, the child trigger box. The
+        // launcher never has a collider of its own, so it can never act as a trigger.
+        static ArrowTrap BuildArrow(Transform parent, RealityRoot root, SoloRoomDefinition room, SoloRoomElement e, RoomManager rooms, RoomDeath death, ObserverSet observers, List<string> changes)
+        {
+            ArrowLane lane = e.Settings.Arrow;
+            Transform launcher = SetupUtility.EnsureChild(parent, e.Name, root.gameObject.layer, changes);
+            SetupUtility.SetLocalPosition(launcher, room.Origin + e.Position, changes);
+            SpriteRenderer launcherVisual = SetupUtility.SetVisual(launcher.gameObject, root, e.Size, lane.Disguised ? HostColor(room, e) : LauncherGrey, changes);
+            SetSortingOrder(launcherVisual, -1, changes);
+
+            float sign = ArrowMath.Sign(lane.Direction);
+            Vector2 mouth = new(sign * e.Size.x * .5f, lane.LaneY - e.Position.y);
+            Transform arrow = SetupUtility.EnsureChild(launcher, "Arrow", root.gameObject.layer, changes);
+            SetupUtility.SetLocalPosition(arrow, mouth + new Vector2(sign * lane.Length * .5f, 0f), changes);
+            SpriteRenderer arrowVisual = SetupUtility.SetVisual(arrow.gameObject, root, new Vector2(lane.Length, lane.Thickness), Red, changes);
+            SetSortingOrder(arrowVisual, 0, changes);
+
+            bool overlap = e.Settings.TriggerSource == TrapTriggerSource.Overlap && e.Settings.RepeatMode != TrapRepeatMode.Periodic;
+            BoxCollider2D trigger = overlap ? TrapKitSetup.CreateTrigger(launcher, root, e.Settings.TriggerName, e.SecondaryPosition - e.Position, e.SecondarySize, changes) : null;
+
+            ArrowTrap trap = SetupUtility.Ensure<ArrowTrap>(launcher.gameObject, changes);
+            TrapKitSetup.Write(trap, changes, ("rooms", rooms), ("roomDeath", death), ("observers", observers), ("roomId", room.Id), ("trigger", trigger),
+                ("launcher", launcherVisual), ("arrow", arrowVisual), ("direction", (int)lane.Direction), ("mouth", mouth),
+                ("travel", LevelLayoutValidator.ArrowTravel(e)), ("arrowLength", lane.Length), ("arrowThickness", lane.Thickness),
+                ("unitsPerTick", lane.UnitsPerTick), ("tellTicks", lane.TellTicks), ("delayTicks", e.Settings.DelayTicks));
+            WriteColor(trap, "honestColor", LauncherGrey, changes);
+            return trap;
+        }
+
+        // The colour this builder gives the fixed geometry the launcher sits in.
+        static Color HostColor(SoloRoomDefinition room, SoloRoomElement launcher)
+        {
+            Rect box = new(launcher.Position - launcher.Size * .5f, launcher.Size);
+            foreach (SoloRoomElement host in room.Elements)
+            {
+                bool geometry = host.Kind == SoloRoomElementKind.Floor || host.Kind == SoloRoomElementKind.Ceiling || host.Kind == SoloRoomElementKind.Wall || host.Kind == SoloRoomElementKind.PitBottom;
+                if (geometry && new Rect(host.Position - host.Size * .5f, host.Size).Overlaps(box)) return GeometryColor;
+            }
+            Debug.LogError($"SoloRoomBuilder: disguised arrow '{launcher.Name}' has no fixed geometry host; using the geometry colour.");
+            return GeometryColor;
+        }
+
+        static void SetSortingOrder(SpriteRenderer visual, int order, List<string> changes)
+        {
+            if (visual == null || visual.sortingOrder == order) return;
+            visual.sortingOrder = order;
+            changes.Add("set " + visual.name + ".sortingOrder");
+        }
+
+        static void WriteColor(Object target, string field, Color value, List<string> changes)
+        {
+            var serialized = new SerializedObject(target);
+            SerializedProperty property = serialized.FindProperty(field);
+            if (property == null || property.colorValue == value) return;
+            property.colorValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            changes.Add("configured " + target.name + "." + field);
         }
 
         static void BuildGeometry(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, List<string> changes)
         {
             Transform transform = SetupUtility.EnsureChild(parent, name, root.gameObject.layer, changes);
             SetupUtility.SetLocalPosition(transform, position, changes);
-            SpriteRenderer visual = SetupUtility.SetVisual(transform.gameObject, root, size, Ground, changes);
+            SpriteRenderer visual = SetupUtility.SetVisual(transform.gameObject, root, size, GeometryColor, changes);
             if (visual.sortingOrder != -2) { visual.sortingOrder = -2; changes.Add("set " + name + ".sortingOrder"); }
             BoxCollider2D box = SetupUtility.Ensure<BoxCollider2D>(transform.gameObject, changes);
             box.isTrigger = false;

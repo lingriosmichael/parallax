@@ -31,7 +31,7 @@ namespace Parallax.Editor.Setup
             error = null; return true;
         }
         static int ChainDelay(SoloRoomElement e) => e.Kind == SoloRoomElementKind.HiddenSpikes ? e.Settings.RevealDelayTicks : e.Settings.DelayTicks;
-        static bool IsTrap(SoloRoomElementKind kind) => kind == SoloRoomElementKind.CollapsingFloor || kind == SoloRoomElementKind.HiddenSpikes || kind == SoloRoomElementKind.FallingBlock || kind == SoloRoomElementKind.GravityFlip || kind == SoloRoomElementKind.DoorRetreat || kind == SoloRoomElementKind.MovingTrap;
+        static bool IsTrap(SoloRoomElementKind kind) => kind == SoloRoomElementKind.CollapsingFloor || kind == SoloRoomElementKind.HiddenSpikes || kind == SoloRoomElementKind.FallingBlock || kind == SoloRoomElementKind.GravityFlip || kind == SoloRoomElementKind.DoorRetreat || kind == SoloRoomElementKind.MovingTrap || kind == SoloRoomElementKind.Arrow;
         static bool HasCycle(string start, Dictionary<string, SoloRoomElement> byName)
         {
             var seen = new HashSet<string>(); string current = start;

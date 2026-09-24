@@ -25,7 +25,20 @@ namespace Parallax.Editor.Setup
             Room(2, 90f, new[] {
                 E(SoloRoomElementKind.HiddenSpikes,"PeriodicSpikes",(10f,.15f),(2f,.3f),settings:new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:96,phaseTicks:12,cooldownTicks:24)), E(SoloRoomElementKind.Ceiling,"LowSlab",(10f,1.45f),(4f,.5f)),
                 E(SoloRoomElementKind.FallingBlock,"RearmBlock",(16f,6f),(1f,1f),(16f,.6f),(2f,1f),new SoloRoomTrapSettings(delayTicks:6,unitsPerTick:.3f,travelDistance:5.5f,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:48)),
-                E(SoloRoomElementKind.CollapsingFloor,"RearmCollapse",(24f,-.5f),(3f,1f),settings:new SoloRoomTrapSettings(delayTicks:12,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:48)), E(SoloRoomElementKind.Hazard,"PitHazard",(24f,-2.85f),(3f,.3f)) })
+                E(SoloRoomElementKind.CollapsingFloor,"RearmCollapse",(24f,-.5f),(3f,1f),settings:new SoloRoomTrapSettings(delayTicks:12,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:48)), E(SoloRoomElementKind.Hazard,"PitHazard",(24f,-2.85f),(3f,.3f)) }),
+            // PAX-074 (D-078): the arrow room. ArrowA: honest, Periodic, fires right along the ShieldA-StopA lane
+            // (wait behind ShieldA for an arrow to stop, then cross). ArrowB: disguised in PillarB, fires left at
+            // shin height when the cat crosses x 17. ArrowC: honest, in the Overhang, fires left at head height
+            // when a jump reaches the band over PillarB (jump-arc trigger containing the lane).
+            Room(3, 135f, new[] {
+                E(SoloRoomElementKind.Wall,"ShieldA",(7.5f,.5f),(1f,1f)),
+                E(SoloRoomElementKind.Wall,"StopA",(14.25f,.5f),(.5f,1f)),
+                E(SoloRoomElementKind.Wall,"PillarB",(22.5f,1.2f),(1f,2.4f)),
+                E(SoloRoomElementKind.Wall,"Backboard",(15.25f,5f),(.5f,4f)),
+                E(SoloRoomElementKind.Wall,"Overhang",(27.25f,5f),(.5f,4f)),
+                E(SoloRoomElementKind.Arrow,"ArrowA",(7.75f,.3f),(.5f,.4f),settings:new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,.3f,14f),new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:120,phaseTicks:30,cooldownTicks:60))),
+                E(SoloRoomElementKind.Arrow,"ArrowB",(22.25f,.3f),(.5f,.4f),(17.25f,3.5f),(.5f,7f),new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,.3f,14.5f,disguised:true),new SoloRoomTrapSettings(delayTicks:0))),
+                E(SoloRoomElementKind.Arrow,"ArrowC",(27.25f,3.3f),(.5f,.4f),(21.25f,3.3f),(11.5f,.4f),new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,3.3f,15.5f),new SoloRoomTrapSettings(delayTicks:0))) })
         };
 
         static SoloRoomDefinition Room(int id, float origin, SoloRoomElement[] traps)

@@ -1087,3 +1087,28 @@ half up means a config value that is a whole hundredth of a second (0–1 s) giv
 so the windows hold and continue. Supersedes: D-075 (3) 'no integer API' and D-075 (4) 'does not
 round', for ToWholeTicks only; and the float countdown described in D-075 (4). The rest of D-075
 stands.
+
+### D-078 · 2026-09-24 · Accepted
+
+**Decision:** Trap kit: the arrow (PAX-074, KIT-2). A launcher hosted in fixed geometry fires one
+arrow along a horizontal lane, left or right. Tell T ticks (≥ 6, D-057): the arrow is visible at the
+mouth and harmless, and the first lethal pose is the tell pose. It then flies at v u/tick as a pure
+function of ticks since the fire (`ArrowMath`), stops at the lane's authored end face, and is
+harmless and visible from then until reset or rearm. The kill test is the tick pose through
+`RoomDeath` (`DeathCause.Hazard`). v ≤ Length + (collider width − collider height) − 2 × run per
+tick (1.00 today), so an arrow can't pass through the cat between ticks. It uses the existing
+trigger sources and repeat modes; 'jump-triggered' is an Overlap trigger in the jump arc. An arrow
+can be a chain source, firing at the start of its tell. Coverage (D-074) for arrows: either the
+trigger is a cut and the lane extends at least one collider width beyond its near edge, or the
+trigger contains the lane box. An unfired arrow has no danger, so the lane on the checkpoint side of
+the trigger is not reachable danger. Validator: `ValidateArrowTell`, `ValidateArrowSpeed`,
+`ValidateArrowLane`, `ValidateArrowDoorClearance`, `ValidateArrowCooldown`,
+`ValidateArrowPeriodicSlack`. Disguise: a disguised launcher takes its host's colour and switches to
+the honest colour on fire. Built on `RoomTrap` and `TrapMotion.Travel`, with no `MovingTrap` change.
+Limits: one arrow per fire; horizontal only; no lane may cross a moving Solid's swept path or a
+`CollapsingFloor`, because a pushed cat breaks the speed cap; a diagonal graze on the second sample
+can be missed; the existing `ValidatePeriodicSlack` also runs on the launcher width (harmless);
+camera visibility of the tell in follow mode is deferred to KIT-4 (it needs the dead zone,
+look-ahead and lag in `CameraMath`); the `OverlapBox` kill test sees Box2D's contact skin (about
+0.01 u), so a lane within about 0.01 u of the cat counts as touching, while the measured capsule
+width stays ≥ 0.44, so the speed cap holds. Dev room: Trap Lab room 3.

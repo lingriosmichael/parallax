@@ -7,12 +7,22 @@ namespace Parallax.Editor.Setup
     // PAX-051 (D-066): moved verbatim out of SoloRoomsLayout.cs so level-layout classes and
     // SoloRoomsLayout can both build SoloRoomDefinitions from the same types. No field, no
     // readonly modifier, and no behaviour changed by the move.
-    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap }
+    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow }
     public enum SoloRoomOpeningKind { Pit, Recess }
     public enum SoloRoomHazardRole { Normal, OpeningBottom, OpeningCap, CeilingForceUpCoverage, UnjumpableFloor }
     public enum RequiredJumpKind { Pit, Hazard }
     public enum RequiredJumpFrame { Floor, Ceiling }
     public enum RequiredJumpDirection { Right, Left }
+
+    // PAX-074 (D-078): an arrow's lane. The launcher is the element's Position/Size; the lane runs
+    // from the launcher's face on the Direction side (the mouth) to LaneEndX, centred on LaneY.
+    public readonly struct ArrowLane
+    {
+        public readonly bool IsConfigured; public readonly ArrowDirection Direction; public readonly float LaneY; public readonly float LaneEndX;
+        public readonly float Length; public readonly float Thickness; public readonly float UnitsPerTick; public readonly int TellTicks; public readonly bool Disguised;
+        public ArrowLane(ArrowDirection direction, float laneY, float laneEndX, float length = .8f, float thickness = .16f, float unitsPerTick = .3f, int tellTicks = 6, bool disguised = false)
+        { IsConfigured = true; Direction = direction; LaneY = laneY; LaneEndX = laneEndX; Length = length; Thickness = thickness; UnitsPerTick = unitsPerTick; TellTicks = tellTicks; Disguised = disguised; }
+    }
 
     public readonly struct SoloRoomTrapSettings
     {
@@ -24,8 +34,13 @@ namespace Parallax.Editor.Setup
         // PAX-073 (D-074): null = not a learned bypass. Non-null marks a trigger meant to be avoided as the
         // learned solution; LevelLayoutValidator skips it for trigger coverage, lists it, and rejects an empty reason.
         public readonly string LearnedBypassReason;
+        // PAX-074 (D-078): default (IsConfigured false) for every non-arrow element.
+        public readonly ArrowLane Arrow;
         public SoloRoomTrapSettings(int delayTicks = 0, int moveTicks = 0, int revealDelayTicks = 0, float unitsPerTick = 0f, float travelDistance = 0f, FallingBlockDirection direction = FallingBlockDirection.Down, GravityFlipMode gravityMode = GravityFlipMode.Flip, bool rearmOnExit = false, bool rendererEnabled = false, Vector2 offset = default, string triggerName = "Trigger", TrapTriggerSource triggerSource = TrapTriggerSource.Overlap, string chainSource = null, TrapRepeatMode repeatMode = TrapRepeatMode.Once, int cooldownTicks = 0, int periodTicks = 1, int phaseTicks = 0, MovingTrapKind movingKind = MovingTrapKind.Hazard, int holdTicks = 0, int returnTicks = 0, float crushDepth = 0f, string learnedBypassReason = null)
-        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; }
+        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; }
+        // PAX-074 (D-078): an arrow's lane on top of ordinary trigger/repeat settings. Two parameters on
+        // purpose: tests that build settings by reflection pick the longest constructor, which stays the one above.
+        public SoloRoomTrapSettings(ArrowLane arrow, SoloRoomTrapSettings timing) { this = timing; Arrow = arrow; }
     }
 
     public readonly struct SoloRoomElement

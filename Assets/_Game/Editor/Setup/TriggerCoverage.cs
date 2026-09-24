@@ -17,6 +17,11 @@ namespace Parallax.Editor.Setup
     // only through gravity flips, is also covered when the trigger contains each of those flips and
     // the danger is below a gravity-up cat's reach from the ceiling.
     // Everything is in room-local coordinates, checked at the authored pose.
+    // PAX-074 (D-078): an arrow's danger is its lane, which KillVolumes doesn't list. An unfired arrow
+    // has no danger, so the lane on the checkpoint side of the trigger is not reachable danger: a lane
+    // is covered when the trigger is a cut and the lane extends at least one collider width beyond its
+    // near edge, or when the trigger contains the lane box (jump-arc triggers). Checked before the
+    // band rule, for the root and every chain descendant that is an arrow.
     static class TriggerCoverage
     {
         const float Epsilon = 1e-3f;
@@ -36,11 +41,14 @@ namespace Parallax.Editor.Setup
                 }
 
                 List<(string owner, Rect volume)> dangers = Dangers(room, trap);
-                if (dangers.Count == 0) continue;
+                List<(string owner, Rect lane)> lanes = ArrowLanes(room, trap);
+                if (dangers.Count == 0 && lanes.Count == 0) continue;
                 if (!TryTrigger(trap, out Rect trigger)) { errors.Add($"{levelId}: trigger coverage: {trap.Name} fires on overlap but has no trigger box."); continue; }
                 if (!TryCeilingUnderside(room, trigger, out float ceiling)) { errors.Add($"{levelId}: no ceiling over {trap.Name}: coverage band undefined."); continue; }
 
                 float low = BandLow(room, trigger);
+                CheckArrowLanes(levelId, trap, trigger, low, ceiling, checkpointX, lanes, motor, errors);
+                if (dangers.Count == 0) continue;
                 if (trigger.yMin <= low + Epsilon && trigger.yMax >= ceiling - Epsilon)
                 {
                     bool fromLeft = checkpointX <= trigger.center.x;
@@ -65,7 +73,50 @@ namespace Parallax.Editor.Setup
         {
             SoloRoomTrapSettings s = e.Settings;
             if (!s.IsConfigured || s.TriggerSource != TrapTriggerSource.Overlap || s.RepeatMode == TrapRepeatMode.Periodic) return false;
-            return e.Kind == SoloRoomElementKind.HiddenSpikes || e.Kind == SoloRoomElementKind.FallingBlock || e.Kind == SoloRoomElementKind.MovingTrap || e.Kind == SoloRoomElementKind.DoorRetreat;
+            return e.Kind == SoloRoomElementKind.HiddenSpikes || e.Kind == SoloRoomElementKind.FallingBlock || e.Kind == SoloRoomElementKind.MovingTrap || e.Kind == SoloRoomElementKind.DoorRetreat || e.Kind == SoloRoomElementKind.Arrow;
+        }
+
+        // PAX-074 (D-078): the lanes of the root and of every chain descendant that is an arrow.
+        static List<(string owner, Rect lane)> ArrowLanes(SoloRoomDefinition room, SoloRoomElement root)
+        {
+            var lanes = new List<(string, Rect)>();
+            if (LevelLayoutValidator.IsArrow(root)) lanes.Add((root.Name, LevelLayoutValidator.ArrowLaneBox(root, Vector2.zero)));
+            var visited = new HashSet<string> { root.Name };
+            var frontier = new Queue<string>(); frontier.Enqueue(root.Name);
+            while (frontier.Count > 0)
+            {
+                string source = frontier.Dequeue();
+                foreach (SoloRoomElement e in room.Elements)
+                {
+                    if (!e.Settings.IsConfigured || e.Settings.TriggerSource != TrapTriggerSource.Chain || e.Settings.ChainSource != source || !visited.Add(e.Name)) continue;
+                    frontier.Enqueue(e.Name);
+                    if (LevelLayoutValidator.IsArrow(e)) lanes.Add((e.Name, LevelLayoutValidator.ArrowLaneBox(e, Vector2.zero)));
+                }
+            }
+            return lanes;
+        }
+
+        static void CheckArrowLanes(string levelId, SoloRoomElement trap, Rect trigger, float low, float ceiling, float checkpointX, List<(string owner, Rect lane)> lanes, CatMotorConfig motor, List<string> errors)
+        {
+            if (lanes.Count == 0) return;
+            if (motor == null) { errors.Add($"{levelId}: trigger coverage: no CatMotorConfig; arrow coverage for {trap.Name} is undefined."); return; }
+            float width = motor.ColliderSize.x;
+            bool cut = trigger.yMin <= low + Epsilon && trigger.yMax >= ceiling - Epsilon;
+            bool fromLeft = checkpointX <= trigger.center.x;
+            float nearEdge = fromLeft ? trigger.xMin : trigger.xMax;
+            foreach ((string owner, Rect lane) in lanes)
+            {
+                if (Contains(trigger, lane)) continue;
+                string chained = owner == trap.Name ? "" : $" (chained from {trap.Name})";
+                if (cut)
+                {
+                    float beyond = fromLeft ? lane.xMax - nearEdge : nearEdge - lane.xMin;
+                    if (beyond >= width - Epsilon) continue;
+                    errors.Add($"{levelId}: trigger coverage: {owner}{chained} lane {Describe(lane)} extends {Mathf.Max(0f, beyond):F2} u beyond {trap.Name}'s trigger near edge x {nearEdge:F2}; an arrow lane needs {width:F2} u (one collider width).");
+                }
+                else
+                    errors.Add($"{levelId}: trigger coverage: {trap.Name}'s trigger {Describe(trigger)} neither cuts the cat's band y [{low:F2}, {ceiling:F2}] ({UncoveredBands(trigger, low, ceiling)}) nor contains {owner}{chained}'s lane {Describe(lane)}.");
+            }
         }
 
         // HiddenSpikes and DoorRetreat fall back to their own box at runtime; FallingBlock and

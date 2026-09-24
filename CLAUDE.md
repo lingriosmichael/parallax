@@ -202,6 +202,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   Motor windows (coyote, jump buffer) are whole ticks derived from seconds via `TickTime` (D-077).
 - **A minimal per-room death count exists (D-058)**, in `RoomDeath`/`DeathCounter`, with no UI.
   Whether/how it's shown, persisted, or turned into lives is still D-044 (undecided).
+- Arrows: tell ≥ 6 ticks, harmless when stopped, lane checked by the validator (D-078).
 
 ### Scenes, Build Settings and loading (D-072)
 
