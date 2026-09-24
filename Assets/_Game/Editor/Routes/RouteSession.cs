@@ -75,6 +75,9 @@ namespace Parallax.Editor.Routes
                 Physics2D.simulationMode = simulationMode;
                 // Saved scenes come back from disk. GetSceneManagerSetup lists no untitled scene, so a clean
                 // untitled scene (the Test Runner's) is recreated as a fresh one, with its default objects if it had any.
+                // PAX-083 (PAX-075 nit 2): with saved scenes open too, a clean untitled scene is dropped rather than
+                // recreated. Nothing is lost: it was clean (the constructor refuses a dirty one), and outside the Test
+                // Runner an untitled scene beside saved ones only exists while the developer is setting scenes up.
                 SceneSetup[] saved = setup == null ? Array.Empty<SceneSetup>() : Array.FindAll(setup, s => !string.IsNullOrEmpty(s.path));
                 if (saved.Length == 0) RecreateUntitledScene(untitledHadObjects);
                 else
@@ -103,19 +106,38 @@ namespace Parallax.Editor.Routes
             public void LogException(Exception exception, Object context) => inner.LogException(exception, context);
         }
 
-        // For the hygiene test: everything the session must leave as it found it.
+        // For the hygiene test: everything the session must leave as it found it. PAX-083 (PAX-075 nit 1): objects and
+        // delegates by identity (method and target), not by GetHashCode, and every loaded scene's roots, so a
+        // recreated untitled scene (which GetSceneManagerSetup doesn't list) is compared too.
         public static string GlobalStateFingerprint()
         {
             var parts = new System.Collections.Generic.List<string>();
             foreach (SceneSetup s in EditorSceneManager.GetSceneManagerSetup()) parts.Add($"{s.path}|{s.isActive}|{s.isLoaded}");
-            for (int i = 0; i < SceneManager.sceneCount; i++) parts.Add("dirty:" + SceneManager.GetSceneAt(i).isDirty);
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                Scene scene = SceneManager.GetSceneAt(i);
+                string roots = scene.isLoaded ? string.Join(",", Array.ConvertAll(scene.GetRootGameObjects(), g => g.name)) : "-";
+                parts.Add($"scene:{(string.IsNullOrEmpty(scene.path) ? "Untitled" : scene.path)}|dirty:{scene.isDirty}|roots:{roots}");
+            }
             parts.Add("sim:" + Physics2D.simulationMode);
-            parts.Add("log:" + Debug.unityLogger.logHandler.GetHashCode());
-            parts.Add("tick:" + TickTime.SecondsPerTickSource.GetHashCode() + ":" + TickTime.SecondsPerTick.ToString("R"));
-            parts.Add("run:" + RunningState.SetTimeScale.GetHashCode());
+            parts.Add("log:" + Identity(Debug.unityLogger.logHandler));
+            parts.Add("tick:" + Identity(TickTime.SecondsPerTickSource) + ":" + TickTime.SecondsPerTick.ToString("R"));
+            parts.Add("run:" + Identity(RunningState.SetTimeScale));
             parts.Add("scale:" + Time.timeScale.ToString("R"));
             parts.Add("fixed:" + Time.fixedDeltaTime.ToString("R"));
             return string.Join("; ", parts);
+        }
+
+        // A delegate is its method plus its target; an object is its type plus an id that only reference equality
+        // shares. The ids hold on to what they've seen (a few handlers and delegates per Editor session).
+        static readonly System.Collections.Generic.List<object> seen = new();
+        static string Identity(object value)
+        {
+            if (value == null) return "null";
+            if (value is Delegate d) return $"{d.Method.DeclaringType?.FullName}.{d.Method.Name}@{(d.Target == null ? "static" : Identity(d.Target))}";
+            int id = seen.FindIndex(o => ReferenceEquals(o, value));
+            if (id < 0) { seen.Add(value); id = seen.Count - 1; }
+            return $"{value.GetType().FullName}#{id}";
         }
     }
 }

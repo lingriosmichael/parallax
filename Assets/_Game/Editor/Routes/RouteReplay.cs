@@ -51,12 +51,13 @@ namespace Parallax.Editor.Routes
         {
             options ??= new ReplayOptions();
             session.Clear();
+            Rig rig = null;
             try
             {
-                Rig rig = Rig.Build(room, options);
+                rig = Rig.Build(room, options);
                 return Run(rig, route, options);
             }
-            finally { session.Clear(); }
+            finally { rig?.UnsubscribeDeath(); session.Clear(); }
         }
 
         static ReplayResult Run(Rig rig, Route route, ReplayOptions options)
@@ -139,9 +140,13 @@ namespace Parallax.Editor.Routes
             public ScriptedInput Input;
             public readonly List<Element> Elements = new();
             public bool DeathReported; public DeathCause DeathCause;
+            Action<DeathInfo> onDied;
             ContactFilter2D filter;
             readonly RaycastHit2D[] hits = new RaycastHit2D[8];
             readonly Collider2D[] overlaps = new Collider2D[16];
+
+            // PAX-083 (PAX-075 nit 4): the rig is destroyed with the session's scene after every replay; unsubscribe anyway.
+            public void UnsubscribeDeath() { if (Death != null && onDied != null) Death.Died -= onDied; onDied = null; }
 
             public static Rig Build(SoloRoomDefinition room, ReplayOptions options)
             {
@@ -222,7 +227,8 @@ namespace Parallax.Editor.Routes
                 foreach (MonoBehaviour behaviour in roomRoot.GetComponentsInChildren<MonoBehaviour>(true)) { Invoke(behaviour, "Awake"); Invoke(behaviour, "OnEnable"); }
                 if (room.Id != 0) rig.Checkpoints.Activate(room.Id);
                 observer.SetDriver(new LocalHumanDriver(router));
-                rig.Death.Died += info => { rig.DeathReported = true; rig.DeathCause = info.Cause; };
+                rig.onDied = info => { rig.DeathReported = true; rig.DeathCause = info.Cause; };
+                rig.Death.Died += rig.onDied;
 
                 if (options.StartCentre.HasValue)
                     catGo.transform.position = rig.Root.ToWorld(room.Origin + options.StartCentre.Value - motor.ColliderOffset);

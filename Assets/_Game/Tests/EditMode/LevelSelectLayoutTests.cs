@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using Parallax.Gameplay.UI;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -23,10 +24,17 @@ namespace Parallax.Tests.EditMode
 
         GameObject contentGo;
 
+        // PAX-083 (items 3-4): BuildRowTemplate registers its objects with Undo, which dirties the scene they're built
+        // in (before PAX-075 R21, the leaked Level_004). Build in a scene the test creates, then put back a clean Test
+        // Runner scene.
+        [SetUp]
+        public void OpenScene() => EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
         [TearDown]
         public void Cleanup()
         {
             if (contentGo != null) Object.DestroyImmediate(contentGo);
+            Type.GetType("Parallax.Editor.Routes.RouteSession, Parallax.Editor").GetMethod("RecreateUntitledScene").Invoke(null, new object[] { true });
         }
 
         [Test]

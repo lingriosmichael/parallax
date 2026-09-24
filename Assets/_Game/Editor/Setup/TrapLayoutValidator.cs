@@ -17,7 +17,10 @@ namespace Parallax.Editor.Setup
                 if (s.TriggerSource == TrapTriggerSource.Chain && s.RepeatMode == TrapRepeatMode.Periodic) { error = $"{e.Name}: a Periodic trap cannot use a chain source."; return false; }
                 if (s.TriggerSource == TrapTriggerSource.Chain)
                 {
-                    if (!byName.TryGetValue(s.ChainSource ?? string.Empty, out SoloRoomElement source) || !IsTrap(source.Kind)) { error = $"{e.Name}: chain source must be a trap in this room; cross-room names cannot resolve by construction."; return false; }
+                    // PAX-083: one message per case. A name that isn't in this room (chains never resolve across rooms)...
+                    if (!byName.TryGetValue(s.ChainSource ?? string.Empty, out SoloRoomElement source)) { error = $"{e.Name}: chain source '{s.ChainSource}' is not an element of this room; chain names never resolve across rooms."; return false; }
+                    // ...and an element of this room that isn't a trap.
+                    if (!IsTrap(source.Kind)) { error = $"{e.Name}: chain source must be a trap; '{source.Name}' is a {source.Kind}."; return false; }
                     if (ChainDelay(e) < 1) { error = $"{e.Name}: chain delay is below one tick."; return false; }
                     if (e.Kind == SoloRoomElementKind.GravityFlip) { error = $"{e.Name}: GravityFlip cannot be a chain target."; return false; }
                     if (source.Kind == SoloRoomElementKind.GravityFlip && source.Settings.RearmOnExit) { error = $"{e.Name}: rearm-on-exit GravityFlip cannot be a chain source."; return false; }

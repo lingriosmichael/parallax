@@ -1286,6 +1286,7 @@ and is not rewritten (PAX-080 pre-flight A1).
 - Contact is the touch skin, not a zero-distance overlap.
 - A fake platform is neither a chain source nor a chain target.
 - Not play-tested yet: whether the fakes read as floor, the Thin_Collapse hop and the Bridge lure.
+PAX-083: L001 `Retreat` declared as Recovers: the door moves at t252 and the room completes at t345, pinned in `ShippedRouteResultsTests`. Its `revealedBy` is `Door` on purpose: `DoorRetreatTrap` moves the door, not its own element, which never changes visibly. L003 `Retreat` stays unclaimed: the retreat fires on the solution itself; it's part of the solution, not a betrayal.
 
 ### D-081 · 2026-09-24 · Accepted
 

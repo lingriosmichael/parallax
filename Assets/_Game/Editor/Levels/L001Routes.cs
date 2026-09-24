@@ -27,7 +27,13 @@ namespace Parallax.Editor.Levels
                 new Betrayal("Spikes_A rise under a cat that runs on", "Spikes_A", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Floor_D))", "run into Spikes_A", Until(Dead()))),
                 new Betrayal("Block_A falls on a cat that hesitates at the spikes", "Block_A", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=23)", "hesitate before the spikes", Release(), For(34), Hold(Right), Jump(), Until(Dead()))));
+                    Route.PrefixOf(solution, "Until(X>=23)", "hesitate before the spikes", Release(), For(34), Hold(Right), Jump(), Until(Dead()))),
+                // PAX-083 (D-080): Retreat is a Recovers betrayal. A cat that waits out Block_A at the spikes sees the door
+                // (Retreat moves the Door, not itself) back away 2 u over 20 ticks; it jumps the spikes and the landed block
+                // and walks on to the door at x 31.
+                Betrayal.Recovers("Retreat moves the door away from a cat that waits out Block_A, which follows it to x 31", "Door",
+                    Route.PrefixOf(solution, "Until(X>=23)", "wait out Block_A and the retreat, then follow the door",
+                        Release(), Until(Moving("Door")), For(24), Hold(Right), Jump(), Until(Airborne()), Until(Grounded()), Jump(), Until(RoomComplete()))));
         }
     }
 }

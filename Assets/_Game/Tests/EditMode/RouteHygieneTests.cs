@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using Parallax.Core;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -18,6 +19,34 @@ namespace Parallax.Tests.EditMode
         static string Fingerprint() => (string)Call(T("RouteSession"), "GlobalStateFingerprint");
 
         [SetUp] public void FreshScene() => FreshScratchScene();
+
+        Func<float> savedTickSource;
+        [TearDown] public void RestoreTickSource() { if (savedTickSource != null) TickTime.SecondsPerTickSource = savedTickSource; savedTickSource = null; }
+
+        // PAX-083 (PAX-075 nit 1): a regression guard only, never seen red (the old hash fingerprint also caught this
+        // swap). Nit 1 is proven by Fingerprint_SeesTheUntitledScenesRoots.
+        [Test]
+        public void Fingerprint_SeesASwappedTickSource_WithTheSameValue()
+        {
+            string before = Fingerprint();
+            Func<float> original = savedTickSource = TickTime.SecondsPerTickSource;
+            TickTime.SecondsPerTickSource = () => original();
+            Assert.AreNotEqual(before, Fingerprint());
+        }
+
+        // PAX-083 (PAX-075 nit 1): a recreated untitled scene isn't in the scene setup list; its roots are.
+        [Test]
+        public void Fingerprint_SeesTheUntitledScenesRoots()
+        {
+            Call(T("RouteSession"), "RecreateUntitledScene", true);
+            string withDefaultObjects = Fingerprint();
+            try
+            {
+                Call(T("RouteSession"), "RecreateUntitledScene", false);
+                Assert.AreNotEqual(withDefaultObjects, Fingerprint());
+            }
+            finally { Call(T("RouteSession"), "RecreateUntitledScene", true); }
+        }
 
         [Test]
         public void AfterAFailedAssertInsideASession_GlobalStateAndTheOpenScenesAreRestored()

@@ -103,6 +103,10 @@ namespace Parallax.Editor.Setup
         {
             var p = new CameraMath.FollowParams(camera.MaxViewHeight, camera.LookAhead, camera.LookAheadFlipDistance, camera.DeadZoneHalfExtents, camera.SmoothTime, camera.MaxSpeed);
             List<TickRecord> records = replay.Records;
+            // PAX-083: the loop below stops at records.Count, so a replay shorter than the lead's end would read as on
+            // screen up to the end and overstate the lead. Fail instead.
+            if (records.Count == 0) throw new InvalidOperationException($"OnScreenLead: the replay recorded no ticks; the camera tell rule can't measure the reveal (end t{end}).");
+            if (records.Count < end) throw new InvalidOperationException($"OnScreenLead: the replay has {records.Count} ticks, short of the lead's end t{end}; the camera tell rule can't measure the reveal.");
             Vector2 start = Cat(records[0]);
             // LevelCameraFollow.Start/SnapToTarget: anchor at the cat, an immediate step, velocity zeroed.
             var state = new CameraMath.FollowState { AnchorX = start.x, LastDirection = startDirection };

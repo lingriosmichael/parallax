@@ -102,9 +102,30 @@ namespace Parallax.Tests.EditMode
             List<object> results = Tell("Fixture", Fixture("CameraTellRoom", 60f, 40f, 33f), Fixture("CameraTellRoutes"), errors);
             TestContext.Out.WriteLine(Table(results));
             Assert.AreEqual(3, results.Count);
+            // PAX-083: in fit mode the whole lead passes trivially, so the camera must really follow here.
+            Assert.IsTrue(results.All(r => !(bool)F(r, "Fit")), "the room must be in follow mode at every aspect\n" + Table(results));
             CollectionAssert.IsEmpty(errors, string.Join("\n", errors));
             foreach (object r in results) Assert.AreEqual((int)F(r, "Lead"), (int)F(r, "OnScreenLead"), r.ToString());
             Assert.AreEqual(6, (int)F(results[0], "Lead"), "the fixture arrow's tell is D-078's minimum");
+        }
+
+        // PAX-083: a replay that stops before the lead's end (or recorded nothing) fails with a clear message. Before the
+        // guard, the short one read as on screen to the end and overstated the lead; the empty one was an index error.
+        [TestCase(-1)]
+        [TestCase(0)]
+        public void AShortOrEmptyReplay_FailsWithAClearMessage(int keep)
+        {
+            object room = Fixture("CameraTellRoom", 60f, 40f, 33f), betrayal = ((IList)F(Fixture("CameraTellRoutes"), "Betrayals"))[0];
+            object replay = ReplayRoute(session, room, F(betrayal, "Route"));
+            object lead = Call(T("RouteValidator"), "Lead", replay, betrayal);
+            int reveal = (int)F(lead, "FirstVisibleTick"), end = reveal + (int)F(lead, "Lead");
+            var records = (IList)F(replay, "Records");
+            int count = keep < 0 ? end - 1 : keep;
+            while (records.Count > count) records.RemoveAt(records.Count - 1);
+
+            var e = Assert.Throws<InvalidOperationException>(() => Invoke(Validator, "OnScreenLead", replay, ElementIndex(replay, "ArrowX"), reveal, end,
+                new UnityEngine.Vector2(30f, 3f), new UnityEngine.Vector2(62f, 12f), 16f / 9f, Camera(), 30, 0f, 0f));
+            StringAssert.Contains(keep < 0 ? $"has {end - 1} ticks, short of the lead's end t{end}" : "recorded no ticks", e.Message);
         }
 
         [Test]

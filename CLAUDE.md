@@ -136,6 +136,14 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
     session's log filter forwards warnings).
   - `[Worker0] Import Error Code:(4)` about `assets/unitymcp/log/mcp.log` (the MCP log changing while it's
     imported; the folder is git-ignored).
+  - `ObserverSet 'Observers' has no observerB assigned.` during a test run, from `ObserverSet.Awake` in every
+    test rig with only Observer A (`PauseTestRig`, `RoomDeathHoldTests`, `ArrowTrapRuntimeTests`, the
+    level-complete/next-level/levels-button flow tests, the route harness). v1 is solo; B is optional (PAX-083).
+  - `RoomManager: cat left room 0 bounds at (…).` during a test run, any position, logged on purpose by
+    `RoomDeathHoldTests`' `OutOfBounds_*` tests and `LevelCompleteScreenTests.KillAndLastDoorTouch_…` (both
+    put the cat out of bounds to test the kill; PAX-083).
+  - The `LevelCameraFollow` zero-frame warning during a test run, logged on purpose by
+    `LevelCameraFollowTests`' `…_WithZeroFrame_…LogsWarning…` tests (they assert it's logged once; PAX-083).
 - Use `batch_execute` for long sequences of calls rather than dozens of round trips.
 
 ### What MCP does not do

@@ -565,6 +565,11 @@ flips with gravity), on **x/y only** (`RoomManager.ContainsXY`; room bounds are 
 killed through the normal (now-held) death path with cause `OutOfBounds`, plus one
 `Debug.LogWarning` naming the room and position.
 
+**After the last room, nothing is live.** Touching the last room's door marks the level complete, and
+`RoomManager.OnStepped` then returns before stepping anything: no trap, hazard, bounds or door check
+runs again, and the cat isn't respawned. In `Sandbox_TrapLab` this is why the last room's hazards stop
+working once it's completed (the cat can walk through them). It's not a bug (PAX-083).
+
 **Room element kinds** (`SoloRoomElementKind`, `Parallax.Editor.Setup`): `Floor`, `Ceiling`, `Wall`,
 `PitBottom`, `Checkpoint`, `Door`, `Hazard`, `CollapsingFloor`, `HiddenSpikes`, `FallingBlock`,
 `GravityFlip`, `DoorRetreat`, `MovingTrap`, `Arrow` (D-078) and `FakePlatform` (D-080). A

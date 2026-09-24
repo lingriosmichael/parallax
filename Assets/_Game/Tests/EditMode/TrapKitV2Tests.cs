@@ -198,6 +198,23 @@ namespace Parallax.Tests.EditMode
         [Test] public void Validator_RejectsNonTrapSource() =>
             Assert.IsFalse(Valid(Element("Floor", "Floor"), Element("FallingBlock", "B", ChainFrom("Floor"))));
 
+        // PAX-083 (item 6): one message per case, each saying only what applies.
+        [Test]
+        public void Validator_ASourceNotInThisRoom_SaysSo()
+        {
+            Assert.IsFalse(TryValidate(Room(Element("FallingBlock", "B", ChainFrom("NotInThisRoom"))), out string error));
+            StringAssert.Contains("B: chain source 'NotInThisRoom' is not an element of this room", error);
+            StringAssert.DoesNotContain("must be a trap", error);
+        }
+
+        [Test]
+        public void Validator_ANonTrapSourceInThisRoom_SaysItMustBeATrap()
+        {
+            Assert.IsFalse(TryValidate(Room(Element("Floor", "Floor"), Element("FallingBlock", "B", ChainFrom("Floor"))), out string error));
+            StringAssert.Contains("B: chain source must be a trap; 'Floor' is a Floor", error);
+            StringAssert.DoesNotContain("across rooms", error);
+        }
+
         [Test] public void Validator_RejectsTwoTrapCycle() =>
             Assert.IsFalse(Valid(Element("FallingBlock", "A", ChainFrom("B")), Element("FallingBlock", "B", ChainFrom("A"))));
 

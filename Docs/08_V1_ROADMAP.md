@@ -7,16 +7,17 @@ kit-gap ticket is inserted during Phase D.
 ## Status at a glance (2026-09-24)
 
 - **Done (committed):** PAX-050, PAX-051, PAX-052, PAX-053, PAX-054, KIT-1 (PAX-073), PAX-077,
-  PAX-078, PAX-079, KIT-2 (PAX-074), KIT-3a (PAX-075), KIT-3b (PAX-080), PAX-081, PAX-082, KIT-4 (PAX-076). Acceptance so far is EditMode tests plus Editor checks (D-064); none of it is
-  device-validated yet. EditMode baseline after PAX-076: 675.
-- **Next:** the cleanup ticket.
-- **Remaining in Phase B:** the cleanup ticket, PAX-058.
+  PAX-078, PAX-079, KIT-2 (PAX-074), KIT-3a (PAX-075), KIT-3b (PAX-080), PAX-081, PAX-082, KIT-4 (PAX-076), PAX-083. Acceptance so far is EditMode tests plus Editor checks (D-064); none of it is
+  device-validated yet. EditMode baseline after PAX-083: 685.
+- **Next:** PAX-058.
+- **Remaining in Phase B:** PAX-058.
 - **Remaining after Phase B:** Phase D content (PAX-059–063), Phase E art, Phase F audio and
   haptics, Phase G release prep, Phase H validation, then Phase I (iOS) and the co-op update.
 - **Open developer checks:** PAX-078 §9 play check of L002 and L004 (D-076 (7)); PAX-079 §9 play
   check of coyote and buffer in L001 and L004; PAX-082: run `PARALLAX/Setup/Trap Lab (PAX-045)`, save
   `Sandbox_TrapLab.unity`, and play Trap Lab rooms 3–4 (D-082 (10)); PAX-076: run
-  `PARALLAX/Setup/Precision Thresholds (PAX-076)`, rerun the Trap Lab menu, and play Trap Lab room 5 (D-083).
+  `PARALLAX/Setup/Precision Thresholds (PAX-076)`, rerun the Trap Lab menu, and play Trap Lab room 5 (D-083); PAX-083: play Trap Lab rooms 0–4 once each (rooms 0–2
+  never played at their refit, rooms 3–4 never at their PAX-082 layout).
 
 ### Phase B · One-room levels, flow and trap kit
 
@@ -36,8 +37,8 @@ kit-gap ticket is inserted during Phase D.
 | ✓ | PAX-081 | L004 `Block_1` harness fidelity. Done: no discrepancy. The scene matches the layout, Play and the harness run the same pipeline, and the developer confirms no falling-block death; `Block_1` kills no route. | D-081 |
 | ✓ | PAX-082 | Movement feel: jump height 3.2 → 1.6, every moving trap 20% faster; L001–L004 and Trap Lab 3–4 rebuilt around the new cat; harness pins re-measured once; movement readout. Camera judder fix alongside. | D-082, D-084 |
 | ✓ | KIT-4 (PAX-076) | Precision sections: section marker, per-section thresholds from one config asset (provisional 0.85 / 8 until PAX-069), the level-band check (no precision in levels 1–10), bait gaps, Trap Lab room 5, the camera tell rule (`CameraMath.Step` shared with the level camera); Trap Lab rooms 0–2 refitted to the 1.6 jump and the Trap Lab menu now updates existing rooms. No device session (deferred to Phase H). | D-083, enforces D-065 |
-| 1 · next | Cleanup (unnumbered) | PAX-075 reviewer nits, known-noise lines. (The contradicted box-model tests were removed in PAX-082.) | — |
-| 2 | PAX-058 | Bounded randomness | D-067 |
+| ✓ | PAX-083 | Cleanup after KIT-4: PAX-075 and KIT-4 reviewer nits (route-session fingerprint by identity, the camera rule's short-replay guard), clean scenes after the level-select tests, known-noise lines, the split chain message, L001 `Retreat` as a Recovers betrayal, saved-scene sync tests for `Sandbox_TrapLab` and `Level_00N`, and every unproven PAX-080/KIT-4 test seen red. No runtime or layout change. | D-080 |
+| 1 · next | PAX-058 | Bounded randomness | D-067 |
 
 PAX-057 (tiers) dropped by D-065.
 
