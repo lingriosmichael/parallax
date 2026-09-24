@@ -663,6 +663,15 @@ PiP toggle (visible only while the panel is open, default off): when on, the **i
 - **Two-client Editor tests** via Multiplayer Play Mode or Fusion multi-peer (decided in PAX-S01/PAX-030).
 - **Device tests** for anything involving touch, sensors, performance, or networking conditions.
 
+### 15.1 Route validator (D-079)
+
+- `Editor/Routes`:
+  - `RouteSession` swaps the open scenes for one empty scene, refuses any dirty scene, and restores the scenes from disk afterwards.
+  - `RouteReplay` builds the room the way `LevelSetup` builds a level. Each tick it steps `ObserverSet.FixedUpdate`, then `Physics2D.Simulate` in Script mode, on scripted input fed through `CatInputRouter.validSources`.
+  - `Route` holds the steps and conditions; `RouteValidator` checks the windows, margins, leads and determinism.
+- `Editor/Levels`: `L00NRoutes`, `LevelRoutes` (keyed like `LevelLayouts`) and `TrapLabRoutes`.
+- `LevelLayoutValidator.ValidateRoutes` runs a level's routes; it is not part of `Validate()`. The arrow rules now live in `LevelLayoutValidator.Arrows.cs`, a partial class of the same type.
+
 ---
 
 ## 16. Performance notes

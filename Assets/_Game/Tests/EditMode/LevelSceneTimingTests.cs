@@ -88,7 +88,12 @@ namespace Parallax.Tests.EditMode
 
         static void RestoreSetup(string[] paths)
         {
-            if (paths.Length == 0) return;
+            if (paths.Length == 0)
+            {
+                // PAX-075 R21: the Test Runner's untitled scene isn't in the setup list; recreate it rather than leave a level loaded.
+                Type.GetType("Parallax.Editor.Routes.RouteSession, Parallax.Editor").GetMethod("RecreateUntitledScene").Invoke(null, new object[] { true });
+                return;
+            }
             var setup = new SceneSetup[paths.Length];
             for (int i = 0; i < paths.Length; i++) setup[i] = new SceneSetup { path = paths[i], isActive = i == 0, isLoaded = true };
             EditorSceneManager.RestoreSceneManagerSetup(setup);

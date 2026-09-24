@@ -31,9 +31,18 @@ or build settings. Those are the developer's steps.
 
 ## 2. As-built trace
 
-Answer every Phase 1 question the ticket asks, briefly, with file:line references. Also trace
-every existing path the change touches (callers, events, per-tick order, other kill or reset
-paths). Past tickets found hidden paths this way, e.g. a `FixedUpdate` kill path nobody knew about.
+Size the trace by the ticket's Phase 1 size (`CLAUDE.md`, "Ticket phases and agent budgets"):
+
+- **None:** no trace. Go straight to tests first (step 3).
+- **Lite:** the default when the ticket states no size; say that you're assuming it. One screen:
+  the files touched, the allowed-list check, the risks and the open questions.
+- **Full:** only when the ticket asks for it. Answer the ticket's Phase 1 questions with file:line
+  references, and trace every existing path the change touches (callers, events, per-tick order,
+  other kill or reset paths). Past tickets found hidden paths this way, e.g. a `FixedUpdate` kill
+  path nobody knew about. At most about 150 lines.
+
+In every size, a number the ticket's own code or tests will compute is listed as "measured in
+Phase 2", not computed.
 
 - If the ticket says to wait after Phase 1, post the trace and stop.
 - If an answer contradicts the ticket, needs a file outside the allowed list, or needs a new
@@ -62,7 +71,18 @@ console lines; known noise is listed in `CLAUDE.md`.
 
 ## 6. Review loop
 
-Invoke the `pax-reviewer` agent with the ticket path. Then:
+Run it at the end of every ticket that changes code; skip it for None-size and docs-only tickets.
+Every `pax-reviewer` call names:
+- the ticket path;
+- the short review file;
+- the focus points;
+- the ticket's out-of-scope section;
+- the budget: stop and report after about 10 min or 50k tokens.
+
+Every `pax-room-auditor` call names one question, the rooms or files it reads, the ticket's
+out-of-scope section and the same budget.
+
+Then:
 - Fix every Blocker and Should-fix that is inside the ticket's scope, each with a failing-first
   test, and re-verify (step 5).
 - A finding that needs out-of-scope work: don't fix it; carry it to the handover.

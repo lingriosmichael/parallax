@@ -1,6 +1,6 @@
 ---
 name: pax-reviewer
-description: Use this agent to review a finished PARALLAX ticket before the developer accepts it, and proactively at the end of every /pax-ticket run. Give it the ticket path (e.g. Docs/0_TASKS/PAX-049.md). It reviews the working-tree diff against the ticket, 07_DECISIONS.md, CLAUDE.md and 02_ARCHITECTURE.md, runs the EditMode tests, and returns a verdict with findings. It never edits files.
+description: Use this agent to review a finished PARALLAX ticket before the developer accepts it, and proactively at the end of every /pax-ticket run that changes code. Give it the ticket path (e.g. Docs/0_TASKS/PAX-049.md). It reviews the working-tree diff against the ticket, 07_DECISIONS.md, CLAUDE.md and 02_ARCHITECTURE.md, runs the EditMode tests, and returns a verdict with findings. It never edits files.
 disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 model: opus
 ---
@@ -12,6 +12,11 @@ Play mode, never touch scenes, prefabs, assets or build settings.
 Bash is for read-only commands only: `git status`, `git diff`, `git log`, `git show`,
 `git ls-files`, `grep`, `cat`, `wc`. Nothing that writes. If Unity MCP tools are available to you,
 use only `refresh_unity`, `validate_script`, `read_console`, `run_tests`, `get_test_job`.
+
+## Budget
+
+Stop after about 10 minutes or 50k tokens. Report the findings you have so far, and list what
+you left unreviewed.
 
 ## Inputs
 

@@ -532,6 +532,7 @@ Phase A validation block with Phase H.
 D-062 · 2026-09-22 · Accepted (amended by D-063, D-064)
 …
 Consequence: 00_VISION.md §3 (pillar 2), §10 and §13, and CLAUDE.md's scope section are updated to match. ~~The playtest (PAX-037) still gates content: no levels are built beyond the current prototype until it passes.~~ Struck by D-064. OPEN items: hard-tier numbers → D-065 (PAX-057); free levels and price → D-067 (before PAX-066).
+Numbering note (PAX-075): free levels and price is D-068; D-067 is randomness (08_V1_ROADMAP).
 
 ### D-063 · 2026-09-22 · Accepted
 
@@ -1112,3 +1113,90 @@ camera visibility of the tell in follow mode is deferred to KIT-4 (it needs the 
 look-ahead and lag in `CameraMath`); the `OverlapBox` kill test sees Box2D's contact skin (about
 0.01 u), so a lane within about 0.01 u of the cat counts as touching, while the measured capsule
 width stays ≥ 0.44, so the speed cap holds. Dev room: Trap Lab room 3.
+
+### D-079 · 2026-09-24 · Accepted
+
+**Decision:** Route validator (PAX-075, KIT-3a).
+(1) **What a room declares.** A solution route and one betrayal route per real, lethal betrayal, as
+scripted actions in code-as-data: `Hold(Right|Left)`, `Release()`, `Jump()` (a one-tick press),
+`Until(condition)`, `For(n)`, `Margin(name, from, to, atLeast)`, with `.Timed(Shift|Hesitate)` on a
+step. Conditions read the previous tick's post-physics record, before this tick's motor step. A
+betrayal route reuses the solution's steps through `Route.PrefixOf`. Routes live in
+`LevelRoutes` (keyed like `LevelLayouts`) and `TrapLabRoutes.Room3`, outside `SoloRoomDefinition`.
+(2) **How they're checked.** `LevelLayoutValidator.ValidateRoutes` (not part of `Validate`) calls
+`RouteValidator`, which replays each route through the real game code in a `RouteSession`: the open
+scenes are swapped for one empty scene and restored from disk afterwards, `Physics2D.simulationMode`
+is `Script` while it is open, and plain logs are filtered. It refuses to start if any loaded scene
+is dirty, untitled or not. The room is built by `SoloRoomBuilder` as in a shipped level, the cat is
+`Cat_Player.prefab`, and the rest is the gameplay part of `_LevelTemplate`. Scripted input reaches
+`LocalHumanDriver` through the real `CatInputRouter`, as a plain `ICatCommandSource` added to its
+`validSources`. Each tick runs `ObserverSet.FixedUpdate` (driver, motor, then `RoomManager`'s traps,
+hazards, bounds and door) and then `Physics2D.Simulate(Time.fixedDeltaTime)`. A route's Move is
+screen-relative (D-049). The harness never decides whether a kill happened: `RoomDeath` does, and
+the harness only names the killer by re-running each kind's own kill test on the kill tick. Zero or
+several matches is an "ambiguous kill" failure.
+(3) **What passes.**
+- The solution completes the room. For each timed step, the window is the count of surviving start
+  ticks in the contiguous run that contains the authored tick (d = 0), walked outward one tick at a
+  time over ±25 (no bisection). `Shift` moves the step's start tick both ways; `Hesitate` inserts
+  d idle ticks before it (D-056 (1)'s "from rest"). Each timed step is swept alone. A window passes
+  at ≥ 12 (D-056 (1)). A `Margin` is the gap between two events' first ticks in the same replay,
+  used for L002's Lift, where a late landing is still carried rather than killed; it fails if
+  either event never happens.
+- Each betrayal dies at its declared killer and cause. Lead = min(kill tick, the killer's first
+  lethal tick where its kind exposes one; for arrows, fire + tell) − the first tick at which
+  `revealedBy` (by default the killer) visibly changes. "Visible" is every `SpriteRenderer` in the
+  element's subtree: enabled and active, colour, sprite, world position and rotation. A gravity flip
+  is revealed by the pseudo-element `Cat.Gravity`. It passes at a lead of ≥ 6 (D-057), and fails if
+  there is no visible change.
+- Two replays of the solution give the same per-tick record.
+(4) **Fidelity.** The harness reproduces the motor: 0.12 u/tick run, rest→max in 5 ticks (0.36 u),
+stop in 4 (0.168 u), jump apex 24 ticks and 3.339 u, a 48-tick 5.76 u flat jump, coyote 5 and buffer
+6 (D-077). It gives L002's Lift margin (fire tick − landing tick) as 16, and 14 at the pre-PAX-078
+trigger x 19.55. So PAX-078's Lift move wasn't needed by the real code; the layout stays (PAX-075
+§4). The boundary is x 19.30 (exactly 12, passes); x 19.20 gives 11 and fails. For L004, the real
+code doesn't reproduce D-076 (2)'s early-flip kill: from `FalseLanding`, no full-speed, stopped,
+hesitating (0–40 ticks) or stepper-parity take-off is killed by `Block_1`. The right-holding
+fast-flip window is 19 ticks (d −15..+3), pinned. This supersedes, in part, D-076 (2)'s box-model
+L004 figures (14.83–15.83 and the `Block_1` early-flip band); D-076 is not edited.
+(5) **Measured per room.**
+
+| Room | Timed window / margin | Betrayal leads |
+|---|---|---|
+| L001 | spike-jump Hesitate 26 (open) | `Collapse_C` 21, `Spikes_A` 24, `Block_A` hesitation (33 ticks) 17 |
+| L002 | Lift margin 16; `ReceiverBlock` Hesitate 26 (open); Sweep Shift 51 (open) | `ReceiverBlock` 12, `Collapse_C` 21, Sweep 24 |
+| L003 | `PeriodicUp` Hesitate 15 | `Collapse_C` 21, `CeilingSpikes` 19, `ExitSpikes` 22 |
+| L004 | `Flip_A` take-off Shift 17 (d −13..+3) | `SourceSpikes` 21, `CeilingHiddenSpikes` 20 |
+| Trap Lab room 3 | Hesitate 26 (open); `ArrowB` hop Shift 15 | `ArrowB` 6, `ArrowC` 6 (both exactly 6: a pass with zero margin) |
+
+(6) **What it satisfies.** D-069 (1)'s "at least one valid route" is now enforced for every
+`LevelLayouts` entry. A level with no routes fails `ValidateRoutes`.
+(7) **Redundant checks, kept until a cleanup ruling.** `ShippedLevelTimingTests`
+`L002_Lift_FullSpeedLandingHasTwelveTicksBeforeItsTrigger_AtTheRealRate` (covered by the L002 Lift
+margin). `L004_EarlyFlipBand_IsKilledByBlock1` and
+`L004_FastFlip_RightHoldingWindowIsAtLeastTwelveTicks_AndClearsBothBlocks`: box-model results
+contradicted by the harness. `L004_NoFullSpeedTakeoff_CrossesSourceSpikesWithoutFlipping` is only
+partly covered (routes prove only authored take-offs). `RoomStepper` becomes redundant once those go.
+`LevelLayoutValidator.ValidateRevealLead` overlaps the measured lead, but it is static and cheap.
+Not redundant: `LevelSceneTimingTests` (saved scenes against layouts) and the `SoloRoomsLayoutTests`
+V3 narratives (D-076 (5)).
+(8) **Limits.**
+- Only authored routes are proven. There is no search for unintended routes, and no proof that
+  there are no soft-locks.
+- Claimed betrayals with no betrayal route, as measured:
+  - L004 `Block_1`: no route dies on it (window 19, pinned);
+  - L002 `Block_A`: no route dies on it (take-offs 25.2–28.4, waits 0–30, no brake); the Sweep kills
+    the cat that runs on;
+  - L003 `PeriodicUp`: honest;
+  - L003 `Retreat` and L001 `Retreat`: non-lethal, so KIT-3b;
+  - L004 `Block_2`: never kills;
+  - L004's floor run: gone (D-076 (2)).
+  L004 `FalseLanding` and `Block_1` go to PAX-080 (KIT-3b).
+- On-screen visibility isn't modelled: "visible" means a renderer change, not one inside the camera
+  frame.
+- Only `DeathCause.Hazard` kills occur in these rooms. `Fall` and `OutOfBounds` betrayals are
+  supported, but none is exercised.
+- Windows are counted over ±25 ticks; a side that doesn't fail inside that range is reported as
+  open.
+- A route session swaps scenes, so it can't run over a dirty scene; tests recreate the Test Runner's
+  own untitled scratch scene first.

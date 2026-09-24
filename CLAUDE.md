@@ -50,6 +50,9 @@ If documents conflict, or a ticket conflicts with the architecture: **stop and r
 - No new global singletons. Dependencies are wired by the composition root (`Parallax.App`).
 - Do not silently swallow exceptions. Log with context.
 - Put tunables in ScriptableObject configs under `Assets/_Game/Data`, not magic numbers.
+- An EditMode test that opens or creates scenes restores the Test Runner's scene afterwards
+  (`RouteSession.RecreateUntitledScene`), and never leaves a `Level_NNN` scene loaded (PAX-075,
+  R21/R22).
 
 ## Unity file rules
 
@@ -128,6 +131,8 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   - `CatPlayerSetup: Rigidbody2D on 'Assets/_Game/Gameplay/Player/Cat_Player.prefab' has no
     serialized 'config' field. Stopping without saving.`, printed by `CatColliderConfigTests` (its
     tests pass).
+  - `route-hygiene warning`, logged on purpose by `RouteHygieneTests` (it checks that the route
+    session's log filter forwards warnings).
 - Use `batch_execute` for long sequences of calls rather than dozens of round trips.
 
 ### What MCP does not do
@@ -203,6 +208,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 - **A minimal per-room death count exists (D-058)**, in `RoomDeath`/`DeathCounter`, with no UI.
   Whether/how it's shown, persisted, or turned into lives is still D-044 (undecided).
 - Arrows: tell ≥ 6 ticks, harmless when stopped, lane checked by the validator (D-078).
+- Every room declares a solution route and its betrayal routes; `ValidateRoutes` replays them through the real game code (D-079).
 
 ### Scenes, Build Settings and loading (D-072)
 

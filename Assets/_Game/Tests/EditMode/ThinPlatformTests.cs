@@ -127,8 +127,8 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual("Floor", Field(platform, "Kind").ToString(), "the thin platform reuses the Floor kind (R9).");
             Vector2 position = (Vector2)Field(platform, "Position"), size = (Vector2)Field(platform, "Size");
 
-            Scene previous = SceneManager.GetActiveScene();
-            Scene temp = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+            // PAX-075 R22: Single mode, since Unity refuses an additive scene next to the Test Runner's unsaved untitled one.
+            Scene temp = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             try
             {
                 SceneManager.SetActiveScene(temp);
@@ -157,8 +157,8 @@ namespace Parallax.Tests.EditMode
             }
             finally
             {
-                if (previous.IsValid()) SceneManager.SetActiveScene(previous);
-                EditorSceneManager.CloseScene(temp, true);
+                // Put back the Test Runner's untitled scene with the route harness's helper.
+                Type.GetType("Parallax.Editor.Routes.RouteSession, Parallax.Editor").GetMethod("RecreateUntitledScene").Invoke(null, new object[] { true });
             }
         }
 
