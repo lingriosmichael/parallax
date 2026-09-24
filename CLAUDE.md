@@ -245,6 +245,37 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 
 No co-op or networking work (co-op update) · no lives or death counter (D-044) · no tilt (D-045) · no voice chat · no IAP · no matchmaking · no final art · no iOS · no analytics · no cloud saves · nothing beyond the current ticket.
 
+## Ticket phases and agent budgets
+
+**Phase 1 settles the design. Phase 2 measures.**
+
+- **What Phase 1 answers:** only questions whose answer could change what gets built or trigger a
+  stop condition: feasibility, files touched, reflection users, global state, definitions, and
+  conflicts with the docs.
+  - A number that the ticket's own code or tests will compute is not Phase 1 work. List it as
+    "measured in Phase 2".
+  - A wrong number found in Phase 2 is a stop condition, not a reason to compute it early.
+- **Phase 1 size:** the ticket states one.
+  - **None:** mechanical or docs-only changes. Go straight to tests first.
+  - **Lite (the default):** one screen covering the files touched, the allowed-list check, the
+    risks and the open questions.
+  - **Full:** only when the ticket asks for it. That means a new system, a runtime timing or
+    motor change, or a design that's expensive to undo if it's wrong. The trace is at most about
+    150 lines.
+- **Subagents (`pax-room-auditor`, `pax-reviewer`):**
+  - Call one only when a ruling or acceptance depends on its answer.
+  - Every call names:
+    - the one question it answers;
+    - the files it reads;
+    - the ticket's out-of-scope list;
+    - a budget: stop and report after about 10 min or 50k tokens, with what it has.
+  - Never spend agent time on anything in the ticket's out-of-scope section.
+  - In Phase 1, ask before a second auditor run.
+- **Ticket authors (Architect):**
+  - State the Phase 1 size.
+  - Ask at most 6 Phase 1 questions.
+  - Put every "confirm the number" item in Phase 2's tests, not in Phase 1.
+
 ## Required output after every task
 
 1. Confirm the project compiles, stating **how** you verified it (`refresh_unity` + `validate_script` + `read_console`), or say clearly that you could not verify it.
