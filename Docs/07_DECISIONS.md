@@ -1263,3 +1263,27 @@ and is not rewritten (PAX-080 pre-flight A1).
 - Contact is the touch skin, not a zero-distance overlap.
 - A fake platform is neither a chain source nor a chain target.
 - Not play-tested yet: whether the fakes read as floor, the Thin_Collapse hop and the Bridge lure.
+
+### D-081 · 2026-09-24 · Accepted
+
+**Decision:** L004 `Block_1` fidelity (PAX-081).
+(1) **What caused the dispute:** the play reports, not the harness. The developer confirms that no
+falling block killed them in any L004 play. D-080's "disputed" line rested on deaths the play
+reports wrongly blamed on `Block_1`.
+(2) **What was checked (read-only):**
+- `Level_004.unity` matches `L004Layout` field by field, so the scene isn't stale.
+- Play and the harness run the same per-tick pipeline: `ObserverSet`, then the motor, then the
+  `RoomManager` trap step, then physics.
+- The scene-only `Stepped` subscribers never write the cat's state or its command, and never step a
+  Reality A trap.
+- Input reaches the motor with 0 ticks of latency. The jump-press latch is the same in Play and the
+  harness.
+(3) **`Block_1`:** kills no route. D-079 (4) stands. D-080's L004 `Block_1` line is superseded
+("kills no route"); D-080's text is not edited.
+(4) **Known gap:** the route format can't express a stick magnitude below 1 (`VirtualStick` is
+continuous past its 0.15 dead zone, and the motor scales speed by it). No current finding depends
+on it. Address it before touch input feeds measured windows (KIT-4 thresholds, PAX-069).
+(5) **Cleanup:** `L004_EarlyFlipBand_IsKilledByBlock1` (box model) is contradicted by the harness.
+Its removal belongs to the cleanup ticket.
+(6) **Developer feel feedback**, recorded but not acted on here: falling blocks fall too slowly; the
+jump is far too high; the run speed is too fast.
