@@ -68,8 +68,10 @@ Near misses: within 20% of a limit
 Unpinned assumptions: ...
 
 TEST GAPS
-- a rule that no test in SoloRoomsLayoutTests enforces for every room, with the semantics of a
-  general test that would (every room, no named exceptions)
+- a rule that no test enforces for every room, with the semantics of a general test that would
+  (every room, no named exceptions), and the file that should own it: the `LevelLayoutValidator`
+  tests, `ShippedLevelTimingTests`, or the route tests (`LevelRoutes` / `TrapLabRoutes`).
+  `SoloRoomsLayoutTests` only for the frozen scaffolding.
 ```
 
 Report, don't fix. A general test beats a test of one named room: that lesson came from

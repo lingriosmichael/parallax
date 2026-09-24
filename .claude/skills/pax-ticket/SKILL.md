@@ -42,7 +42,10 @@ Size the trace by the ticket's Phase 1 size (`CLAUDE.md`, "Ticket phases and age
   path nobody knew about. At most about 150 lines.
 
 In every size, a number the ticket's own code or tests will compute is listed as "measured in
-Phase 2", not computed.
+Phase 2", not computed. A wrong number found in Phase 2 is a stop condition, not a reason to
+compute it early.
+
+In Phase 1, ask the developer before a second `pax-room-auditor` run.
 
 - If the ticket says to wait after Phase 1, post the trace and stop.
 - If an answer contradicts the ticket, needs a file outside the allowed list, or needs a new
@@ -71,8 +74,14 @@ console lines; known noise is listed in `CLAUDE.md`.
 
 ## 6. Review loop
 
-Run it at the end of every ticket that changes code; skip it for None-size and docs-only tickets.
+Acceptance of any ticket that changes code depends on the review, so `pax-reviewer` runs as one
+review loop per code-changing ticket, after implementation: at most two rounds, where the second
+round only re-checks fixes to Blockers. Docs-only tickets skip it.
+
 Every `pax-reviewer` call names:
+- the one question: "Does the diff meet the ticket and its rulings, and what must change before
+  commit?";
+- the files it reads: the ticket, every `PAX-0xx_rulings*.md`, and the review file;
 - the ticket path;
 - the short review file;
 - the focus points;

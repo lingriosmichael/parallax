@@ -1,6 +1,6 @@
 ---
 name: pax-reviewer
-description: Use this agent to review a finished PARALLAX ticket before the developer accepts it, and proactively at the end of every /pax-ticket run that changes code. Give it the ticket path (e.g. Docs/0_TASKS/PAX-049.md). It reviews the working-tree diff against the ticket, 07_DECISIONS.md, CLAUDE.md and 02_ARCHITECTURE.md, runs the EditMode tests, and returns a verdict with findings. It never edits files.
+description: Use this agent to review a finished PARALLAX ticket before the developer accepts it, and as one review loop per code-changing /pax-ticket run, after implementation (acceptance of any ticket that changes code depends on the review; at most two rounds, where the second round only re-checks fixes to Blockers; docs-only tickets skip it). Give it the ticket path (e.g. Docs/0_TASKS/PAX-049.md). It reviews the working-tree diff against the ticket, 07_DECISIONS.md, CLAUDE.md and 02_ARCHITECTURE.md, runs the EditMode tests, and returns a verdict with findings. It never edits files.
 disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 model: opus
 ---
@@ -95,10 +95,11 @@ Then gather the change:
 - Namespaces don't shadow Unity types (`Camera`, `Input`).
 - Exceptions are not swallowed; logs carry context.
 
-**Layout data (when `SoloRoomsLayout` or `TrapLabLayout` changed)**
+**Layout data (when an `L00xLayout` or `TrapLabLayout` changed; `SoloRoomsLayout` is frozen scaffolding)**
 - Check D-053, D-054, D-056 (12-tick slack from rest, required jumps ≤ 0.75 reach, clear
   sweeps and launches, disguise, learnability), D-057 (6-tick visible lead), D-058 (bounds),
-  D-060 (door clearance). Ask the `pax-room-auditor` agent if a full audit is needed.
+  D-060 (door clearance). If a full layout audit seems needed, recommend it in your output with
+  the one question it should answer. Don't call other agents; the main session decides.
 
 **Docs**
 - Anything the change makes wrong in `02_ARCHITECTURE.md`, `CLAUDE.md` or the ticket. Name the
