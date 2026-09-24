@@ -16,6 +16,12 @@ namespace Parallax.Editor.Routes
         // Per element, in ReplayResult.Elements order.
         public int[] FireTick;   // the element's LatestFireTick (room ticks), -1 before its first fire
         public int[] Signature;  // hash of every SpriteRenderer in the element's subtree (Q5)
+        // PAX-076 (D-083) R3, for the camera tell rule only (SameAs ignores them): the cat's Transform position, and
+        // per element the union of its enabled, active SpriteRenderers' bounds (Rendered false: nothing drawn).
+        // Both local to the room's origin.
+        public float CatX, CatY;
+        public UnityEngine.Rect[] RenderBounds;
+        public bool[] Rendered;
 
         public bool SameAs(TickRecord o)
         {

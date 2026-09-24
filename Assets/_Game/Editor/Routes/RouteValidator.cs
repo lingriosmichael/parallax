@@ -21,7 +21,11 @@ namespace Parallax.Editor.Routes
             return Run(session, levelId, room, routes).Errors;
         }
 
-        public static RouteReport Run(RouteSession session, string levelId, SoloRoomDefinition room, RoomRoutes routes)
+        public static RouteReport Run(RouteSession session, string levelId, SoloRoomDefinition room, RoomRoutes routes) =>
+            RunWithThresholds(session, levelId, room, routes, LevelLayoutValidator.HasSections(room) ? LevelLayoutValidator.LoadPrecisionThresholds() : null);
+
+        // PAX-076 (D-083) R2: the same run against given precision thresholds (only a room with sections reads them).
+        public static RouteReport RunWithThresholds(RouteSession session, string levelId, SoloRoomDefinition room, RoomRoutes routes, PrecisionThresholds thresholds)
         {
             var clock = System.Diagnostics.Stopwatch.StartNew();
             var report = new RouteReport { LevelId = levelId };
@@ -45,10 +49,14 @@ namespace Parallax.Editor.Routes
 
             if (solution.Completed)
             {
+                // PAX-076 (D-083) R2: a timed step wholly inside a precision section uses the section's slack.
+                if (LevelLayoutValidator.HasSections(room) && thresholds == null)
+                    report.Errors.Add($"{levelId}: precision sections need a PrecisionThresholds asset ({PrecisionThresholdsSetup.AssetPath}) for their route windows (D-083).");
                 foreach (WindowResult window in Sweep(session, room, routes.Solution, solution, ref report.Replays))
                 {
                     report.Windows.Add(window);
-                    if (window.Count < WindowTicks) report.Errors.Add($"{levelId}: {window} is below {WindowTicks}.");
+                    int required = RequiredWindowTicks(room, solution, window, thresholds);
+                    if (window.Count < required) report.Errors.Add($"{levelId}: {window} is below {required}.");
                 }
             }
 
@@ -88,6 +96,21 @@ namespace Parallax.Editor.Routes
             if (result.FirstVisibleTick < 0) errors.Add($"{name}: {betrayal.RevealedBy} never changes visibly, so the betrayal never happened.");
             else if (result.Completed && result.FirstVisibleTick >= result.CompletionTick) errors.Add($"{name}: {betrayal.RevealedBy} changes visibly at t{result.FirstVisibleTick}, not before the room completes at t{result.CompletionTick}.");
             return result;
+        }
+
+        // PAX-076 (D-083) R2: WindowTicks (D-056's 12), or the section's slack when the cat's recorded position (its
+        // collider centre, in the authored replay) is inside one precision section at every tick the window spans,
+        // from its first start tick (AuthoredTick + Low) to its last (AuthoredTick + High).
+        public static int RequiredWindowTicks(SoloRoomDefinition room, ReplayResult authored, WindowResult window, PrecisionThresholds thresholds)
+        {
+            if (thresholds == null || !LevelLayoutValidator.HasSections(room) || authored.Records.Count == 0) return WindowTicks;
+            int last = authored.Records.Count - 1;
+            int from = Mathf.Clamp(window.AuthoredTick + window.Low, 0, last), to = Mathf.Clamp(window.AuthoredTick + window.High, 0, last);
+            TickRecord first = authored.Records[from];
+            if (!LevelLayoutValidator.InSection(room, new Vector2(first.X, first.Y), out PrecisionSection section)) return WindowTicks;
+            for (int t = from; t <= to; t++)
+                if (!section.Contains(new Vector2(authored.Records[t].X, authored.Records[t].Y))) return WindowTicks;
+            return thresholds.SlackTicks;
         }
 
         // R3/R7: each timed step alone, walking outward from d = 0 until the first failure or the range.

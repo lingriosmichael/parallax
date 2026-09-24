@@ -134,6 +134,8 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
     tests pass).
   - `route-hygiene warning`, logged on purpose by `RouteHygieneTests` (it checks that the route
     session's log filter forwards warnings).
+  - `[Worker0] Import Error Code:(4)` about `assets/unitymcp/log/mcp.log` (the MCP log changing while it's
+    imported; the folder is git-ignored).
 - Use `batch_execute` for long sequences of calls rather than dozens of round trips.
 
 ### What MCP does not do
@@ -212,6 +214,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 - Arrows: tell ≥ 6 ticks, harmless when stopped, lane checked by the validator (D-078).
 - Every room declares a solution route and its betrayal routes; `ValidateRoutes` replays them through the real game code (D-079).
 - A betrayal route Dies (killer, lead ≥ 6) or Recovers (the room completes after the reveal); non-lethal betraying surfaces need trigger coverage, and a fake platform is never a landing surface (D-080).
+- Precision (D-083): tighter reach and slack only inside a room's `PrecisionSections` (`PrecisionThresholds`), never in levels 1–10; a `BaitGap` is proven out of reach; every reveal is inside the level camera's view ≥ 6 ticks before it can kill, at 4:3, 16:9 and 20:9.
 
 ### Scenes, Build Settings and loading (D-072)
 

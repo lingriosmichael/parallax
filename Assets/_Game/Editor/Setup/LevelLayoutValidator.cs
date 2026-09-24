@@ -31,7 +31,15 @@ namespace Parallax.Editor.Setup
         // PAX-082 (§12 R9): the same rules against a given motor, so frozen scaffolding can be checked against the
         // cat it was built for. Validate above is the unchanged path (the committed asset and the prefab's gravity); a
         // separate name, not an overload, keeps every reflection lookup of "Validate" unambiguous.
-        public static List<string> ValidateWithMotor(string levelId, SoloRoomDefinition room, CatMotorConfig config, float gravityStrength)
+        public static List<string> ValidateWithMotor(string levelId, SoloRoomDefinition room, CatMotorConfig config, float gravityStrength) =>
+            ValidateAll(levelId, room, config, gravityStrength, LoadPrecisionThresholds());
+
+        // PAX-076 (D-083): Validate against given precision thresholds instead of the committed asset (tests, and
+        // any tuning before PAX-069). A separate name, for the same reflection reason as ValidateWithMotor.
+        public static List<string> ValidateWithThresholds(string levelId, SoloRoomDefinition room, PrecisionThresholds thresholds) =>
+            ValidateAll(levelId, room, Config(), GravityStrength(), thresholds);
+
+        static List<string> ValidateAll(string levelId, SoloRoomDefinition room, CatMotorConfig config, float gravityStrength, PrecisionThresholds thresholds)
         {
             var errors = new List<string>();
 
@@ -48,6 +56,11 @@ namespace Parallax.Editor.Setup
             ValidateReach(levelId, room, config, gravityStrength, errors);
             ValidateRevealLead(levelId, room, errors);
             ValidatePeriodicSlack(levelId, room, config, errors);
+            // PAX-076 (D-083): precision sections (tighter reach and slack inside), the band (D-065) and bait gaps.
+            // Each returns nothing for a room that declares none, so every other room's result is unchanged.
+            errors.AddRange(ValidatePrecision(levelId, room, config, gravityStrength, thresholds));
+            errors.AddRange(ValidateBand(levelId, room, LoadLevelList()));
+            errors.AddRange(ValidateBaitGaps(levelId, room, config, gravityStrength));
 
             return errors;
         }
@@ -168,24 +181,32 @@ namespace Parallax.Editor.Setup
 
             foreach (RequiredJump jump in room.RequiredJumps)
             {
-                // PAX-080 (D-080): a fake platform is never a landing surface.
-                if (LandsOnFakePlatform(room, byName, jump, out string fake)) { errors.Add($"{levelId}: {jump.ReferenceName} jump lands on {fake}, a fake platform; it can't be a landing surface (D-080)."); continue; }
-                float takeoff = jump.TakeoffX, landing = jump.LandingX;
-                float runway = jump.Runway, deltaHeight = jump.LandingPawHeight - jump.TakeoffPawHeight;
-                // PAX-082: the arithmetic lives in Parallax.Core.JumpReach, shared with the movement readout.
-                float vy = JumpReach.LaunchSpeed(gravity, config.JumpHeight);
-                if (!JumpReach.CanRise(vy, gravity, deltaHeight)) { errors.Add($"{levelId}: {jump.ReferenceName} jump height exceeds reach."); continue; }
-                float vx = JumpReach.TakeoffSpeed(config.MaxSpeed, config.Acceleration, runway);
-                float flight = JumpReach.Flight(vy, gravity, deltaHeight);
-                float reach = vx * flight;
-                float distance = Mathf.Abs(landing - takeoff);
-                if (jump.Kind == RequiredJumpKind.Hazard && byName.TryGetValue(jump.ReferenceName, out SoloRoomElement reference))
-                {
-                    float window = JumpReach.HazardWindow(vx, vy, gravity, jump.HazardHeight);
-                    if (reference.Size.x > RequiredJumpReachFraction * window) errors.Add($"{levelId}: {jump.ReferenceName} clearance exceeds {RequiredJumpReachFraction} of the jump window.");
-                }
-                if (distance > RequiredJumpReachFraction * reach) errors.Add($"{levelId}: {jump.ReferenceName} jump beyond {RequiredJumpReachFraction} of measured reach (distance {distance:F2} > {RequiredJumpReachFraction * reach:F2}).");
+                // PAX-076 (D-083): a jump with both ends in a precision section is ValidatePrecision's.
+                if (IsPrecisionJump(room, jump)) continue;
+                CheckJump(levelId, room, byName, jump, config, gravity, RequiredJumpReachFraction, errors);
             }
+        }
+
+        // One required jump against a reach fraction (D-056's outside sections, the section's inside, D-083).
+        static void CheckJump(string levelId, SoloRoomDefinition room, Dictionary<string, SoloRoomElement> byName, RequiredJump jump, CatMotorConfig config, float gravity, float fraction, List<string> errors)
+        {
+            // PAX-080 (D-080): a fake platform is never a landing surface.
+            if (LandsOnFakePlatform(room, byName, jump, out string fake)) { errors.Add($"{levelId}: {jump.ReferenceName} jump lands on {fake}, a fake platform; it can't be a landing surface (D-080)."); return; }
+            float takeoff = jump.TakeoffX, landing = jump.LandingX;
+            float runway = jump.Runway, deltaHeight = jump.LandingPawHeight - jump.TakeoffPawHeight;
+            // PAX-082: the arithmetic lives in Parallax.Core.JumpReach, shared with the movement readout.
+            float vy = JumpReach.LaunchSpeed(gravity, config.JumpHeight);
+            if (!JumpReach.CanRise(vy, gravity, deltaHeight)) { errors.Add($"{levelId}: {jump.ReferenceName} jump height exceeds reach."); return; }
+            float vx = JumpReach.TakeoffSpeed(config.MaxSpeed, config.Acceleration, runway);
+            float flight = JumpReach.Flight(vy, gravity, deltaHeight);
+            float reach = vx * flight;
+            float distance = Mathf.Abs(landing - takeoff);
+            if (jump.Kind == RequiredJumpKind.Hazard && byName.TryGetValue(jump.ReferenceName, out SoloRoomElement reference))
+            {
+                float window = JumpReach.HazardWindow(vx, vy, gravity, jump.HazardHeight);
+                if (reference.Size.x > fraction * window) errors.Add($"{levelId}: {jump.ReferenceName} clearance exceeds {fraction} of the jump window.");
+            }
+            if (distance > fraction * reach) errors.Add($"{levelId}: {jump.ReferenceName} jump beyond {fraction} of measured reach (distance {distance:F2} > {fraction * reach:F2}).");
         }
 
         static void ValidateRevealLead(string levelId, SoloRoomDefinition room, List<string> errors)
@@ -209,19 +230,22 @@ namespace Parallax.Editor.Setup
             float tickAcceleration = config.Acceleration * secondsPerTick * secondsPerTick;
             float tickSpeed = config.MaxSpeed * secondsPerTick;
             if (tickAcceleration <= 0f || tickSpeed <= 0f) return;
-            float accelerateTicks = tickSpeed / tickAcceleration;
-            float accelerationDistance = tickSpeed * tickSpeed / (2f * tickAcceleration);
 
             foreach (SoloRoomElement trap in room.Elements)
             {
                 if (!trap.Settings.IsConfigured || trap.Settings.RepeatMode != TrapRepeatMode.Periodic) continue;
-                float distance = trap.Size.x + config.ColliderSize.x + .5f;
-                float crossing = distance <= accelerationDistance
-                    ? Mathf.Sqrt(2f * distance / tickAcceleration)
-                    : accelerateTicks + (distance - accelerationDistance) / tickSpeed;
-                if (trap.Settings.PeriodTicks - trap.Settings.CooldownTicks < crossing + PeriodicSlackTicks)
-                    errors.Add($"{levelId}: {trap.Name} periodic slack is below {PeriodicSlackTicks} ticks beyond its from-rest crossing (D-056).");
+                // PAX-076 (D-083): a periodic trap wholly inside a precision section is ValidatePrecision's.
+                if (WhollyInSection(room, Box(trap, Vector2.zero))) continue;
+                CheckPeriodicSlack(levelId, trap, config, PeriodicSlackTicks, errors);
             }
+        }
+
+        // PAX-076 (D-083): the body of the loop above, against a slack; FromRestCrossingTicks is the same crossing.
+        static void CheckPeriodicSlack(string levelId, SoloRoomElement trap, CatMotorConfig config, int slackTicks, List<string> errors)
+        {
+            float crossing = FromRestCrossingTicks(trap.Size.x + config.ColliderSize.x + .5f, config);
+            if (trap.Settings.PeriodTicks - trap.Settings.CooldownTicks < crossing + slackTicks)
+                errors.Add($"{levelId}: {trap.Name} periodic slack is below {slackTicks} ticks beyond its from-rest crossing (D-056).");
         }
 
         // PAX-073 (D-074): trigger coverage. Deliberately not part of Validate(): it runs over

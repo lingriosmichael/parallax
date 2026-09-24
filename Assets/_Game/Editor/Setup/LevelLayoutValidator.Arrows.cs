@@ -150,13 +150,20 @@ namespace Parallax.Editor.Setup
             if (config == null) { errors.Add($"{levelId}: no CatMotorConfig; arrow periodic slack is undefined."); return errors; }
             foreach (SoloRoomElement e in periodic)
             {
-                Rect lane = ArrowLaneBox(e, Vector2.zero);
-                float crossing = FromRestCrossingTicks(lane.width + config.ColliderSize.x + .5f, config);
-                int window = e.Settings.PeriodTicks - ArrowStopTick(e);
-                if (window < crossing + PeriodicSlackTicks)
-                    errors.Add($"{levelId}: {e.Name} periodic slack {window - crossing:F1} is below {PeriodicSlackTicks} ticks (window {window} against a from-rest crossing of {crossing:F1}, D-056).");
+                // PAX-076 (D-083): an arrow whose lane is wholly inside a precision section is ValidatePrecision's.
+                if (WhollyInSection(room, ArrowLaneBox(e, Vector2.zero))) continue;
+                CheckArrowPeriodicSlack(levelId, e, config, PeriodicSlackTicks, errors);
             }
             return errors;
+        }
+
+        static void CheckArrowPeriodicSlack(string levelId, SoloRoomElement e, CatMotorConfig config, int slackTicks, List<string> errors)
+        {
+            Rect lane = ArrowLaneBox(e, Vector2.zero);
+            float crossing = FromRestCrossingTicks(lane.width + config.ColliderSize.x + .5f, config);
+            int window = e.Settings.PeriodTicks - ArrowStopTick(e);
+            if (window < crossing + slackTicks)
+                errors.Add($"{levelId}: {e.Name} periodic slack {window - crossing:F1} is below {slackTicks} ticks (window {window} against a from-rest crossing of {crossing:F1}, D-056).");
         }
     }
 }

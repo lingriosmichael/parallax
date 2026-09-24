@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Parallax.Core;
 using Parallax.Editor.Routes;
 using static Parallax.Editor.Routes.R;
@@ -53,5 +54,31 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(GroundedOn(Up_2))", "run on over the Bridge", Until(GroundedOn("Gutter")), Until(Dead())),
                     revealedBy: "ArrowD"));
         }
+
+        // PAX-076 (D-083): Trap Lab room 5, the precision room. Full speed along P1-P8 (each jump once the cat is a
+        // platform-width-minus-one short of the edge), a walk off P8 onto the Step, and the precision jump up to the Exit.
+        public static RoomRoutes Room5()
+        {
+            var steps = new List<RouteStep> { Hold(Right), Until(XAtLeast(3.8f)), Jump(), Until(Airborne()), Until(GroundedOn("P1")) };
+            float[] right = { 8.9f, 13.1f, 17f, 21.2f, 25.1f, 29.3f, 33.2f };
+            for (int i = 0; i < right.Length; i++)
+            {
+                RouteStep jump = i == 2 ? Jump().Timed(TimedMode.Shift) : Jump();
+                steps.AddRange(new[] { Until(XAtLeast(right[i] - 1f)), jump, Until(Airborne()), Until(GroundedOn("P" + (i + 2))) });
+            }
+            steps.AddRange(new[] { Until(GroundedOn("Step")), Until(XAtLeast(41f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(RoomComplete()) });
+            var solution = new Route("Trap Lab room 5 solution", steps.ToArray());
+
+            return new RoomRoutes(solution,
+                new Betrayal("Block_P5 falls on a cat that stops on P5", "Block_P5", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(P5))", "stop on P5", Release(), Until(Dead()))));
+        }
+
+        // PAX-076 (D-083) §2.5: the bait gap attempted from its best take-off: full speed off P8's edge, the jump in the
+        // coyote window. It dies in the pit. Not a Betrayal: nothing reveals (the gap is visible all along), so
+        // RouteValidator's lead has nothing to measure; TrapLabRoom5Tests replays it on its own.
+        public static Route Room5BaitAttempt() =>
+            Route.PrefixOf(Room5().Solution, "Until(GroundedOn(P8))", "Trap Lab room 5: jump the bait gap from P8's edge",
+                Until(Airborne()), For(3), Jump(), Until(Dead()));
     }
 }

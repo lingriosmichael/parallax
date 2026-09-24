@@ -10,21 +10,24 @@ namespace Parallax.Editor.Setup
     {
         public static readonly IReadOnlyList<SoloRoomDefinition> Rooms = new[]
         {
+            // PAX-076: rooms 0-2 refitted to D-082's cat (apex 1.6), as rooms 3-4 were in PAX-082: ThinPlatform's top
+            // 2.0 -> 1.1 (underside 0.6 clears a walking cat), FixedPillar and Crusher 2 -> 1 tall. Every trigger now
+            // spans the cat's band (D-074) and PeriodicSpikes has a 6-tick reveal (D-057).
             Room(0, 0f, new[] {
-                E(SoloRoomElementKind.Floor,"ThinPlatform",(3.5f,1.75f),(1f,.5f)),
-                E(SoloRoomElementKind.HiddenSpikes,"SourceSpikes",(6f,.15f),(2f,.3f),(5f,.5f),(.5f,1f),new SoloRoomTrapSettings(revealDelayTicks:6)),
+                E(SoloRoomElementKind.Floor,"ThinPlatform",(3.5f,.85f),(1f,.5f)),
+                E(SoloRoomElementKind.HiddenSpikes,"SourceSpikes",(6f,.15f),(2f,.3f),(5f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)),
                 E(SoloRoomElementKind.FallingBlock,"Block_1",(8f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:6,unitsPerTick:.36f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"SourceSpikes")),
                 E(SoloRoomElementKind.FallingBlock,"Block_2",(14f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:6,unitsPerTick:.36f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_1")),
                 E(SoloRoomElementKind.FallingBlock,"Block_3",(20f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:6,unitsPerTick:.36f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_2")),
                 E(SoloRoomElementKind.DoorRetreat,"DoorRetreat",(22f,3.5f),(.5f,7f),settings:new SoloRoomTrapSettings(delayTicks:6,moveTicks:20,offset:new Vector2(6,0),triggerSource:TrapTriggerSource.Chain,chainSource:"Block_3")) }),
             Room(1, 45f, new[] {
-                E(SoloRoomElementKind.MovingTrap,"SlidingSpikes",(8f,.15f),(2f,.3f),(6.5f,.5f),(.5f,1f),new SoloRoomTrapSettings(delayTicks:6,offset:new Vector2(6,0),moveTicks:30,holdTicks:24,returnTicks:30,cooldownTicks:96,movingKind:MovingTrapKind.Hazard)),
+                E(SoloRoomElementKind.MovingTrap,"SlidingSpikes",(8f,.15f),(2f,.3f),(6.5f,3.5f),(.5f,7f),new SoloRoomTrapSettings(delayTicks:6,offset:new Vector2(6,0),moveTicks:30,holdTicks:24,returnTicks:30,cooldownTicks:96,movingKind:MovingTrapKind.Hazard)),
                 E(SoloRoomElementKind.MovingTrap,"RisingFloor",(15f,.25f),(4f,.5f),(15f,.75f),(4f,1f),new SoloRoomTrapSettings(offset:new Vector2(0,5.8f),moveTicks:30,holdTicks:18,returnTicks:30,cooldownTicks:90,movingKind:MovingTrapKind.Solid)),
                 E(SoloRoomElementKind.Hazard,"CeilingHazard",(15f,6.85f),(4f,.3f)),
-                E(SoloRoomElementKind.MovingTrap,"Crusher",(26f,1f),(1f,2f),(23.3f,1f),(3f,2f),new SoloRoomTrapSettings(delayTicks:6,offset:new Vector2(-3,0),moveTicks:15,holdTicks:12,returnTicks:15,cooldownTicks:48,movingKind:MovingTrapKind.Solid)), E(SoloRoomElementKind.Wall,"FixedPillar",(22f,1f),(1f,2f)) }),
+                E(SoloRoomElementKind.MovingTrap,"Crusher",(26f,.5f),(1f,1f),(23.3f,3.5f),(3f,7f),new SoloRoomTrapSettings(delayTicks:6,offset:new Vector2(-3,0),moveTicks:15,holdTicks:12,returnTicks:15,cooldownTicks:48,movingKind:MovingTrapKind.Solid)), E(SoloRoomElementKind.Wall,"FixedPillar",(22f,.5f),(1f,1f)) }),
             Room(2, 90f, new[] {
-                E(SoloRoomElementKind.HiddenSpikes,"PeriodicSpikes",(10f,.15f),(2f,.3f),settings:new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:96,phaseTicks:12,cooldownTicks:24)), E(SoloRoomElementKind.Ceiling,"LowSlab",(10f,1.45f),(4f,.5f)),
-                E(SoloRoomElementKind.FallingBlock,"RearmBlock",(16f,6f),(1f,1f),(16f,.6f),(2f,1f),new SoloRoomTrapSettings(delayTicks:6,unitsPerTick:.36f,travelDistance:5.5f,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:48)),
+                E(SoloRoomElementKind.HiddenSpikes,"PeriodicSpikes",(10f,.15f),(2f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,repeatMode:TrapRepeatMode.Periodic,periodTicks:96,phaseTicks:12,cooldownTicks:24)), E(SoloRoomElementKind.Ceiling,"LowSlab",(10f,1.45f),(4f,.5f)),
+                E(SoloRoomElementKind.FallingBlock,"RearmBlock",(16f,6f),(1f,1f),(16f,3.5f),(2f,7f),new SoloRoomTrapSettings(delayTicks:6,unitsPerTick:.36f,travelDistance:5.5f,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:48)),
                 E(SoloRoomElementKind.CollapsingFloor,"RearmCollapse",(24f,-.5f),(3f,1f),settings:new SoloRoomTrapSettings(delayTicks:12,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:48)), E(SoloRoomElementKind.Hazard,"PitHazard",(24f,-2.85f),(3f,.3f)) }),
             // PAX-074 (D-078): the arrow room. ArrowA: honest, Periodic, fires right along the ShieldA-StopA lane
             // (wait behind ShieldA for an arrow to stop, then cross). ArrowB: disguised in PillarB, fires left at
@@ -43,6 +46,8 @@ namespace Parallax.Editor.Setup
                 E(SoloRoomElementKind.Arrow,"ArrowC",(27.25f,1.7f),(.5f,.4f),(21.25f,1.7f),(11.5f,.4f),new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,1.7f,15.5f,unitsPerTick:.36f),new SoloRoomTrapSettings(delayTicks:0))) })
             // PAX-080 (D-080): the troll-route room (leading comma so room 3's line stays unchanged).
             , Room4()
+            // PAX-076 (D-083): the precision room.
+            , Room5()
         };
 
         // One valid route: Start_Floor -> Up_1 -> Up_2 -> Exit_Perch (door). Betrayals: Stone_A (fake, looks like the
@@ -87,6 +92,43 @@ namespace Parallax.Editor.Setup
             };
             return new SoloRoomDefinition(4, 180f, 32f, elements, openings, jumps);
         }
+
+        // PAX-076 (D-083): the precision room, wider than one screen. Eight narrow, thin platforms (P1-P8, 2 wide, 0.5
+        // thick) over a pit, alternating comfortable gaps (1.9, a 2.9 jump: D-056's 0.75) and precision gaps (2.2, a
+        // 3.2 jump: only at the section's 0.85). Block_P5 falls on a cat that stops on P5. From P8 the door's ledge
+        // looks one jump away: that's the bait gap (6.5 u, out of reach at full reach). The way round is Step, a wide
+        // low platform under the gap: drop onto it, then a precision jump up to the Exit.
+        static SoloRoomDefinition Room5()
+        {
+            var elements = new List<SoloRoomElement> {
+                E(SoloRoomElementKind.Ceiling,"Ceiling",(24.5f,7.5f),(49f,1f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint",(2f,0),(0,0)),
+                E(SoloRoomElementKind.Floor,"Start_Floor",(2.5f,-.5f),(5f,1f)),
+                E(SoloRoomElementKind.Wall,"Pit_L",(4.5f,-2.5f),(1f,3f)),
+                E(SoloRoomElementKind.Wall,"Pit_R",(48.5f,-2.5f),(1f,3f)),
+                E(SoloRoomElementKind.PitBottom,"Pit_Bottom",(26.5f,-3.5f),(43f,1f)),
+                new SoloRoomElement(SoloRoomElementKind.Hazard,"Pit_Hazard",new Vector2(26.5f,-2.85f),new Vector2(43f,.3f),hazardRole:SoloRoomHazardRole.OpeningBottom),
+            };
+            float[] left = { 6.9f, 11.1f, 15f, 19.2f, 23.1f, 27.3f, 31.2f, 35.4f };
+            for (int i = 0; i < left.Length; i++) elements.Add(E(SoloRoomElementKind.Floor,"P" + (i + 1),(left[i] + 1f,-.25f),(2f,.5f)));
+            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_P5",(24.1f,6f),(1f,1f),(24.1f,3.5f),(1f,7f),new SoloRoomTrapSettings(delayTicks:6,unitsPerTick:.36f,travelDistance:5.5f)));
+            elements.Add(E(SoloRoomElementKind.Floor,"Step",(40.4f,-1.25f),(3f,.5f)));
+            elements.Add(E(SoloRoomElementKind.Floor,"Exit",(45.4f,-.75f),(3f,.5f)));
+            elements.Add(E(SoloRoomElementKind.Door,"Door",(46.2f,.25f),(.6f,1.5f)));
+
+            var openings = new[] { new SoloRoomOpening(SoloRoomOpeningKind.Pit, 5f, 48f, "Pit_L", "Pit_R", "Pit_Bottom", "Pit_Hazard") };
+            // Take-off 0.5 inside the source's edge, landing 0.5 inside the destination's (the collider's half-width).
+            var jumps = new List<RequiredJump> { Jump(4.5f, 7.4f, 0f, 0f, "Start_Floor", "P1") };
+            for (int i = 0; i < left.Length - 1; i++) jumps.Add(Jump(left[i] + 1.5f, left[i + 1] + .5f, 0f, 0f, "P" + (i + 1), "P" + (i + 2)));
+            jumps.Add(Jump(36.9f, 39.4f, 0f, -1f, "P8", "Step"));
+            jumps.Add(Jump(41.4f, 44.4f, -1f, -.5f, "Step", "Exit"));
+            var sections = new[] { new PrecisionSection("Precision_Run", Rect.MinMaxRect(6f, -1.5f, 48f, 2.5f)) };
+            var baits = new[] { new BaitGap("Exit_Gap", 37.4f, 0f, 43.9f, -.5f) };
+            return new SoloRoomDefinition(5, 225f, 49f, elements.ToArray(), openings, jumps.ToArray(), null, sections, baits);
+        }
+
+        static RequiredJump Jump(float takeoffX, float landingX, float takeoffPaw, float landingPaw, string source, string destination) =>
+            new("Pit_Bottom", RequiredJumpKind.Pit, RequiredJumpFrame.Floor, RequiredJumpDirection.Right, takeoffX, landingX, takeoffPaw, landingPaw, 1.5f, sourceName: source, destinationName: destination);
 
         static SoloRoomDefinition Room(int id, float origin, SoloRoomElement[] traps)
         {

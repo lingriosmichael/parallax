@@ -96,5 +96,50 @@ namespace Parallax.Core.Cameras
             if (!verticalFollow) desired.y = frameCentre.y;
             return ClampToBounds(desired, halfView, frameMin, frameMax);
         }
+
+        // PAX-076 (D-083): LevelCameraFollow's whole per-step state and tunables, so the level camera and the
+        // validator's camera tell rule run the same step.
+        public struct FollowState
+        {
+            public Vector2 Centre, Velocity;
+            public float AnchorX, LastDirection;
+        }
+
+        public readonly struct FollowParams
+        {
+            public readonly float MaxViewHeight, LookAhead, LookAheadFlipDistance, SmoothTime, MaxSpeed;
+            public readonly Vector2 DeadZoneHalfExtents;
+            public FollowParams(float maxViewHeight, float lookAhead, float lookAheadFlipDistance, Vector2 deadZoneHalfExtents, float smoothTime, float maxSpeed)
+            { MaxViewHeight = maxViewHeight; LookAhead = lookAhead; LookAheadFlipDistance = lookAheadFlipDistance; DeadZoneHalfExtents = deadZoneHalfExtents; SmoothTime = smoothTime; MaxSpeed = maxSpeed; }
+        }
+
+        // PAX-076 (D-083): one level-camera step, moved verbatim out of LevelCameraFollow.Resolve (after D-084). Fit
+        // mode centres on the frame; follow mode resolves the look direction, the dead zone, the look-ahead and the
+        // clamp. immediate (a snap) skips SmoothDamp and leaves Velocity alone. Returns the view height.
+        public static float Step(ref FollowState state, Vector2 target, Vector2 frameCentre, Vector2 frameSize, float aspect, in FollowParams p, bool immediate, float deltaTime)
+        {
+            float viewHeight = ResolveViewHeight(frameSize, p.MaxViewHeight, aspect);
+            Vector2 halfView = new Vector2(viewHeight * 0.5f * aspect, viewHeight * 0.5f);
+            Vector2 frameMin = frameCentre - frameSize * 0.5f;
+            Vector2 frameMax = frameCentre + frameSize * 0.5f;
+
+            Vector2 desired;
+            if (IsFitMode(frameSize, p.MaxViewHeight, aspect))
+            {
+                desired = frameCentre;
+            }
+            else
+            {
+                float direction = ResolveLookDirection(target.x, ref state.AnchorX, state.LastDirection, p.LookAheadFlipDistance);
+                state.LastDirection = direction;
+                bool verticalFollow = frameSize.y > viewHeight + 0.001f;
+
+                desired = ResolveFollowCentre(state.Centre, target, direction,
+                    p.DeadZoneHalfExtents, p.LookAhead, halfView, frameCentre, frameMin, frameMax, verticalFollow);
+            }
+
+            state.Centre = immediate ? desired : Vector2.SmoothDamp(state.Centre, desired, ref state.Velocity, p.SmoothTime, p.MaxSpeed, deltaTime);
+            return viewHeight;
+        }
     }
 }

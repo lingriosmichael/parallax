@@ -105,32 +105,18 @@ namespace Parallax.Gameplay.Cameras
 
         Vector3 ToVector3(Vector2 xy) => new Vector3(xy.x, xy.y, transform.position.z);
 
+        // PAX-076 (D-083): the step itself is CameraMath.Step, shared with the validator's camera tell rule; this
+        // only carries the component's state in and out and applies the view height.
         Vector2 Resolve(Vector2 currentCentre, bool immediate)
         {
-            float viewHeight = CameraMath.ResolveViewHeight(frameSize, config.MaxViewHeight, cam.aspect);
+            var state = new CameraMath.FollowState { Centre = currentCentre, Velocity = velocity, AnchorX = directionAnchorX, LastDirection = lastDirection };
+            var p = new CameraMath.FollowParams(config.MaxViewHeight, config.LookAhead, config.LookAheadFlipDistance, config.DeadZoneHalfExtents, config.SmoothTime, config.MaxSpeed);
+            float viewHeight = CameraMath.Step(ref state, target.position, frameCenter, frameSize, cam.aspect, p, immediate, Time.deltaTime);
             cam.orthographicSize = viewHeight * 0.5f;
-            Vector2 halfView = new Vector2(viewHeight * 0.5f * cam.aspect, viewHeight * 0.5f);
-            Vector2 frameMin = frameCenter - frameSize * 0.5f;
-            Vector2 frameMax = frameCenter + frameSize * 0.5f;
-
-            Vector2 desired;
-            if (CameraMath.IsFitMode(frameSize, config.MaxViewHeight, cam.aspect))
-            {
-                desired = frameCenter;
-            }
-            else
-            {
-                Vector2 targetPos = target.position;
-                float direction = CameraMath.ResolveLookDirection(targetPos.x, ref directionAnchorX, lastDirection, config.LookAheadFlipDistance);
-                lastDirection = direction;
-                bool verticalFollow = frameSize.y > viewHeight + 0.001f;
-
-                desired = CameraMath.ResolveFollowCentre(currentCentre, targetPos, direction,
-                    config.DeadZoneHalfExtents, config.LookAhead, halfView, frameCenter, frameMin, frameMax, verticalFollow);
-            }
-
-            if (immediate) return desired;
-            return Vector2.SmoothDamp(currentCentre, desired, ref velocity, config.SmoothTime, config.MaxSpeed, Time.deltaTime);
+            velocity = state.Velocity;
+            directionAnchorX = state.AnchorX;
+            lastDirection = state.LastDirection;
+            return state.Centre;
         }
     }
 }

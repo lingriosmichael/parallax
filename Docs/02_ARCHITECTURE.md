@@ -680,6 +680,17 @@ PiP toggle (visible only while the panel is open, default off): when on, the **i
 - `LevelLayoutValidator.ValidateRoutes` runs a level's routes; it is not part of `Validate()`. The arrow rules now live in `LevelLayoutValidator.Arrows.cs`, a partial class of the same type.
 - D-080: a `Betrayal` is Dies or Recovers (`Betrayal.Recovers`, results in `RouteReport.Recoveries`). `LevelLayoutValidator.Surfaces.cs` holds `ValidateSurfaceCoverage` (non-lethal betraying surfaces), `ValidateFakePlatformSettings` and `SurfaceCoverageExemptions` (only L004 `FalseLanding`).
 
+### 15.2 Precision sections, bands, bait gaps and the camera tell rule (D-083)
+
+- **The marker:** `SoloRoomDefinition.PrecisionSections` (`PrecisionSection`: a name and a room-local region). It sits on the room, not in `Elements`, so `SoloRoomBuilder`, `ComputeRoomBounds` and the baked camera frame never see it. `SoloRoomDefinition.BaitGaps` (`BaitGap`: take-off and target edges and heights) sits beside it for the same reason.
+- `LevelLayoutValidator.Precision.cs` (part of `Validate()`; each rule returns nothing for a room without sections or bait gaps):
+  - `ValidatePrecision`: jumps with both ends in a section, and periodic traps and arrows wholly inside one, use `PrecisionThresholds` (Editor assembly, one asset under `Assets/_Game/Data`). `ValidateReach`, `ValidatePeriodicSlack` and `ValidateArrowPeriodicSlack` skip exactly those and keep D-056's values for everything else.
+  - `ValidateBand`: no section in a level numbered 1–10; the number is the place in `LevelListConfig` plus one, and an unlisted id is exempt.
+  - `ValidateBaitGaps`: `JumpReach.EdgeReach` at fraction 1.0 falls short of the gap by at least one run tick.
+  - `ValidateWithThresholds` runs `Validate()` against given thresholds instead of the asset.
+- `RouteValidator.RequiredWindowTicks`: a timed step whose window stays inside a section needs the section's slack, otherwise 12. `RunWithThresholds` is `Run` with explicit thresholds.
+- `LevelLayoutValidator.Camera.cs`, `CameraTell`/`ValidateCameraTell` (not part of `Validate()`, like `ValidateRoutes`): replays each dying betrayal once, then steps `CameraMath.Step` (the level camera's own step, which `LevelCameraFollow` calls) over the recorded cat positions at 30 and 60 fps, 4 phases and 3 starting look directions. Visibility is judged per simulation tick against the latest rendered frame, with no frame delay; the reveal must be on screen for at least 6 ticks before it can first kill, at 4:3, 16:9 and 20:9. The harness's `TickRecord` carries the cat's Transform position and each element's rendered bounds for it.
+
 ---
 
 ## 16. Performance notes

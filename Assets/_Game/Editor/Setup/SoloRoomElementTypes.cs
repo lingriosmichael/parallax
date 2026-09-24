@@ -69,11 +69,37 @@ namespace Parallax.Editor.Setup
         { ReferenceName = referenceName; SourceName = sourceName; DestinationName = destinationName; Kind = kind; Frame = frame; Direction = direction; TakeoffX = takeoffX; LandingX = landingX; TakeoffPawHeight = takeoffPawHeight; LandingPawHeight = landingPawHeight; Runway = runway; HazardHeight = hazardHeight; }
     }
     public readonly struct RequiredStep { public readonly float Height; public RequiredStep(float height) { Height = height; } }
+
+    // PAX-076 (D-083): a precision section, a region in room-local coordinates (edges inclusive). Held on the room,
+    // not as an element, so SoloRoomBuilder, the room bounds and the camera frame never see it.
+    public readonly struct PrecisionSection
+    {
+        public readonly string Name; public readonly Rect Region;
+        public PrecisionSection(string name, Rect region) { Name = name; Region = region; }
+        public bool Contains(Vector2 p) => p.x >= Region.xMin && p.x <= Region.xMax && p.y >= Region.yMin && p.y <= Region.yMax;
+        public bool Contains(Rect r) => Contains(r.min) && Contains(r.max);
+    }
+
+    // PAX-076 (D-083): a gap the validator proves nobody can cross. TakeoffX is the take-off platform's edge and
+    // TargetX the target platform's near edge (edges, not RequiredJump's cat-centre points: the rule adds the
+    // collider itself); the paw heights are the two surfaces' tops.
+    public readonly struct BaitGap
+    {
+        public readonly string Name; public readonly float TakeoffX; public readonly float TakeoffPawHeight; public readonly float TargetX; public readonly float TargetPawHeight;
+        public BaitGap(string name, float takeoffX, float takeoffPawHeight, float targetX, float targetPawHeight)
+        { Name = name; TakeoffX = takeoffX; TakeoffPawHeight = takeoffPawHeight; TargetX = targetX; TargetPawHeight = targetPawHeight; }
+    }
+
     public readonly struct SoloRoomDefinition
     {
         public readonly int Id; public readonly Vector2 Origin; public readonly float Width; public readonly SoloRoomElement[] Elements; public readonly SoloRoomOpening[] Openings; public readonly RequiredJump[] RequiredJumps; public readonly RequiredStep[] RequiredSteps;
+        // PAX-076 (D-083): never null through a constructor; null only on default(SoloRoomDefinition), read as none.
+        public readonly PrecisionSection[] PrecisionSections; public readonly BaitGap[] BaitGaps;
         public SoloRoomDefinition(int id, float originX, float width, SoloRoomElement[] elements, SoloRoomOpening[] openings, RequiredJump[] requiredJumps)
             : this(id, originX, width, elements, openings, requiredJumps, System.Array.Empty<RequiredStep>()) { }
-        public SoloRoomDefinition(int id, float originX, float width, SoloRoomElement[] elements, SoloRoomOpening[] openings, RequiredJump[] requiredJumps, RequiredStep[] requiredSteps = null) { Id = id; Origin = new Vector2(originX, 0f); Width = width; Elements = elements; Openings = openings; RequiredJumps = requiredJumps; RequiredSteps = requiredSteps ?? System.Array.Empty<RequiredStep>(); }
+        public SoloRoomDefinition(int id, float originX, float width, SoloRoomElement[] elements, SoloRoomOpening[] openings, RequiredJump[] requiredJumps, RequiredStep[] requiredSteps = null)
+            : this(id, originX, width, elements, openings, requiredJumps, requiredSteps, null) { }
+        public SoloRoomDefinition(int id, float originX, float width, SoloRoomElement[] elements, SoloRoomOpening[] openings, RequiredJump[] requiredJumps, RequiredStep[] requiredSteps, PrecisionSection[] precisionSections, BaitGap[] baitGaps = null)
+        { Id = id; Origin = new Vector2(originX, 0f); Width = width; Elements = elements; Openings = openings; RequiredJumps = requiredJumps; RequiredSteps = requiredSteps ?? System.Array.Empty<RequiredStep>(); PrecisionSections = precisionSections ?? System.Array.Empty<PrecisionSection>(); BaitGaps = baitGaps ?? System.Array.Empty<BaitGap>(); }
     }
 }

@@ -292,7 +292,11 @@ namespace Parallax.Editor.Routes
                     Dead = Death.IsHolding || Death.WasKilledThisTick(ObserverId.A, tick), Holding = Death.IsHolding, Complete = Rooms.LevelComplete,
                     Move = Mathf.RoundToInt(command.Move), JumpPressed = command.JumpPressed,
                     FireTick = new int[Elements.Count + 1], Signature = new int[Elements.Count + 1],
+                    RenderBounds = new Rect[Elements.Count + 1], Rendered = new bool[Elements.Count + 1],
                 };
+                // PAX-076 (D-083) R3: what the camera tell rule reads.
+                Vector3 catPosition = Cat.transform.position;
+                r.CatX = catPosition.x - Origin.x; r.CatY = catPosition.y - Origin.y;
                 // The same ground test CatMotor2D.UpdateGrounded makes at the start of the next step.
                 int count = Body.Cast(down, filter, hits, Motor.GroundProbeDistance);
                 for (int i = 0; i < count; i++)
@@ -306,6 +310,7 @@ namespace Parallax.Editor.Routes
                 {
                     r.FireTick[i] = Elements[i].Trap != null ? Elements[i].Trap.LatestFireTick : -1;
                     r.Signature[i] = Signature(Elements[i]);
+                    r.Rendered[i] = RenderedBounds(Elements[i], Origin, out r.RenderBounds[i]);
                 }
                 r.FireTick[Elements.Count] = -1;
                 r.Signature[Elements.Count] = r.GravityUp ? 1 : 0;
@@ -334,6 +339,22 @@ namespace Parallax.Editor.Routes
                     }
                     return h;
                 }
+            }
+
+            // PAX-076 (D-083) R3: the union of the bounds of every SpriteRenderer Signature counts as visible.
+            static bool RenderedBounds(Element e, Vector2 origin, out Rect bounds)
+            {
+                bounds = default;
+                bool any = false;
+                foreach (SpriteRenderer s in e.Renderers)
+                {
+                    if (s == null || !s.enabled || !s.gameObject.activeInHierarchy) continue;
+                    Bounds b = s.bounds;
+                    Rect r = Rect.MinMaxRect(b.min.x - origin.x, b.min.y - origin.y, b.max.x - origin.x, b.max.y - origin.y);
+                    bounds = any ? Rect.MinMaxRect(Mathf.Min(bounds.xMin, r.xMin), Mathf.Min(bounds.yMin, r.yMin), Mathf.Max(bounds.xMax, r.xMax), Mathf.Max(bounds.yMax, r.yMax)) : r;
+                    any = true;
+                }
+                return any;
             }
 
             // R6: names the element(s) whose own kill test holds on the kill tick's poses (before physics).

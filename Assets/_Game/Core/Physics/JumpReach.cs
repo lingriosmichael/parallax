@@ -23,5 +23,11 @@ namespace Parallax.Core
 
         // Horizontal time-at-speed above hazardHeight, times the take-off speed: the hazard's kill window.
         public static float HazardWindow(float takeoffSpeed, float launchSpeed, float gravity, float hazardHeight) => takeoffSpeed * 2f * Mathf.Sqrt(launchSpeed * launchSpeed - 2f * gravity * hazardHeight) / gravity;
+
+        // PAX-076 (D-083): the best take-off's reach, edge to edge: the cat leaves with its trailing side at the
+        // take-off edge, runs on for the coyote time, then flies; it lands once its leading side reaches the target's
+        // edge, so the collider's width counts once. The height lost during the coyote time is ignored (it only
+        // shortens the flight), so this never understates the reach. Only the bait-gap rule calls it.
+        public static float EdgeReach(float takeoffSpeed, float flight, float coyoteSeconds, float colliderWidth) => takeoffSpeed * (flight + coyoteSeconds) + colliderWidth;
     }
 }

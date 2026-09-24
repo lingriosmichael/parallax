@@ -1354,6 +1354,88 @@ editing needed no code. A block's `delayTicks` is read in `Awake`, so it is tune
 (10) **Tests:** 624, all green. Editor-only; the developer played the rebuilt L001–L004 and approved the feel.
 Not device-validated (D-064). Open: `Sandbox_TrapLab.unity` not rebuilt; Trap Lab 3–4 unplayed.
 
+### D-083 · 2026-09-24 · Accepted
+
+**Decision:** Precision sections, difficulty bands, bait gaps and the camera tell rule (KIT-4, PAX-076).
+(1) **The marker:** `PrecisionSection[] PrecisionSections` on `SoloRoomDefinition` (a name and a room-local region,
+edges inclusive), not an element, so the builder, the room bounds and the camera frame never see it. A `RequiredJump`
+is a precision jump when its take-off and its landing are both in one section; a straddling jump (the entry and exit
+jumps) is checked with D-056's 0.75 and isn't an error. A periodic trap (its footprint) or periodic arrow (its lane)
+wholly inside a section uses the section's slack; one partly inside keeps 12. A timed route step uses the section's
+slack when the cat's recorded position is inside one section at every tick its window spans (authored tick + Low to
++ High); otherwise 12. This covers chain and collapse timing inside sections. Leads stay at 6 everywhere (D-057).
+(2) **Bait gaps:** `BaitGap[] BaitGaps` on `SoloRoomDefinition` (`Name`, `TakeoffX`, `TakeoffPawHeight`, `TargetX`,
+`TargetPawHeight`; the X values are the two platforms' edges). From the best take-off (full speed, trailing side at
+the edge, all 5 coyote ticks), at fraction 1.0, the target is out of reach by at least one run tick (MaxSpeed × tick,
+0.12 u); otherwise a validator error naming the gap, the reach and the margin. A target higher than the jump can rise
+is out of reach. Allowed in every level, both bands; never on a solution route. `JumpReach` gained only `EdgeReach`
+(speed × (flight + coyote) + collider width). It ignores the height lost during the coyote time, so it overstates
+the reach: room 5's harness attempt came down through the target's height with its leading side at x 43.06, against
+the analytic 43.20. The D-082 discrete excess (4.08 u against 3.92 u flat) did not show up here.
+(3) **Thresholds:** `PrecisionThresholds` (Editor assembly; `Assets/_Game/Data/PrecisionThresholds.asset`, made by
+`PARALLAX/Setup/Precision Thresholds (PAX-076)`), reach 0.85, slack 8 ticks. They're provisional; PAX-069 sets device
+values. This amends D-069's Consequence ("thresholds come from a Pixel 8a session"): provisional values here, device
+values in PAX-069. The validator rejects a room with a section and no asset, and values outside 0.75 ≤ reach < 1,
+0 < slack ≤ 12.
+(4) **The band (D-065):** a precision section in a level numbered 1–10 is an error that names the level. The number is
+the level id's place in `LevelListConfig` plus one; an id that isn't listed (the Trap Lab, test fixtures) is exempt.
+`DifficultyBandTests.NoDevRoomIsAListedLevel` keeps every listed id a `LevelLayouts` level and no Trap Lab id listed.
+(5) **Room 5** (Trap Lab, origin 225, 49 wide, follow mode at every aspect): eight thin platforms (2 × 0.5) over a
+pit, the gaps alternating 1.9 (a 2.9 u jump, within 0.75) and 2.2 (3.2 u, precision only); `Block_P5` falls on a cat
+that stops on P5; the bait gap `Exit_Gap`, 6.5 u from P8 to the Exit (best reach 5.80 u, margin 0.70 u); the way
+round is a drop onto `Step`, then a 3.0 u rising jump to the Exit (precision). One section, `Precision_Run` (x 6–48).
+Solution windows 14 and 26 (both need 8); `Block_P5` lead 14. Without the marker, the four 3.2 u jumps and the 3.0 u
+jump fail 0.75. The bait attempt (full speed, the jump on the 5th coyote tick) dies in the pit. It's a route test
+(`TrapLabRoutes.Room5BaitAttempt`), not a `Betrayal`: nothing reveals, so there's no lead to measure.
+(6) **The camera tell rule:** for every betrayal that dies, the reveal (RevealedBy's first visible change) is on
+screen for at least 6 ticks before it can first kill (`RouteValidator.Lead`'s end: the kill, or an arrow's first
+lethal tick), at 4:3, 16:9 and 20:9. `LevelCameraFollow`'s step moved verbatim into `CameraMath.Step`
+(`FollowState`, `FollowParams`), proven bit for bit by `CameraStepEquivalenceTests`. The rule runs that step over the
+replay's recorded cat Transform positions:
+- at 30 and 60 fps, 4 frame phases each, and a starting look direction of −1, 0 and +1 (a respawn snap keeps the last
+  attempt's direction);
+- the drawn cat is interpolated between the previous tick's pose and the current one, so up to one tick behind;
+- the frames drive only the smoothing and the interpolated target. At tick k the element is visible when its bounds
+  at tick k overlap the view of the latest frame rendered at or before tick k (after it vanishes, the bounds it was
+  last drawn at). No frame delay is added: the lead counts simulation ticks (D-057, §13 R10);
+- the on-screen lead is the end tick minus the first tick from which the element is visible at every tick up to the
+  end, and must be at least 6. The worst of the 24 cases counts, and fit mode passes trivially.
+No extra replays per camera case. The harness records the cat's Transform position and each element's rendered bounds
+(added fields; `SameAs` is unchanged).
+(7) **Results (on screen / lead, worst case; 20:9 is fit for all 32-wide rooms):** outcome (a) for L001–L004. Every
+reveal is on screen for its whole lead at every aspect; the camera's position never cuts one off.
+| Room | Reveal: 4:3 and 16:9 |
+|---|---|
+| L001 | Collapse_C 30/30, Spikes_A 24/24, Block_A 14/14 |
+| L002 | ReceiverBlock 10/10, Collapse_C 21/21, Sweep 23/23 |
+| L003 | Collapse_C 21/21, CeilingSpikes 19/19, ExitSpikes 15/15 |
+| L004 | SourceSpikes 21/21, CeilingHiddenSpikes 20/20 |
+| Trap Lab 3 | ArrowB 6/6, ArrowC 6/6 |
+| Trap Lab 4 | Stone_A 26/26, Thin_Collapse 25/25, ArrowD 45/45 |
+| Trap Lab 5 | Block_P5 14/14 (also at 20:9) |
+Trap Lab 0–2 declare no routes, so the rule has nothing to measure there. The Trap Lab scene uses `CatCameraFollow`;
+the rule checks its rooms as if they were levels. A first version counted a 30 fps frame's delay and made Trap Lab 3's
+tell-6 arrows fail (5/6); §13 R10 removed that, and Trap Lab 3 is unchanged.
+(8) **Unchanged:** D-057's 6-tick lead and D-078's minimum tell of 6. The camera rule only asks whether the element is in
+the view.
+(9) **Limits:** partial stick magnitude isn't modelled (D-081 (4)); no device data yet.
+- The lead counts simulation ticks. On a 30 fps screen a reveal can appear up to one frame later. Whether 6 ticks is
+  enough on a real screen is a Phase H device check. (30 fps is Unity's documented mobile default; no `targetFrameRate`
+  is set.)
+- The camera model starts every route from a respawn snap (Start). A retry is covered by the three starting look
+  directions.
+- The bait-gap reach ignores the height lost during coyote time. That overestimates the reach, so it's on the safe side
+  for bait gaps. A flat gap exactly at the pass boundary isn't replayed in the harness.
+(10) **Trap Lab refit (developer request during §9):** `PARALLAX/Setup/Trap Lab (PAX-045)` built only missing rooms, so
+rooms 3–4 kept their pre-PAX-082 geometry in `Sandbox_TrapLab.unity` (D-082's "run the Trap Lab menu" never applied
+the refit). `TrapLabSetup.SyncRooms` now builds each room fresh beside the scene's copy, compares every object path,
+component and serialized field, and rebuilds only a room that differs; nothing outside a room references into it, and a
+second run changes nothing. Rooms 0–2, never refitted to the 1.6 jump, now fit it: `ThinPlatform`'s top 2.0 → 1.1,
+`FixedPillar` and `Crusher` 2 → 1 tall; every trigger spans the cat's band (D-074) and `PeriodicSpikes` has a 6-tick
+reveal (D-057). Rooms 0–2 declare no routes; `TrapLabRefitTests` replays a way through each.
+(11) **Tests:** 675 EditMode (624 + 51 new); `TrapLabRoom5Tests.TheCommittedThresholdsAsset_…` needs the asset from
+`PARALLAX/Setup/Precision Thresholds (PAX-076)`. `PrecisionFixtures.cs` joined the allowed files (§13 R9).
+
 ### D-084 · 2026-09-24 · Accepted
 
 **Decision:** Level camera judder fix (PAX-082 follow-up). D-083 stays reserved for KIT-4.
