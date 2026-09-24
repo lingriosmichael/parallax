@@ -19,28 +19,30 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Checkpoint,"Checkpoint_1",(2f,0f),(0f,0f))
             };
             elements.Add(E(SoloRoomElementKind.Floor,"Floor_A",(2.5f,-.5f),(5f,1f)));
-            elements.Add(E(SoloRoomElementKind.Floor,"Platform_B",(8.5f,1f),(3f,1f)));
+            // PAX-082 (D-082): refit to the lower jump (apex 1.6): a 1.0 step up over a 1.25 gap, 3.0 down to Floor_C.
+            elements.Add(E(SoloRoomElementKind.Floor,"Platform_B",(8.125f,.5f),(3.75f,1f)));
             elements.Add(E(SoloRoomElementKind.Floor,"Floor_C",(14f,0f),(4f,1f)));
             AddPit(elements,1,5f,24f);
             // PAX-078 (D-076): trigger centre x 19.55 -> 19.80 for 12 ticks of landing slack at 50 Hz.
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Lift",(18f,-.25f),(4f,.5f),(19.8f,3.375f),(.3f,7.25f),new SoloRoomTrapSettings(offset:new Vector2(0f,1.5f),moveTicks:36,movingKind:MovingTrapKind.Solid)));
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Lift",(18f,-.25f),(4f,.5f),(19.8f,3.375f),(.3f,7.25f),new SoloRoomTrapSettings(offset:new Vector2(0f,1.5f),moveTicks:30,movingKind:MovingTrapKind.Solid)));
             elements.Add(E(SoloRoomElementKind.Floor,"Receiver",(21f,.25f),(2f,2.5f)));
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"ReceiverBlock",(20.5f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:50,unitsPerTick:.3f,travelDistance:4f,triggerSource:TrapTriggerSource.Chain,chainSource:"Lift")));
+            elements.Add(E(SoloRoomElementKind.FallingBlock,"ReceiverBlock",(20.5f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:50,unitsPerTick:.36f,travelDistance:4f,triggerSource:TrapTriggerSource.Chain,chainSource:"Lift")));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Collapse_C",(23f,-.5f),(2f,1f),settings:new SoloRoomTrapSettings(delayTicks:12)));
             elements.Add(E(SoloRoomElementKind.Floor,"Floor_DLeft",(26f,-.5f),(4f,1f)));
-            elements.Add(E(SoloRoomElementKind.Floor,"Floor_DMiddle",(29.5f,-.5f),(3f,1f)));
-            elements.Add(E(SoloRoomElementKind.Floor,"Floor_DRight",(31.5f,-.5f),(1f,1f)));
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Sweep",(30.5f,.45f),(1f,.3f),(26f,3.5f),(.5f,7f),new SoloRoomTrapSettings(offset:new Vector2(-2f,0f),moveTicks:40,holdTicks:12,returnTicks:40,movingKind:MovingTrapKind.Hazard,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:92)));
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_A",(29.5f,.15f),(1f,.3f),(25.5f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // PAX-082 (D-082): the spike/Sweep crossing shortens to 2.8 (spikes 0.75, Sweep 0.8, the door ledge 1.2 from x 30.8).
+            elements.Add(E(SoloRoomElementKind.Floor,"Floor_DMiddle",(29.4f,-.5f),(2.8f,1f)));
+            elements.Add(E(SoloRoomElementKind.Floor,"Floor_DRight",(31.4f,-.5f),(1.2f,1f)));
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Sweep",(30.4f,.45f),(.8f,.3f),(26f,3.5f),(.5f,7f),new SoloRoomTrapSettings(offset:new Vector2(-2f,0f),moveTicks:33,holdTicks:12,returnTicks:33,movingKind:MovingTrapKind.Hazard,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:92)));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_A",(29.625f,.15f),(.75f,.3f),(25.5f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             // PAX-080: claimed as a betrayal, but no replayed route dies on it (PAX-075: take-offs 25.2-28.4, waits
             // 0-30, no brake); the Sweep kills the cat that runs on. No layout change (D-069, PAX-078 R15).
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_A",(30.5f,6f),(.75f,.75f),settings:new SoloRoomTrapSettings(delayTicks:26,unitsPerTick:.3f,travelDistance:5.625f,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_A")));
+            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_A",(30.5f,6f),(.75f,.75f),settings:new SoloRoomTrapSettings(delayTicks:26,unitsPerTick:.36f,travelDistance:5.625f,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_A")));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(31.5f,.75f),(.6f,1.5f)));
             var jumps = new List<RequiredJump> {
-                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,4.5f,7.5f,0f,1.5f,3f,sourceName:"Floor_A",destinationName:"Platform_B"),
-                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,9.5f,12.5f,1.5f,.5f,2f,sourceName:"Platform_B",destinationName:"Floor_C"),
+                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,4.5f,6.75f,0f,1f,3f,sourceName:"Floor_A",destinationName:"Platform_B"),
+                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,9.5f,12.5f,1f,.5f,2.75f,sourceName:"Platform_B",destinationName:"Floor_C"),
                 J("Collapse_C",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,21.5f,24.5f,1.5f,0f,1f,sourceName:"Receiver",destinationName:"Floor_DLeft"),
-                J("Spikes_A",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,27.5f,31.5f,0f,0f,3f,1f,sourceName:"Floor_DLeft",destinationName:"Floor_DRight")
+                J("Spikes_A",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,28.5f,31.3f,0f,0f,3f,1f,sourceName:"Floor_DLeft",destinationName:"Floor_DRight")
             };
             return new SoloRoomDefinition(0,0f,32f,elements.ToArray(),new[] { O(SoloRoomOpeningKind.Pit,5f,24f,"Pit1_L","Pit1_R","Pit1_Bottom","Pit1_Hazard") },jumps.ToArray());
         }

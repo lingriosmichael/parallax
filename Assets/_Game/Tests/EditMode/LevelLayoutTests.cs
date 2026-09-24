@@ -108,9 +108,20 @@ namespace Parallax.Tests.EditMode
             foreach (object room in SoloRooms())
             {
                 int id = (int)Field(room, "Id");
-                string[] errors = Validate("SoloRoomsLayout room " + id, room);
+                string[] errors = ValidateWithPreRetuneMotor("SoloRoomsLayout room " + id, room);
                 Assert.IsEmpty(errors, "SoloRoomsLayout room " + id + ":\n" + string.Join("\n", errors));
             }
+        }
+
+        // PAX-082 (§12 R9): pinned to the pre-retune motor; frozen scaffolding (D-076). The same config as
+        // SoloRoomsLayoutTests' R5 pin, and gravity 30.
+        static string[] ValidateWithPreRetuneMotor(string id, object room)
+        {
+            Assert.NotNull(ValidatorType, "Parallax.Editor.Setup.LevelLayoutValidator not found.");
+            MethodInfo method = ValidatorType.GetMethod("ValidateWithMotor", BindingFlags.Public | BindingFlags.Static);
+            Assert.NotNull(method, "LevelLayoutValidator.ValidateWithMotor not found.");
+            var errors = (IList)method.Invoke(null, new[] { id, room, SoloRoomsLayoutTests.PreRetuneConfig(), (object)SoloRoomsLayoutTests.PreRetuneGravity });
+            return errors.Cast<string>().ToArray();
         }
 
         // ---------- 5. Negative cases ----------
@@ -137,58 +148,8 @@ namespace Parallax.Tests.EditMode
 
         static readonly (string levelId, int soloRoomIndex)[] SeedPairs = { ("L001", 0), ("L002", 1), ("L003", 2), ("L004", 3) };
 
-        // PAX-073 (D-074, R7): the only L00N trigger boxes allowed to differ from SoloRoomsLayout.
-        static readonly (string levelId, string name)[] TriggerBoxExceptions = { ("L001", "Spikes_A"), ("L002", "Lift") };
-        // PAX-078 (D-076, R9): the approved 50 Hz fix moves these elements, so only their Position may
-        // differ from SoloRoomsLayout's, and it must differ (no stale entries).
-        static readonly (string levelId, string name)[] PositionExceptions = { ("L004", "Flip_A") };
-
-        [Test]
-        public void SplitFidelity_L00NEqualsSoloRoomsLayoutRoomNUpToTranslationAndRoomId()
-        {
-            object[] soloRooms = SoloRooms().Cast<object>().ToArray();
-            foreach ((string levelId, int index) in SeedPairs)
-            {
-                object levelRoom = RoomFor(levelId);
-                object soloRoom = soloRooms[index];
-
-                Assert.AreEqual(0, (int)Field(levelRoom, "Id"), levelId + " room id");
-                Assert.AreEqual(Vector2.zero, (Vector2)Field(levelRoom, "Origin"), levelId + " origin");
-                Assert.AreEqual((float)Field(soloRoom, "Width"), (float)Field(levelRoom, "Width"), .001f, levelId + " width");
-
-                // Element positions are local offsets from Origin already (see SoloRoomBuilder.
-                // BuildElement: position = room.Origin + e.Position), so translating Origin to
-                // (0,0) requires no change to any element's stored position/size.
-                Element[] soloElements = Elements(soloRoom), levelElements = Elements(levelRoom);
-                Assert.AreEqual(soloElements.Length, levelElements.Length, levelId + " element count");
-                for (int i = 0; i < soloElements.Length; i++)
-                {
-                    Assert.AreEqual(soloElements[i].Name, levelElements[i].Name, levelId + " element " + i + " name");
-                    Assert.AreEqual(soloElements[i].Kind, levelElements[i].Kind, levelId + " element " + i + " kind");
-                    if (PositionExceptions.Contains((levelId, levelElements[i].Name)))
-                        Assert.AreNotEqual(soloElements[i].Position, levelElements[i].Position,
-                            levelId + " " + levelElements[i].Name + " is in PositionExceptions but its position still equals SoloRoomsLayout's (stale entry).");
-                    else
-                        Assert.AreEqual(soloElements[i].Position, levelElements[i].Position, levelId + " element " + i + " position");
-                    Assert.AreEqual(soloElements[i].Size, levelElements[i].Size, levelId + " element " + i + " size");
-                    // PAX-073 (D-074, R7): the approved trigger-coverage fixes change only these traps'
-                    // trigger boxes, so only their SecondaryPosition/SecondarySize may differ, and they
-                    // must differ (no stale entries).
-                    if (TriggerBoxExceptions.Contains((levelId, levelElements[i].Name)))
-                    {
-                        Assert.IsFalse(soloElements[i].SecondaryPosition == levelElements[i].SecondaryPosition && soloElements[i].SecondarySize == levelElements[i].SecondarySize,
-                            levelId + " " + levelElements[i].Name + " is in TriggerBoxExceptions but its trigger box still equals SoloRoomsLayout's (stale entry).");
-                        continue;
-                    }
-                    Assert.AreEqual(soloElements[i].SecondaryPosition, levelElements[i].SecondaryPosition, levelId + " element " + i + " secondary position");
-                    Assert.AreEqual(soloElements[i].SecondarySize, levelElements[i].SecondarySize, levelId + " element " + i + " secondary size");
-                }
-                foreach ((string _, string exceptionName) in TriggerBoxExceptions.Where(x => x.levelId == levelId))
-                    Assert.IsTrue(levelElements.Any(e => e.Name == exceptionName), levelId + " has no element " + exceptionName + " listed in TriggerBoxExceptions.");
-                foreach ((string _, string exceptionName) in PositionExceptions.Where(x => x.levelId == levelId))
-                    Assert.IsTrue(levelElements.Any(e => e.Name == exceptionName), levelId + " has no element " + exceptionName + " listed in PositionExceptions.");
-            }
-        }
+        // PAX-082 (§12 R8, D-082): SplitFidelity_L00NEqualsSoloRoomsLayoutRoomN... is removed. L001-L004 are rebuilt
+        // around the new cat and no longer equal SoloRoomsLayout, which stays frozen scaffolding (D-076).
 
         // ---------- 7. Baked bounds translate with the room ----------
 

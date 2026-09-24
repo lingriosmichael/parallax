@@ -745,8 +745,24 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual(SpriteMeshType.FullRect, settings.spriteMeshType);
         }
 
-        static CatMotorConfig Config() { CatMotorConfig config = AssetDatabase.LoadAssetAtPath<CatMotorConfig>("Assets/_Game/Data/CatMotorConfig_Default.asset"); Assert.NotNull(config); return config; }
-        static float GravityStrength() { GameObject cat = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Game/Gameplay/Player/Cat_Player.prefab"); Assert.NotNull(cat); GravityReceiver gravity = cat.GetComponent<GravityReceiver>(); Assert.NotNull(gravity); return gravity.Strength; }
+        // PAX-082: pinned to the pre-retune motor; frozen scaffolding (D-076)
+        static CatMotorConfig pinnedConfig;
+        internal const float PreRetuneGravity = 30f;
+        internal static CatMotorConfig PreRetuneConfig() => Config();
+        static CatMotorConfig Config()
+        {
+            if (pinnedConfig != null) return pinnedConfig;
+            CatMotorConfig committed = AssetDatabase.LoadAssetAtPath<CatMotorConfig>("Assets/_Game/Data/CatMotorConfig_Default.asset"); Assert.NotNull(committed);
+            pinnedConfig = UnityEngine.Object.Instantiate(committed);
+            pinnedConfig.hideFlags = HideFlags.HideAndDontSave;
+            var serialized = new SerializedObject(pinnedConfig);
+            serialized.FindProperty("maxSpeed").floatValue = 6f; serialized.FindProperty("acceleration").floatValue = 60f;
+            serialized.FindProperty("deceleration").floatValue = 80f; serialized.FindProperty("maxFallSpeed").floatValue = 20f;
+            serialized.FindProperty("jumpHeight").floatValue = 3.2f;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return pinnedConfig;
+        }
+        static float GravityStrength() => PreRetuneGravity;
         static IEnumerable Rooms() { Assert.NotNull(LayoutType); return (IEnumerable)LayoutType.GetField("Rooms", BindingFlags.Public | BindingFlags.Static).GetValue(null); }
         static Element ElementOfKind(object room, string kind) => Elements(room).Single(e => e.Kind == kind);
         static Element ElementByName(object room, string name) => Elements(room).Single(e => e.Name == name);

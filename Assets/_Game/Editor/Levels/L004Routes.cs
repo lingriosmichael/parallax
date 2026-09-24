@@ -16,9 +16,11 @@ namespace Parallax.Editor.Levels
             var solution = new Route("L004 solution",
                 Hold(Right), Until(XAtLeast(3.4f)), Jump(), Until(GroundedOn("Platform_B")),
                 Until(XAtLeast(9.4f)), Jump(), Until(GroundedOn("Platform_C")),
-                Until(XAtLeast(15.4f)), Release(), Until(Still()),
+                // PAX-082 (D-082): Platform_C now ends at x 17; stop near its end. The release at 18.95 stops the cat at x ~19.2,
+                // clear of FalseLanding's trigger (x 20); a release at 19.3 stopped it 0.004 short and the drop fired it.
+                Until(XAtLeast(16.4f)), Release(), Until(Still()),
                 // The learned braked landing: from rest, onto FalseLanding's left end, below its trigger.
-                Hold(Right), Jump(), Until(XAtLeast(18.9f)), Release(), Until(GroundedOn("FalseLanding")),
+                Hold(Right), Jump(), Until(XAtLeast(18.95f)), Release(), Until(GroundedOn("FalseLanding")),
                 Hold(Right), Until(XAtLeast(22.5f)), Jump().Timed(TimedMode.Shift), Until(GravityUp()), Until(GroundedOn("Ceiling")),
                 Until(XAtLeast(27.4f)), Jump(), Until(Airborne()), Until(GroundedOn("Ceiling").And(XAtLeast(29.8f))),
                 Until(XAtLeast(30.9f)), Jump(), Until(RoomComplete()));

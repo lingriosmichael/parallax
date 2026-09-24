@@ -17,8 +17,8 @@ namespace Parallax.Editor.Setup
     // directly; this validator does not replace them.
     public static partial class LevelLayoutValidator
     {
-        // D-056: SoloRoomsLayout.RequiredJumpReachFraction.
-        public const float RequiredJumpReachFraction = .75f;
+        // D-056: SoloRoomsLayout.RequiredJumpReachFraction. PAX-082: the value lives in JumpReach.
+        public const float RequiredJumpReachFraction = JumpReach.RequiredFraction;
         // D-057: six ticks of visible lead before a trap can kill.
         public const int RevealLeadTicks = 6;
         // D-056: a Periodic trap's safe window must clear a from-rest crossing by 12 ticks.
@@ -26,7 +26,12 @@ namespace Parallax.Editor.Setup
         // RoomSafetyConfig's default BoundsMargin, used when baking/validating baked bounds.
         public const float DefaultBoundsMargin = 2f;
 
-        public static List<string> Validate(string levelId, SoloRoomDefinition room)
+        public static List<string> Validate(string levelId, SoloRoomDefinition room) => ValidateWithMotor(levelId, room, Config(), GravityStrength());
+
+        // PAX-082 (§12 R9): the same rules against a given motor, so frozen scaffolding can be checked against the
+        // cat it was built for. Validate above is the unchanged path (the committed asset and the prefab's gravity); a
+        // separate name, not an overload, keeps every reflection lookup of "Validate" unambiguous.
+        public static List<string> ValidateWithMotor(string levelId, SoloRoomDefinition room, CatMotorConfig config, float gravityStrength)
         {
             var errors = new List<string>();
 
@@ -39,10 +44,10 @@ namespace Parallax.Editor.Setup
 
             ValidateFrameContainment(levelId, room, errors);
             ValidateCheckpointAndDoorInBakedBounds(levelId, room, errors);
-            ValidateDoorClearance(levelId, room, errors);
-            ValidateReach(levelId, room, errors);
+            ValidateDoorClearance(levelId, room, config, errors);
+            ValidateReach(levelId, room, config, gravityStrength, errors);
             ValidateRevealLead(levelId, room, errors);
-            ValidatePeriodicSlack(levelId, room, errors);
+            ValidatePeriodicSlack(levelId, room, config, errors);
 
             return errors;
         }
@@ -102,7 +107,7 @@ namespace Parallax.Editor.Setup
             if (door.HasValue && !Contains(bounds, Box(door.Value, room.Origin))) errors.Add($"{levelId}: door sits outside the room's baked bounds.");
         }
 
-        static void ValidateDoorClearance(string levelId, SoloRoomDefinition room, List<string> errors)
+        static void ValidateDoorClearance(string levelId, SoloRoomDefinition room, CatMotorConfig config, List<string> errors)
         {
             SoloRoomElement? doorOpt = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Door).Cast<SoloRoomElement?>().FirstOrDefault();
             if (!doorOpt.HasValue) return;
@@ -113,7 +118,6 @@ namespace Parallax.Editor.Setup
             Rect sweep = Envelope(authored, retreated);
             // D-060/D-075: one tick at run speed, 0.12 u at 50 Hz. Door clearance ran without a
             // motor config before PAX-077, so a missing one is an error, not a silent skip.
-            CatMotorConfig config = Config();
             if (config == null) { errors.Add($"{levelId}: no CatMotorConfig; door clearance (one tick at run speed) is undefined."); return; }
             float margin = config.MaxSpeed * TickTime.SecondsPerTick;
 
@@ -156,11 +160,9 @@ namespace Parallax.Editor.Setup
         // D-056: a required jump's distance stays within RequiredJumpReachFraction of the
         // measured full reach, and a hazard's clearance stays within that fraction of the
         // kill-window a full-speed run gives.
-        static void ValidateReach(string levelId, SoloRoomDefinition room, List<string> errors)
+        static void ValidateReach(string levelId, SoloRoomDefinition room, CatMotorConfig config, float gravity, List<string> errors)
         {
-            CatMotorConfig config = Config();
             if (config == null) return;
-            float gravity = GravityStrength();
             if (gravity <= 0f) return;
             var byName = room.Elements.ToDictionary(e => e.Name);
 
@@ -170,15 +172,16 @@ namespace Parallax.Editor.Setup
                 if (LandsOnFakePlatform(room, byName, jump, out string fake)) { errors.Add($"{levelId}: {jump.ReferenceName} jump lands on {fake}, a fake platform; it can't be a landing surface (D-080)."); continue; }
                 float takeoff = jump.TakeoffX, landing = jump.LandingX;
                 float runway = jump.Runway, deltaHeight = jump.LandingPawHeight - jump.TakeoffPawHeight;
-                float vy = Mathf.Sqrt(2f * gravity * config.JumpHeight);
-                if (vy * vy < 2f * gravity * deltaHeight) { errors.Add($"{levelId}: {jump.ReferenceName} jump height exceeds reach."); continue; }
-                float vx = Mathf.Min(config.MaxSpeed, Mathf.Sqrt(2f * config.Acceleration * runway));
-                float flight = (vy + Mathf.Sqrt(vy * vy - 2f * gravity * deltaHeight)) / gravity;
+                // PAX-082: the arithmetic lives in Parallax.Core.JumpReach, shared with the movement readout.
+                float vy = JumpReach.LaunchSpeed(gravity, config.JumpHeight);
+                if (!JumpReach.CanRise(vy, gravity, deltaHeight)) { errors.Add($"{levelId}: {jump.ReferenceName} jump height exceeds reach."); continue; }
+                float vx = JumpReach.TakeoffSpeed(config.MaxSpeed, config.Acceleration, runway);
+                float flight = JumpReach.Flight(vy, gravity, deltaHeight);
                 float reach = vx * flight;
                 float distance = Mathf.Abs(landing - takeoff);
                 if (jump.Kind == RequiredJumpKind.Hazard && byName.TryGetValue(jump.ReferenceName, out SoloRoomElement reference))
                 {
-                    float window = vx * 2f * Mathf.Sqrt(vy * vy - 2f * gravity * jump.HazardHeight) / gravity;
+                    float window = JumpReach.HazardWindow(vx, vy, gravity, jump.HazardHeight);
                     if (reference.Size.x > RequiredJumpReachFraction * window) errors.Add($"{levelId}: {jump.ReferenceName} clearance exceeds {RequiredJumpReachFraction} of the jump window.");
                 }
                 if (distance > RequiredJumpReachFraction * reach) errors.Add($"{levelId}: {jump.ReferenceName} jump beyond {RequiredJumpReachFraction} of measured reach (distance {distance:F2} > {RequiredJumpReachFraction * reach:F2}).");
@@ -198,9 +201,8 @@ namespace Parallax.Editor.Setup
         // D-056: a Periodic trap's safe window (PeriodTicks - CooldownTicks) must clear a
         // from-rest crossing of its own footprint by PeriodicSlackTicks (mirrors
         // SoloRoomsLayoutTests.V3_PeriodicRouteHasTwelveTicksBeyondFromRestCrossing).
-        static void ValidatePeriodicSlack(string levelId, SoloRoomDefinition room, List<string> errors)
+        static void ValidatePeriodicSlack(string levelId, SoloRoomDefinition room, CatMotorConfig config, List<string> errors)
         {
-            CatMotorConfig config = Config();
             if (config == null) return;
             // D-075: per-tick motion through the one tick source.
             float secondsPerTick = TickTime.SecondsPerTick;

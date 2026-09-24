@@ -172,6 +172,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 ## Gravity and movement
 
 - **Never use or modify `Physics2D.gravity` for cats.** Cats have `gravityScale = 0`.
+- **Movement numbers (D-082):** run 6 u/s, jump height 1.6 at gravity 30 (flat jump 34 ticks, 4.08 u in the harness; the validator's reach is 3.92 u, 0.75 of it 2.94 u). Levels are built to fit the cat, never the reverse.
 - Each cat's gravity comes from its `GravityReceiver`. `CatMotor2D` handles movement, jumping, and grounding **relative to that direction**.
 - Only `GravityReceiver` changes a cat's gravity (`SetTargetDirection`, `Flip()`).
 - **Gravity is up or down only (D-037, D-048).** `GravityReceiver` quantizes every direction to

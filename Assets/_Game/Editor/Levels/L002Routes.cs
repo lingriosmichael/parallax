@@ -20,7 +20,8 @@ namespace Parallax.Editor.Levels
                 // Past both triggers, clear of the Sweep's reach: wait for Block_A to land and the Sweep to return.
                 Hold(Right), Until(XAtLeast(26.8f)), Release(), Until(Still()),
                 Until(Stopped("Block_A")), Until(Home("Sweep")),
-                Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(28.2f)), Jump(), Until(XAtLeast(30.3f)), Release(), Until(Grounded()),
+                // PAX-082 (D-082): the lower jump takes off later (28.5) for the shorter crossing.
+                Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(28.5f)), Jump(), Until(XAtLeast(30.6f)), Release(), Until(Grounded()),
                 Hold(Right), Until(RoomComplete()));
 
             return new RoomRoutes(solution,

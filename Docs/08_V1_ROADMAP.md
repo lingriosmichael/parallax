@@ -7,14 +7,15 @@ kit-gap ticket is inserted during Phase D.
 ## Status at a glance (2026-09-24)
 
 - **Done (committed):** PAX-050, PAX-051, PAX-052, PAX-053, PAX-054, KIT-1 (PAX-073), PAX-077,
-  PAX-078, PAX-079, KIT-2 (PAX-074), KIT-3a (PAX-075), KIT-3b (PAX-080), PAX-081. Acceptance so far is EditMode tests plus Editor checks (D-064); none of it is
-  device-validated yet. EditMode baseline after PAX-081: 618 (PAX-081 added no tests).
-- **Next:** PAX-082, movement feel; then KIT-4 (PAX-076).
-- **Remaining in Phase B:** PAX-082, KIT-4, the cleanup ticket, PAX-058.
+  PAX-078, PAX-079, KIT-2 (PAX-074), KIT-3a (PAX-075), KIT-3b (PAX-080), PAX-081, PAX-082. Acceptance so far is EditMode tests plus Editor checks (D-064); none of it is
+  device-validated yet. EditMode baseline after PAX-082: 623.
+- **Next:** KIT-4 (PAX-076).
+- **Remaining in Phase B:** KIT-4, the cleanup ticket, PAX-058.
 - **Remaining after Phase B:** Phase D content (PAX-059–063), Phase E art, Phase F audio and
   haptics, Phase G release prep, Phase H validation, then Phase I (iOS) and the co-op update.
 - **Open developer checks:** PAX-078 §9 play check of L002 and L004 (D-076 (7)); PAX-079 §9 play
-  check of coyote and buffer in L001 and L004.
+  check of coyote and buffer in L001 and L004; PAX-082: run `PARALLAX/Setup/Trap Lab (PAX-045)`, save
+  `Sandbox_TrapLab.unity`, and play Trap Lab rooms 3–4 (D-082 (10)).
 
 ### Phase B · One-room levels, flow and trap kit
 
@@ -32,16 +33,16 @@ kit-gap ticket is inserted during Phase D.
 | ✓ | KIT-3a (PAX-075) | Route validator: each room declares a solution route and its betrayal routes, replayed through the real game code; timed windows ≥ 12 ticks, measured leads ≥ 6, deterministic replays. | D-079 |
 | ✓ | KIT-3b (PAX-080) | Troll-route kit: fake platform (builder-only), betrayal outcomes Dies/Recovers with soft-lock reporting, surface coverage for non-lethal betrayals, Trap Lab room 4 (10 platforms, one valid route, four betrayals). L004 `FalseLanding` and L002 `Block_A` recorded as claimed but not betrayals; `Block_1` disputed. | D-080 |
 | ✓ | PAX-081 | L004 `Block_1` harness fidelity. Done: no discrepancy. The scene matches the layout, Play and the harness run the same pipeline, and the developer confirms no falling-block death; `Block_1` kills no route. | D-081 |
-| 1 · next | PAX-082 | Movement feel: tune run speed, jump height and falling-block speed in a playable sandbox; re-pin the harness numbers (ShippedRouteResultsTests, Trap Lab) once; no shipped level below a 12-tick window or a 6-tick lead. | D-082 |
-| 2 | KIT-4 (PAX-076) | Precision sections: section marker, per-section thresholds from one config asset (provisional, D-056 values until PAX-069), the level-band check (no precision in levels 1–10), a Trap Lab precision room, the camera tell rule. No device session (deferred to Phase H). | D-083, enforces D-065 |
-| 3 | Cleanup (unnumbered) | Contradicted box-model tests (incl. L004_EarlyFlipBand_IsKilledByBlock1), PAX-075 reviewer nits, known-noise lines. | — |
+| ✓ | PAX-082 | Movement feel: jump height 3.2 → 1.6, every moving trap 20% faster; L001–L004 and Trap Lab 3–4 rebuilt around the new cat; harness pins re-measured once; movement readout. Camera judder fix alongside. | D-082, D-084 |
+| 1 · next | KIT-4 (PAX-076) | Precision sections: section marker, per-section thresholds from one config asset (provisional, D-056 values until PAX-069), the level-band check (no precision in levels 1–10), a Trap Lab precision room, the camera tell rule. No device session (deferred to Phase H). | D-083, enforces D-065 |
+| 3 | Cleanup (unnumbered) | PAX-075 reviewer nits, known-noise lines. (The contradicted box-model tests were removed in PAX-082.) | — |
 | 4 | PAX-058 | Bounded randomness | D-067 |
 
 PAX-057 (tiers) dropped by D-065.
 
 **Decisions:** D-065 difficulty bands ✓ · D-066 level format ✓ ·
 D-067 randomness · D-068 free levels and price · D-069 precision sections ✓ (thresholds: D-083) ·
-D-070–D-080 written with PAX-052–PAX-080 ✓ · D-081 ✓ · D-082 movement feel · D-083 precision
+D-070–D-080 written with PAX-052–PAX-080 ✓ · D-081 ✓ · D-082 movement feel ✓ · D-084 camera judder ✓ · D-083 precision
 sections (KIT-4)
 
 KIT-1–KIT-4 take PAX-073–PAX-076, and KIT-3b takes PAX-080 (the next free PAX numbers at time of writing), ordered ahead of
@@ -78,7 +79,6 @@ Phase E (art) and the art tickets can run alongside B–D, as today; they don't 
 
 ## Decisions still to write
 
-- **D-082** (in PAX-082): movement feel as built.
 - **D-083** (in KIT-4, PAX-076): precision sections and their provisional hard thresholds; final
   numbers in PAX-069.
 - **D-067** (in PAX-058): randomness as built.

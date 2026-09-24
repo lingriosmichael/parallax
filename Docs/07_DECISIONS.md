@@ -1311,6 +1311,49 @@ Its removal belongs to the cleanup ticket.
 (6) **Developer feel feedback**, recorded but not acted on here: falling blocks fall too slowly; the
 jump is far too high; the run speed is too fast.
 
+### D-082 · 2026-09-24 · Accepted
+
+**Decision:** Movement feel (PAX-082). The cat's numbers come first; levels fit the cat.
+(1) **Run:** max speed 6 u/s, acceleration 60, deceleration 80, max fall 20: unchanged. D-081 (6) called
+the run too fast; after the tuning session the developer kept it.
+(2) **Jump:** `jumpHeight` 3.2 → **1.6** (the developer: "twice the height it should be"); gravity 30
+unchanged (`Cat_Player.prefab`). Apex 3.2 → 1.6 (discrete 3.339 → 1.700, 24 → 17 rising ticks); flat
+airtime 0.924 → 0.653 s (48 → 34 ticks); full-speed flat reach 5.54 → 3.92 u (discrete 5.76 → 4.08),
+allowed (0.75) 4.16 → 2.94 u. Limits used for the refits: 2.37 u rising 1 u, 3.34 u dropping 1 u, spike
+patch at most 2.65 u wide, rise at most 1.6 u.
+(3) **Moving traps 20% faster:** every falling block (incl. L003's rising `PeriodicUp`) and every arrow
+0.30 → 0.36 u/tick; every `moveTicks`/`returnTicks` divided by 1.2 and rounded (24 → 20, 36 → 30, 40 → 33,
+18 → 15). Delays, holds and cooldowns unchanged. The values live in the layouts (`L001`–`L004Layout`,
+`TrapLabLayout`); there is no kit-wide default. Level_Solo01 (`SoloRoomsLayout`) is unchanged.
+(4) **Derived:** door clearance 0.12 u (MaxSpeed × tick) unchanged; coyote 5 and buffer 6 ticks unchanged.
+(5) **Levels rebuilt around the cat.** The developer asked for it, which overrides §4 (c)'s stop:
+| Level | Change | Measured (windows; leads) |
+|---|---|---|
+| L001 | Platform_B a 0.5 step over a 1.5 gap; Collapse_C 2 → 1.6; the spike jump from x 23; the Block_A hesitation 33 → 34 (kill band 30–38) | 26; Collapse_C 30, Spikes_A 24, Block_A 14 |
+| L002 | Platform_B a 1.0 step over a 1.25 gap (3.0 down to Floor_C); the spike/Sweep crossing 4 → 2.8 (spikes 0.75, Sweep 0.8, door ledge from x 30.8); take-off 28.5 | 26, 51, Lift margin 16; ReceiverBlock 10, Collapse_C 21, Sweep 23 |
+| L003 | Platform_B a 1.0 step (3.25 down to Floor_Pre); Collapse_C 1.6; Flip_A where the jump over it peaks; Flip_B and its ExitSpikes trigger raised to y 4.5; the ceiling wait at x 22.4; the ExitSpikes betrayal a straight drop | 26; Collapse_C 21, CeilingSpikes 19, ExitSpikes 15 |
+| L004 | two 0.5 steps over 1.5 gaps; Platform_C to x 17 (3.0 down to FalseLanding); braked release 18.95; Flip_A low and wide (x 23.75–25.25, y 0.8–2.8) so every hop clearing SourceSpikes flips; Flip_B raised | window 20; SourceSpikes 21, CeilingHiddenSpikes 20 |
+| Trap Lab 3 | walls 0.6; Backboard down to y 1.5; ArrowC's lane y 1.7 (tell 6); PillarB take-off 20.6 | all rules pass |
+| Trap Lab 4 | Up_1/Thin_Collapse/Up_2 at 1.1, the perch at 2.1 (out of reach from the Gutter); the climb back jumps straight up, then steers onto Up_2 | all rules pass |
+(6) **Re-pinned:** `ShippedRouteResultsTests` to (5)'s numbers. Outside §7's list, accepted: the route files
+`L001Routes.cs`–`L004Routes.cs` and `TrapLabRoutes.cs`, refitted with the geometry (§12 amendment 1); and (§12
+R10) `RouteHarnessFidelityTests` apex 24 → 17 ticks and 3.339 → 1.700; flat jump 48 → 34 ticks and
+5.76 → 4.08; coyote and buffer detect a jump at Vy > 9 (was 13; a test threshold, 0.80 under the 9.798
+launch); the L004 fast-flip window 19 (d −15..+3) → 21 (d −18..+2).
+(7) **Frozen scaffolding pinned to the old cat:** `SoloRoomsLayoutTests` (§12 R5) and `LevelLayoutTests`
+parity (§12 R9, through `LevelLayoutValidator.ValidateWithMotor`; `Validate` is unchanged) use 6 / 60 /
+80 / 20 / 3.2 and gravity 30. Split fidelity (L00N = SoloRoomsLayout room N) has ended:
+`SplitFidelity_L00N…` is removed (§12 R8). SoloRoomsLayout stays frozen scaffolding (D-076).
+(8) **Removed:** the D-079 (7) box-model tests `L002_Lift_FullSpeedLandingHasTwelveTicksBeforeItsTrigger_AtTheRealRate`,
+`L004_EarlyFlipBand_IsKilledByBlock1`, `L004_FastFlip_RightHoldingWindowIsAtLeastTwelveTicks_AndClearsBothBlocks`
+(§12 R6). `L004_NoFullSpeedTakeoff_CrossesSourceSpikesWithoutFlipping` and `RoomStepper` stay; it passes.
+(9) **Tuning tools:** `Parallax.Core.JumpReach` (the reach math, moved verbatim from the validator);
+`DebugTools/MovementReadout` (apex, airtime, reach, allowed reach, run speed, gravity), shown in Editor Play
+by the `PARALLAX/Debug/Movement Readout` toggle; the motor already read its config every step, so live
+editing needed no code. A block's `delayTicks` is read in `Awake`, so it is tuned before Play.
+(10) **Tests:** 624, all green. Editor-only; the developer played the rebuilt L001–L004 and approved the feel.
+Not device-validated (D-064). Open: `Sandbox_TrapLab.unity` not rebuilt; Trap Lab 3–4 unplayed.
+
 ### D-084 · 2026-09-24 · Accepted
 
 **Decision:** Level camera judder fix (PAX-082 follow-up). D-083 stays reserved for KIT-4.

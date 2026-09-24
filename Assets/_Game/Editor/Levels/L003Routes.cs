@@ -13,8 +13,11 @@ namespace Parallax.Editor.Levels
             var solution = new Route("L003 solution",
                 Hold(Right), Until(XAtLeast(3.9f)), Jump(), Until(GroundedOn("Platform_B")),
                 Until(XAtLeast(9f)), Jump(), Until(GroundedOn("Floor_Pre")),
-                Until(XAtLeast(15.4f)), Jump(), Until(GravityUp()), Until(GroundedOn("Ceiling")),
-                Release(), Until(Still()), Until(Moving("PeriodicUp")), Until(Home("PeriodicUp")),
+                // PAX-082 (D-082): the lower jump takes off at the edge (15.7) and peaks in Flip_A.
+                Until(XAtLeast(15.7f)), Jump(), Until(GravityUp()), Until(GroundedOn("Ceiling")),
+                // PAX-082 (D-082): the flip lands the cat on the ceiling at x ~20; walk on to x 22.4 (short of the
+                // CeilingSpikes trigger at 23.75) before waiting, so the pass under PeriodicUp keeps its slack.
+                Until(XAtLeast(22.4f)), Release(), Until(Still()), Until(Moving("PeriodicUp")), Until(Home("PeriodicUp")),
                 // D-056 (1): the pass under PeriodicUp, measured from rest.
                 // A braked jump over CeilingSpikes lands on the ceiling short of Flip_B; the drop back down enters
                 // Flip_B's left side moving left, so the cat lands past ExitSpikes at the retreated door (D-060).
@@ -28,7 +31,8 @@ namespace Parallax.Editor.Levels
                 new Betrayal("CeilingSpikes drop on a cat that walks on", "CeilingSpikes", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Home(PeriodicUp))", "walk into CeilingSpikes", Hold(Right), Until(Dead()))),
                 new Betrayal("ExitSpikes rise under a cat that drops straight down", "ExitSpikes", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=26.1)", "straight drop", Jump(), Until(GravityDown()), Release(), Until(Dead()))));
+                    // PAX-082 (D-082): a straight drop from the solution's stop under Flip_B lands on ExitSpikes.
+                    Route.PrefixOf(solution, "Until(X>=30.3)", "straight drop", Release(), Until(Still()), Jump(), Until(GravityDown()), Until(Dead()))));
         }
     }
 }

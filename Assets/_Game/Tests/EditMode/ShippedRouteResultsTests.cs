@@ -8,7 +8,8 @@ using static Parallax.Tests.EditMode.RouteTestApi;
 namespace Parallax.Tests.EditMode
 {
     // PAX-080 §5.5: the route validator's changes (betrayal outcomes, soft-lock reporting, recording after a death)
-    // leave every L001-L004 result exactly as D-079 (5) measured it.
+    // leave every L001-L004 result exactly as D-079 (5) measured it. PAX-082 (D-082): re-pinned once to the new cat
+    // (jump apex 1.6), the 20% faster traps and the refitted L001-L004 layouts and routes.
     public sealed class ShippedRouteResultsTests
     {
         IDisposable session;
@@ -26,10 +27,10 @@ namespace Parallax.Tests.EditMode
 
         static string Summary(object report) => (string)report.GetType().GetMethod("Summary").Invoke(report, null);
 
-        [TestCase("L001", new[] { 26 }, new int[0], new[] { "Collapse_C=21", "Spikes_A=24", "Block_A=17" })]
-        [TestCase("L002", new[] { 26, 51 }, new[] { 16 }, new[] { "ReceiverBlock=12", "Collapse_C=21", "Sweep=24" })]
-        [TestCase("L003", new[] { 15 }, new int[0], new[] { "Collapse_C=21", "CeilingSpikes=19", "ExitSpikes=22" })]
-        [TestCase("L004", new[] { 17 }, new int[0], new[] { "SourceSpikes=21", "CeilingHiddenSpikes=20" })]
+        [TestCase("L001", new[] { 26 }, new int[0], new[] { "Collapse_C=30", "Spikes_A=24", "Block_A=14" })]
+        [TestCase("L002", new[] { 26, 51 }, new[] { 16 }, new[] { "ReceiverBlock=10", "Collapse_C=21", "Sweep=23" })]
+        [TestCase("L003", new[] { 26 }, new int[0], new[] { "Collapse_C=21", "CeilingSpikes=19", "ExitSpikes=15" })]
+        [TestCase("L004", new[] { 20 }, new int[0], new[] { "SourceSpikes=21", "CeilingHiddenSpikes=20" })]
         public void RouteResults_AreUnchangedFromD079(string id, int[] windows, int[] margins, string[] leads)
         {
             object report = reports[id];

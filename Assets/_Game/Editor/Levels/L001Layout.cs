@@ -20,23 +20,25 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(2f,0f),(0f,0f))
             };
             elements.Add(E(SoloRoomElementKind.Floor,"Floor_A",(3f,-.5f),(6f,1f)));
-            elements.Add(E(SoloRoomElementKind.Floor,"Platform_B",(10f,.5f),(4f,1f)));
+            // PAX-082 (D-082): refit to the lower jump (apex 1.6): a 0.5 step and a 1.5 gap up, a 2 gap down.
+            elements.Add(E(SoloRoomElementKind.Floor,"Platform_B",(9.75f,0f),(4.5f,1f)));
             elements.Add(E(SoloRoomElementKind.Floor,"Floor_C",(16f,-.5f),(4f,1f)));
-            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Collapse_C",(19f,-.5f),(2f,1f),settings:new SoloRoomTrapSettings(delayTicks:12)));
-            elements.Add(E(SoloRoomElementKind.Floor,"Floor_D",(26f,-.5f),(12f,1f)));
+            // PAX-082 (D-082): the lure over Pit 2 narrows 2 -> 1.6 so the flat jump past it fits the reach.
+            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Collapse_C",(18.8f,-.5f),(1.6f,1f),settings:new SoloRoomTrapSettings(delayTicks:12)));
+            elements.Add(E(SoloRoomElementKind.Floor,"Floor_D",(25.8f,-.5f),(12.4f,1f)));
             AddPit(elements,1,6f,14f);
-            AddPit(elements,2,18f,20f);
+            AddPit(elements,2,18f,19.6f);
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_A",(25f,.15f),(1.5f,.3f),(21f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_A",(28f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:78,unitsPerTick:.3f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_A")));
+            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_A",(28f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:78,unitsPerTick:.36f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_A")));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(29f,.75f),(.6f,1.5f)));
-            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(27f,3.5f),(.5f,7f),settings:new SoloRoomTrapSettings(delayTicks:12,moveTicks:24,offset:new Vector2(2f,0f),triggerSource:TrapTriggerSource.Chain,chainSource:"Block_A")));
+            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(27f,3.5f),(.5f,7f),settings:new SoloRoomTrapSettings(delayTicks:12,moveTicks:20,offset:new Vector2(2f,0f),triggerSource:TrapTriggerSource.Chain,chainSource:"Block_A")));
             var jumps = new[] {
-                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,5.5f,8.5f,0f,1f,3.5f,sourceName:"Floor_A",destinationName:"Platform_B"),
-                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,11.5f,14.5f,1f,0f,3f,sourceName:"Platform_B",destinationName:"Floor_C"),
-                J("Collapse_C",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,17.5f,20.5f,0f,0f,2f,sourceName:"Floor_C",destinationName:"Floor_D"),
+                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,5.5f,8f,0f,.5f,3.5f,sourceName:"Floor_A",destinationName:"Platform_B"),
+                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,11.5f,14.5f,.5f,0f,3f,sourceName:"Platform_B",destinationName:"Floor_C"),
+                J("Collapse_C",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,17.5f,20.1f,0f,0f,2f,sourceName:"Floor_C",destinationName:"Floor_D"),
                 J("Spikes_A",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,23.75f,26.25f,0f,0f,2f,.3f)
             };
-            return new SoloRoomDefinition(0,0f,32f,elements.ToArray(),new[] { O(SoloRoomOpeningKind.Pit,6f,14f,"Pit1_L","Pit1_R","Pit1_Bottom","Pit1_Hazard"), O(SoloRoomOpeningKind.Pit,18f,20f,"Pit2_L","Pit2_R","Pit2_Bottom","Pit2_Hazard") },jumps);
+            return new SoloRoomDefinition(0,0f,32f,elements.ToArray(),new[] { O(SoloRoomOpeningKind.Pit,6f,14f,"Pit1_L","Pit1_R","Pit1_Bottom","Pit1_Hazard"), O(SoloRoomOpeningKind.Pit,18f,19.6f,"Pit2_L","Pit2_R","Pit2_Bottom","Pit2_Hazard") },jumps);
         }
 
         static void AddPit(List<SoloRoomElement> elements, int id, float minX, float maxX)

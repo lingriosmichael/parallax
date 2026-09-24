@@ -16,6 +16,9 @@ namespace Parallax.Tests.EditMode
 
         IDisposable session;
 
+        // PAX-082 (D-082): a jump's launch speed is sqrt(2 x 30 x 1.6) = 9.80 u/s; nothing else in these fixtures rises faster than 9.
+        const float JumpDetectVy = 9f;
+
         [OneTimeSetUp] public void Open() => session = OpenSession();
         [OneTimeTearDown] public void Close() => session?.Dispose();
 
@@ -46,23 +49,25 @@ namespace Parallax.Tests.EditMode
         }
 
         [Test]
-        public void Apex_IsTwentyFourRisingTicksAnd3339()
+        // PAX-082 (D-082): jumpHeight 1.6 (was 3.2): 17 rising ticks to a discrete apex of 1.700 (was 24 and 3.339).
+        public void Apex_IsSeventeenRisingTicksAnd1700()
         {
             object replay = Replay(session, Case("FlatApex"));
             List<Rec> r = Records(replay);
             int rising = r.Where(x => x.Tick >= 6).TakeWhile(x => x.Vy > 0f).Count();
-            Assert.AreEqual(24, rising, "rising ticks from the jump on tick 6\n" + Dump(replay));
-            Assert.AreEqual(3.339f, r.Max(x => x.Y) - At(r, 5).Y, .005f, "discrete apex\n" + Dump(replay));
+            Assert.AreEqual(17, rising, "rising ticks from the jump on tick 6\n" + Dump(replay));
+            Assert.AreEqual(1.700f, r.Max(x => x.Y) - At(r, 5).Y, .005f, "discrete apex\n" + Dump(replay));
         }
 
         [Test]
-        public void FlatJump_IsFortyEightTicksAnd576()
+        // PAX-082 (D-082): 34 air ticks covering 4.08 at full speed (was 48 and 5.76).
+        public void FlatJump_IsThirtyFourTicksAnd408()
         {
             object replay = Replay(session, Case("FlatJump"));
             List<Rec> r = Records(replay);
             Rec landing = r.First(x => x.Tick > 21 && x.Grounded);
-            Assert.AreEqual(48, landing.Tick - 21 + 1, "air ticks from the jump on tick 21 to the first grounded tick\n" + Dump(replay));
-            Assert.AreEqual(5.76f, landing.X - At(r, 20).X, .01f, "full-speed flat jump distance\n" + Dump(replay));
+            Assert.AreEqual(34, landing.Tick - 21 + 1, "air ticks from the jump on tick 21 to the first grounded tick\n" + Dump(replay));
+            Assert.AreEqual(4.08f, landing.X - At(r, 20).X, .01f, "full-speed flat jump distance\n" + Dump(replay));
         }
 
         [Test]
@@ -70,7 +75,7 @@ namespace Parallax.Tests.EditMode
         {
             var jumped = new List<int>();
             for (int n = 1; n <= 7; n++)
-                if (Records(Replay(session, Case("Coyote", n))).Any(x => x.Vy > 13f)) jumped.Add(n);
+                if (Records(Replay(session, Case("Coyote", n))).Any(x => x.Vy > JumpDetectVy)) jumped.Add(n);
             CollectionAssert.AreEqual(new[] { 1, 2, 3, 4, 5 }, jumped, "airborne steps on which a press still jumps (D-077: 5).");
         }
 
@@ -84,7 +89,7 @@ namespace Parallax.Tests.EditMode
             for (int m = 0; m <= 7; m++)
             {
                 int press = groundedStep - m;
-                if (Records(Replay(session, Case("Buffer", press - 4))).Any(x => x.Tick >= press && x.Vy > 13f)) jumped.Add(m);
+                if (Records(Replay(session, Case("Buffer", press - 4))).Any(x => x.Tick >= press && x.Vy > JumpDetectVy)) jumped.Add(m);
             }
             CollectionAssert.AreEqual(new[] { 0, 1, 2, 3, 4, 5 }, jumped, $"ticks before the landing step ({groundedStep}) at which a press still jumps (D-077: its own step and the next 5).");
         }
@@ -113,16 +118,17 @@ namespace Parallax.Tests.EditMode
         // model said 14.83-15.83), and no full-speed take-off is killed by Block_1 (the box model's early-flip
         // band dies of CeilingHiddenSpikes or survives). Pinned; Block_1 moves to PAX-080.
         [Test]
-        public void L004_FastFlipWindow_IsPinnedAt19_AndBlock1KillsNoFullSpeedTakeoff()
+        // PAX-082 (D-082): re-measured with the lower jump, the faster blocks and the refitted L004: 21 (d -18..+2).
+        public void L004_FastFlipWindow_IsPinnedAt21_AndBlock1KillsNoFullSpeedTakeoff()
         {
             object c = Case("L004FastFlip", L004TakeoffX);
             object authored = Replay(session, c);
             Assert.IsTrue((bool)F(authored, "Completed"), "the authored take-off must survive\n" + Dump(authored));
             object[] args = { session, F(c, "Room"), F(c, "Route"), authored, 0, null };
             object w = ((System.Collections.IList)Call(T("RouteValidator"), "Sweep", args))[0];
-            Assert.AreEqual(19, (int)F(w, "Count"), "L004 fast-flip window: " + w);
-            Assert.AreEqual(-15, (int)F(w, "Low"), "early edge: " + w);
-            Assert.AreEqual(3, (int)F(w, "High"), "late edge: " + w);
+            Assert.AreEqual(21, (int)F(w, "Count"), "L004 fast-flip window: " + w);
+            Assert.AreEqual(-18, (int)F(w, "Low"), "early edge: " + w);
+            Assert.AreEqual(2, (int)F(w, "High"), "late edge: " + w);
 
             int t0 = (int)F(w, "AuthoredTick");
             var block1 = new List<string>();
