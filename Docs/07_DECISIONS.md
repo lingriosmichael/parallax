@@ -1455,10 +1455,13 @@ failed with a 5 u jump of the target from a one-float-step jitter.
 
 ### D-067 · 2026-09-25 · Accepted
 
-**Decision:** No randomness in v1. Levels teach through deterministic traps that the player learns by dying and
-memorising where they are (pillar 2, D-040): the same trigger does the same thing on every attempt, so every death
-teaches something that holds on the next try. Bounded randomness (PAX-058, seeded trap variants) is dropped. Hard
-levels get their difficulty from precision sections (D-069, D-083) and betrayal design, never from luck. This settles
-D-062's luck clause.
-**Consequence:** PAX-058 is dropped; PAX-059 (levels 1–10) is next. PAX-060 no longer depends on PAX-058. Any later
-randomness needs a new decision.
+**Decision:** No randomness. Every room is exactly the same on every attempt and every playthrough. PAX-058 (bounded randomness) is dropped, and its number isn't reused.
+**Why:** the core loop (D-040) is see the room → get betrayed → learn the trick → beat it, and a fixed room keeps every lesson valid. The troll comes from authored betrayals, not chance.
+**Considered, and not taken:** the betrayal re-picked after each death (with a safe route beating every version); room variants per level start; timing jitter; cosmetic variation.
+**Supersedes:** D-062's open point on luck.
+
+### D-068 · 2026-09-25 · Accepted
+
+**Decision:** Free levels and price. Levels 1–10 are free, and they're the hook. After level 10, the player either pays 4.99 once to unlock the full game (one in-app purchase, restorable), or waits 12 hours for the next level to unlock free.
+**Open, for PAX-066:** when the 12-hour wait starts; whether the timer runs while the app is closed (an unlock timestamp); protecting it against changes to the phone's clock (accept it, or use server time); regional price tiers; the choice screen after level 10; the total number of levels (the roadmap says 50).
+**Supersedes:** D-062's open point on the business model.

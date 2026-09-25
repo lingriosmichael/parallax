@@ -43,7 +43,7 @@ kit-gap ticket is inserted during Phase D.
 PAX-057 (tiers) dropped by D-065.
 
 **Decisions:** D-065 difficulty bands ✓ · D-066 level format ✓ ·
-D-067 no randomness ✓ · D-068 free levels and price · D-069 precision sections ✓ (thresholds: D-083) ·
+D-067 no randomness ✓ · D-068 free levels and price ✓ · D-069 precision sections ✓ (thresholds: D-083) ·
 D-070–D-080 written with PAX-052–PAX-080 ✓ · D-081 ✓ · D-082 movement feel ✓ · D-083 precision sections (KIT-4) ✓ ·
 D-084 camera judder ✓
 
@@ -55,7 +55,7 @@ PAX-058 in this phase's build order even though their numbers are higher; PAX-05
 |---|---|---|---|
 | B · Levels & flow | PAX-050 ✓ | Level list, next level, progress save (done, 0b2ff77) | PAX-049 |
 | D · Content | PAX-059 · next | Levels 1–10 (easy band, D-065) | PAX-052, PAX-076 |
-| | PAX-060 | Levels 11–20 (hard, batch 1) | PAX-059 |
+| | PAX-060 | Levels 11–20 (hard, batch 1) | PAX-059, KIT-4 |
 | | PAX-061 | Levels 21–30 (hard, batch 2) | PAX-060 |
 | | PAX-062 | Levels 31–40 (hard, batch 3) | PAX-061 |
 | | PAX-063 | Levels 41–50 (hard, batch 4) | PAX-062 |
@@ -81,11 +81,10 @@ Phase E (art) and the art tickets can run alongside B–D, as today; they don't 
 
 ## Decisions still to write
 
-- **D-068** (before PAX-066): which levels are free, and the price.
 - **D-044 follow-up:** whether and how the per-room death count is shown or persisted, decided
   with the ticket that shows it.
 - **D-062** is still Proposed for luck, business model and audio/haptics; D-067 (no randomness) settles
-  luck and D-068 will settle the business model. Its tier clauses are replaced by D-065's difficulty bands.
+  luck and D-068 (free levels and price) settles the business model. Its tier clauses are replaced by D-065's difficulty bands.
 
 ## Lead-time items to start early (not tickets)
 
