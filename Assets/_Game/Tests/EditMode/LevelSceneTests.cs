@@ -21,7 +21,6 @@ namespace Parallax.Tests.EditMode
     public sealed class LevelSceneTests
     {
         const string LevelsFolder = "Assets/_Game/Scenes/Levels";
-        const string SoloScenePath = "Assets/_Game/Scenes/Level_Solo01.unity";
         static readonly Type LevelSetupType = Type.GetType("Parallax.Editor.Setup.LevelSetup, Parallax.Editor");
         static readonly Type LevelCameraSetupType = Type.GetType("Parallax.Editor.Setup.LevelCameraSetup, Parallax.Editor");
         static readonly Type LevelSelectSetupType = Type.GetType("Parallax.Editor.Setup.LevelSelectSetup, Parallax.Editor");
@@ -34,72 +33,11 @@ namespace Parallax.Tests.EditMode
             return config;
         }
 
-        static readonly (string levelId, int soloRoomId)[] SeedPairs = { ("L001", 0), ("L002", 1), ("L003", 2), ("L004", 3) };
-
         // ---------- §2.4 / 5.7 Scene-read bounds ----------
 
-        [Test]
-        public void SceneReadBounds_EachLevelScenesBakedRoomManagerBounds_EqualsLevelSolo01RoomNTranslated()
-        {
-            string[] setup = EditorSceneManager.GetSceneManagerSetup().Select(s => s.path).ToArray();
-            try
-            {
-                // Level_Solo01 and every L00N scene each carry their own (untouched, frozen)
-                // RealityRoot_B global light on the same sorting layer, so two of these scenes
-                // must never be loaded at once - open every scene Single (replaces whatever else
-                // is loaded, including each other), one at a time.
-                var soloBoundsByRoom = new System.Collections.Generic.Dictionary<int, Bounds>();
-                Scene solo = EditorSceneManager.OpenScene(SoloScenePath, OpenSceneMode.Single);
-                RoomManager soloRooms = FindComponentAnywhere<RoomManager>(solo);
-                Assert.NotNull(soloRooms, "Level_Solo01 must have a RoomManager.");
-                foreach ((string _, int soloRoomId) in SeedPairs)
-                {
-                    Assert.IsTrue(soloRooms.TryGetBounds(soloRoomId, out Bounds bounds), "Level_Solo01 room " + soloRoomId + " bounds missing.");
-                    soloBoundsByRoom[soloRoomId] = bounds;
-                }
-
-                foreach ((string levelId, int soloRoomId) in SeedPairs)
-                {
-                    if (!Config().Levels.Any(e => e.Id == levelId)) continue; // not built yet; nothing to read
-                    LevelEntry entry = Config().Levels.First(e => e.Id == levelId);
-                    string scenePath = $"{LevelsFolder}/{entry.SceneName}.unity";
-                    if (AssetDatabase.LoadAssetAtPath<Object>(scenePath) == null) continue;
-
-                    Scene level = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
-                    RoomManager levelRooms = FindComponentAnywhere<RoomManager>(level);
-                    Assert.NotNull(levelRooms, levelId + " must have a RoomManager.");
-
-                    Bounds soloBounds = soloBoundsByRoom[soloRoomId];
-                    Assert.IsTrue(levelRooms.TryGetBounds(0, out Bounds levelBounds), levelId + " room 0 bounds missing.");
-
-                    // L00N's room lives at local Origin (0,0) (D-066); its content and size are
-                    // otherwise identical to Level_Solo01's room N (LevelLayoutTests.SplitFidelity_
-                    // already proves that at the layout-data level), so a pure scene comparison -
-                    // no layout read at all - is size and y equal, x free (the translation itself
-                    // is layout data's job, already covered by BakedBounds_ in LevelLayoutTests).
-                    Assert.That(levelBounds.center.y, Is.EqualTo(soloBounds.center.y).Within(.001f), levelId + " bounds centre y");
-                    Assert.That(levelBounds.size.x, Is.EqualTo(soloBounds.size.x).Within(.001f), levelId + " bounds size x");
-                    Assert.That(levelBounds.size.y, Is.EqualTo(soloBounds.size.y).Within(.001f), levelId + " bounds size y");
-
-                    // The x axis, which the translation actually moves, is still checked - against
-                    // this same scene's own baked camera frame (LevelCameraFollow.frameCenter), a
-                    // pure scene read that needs no Level_Solo01/layout comparison: both
-                    // RoomManager.bounds and the camera frame are ComputeRoomBounds on the same
-                    // room with different margins, so their centres must agree exactly.
-                    GameObject cameraGO = FindGameObject(level, "Camera_A");
-                    var follow = cameraGO == null ? null : cameraGO.GetComponent<LevelCameraFollow>();
-                    if (follow != null)
-                    {
-                        Vector2 frameCenter = new SerializedObject(follow).FindProperty("frameCenter").vector2Value;
-                        Assert.That(levelBounds.center.x, Is.EqualTo(frameCenter.x).Within(.001f), levelId + " bounds centre x should match this scene's own baked camera frame centre.");
-                    }
-                }
-            }
-            finally
-            {
-                RestoreSetup(setup);
-            }
-        }
+        // PAX-059: SceneReadBounds_EachLevelScenesBakedRoomManagerBounds_EqualsLevelSolo01RoomNTranslated is retired. The
+        // band-1 levels are new rooms, so their bounds no longer equal Level_Solo01's; LevelSceneTimingTests and the
+        // camera tests read each scene against its own layout.
 
         // ---------- 5.8 Level scenes ----------
 

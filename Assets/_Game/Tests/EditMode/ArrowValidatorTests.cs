@@ -126,7 +126,7 @@ namespace Parallax.Tests.EditMode
                 errors.AddRange(Coverage(room, real, id));
                 count++;
             }
-            Assert.AreEqual(4, count, "L001-L004");
+            Assert.AreEqual(5, count, "L001-L005");
             AssertPasses(errors.ToArray());
         }
 

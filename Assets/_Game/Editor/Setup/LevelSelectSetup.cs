@@ -169,15 +169,7 @@ namespace Parallax.Editor.Setup
             // above) or ContentSizeFitter's PreferredSize growth pushes half of it above the
             // viewport instead of down into it.
             if (contentRect.pivot != new Vector2(0.5f, 1f)) { contentRect.pivot = new Vector2(0.5f, 1f); changes.Add("set Content pivot = (0.5, 1)"); }
-            var layout = EnsureComponent<VerticalLayoutGroup>(contentGO, changes, "VerticalLayoutGroup", "Content");
-            if (layout.spacing != 12f || !layout.childControlHeight || layout.childForceExpandHeight)
-            {
-                layout.spacing = 12f;
-                layout.childControlHeight = true;
-                layout.childForceExpandHeight = false;
-                layout.childAlignment = TextAnchor.UpperCenter;
-                changes.Add("configured Content VerticalLayoutGroup");
-            }
+            ConfigureContentLayout(contentGO, changes);
             var sizeFitter = EnsureComponent<ContentSizeFitter>(contentGO, changes, "ContentSizeFitter", "Content");
             if (sizeFitter.verticalFit != ContentSizeFitter.FitMode.PreferredSize)
             {
@@ -195,6 +187,25 @@ namespace Parallax.Editor.Setup
             WireField(controller, "levelList", levelList, changes, "LevelSelectController.levelList = LevelListConfig");
             WireField(controller, "rowsContainer", contentRect, changes, "LevelSelectController.rowsContainer = Content");
             WireField(controller, "rowTemplate", row, changes, "LevelSelectController.rowTemplate = RowTemplate");
+        }
+
+        // Builder seam: Content's VerticalLayoutGroup. It controls both axes: height from each row's LayoutElement,
+        // and width stretched to Content's. Without childControlWidth, the rows kept the template's 0 width and the
+        // list drew nothing (PAX-053 bug, fixed after PAX-059a).
+        public static VerticalLayoutGroup ConfigureContentLayout(GameObject contentGO, List<string> changes)
+        {
+            var layout = EnsureComponent<VerticalLayoutGroup>(contentGO, changes, "VerticalLayoutGroup", "Content");
+            if (layout.spacing != 12f || !layout.childControlHeight || layout.childForceExpandHeight || !layout.childControlWidth || !layout.childForceExpandWidth)
+            {
+                layout.spacing = 12f;
+                layout.childControlHeight = true;
+                layout.childForceExpandHeight = false;
+                layout.childControlWidth = true;
+                layout.childForceExpandWidth = true;
+                layout.childAlignment = TextAnchor.UpperCenter;
+                changes.Add("configured Content VerticalLayoutGroup");
+            }
+            return layout;
         }
 
         // Builder seam (review fix): pulled out of BuildUI so a test can build exactly the row

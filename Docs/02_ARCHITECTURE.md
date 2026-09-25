@@ -576,6 +576,9 @@ working once it's completed (the cat can walk through them). It's not a bug (PAX
 `FakePlatform` looks like a `Floor` and isn't solid. `SoloRoomBuilder` builds it as a
 `CollapsingFloorTrap` with a trigger body, Overlap, Once, delay 0; it vanishes on the trap step
 after the cat first touches it, and resets with the room. No runtime class is specific to it.
+PAX-059 adds one builder-only disguise: `SoloRoomBuilder` draws every `CollapsingFloor` and `FakePlatform`
+at sorting order −1 (`TrapFloorSortingOrder`), so a trap floor that fills a pit's shaft hides the pit's
+hazard until it gives way. No runtime code changed.
 
 ### 11.2 Level flow and scene loading (as built PAX-053, D-072)
 
@@ -683,7 +686,8 @@ PiP toggle (visible only while the panel is open, default off): when on, the **i
   - `Route` holds the steps and conditions; `RouteValidator` checks the windows, margins, leads and determinism.
 - `Editor/Levels`: `L00NRoutes`, `LevelRoutes` (keyed like `LevelLayouts`) and `TrapLabRoutes`.
 - `LevelLayoutValidator.ValidateRoutes` runs a level's routes; it is not part of `Validate()`. The arrow rules now live in `LevelLayoutValidator.Arrows.cs`, a partial class of the same type.
-- D-080: a `Betrayal` is Dies or Recovers (`Betrayal.Recovers`, results in `RouteReport.Recoveries`). `LevelLayoutValidator.Surfaces.cs` holds `ValidateSurfaceCoverage` (non-lethal betraying surfaces), `ValidateFakePlatformSettings` and `SurfaceCoverageExemptions` (only L004 `FalseLanding`).
+- D-080: a `Betrayal` is Dies or Recovers (`Betrayal.Recovers`, results in `RouteReport.Recoveries`). `LevelLayoutValidator.Surfaces.cs` holds `ValidateSurfaceCoverage` (non-lethal betraying surfaces), `ValidateFakePlatformSettings` and `SurfaceCoverageExemptions` (empty since PAX-059; L004 `FalseLanding` went with the redesign).
+- PAX-059: `LevelLayoutValidator.Band1.cs` holds the band-1 rules for levels 1–10 (`ValidateBand1Content`, `ValidateBand1Duration`, `ValidateBand1Tells`, `ValidateFallingBlockLanding`). `TriggerCoverage` is storey-aware (the band runs from the storey under the trigger to the nearest overhead underside, and sides are found by searching the room's surfaces), and `VerticalBounds` derives the frame height from the fixed solids.
 
 ### 15.2 Precision sections, bands, bait gaps and the camera tell rule (D-083)
 

@@ -53,14 +53,14 @@ namespace Parallax.Tests.EditMode
             CollectionAssert.IsEmpty(errors, string.Join("\n", errors));
         }
 
+        // PAX-059: L004's FalseLanding, the one exemption, went with the redesign. The list is empty, and the frozen
+        // pre-PAX-059 L004 (RouteFixtures.FastFlipRoom) still fails on FalseLanding, so the rule behind it holds.
         [Test]
-        public void TheOnlyExemption_IsL004FalseLanding_AndL004FailsWithoutIt()   // seen red: L004 under another id
+        public void NoExemptions_AndThePrePax059L004FailsOnFalseLanding()   // seen red: FastFlipRoom
         {
             var exemptions = (IDictionary)Validator.GetField("SurfaceCoverageExemptions").GetValue(null);
-            CollectionAssert.AreEquivalent(new[] { "L004/FalseLanding" }, exemptions.Keys.Cast<string>().ToArray());
-            StringAssert.Contains("no route is betrayed", (string)exemptions["L004/FalseLanding"]);
-            object l004 = ((IDictionary)Type.GetType("Parallax.Editor.Levels.LevelLayouts, Parallax.Editor").GetField("ById").GetValue(null))["L004"];
-            List<string> errors = Coverage("L004 without its exemption", l004);
+            CollectionAssert.IsEmpty(exemptions.Keys.Cast<string>().ToArray());
+            List<string> errors = Coverage("L004 before PAX-059", Fixture("FastFlipRoom"));
             TestContext.Out.WriteLine(string.Join("\n", errors));
             Assert.AreEqual(1, errors.Count, string.Join("\n", errors));
             StringAssert.Contains("FalseLanding", errors[0]);

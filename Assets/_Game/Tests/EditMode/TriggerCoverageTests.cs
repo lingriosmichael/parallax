@@ -137,15 +137,16 @@ namespace Parallax.Tests.EditMode
             foreach (DictionaryEntry entry in Registry())
                 failures.AddRange(Coverage((string)entry.Key, entry.Value, motor, gravity.Strength, bypasses));
             Assert.IsEmpty(failures, "Trigger coverage (D-074):\n" + string.Join("\n", failures));
-            Assert.IsEmpty(bypasses, "No trap in L001-L004 may be a learned bypass without the developer's approval by name:\n" + string.Join("\n", bypasses));
+            Assert.IsEmpty(bypasses, "No trap in L001-L005 may be a learned bypass without the developer's approval by name:\n" + string.Join("\n", bypasses));
         }
 
         // ---------- R6: the extended Lift trigger still catches a standing cat (D-076) ----------
 
+        // PAX-059: L002 was redesigned; this reads the frozen pre-PAX-059 L002 (RouteFixtures.LiftRoom).
         [Test]
         public void L002Lift_ExtendedTrigger_StillCatchesAStandingCatOnTheLift()
         {
-            object level = ((IDictionary)Registry())["L002"];
+            object level = Type.GetType("Parallax.Editor.Routes.RouteFixtures, Parallax.Editor").GetMethod("LiftRoom", BindingFlags.Public | BindingFlags.Static).Invoke(null, null);
             object solo = ((IEnumerable)SoloLayoutType.GetField("Rooms", BindingFlags.Public | BindingFlags.Static).GetValue(null)).Cast<object>().ElementAt(1);
             Rect levelTrigger = Trigger(level, "Lift"), soloTrigger = Trigger(solo, "Lift");
             Rect liftBody = Body(level, "Lift");

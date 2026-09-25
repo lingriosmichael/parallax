@@ -11,12 +11,12 @@ namespace Parallax.Tests.EditMode
     // PAX-075 §11 R21: the scene-reading tests open level scenes in Single mode and restore the Test
     // Runner's setup afterwards. When that setup is only the Runner's untitled scene (an empty list), they
     // used to return early and leave the last level loaded (and, once, dirty), which route sessions then
-    // refused. After each such test, no level scene may still be loaded.
+    // refused. After each such test, no level scene may still be loaded. PAX-059: the SceneReadBounds case went with
+    // that test.
     public sealed class SceneLeakTests
     {
         [TestCase(typeof(LevelSceneTimingTests), nameof(LevelSceneTimingTests.EachListedLevelScene_TrapTickSettings_EqualTheirLayouts))]
         [TestCase(typeof(LevelSceneTriggerTests), nameof(LevelSceneTriggerTests.EachListedLevelScene_TrapTriggerBoxes_EqualTheirLayouts))]
-        [TestCase(typeof(LevelSceneTests), nameof(LevelSceneTests.SceneReadBounds_EachLevelScenesBakedRoomManagerBounds_EqualsLevelSolo01RoomNTranslated))]
         [TestCase(typeof(LevelSceneTests), nameof(LevelSceneTests.EachListedLevelScene_HasLevelCameraOnCameraA_WiredToItsOwnRoomDeath))]
         [TestCase(typeof(LevelSceneTests), nameof(LevelSceneTests.EachListedLevelScene_HasALevelsButton_WiredIntoLevelCompleteScreenAndReservedRegions))]
         [TestCase(typeof(LevelSceneTests), nameof(LevelSceneTests.EachListedLevelScene_HasAPauseMenu_WiredIntoGateCompleteScreenAndReservedRegions))]

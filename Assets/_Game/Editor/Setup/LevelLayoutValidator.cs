@@ -67,7 +67,8 @@ namespace Parallax.Editor.Setup
 
         // D-058: every gameplay element (and its trigger box) stays inside the room's own frame
         // — x in [0, Width], y in the room's vertical extent (floor/ceiling, widened by any
-        // opening's closure). Mirrors SoloRoomsLayoutTests.Containment_..., the one generic,
+        // opening's closure; PAX-059: see VerticalBounds). Derived from SoloRoomsLayoutTests.Containment_..., which keeps
+        // the pre-PAX-059 frame for the frozen SoloRoomsLayout rooms. It is the one generic,
         // non-narrative bounds rule: unlike a check against ComputeRoomBounds (which is defined
         // as the union of every element, so no single element can ever fail it), this can
         // actually catch a mispositioned element.
@@ -92,9 +93,20 @@ namespace Parallax.Editor.Setup
                 errors.Add($"{levelId}: {name} lies outside the room's frame (x [{bounds.xMin:F2},{bounds.xMax:F2}] of [0,{width:F2}], y [{bounds.yMin:F2},{bounds.yMax:F2}] of [{minY:F2},{maxY:F2}]).");
         }
 
-        static (float minY, float maxY) VerticalBounds(SoloRoomDefinition room)
+        // PAX-059 (C1): the room's vertical extent comes from its own geometry, so a tall room's upper storeys are inside
+        // it: from the lowest floor top (or pit bottom's underside) to the highest ceiling top, never less than the old
+        // frame (FloorTop to the standard ceiling's top). Slabs below a floor top and walls add nothing, so an element sunk
+        // in a floor still fails. An opening's closure widens the frame as before PAX-059.
+        internal static (float minY, float maxY) VerticalBounds(SoloRoomDefinition room)
         {
             float minY = SoloRoomsLayout.FloorTop, maxY = SoloRoomsLayout.CeilingUnderside + SoloRoomsLayout.SurfaceThickness;
+            foreach (SoloRoomElement e in room.Elements)
+            {
+                Rect r = Box(e, Vector2.zero);
+                if (e.Kind == SoloRoomElementKind.Floor) minY = Mathf.Min(minY, r.yMax);
+                else if (e.Kind == SoloRoomElementKind.PitBottom) minY = Mathf.Min(minY, r.yMin);
+                else if (e.Kind == SoloRoomElementKind.Ceiling) maxY = Mathf.Max(maxY, r.yMax);
+            }
             var byName = room.Elements.ToDictionary(e => e.Name);
             foreach (SoloRoomOpening opening in room.Openings)
             {

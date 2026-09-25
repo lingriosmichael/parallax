@@ -55,6 +55,32 @@ namespace Parallax.Tests.EditMode
             Assert.Greater(layoutElement.preferredHeight, 0f, "the row's LayoutElement.preferredHeight must be positive.");
         }
 
+        // The rows were 0 wide, so Level Select drew nothing: Content's VerticalLayoutGroup must control and stretch
+        // the rows' width. Builds Content through the menu's own seams, lays it out, and reads the row's width.
+        [Test]
+        public void ContentLayout_StretchesEachRowToContentsWidth()
+        {
+            Assert.NotNull(LevelSelectSetupType, "Parallax.Editor.Setup.LevelSelectSetup not found.");
+            MethodInfo configure = LevelSelectSetupType.GetMethod("ConfigureContentLayout", BindingFlags.Public | BindingFlags.Static);
+            MethodInfo buildRow = LevelSelectSetupType.GetMethod("BuildRowTemplate", BindingFlags.Public | BindingFlags.Static);
+            Assert.NotNull(configure, "LevelSelectSetup.ConfigureContentLayout not found.");
+            Assert.NotNull(buildRow, "LevelSelectSetup.BuildRowTemplate not found.");
+
+            contentGo = new GameObject("Content", typeof(RectTransform));
+            var contentRect = (RectTransform)contentGo.transform;
+            contentRect.sizeDelta = new Vector2(800f, 600f);
+            var changes = new List<string>();
+            configure.Invoke(null, new object[] { contentGo, changes });
+            var row = (LevelSelectRow)buildRow.Invoke(null, new object[] { contentGo.transform, changes });
+            row.gameObject.SetActive(true);   // the runtime clones are active; the template itself is hidden
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+
+            var rowRect = (RectTransform)row.transform;
+            Assert.AreEqual(800f, rowRect.rect.width, .01f, "each row must stretch to Content's width (it was 0, so Level Select showed nothing).");
+            Assert.AreEqual(100f, rowRect.rect.height, .01f, "each row keeps its LayoutElement height.");
+        }
+
         [Test]
         public void BuildRowTemplate_CalledTwice_IsIdempotent_SecondCallReportsNoChanges()
         {

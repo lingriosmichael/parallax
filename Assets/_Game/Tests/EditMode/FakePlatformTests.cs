@@ -135,7 +135,8 @@ namespace Parallax.Tests.EditMode
                 SpriteRenderer a = floor.GetComponent<SpriteRenderer>(), b = fake.GetComponent<SpriteRenderer>();
                 Assert.AreEqual(a.sprite, b.sprite, "sprite");
                 Assert.AreEqual(a.color, b.color, "colour");
-                Assert.AreEqual(a.sortingOrder, b.sortingOrder, "sortingOrder");
+                // PAX-059 (Q4): a trap floor draws one order over the ground it fills (and the pit it hides).
+                Assert.AreEqual(a.sortingOrder + 1, b.sortingOrder, "sortingOrder");
                 Assert.AreEqual(a.sortingLayerID, b.sortingLayerID, "sorting layer");
                 Assert.AreEqual(a.bounds.size, b.bounds.size, "rendered size");
                 Assert.AreEqual(floor.localPosition, fake.localPosition, "position");

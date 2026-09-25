@@ -261,9 +261,17 @@ namespace Parallax.Editor.Setup
             ObserverContext observer = observers.Get(Parallax.Core.ObserverId.A);
             if (observer?.Cat != null)
             {
-                Vector2 start = root.ToWorld(new Vector2(2f, -config.ColliderBottom));
+                Vector2 start = root.ToWorld(CatStart(layout, config));
                 if ((Vector2)observer.Cat.transform.position != start) { observer.Cat.transform.position = start; changes.Add("set Cat A root position"); }
             }
+        }
+
+        // The cat starts on the room's checkpoint, feet on it, where the route harness starts it too. It was a fixed
+        // x 2 on the ground, which put L005's cat (checkpoint (30, 10)) at its door (fixed after PAX-059a).
+        public static Vector2 CatStart(SoloRoomDefinition layout, CatMotorConfig config)
+        {
+            Vector2 checkpoint = layout.Elements.Where(e => e.Kind == SoloRoomElementKind.Checkpoint).Select(e => e.Position).DefaultIfEmpty(new Vector2(2f, 0f)).First();
+            return new Vector2(checkpoint.x, checkpoint.y - config.ColliderBottom);
         }
 
         static int IndexOf(LevelListConfig config, string id)

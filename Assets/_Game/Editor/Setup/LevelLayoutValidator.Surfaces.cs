@@ -10,15 +10,13 @@ namespace Parallax.Editor.Setup
     // PAX-080 (D-080): surfaces that betray without killing by themselves, and the fake platform's data rules.
     public static partial class LevelLayoutValidator
     {
-        // R4 (b): FalseLanding's trigger doesn't cut the band, and no route is betrayed by it (D-079 (8)). A
-        // learned-bypass reason on the layout would break TriggerCoverageTests' "no learned bypass in L001-L004".
-        public static readonly IReadOnlyDictionary<string, string> SurfaceCoverageExemptions = new Dictionary<string, string>
-        {
-            ["L004/FalseLanding"] = "PAX-075: the solution's braked landing stays below the trigger; no route is betrayed (D-079, D-080).",
-        };
+        // R4 (b): named exemptions ("level/surface" -> reason). PAX-059: L004's FalseLanding, the one entry, went with the
+        // redesign; the list stays for any later one, which needs the developer's approval by name.
+        public static readonly IReadOnlyDictionary<string, string> SurfaceCoverageExemptions = new Dictionary<string, string>();
 
         // A betraying surface's danger is its top strip: the element's width, one cat-collider height tall, on its
-        // top. Fake platforms and Overlap, non-periodic, unchained collapsing floors are covered by their own touch.
+        // top. Fake platforms and Overlap, non-periodic, unchained collapsing floors are covered by their own touch, and a
+        // surface whose root trigger holds its whole top strip is covered by that trigger (PAX-059a play).
         // Every other betraying surface (a chained one, checked against its root trigger, or a Solid MovingTrap that
         // moves down or off its own x span) needs that trigger to be D-074's cut: over its x span it covers the
         // cat's band from the lowest standable top to the ceiling underside, and the strip lies beyond its near
@@ -40,6 +38,9 @@ namespace Parallax.Editor.Setup
                 string via = root.Name == surface.Name ? "" : $" (chained from {root.Name})";
                 if (!TriggerCoverage.TryTrigger(root, out Rect trigger))
                 { errors.Add($"{levelId}: surface coverage: {surface.Name}{via} has no trigger box to cut the cat's band."); continue; }
+                // A trigger over the surface's whole top strip holds any cat standing on it, so the surface can't be stood on
+                // unseen (and a jump from below doesn't set it off: ValidateTrapFloorHeadroom). After PAX-059a play.
+                if (trigger.xMin <= strip.xMin + eps && trigger.xMax >= strip.xMax - eps && trigger.yMin <= strip.yMin + eps && trigger.yMax >= strip.yMax - eps) continue;
                 if (!TriggerCoverage.TryCeilingUnderside(room, trigger, out float ceiling))
                 { errors.Add($"{levelId}: surface coverage: no ceiling over {root.Name}'s trigger; the band is undefined."); continue; }
                 float low = TriggerCoverage.BandLow(room, trigger);

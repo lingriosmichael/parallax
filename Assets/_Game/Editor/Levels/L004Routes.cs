@@ -4,32 +4,36 @@ using static Parallax.Editor.Routes.R;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-075 (D-079): L004's anatomy. The solution is PAX-078's Flip_A route. FalseLanding has no betrayal route:
-    // no route is betrayed by it (full-speed take-offs from x 15.28 skip it; the braked landing stays below its
-    // trigger), PAX-080. Block_1 kills no route (D-079 (4)). The PAX-078 and PAX-080 play reports blamed deaths on
-    // it by mistake; the developer confirms no falling-block death (PAX-081, D-081). Block_2 never kills and the
-    // floor run is gone (R9).
+    // PAX-059 (D-085): level 4's anatomy. T1 is jumped; T2, the flip everyone jumps into, is walked under; T3 (spikes on
+    // the roof) are jumped upside down; T4 punishes that jump (the landing gives way: jump straight off it); T5 punishes
+    // keeping on along the roof (the door backs away over a section that gives way: go back down, along the slab's top,
+    // and up under the door). The flip toward the door from the start is the dead end.
     static class L004Routes
     {
         public static RoomRoutes Build()
         {
             var solution = new Route("L004 solution",
-                Hold(Right), Until(XAtLeast(3.4f)), Jump(), Until(GroundedOn("Platform_B")),
-                Until(XAtLeast(9.4f)), Jump(), Until(GroundedOn("Platform_C")),
-                // PAX-082 (D-082): Platform_C now ends at x 17; stop near its end. The release at 18.95 stops the cat at x ~19.2,
-                // clear of FalseLanding's trigger (x 20); a release at 19.3 stopped it 0.004 short and the drop fired it.
-                Until(XAtLeast(16.4f)), Release(), Until(Still()),
-                // The learned braked landing: from rest, onto FalseLanding's left end, below its trigger.
-                Hold(Right), Jump(), Until(XAtLeast(18.95f)), Release(), Until(GroundedOn("FalseLanding")),
-                Hold(Right), Until(XAtLeast(22.5f)), Jump().Timed(TimedMode.Shift), Until(GravityUp()), Until(GroundedOn("Ceiling")),
-                Until(XAtLeast(27.4f)), Jump(), Until(Airborne()), Until(GroundedOn("Ceiling").And(XAtLeast(29.8f))),
-                Until(XAtLeast(30.9f)), Jump(), Until(RoomComplete()));
+                Hold(Right), Until(XAtLeast(14.3f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
+                // Under Flip_A, into Flip_R, up through the gap to the roof.
+                Until(GravityUp()), Until(GroundedOn("Roof_R")),
+                Hold(Left), Until(XAtMost(22.4f)), Jump(), Until(Airborne()), Until(GroundedOn("Roof_4")), Jump(), Until(GroundedOn("Roof_M")),
+                // Down through Flip_D to the slab's top, along it, up through Flip_E to the door.
+                Jump(), Until(GravityDown()), Until(GroundedOn("Slab")),
+                Until(GravityUp()), Until(GroundedOn("Roof_L")), Hold(Right), Until(RoomComplete()));
 
             return new RoomRoutes(solution,
-                new Betrayal("SourceSpikes rise under a cat that runs on", "SourceSpikes", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(FalseLanding))", "run into SourceSpikes", Hold(Right), Until(Dead()))),
-                new Betrayal("CeilingHiddenSpikes drop on a cat that walks the ceiling", "CeilingHiddenSpikes", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Ceiling))", "walk into CeilingHiddenSpikes", Until(Dead()))));
+                new Betrayal("T1: Spikes_1 rise under a cat that runs on", "Spikes_1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Hold(Right)", "run on", Until(Dead()))),
+                new Betrayal("T2: Flip_A sends a cat that jumps into it onto spikes under the slab", "Spikes_A", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Grounded)", "jump into the flip", Jump(), Until(Dead()))),
+                new Betrayal("T3: spikes on the roof under a cat walking it upside down", "Spikes_3", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Roof_R))", "walk on", Hold(Left), Until(Dead()))),
+                new Betrayal("T4: the roof where the jump lands gives way under a cat that stops", "Recess4_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Roof_4))", "stop where it lands", Release(), Until(Dead())), revealedBy: "Roof_4"),
+                new Betrayal("T5: a cat that follows the door along the roof falls into the recess", "Recess5_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Roof_M))", "follow the door", Until(Dead())), revealedBy: "Roof_5"),
+                new Betrayal("Dead end: the flip toward the door drops a cat onto spikes under the slab", "Spikes_L", DeathCause.Hazard,
+                    new Route("toward the door", Hold(Left), Until(Dead()))));
         }
     }
 }

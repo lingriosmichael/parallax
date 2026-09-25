@@ -31,6 +31,7 @@ namespace Parallax.Tests.EditMode
         [TestCase("L002")]
         [TestCase("L003")]
         [TestCase("L004")]
+        [TestCase("L005")]
         public void ShippedLevel_PassesTheCameraTellRule_AtEveryAspect(string id)
         {
             var errors = new List<string>();

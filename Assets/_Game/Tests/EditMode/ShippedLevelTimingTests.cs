@@ -14,10 +14,11 @@ namespace Parallax.Tests.EditMode
     // PAX-078 (D-076): the shipped levels' timing at the real tick rate, with no 60 Hz pin. The
     // SoloRoomsLayout narrative tests stay pinned (D-076); these read L002/L004 through
     // LevelLayouts by reflection, as LevelLayoutTests does. PAX-082 (§12 R6): the Lift, EarlyFlipBand and
-    // FastFlip box-model tests are removed (D-079 (7)); the route harness measures them.
+    // FastFlip box-model tests are removed (D-079 (7)); the route harness measures them. PAX-059: L004 was redesigned;
+    // this reads the frozen pre-PAX-059 L004 (RouteFixtures.FastFlipRoom), since it tests the stepper's floor-bypass check.
     public sealed class ShippedLevelTimingTests
     {
-        static readonly Type LayoutsType = Type.GetType("Parallax.Editor.Levels.LevelLayouts, Parallax.Editor");
+        static readonly Type FixturesType = Type.GetType("Parallax.Editor.Routes.RouteFixtures, Parallax.Editor");
         // Worst-case sub-tick phases of the SourceSpikes trigger crossing, as offsets past its near edge.
         static readonly float[] TriggerPhases = { .01f, .05f, .09f, .12f };
         const float TakeoffStep = .02f;
@@ -40,7 +41,7 @@ namespace Parallax.Tests.EditMode
 
         static IEnumerable<(float phase, float takeoff, RoomStepper run, RoomStepper.End end)> L004Runs()
         {
-            object room = Room("L004");
+            object room = FastFlipRoom();
             CatMotorConfig config = Config();
             float gravity = GravityStrength();
             object source = Element(room, "SourceSpikes");
@@ -58,12 +59,10 @@ namespace Parallax.Tests.EditMode
                 }
         }
 
-        static object Room(string id)
+        static object FastFlipRoom()
         {
-            Assert.NotNull(LayoutsType, "Parallax.Editor.Levels.LevelLayouts not found.");
-            var registry = (IDictionary)LayoutsType.GetField("ById", BindingFlags.Public | BindingFlags.Static).GetValue(null);
-            Assert.IsTrue(registry.Contains(id), id + " is not in LevelLayouts.");
-            return registry[id];
+            Assert.NotNull(FixturesType, "Parallax.Editor.Routes.RouteFixtures not found.");
+            return FixturesType.GetMethod("FastFlipRoom", BindingFlags.Public | BindingFlags.Static).Invoke(null, null);
         }
 
         static object Element(object room, string name)

@@ -4,36 +4,38 @@ using static Parallax.Editor.Routes.R;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-075 (D-079): L001's anatomy. Retreat is non-lethal (KIT-3b); Block_A only catches a cat that
-    // hesitates at the spikes (R9). PAX-082 (D-082), from x 23 with the lower jump: 0-28 clears it, 30-38 is killed,
-    // 40 dies on the spikes, 42+ clears.
+    // PAX-059 (D-085): level 1's anatomy. T1 (the first floor) teaches jumping; T2 punishes running on to it (stop as it
+    // goes); T3 punishes backing away from T2 (stay put, then hop T2 once it has landed); T4 is passed on the shelf (the
+    // other ledge); T5 is T1 again before the door. The high ledge is the dead end; the door backing away is a
+    // Recovers betrayal on the solution itself.
     static class L001Routes
     {
         public static RoomRoutes Build()
         {
             var solution = new Route("L001 solution",
-                Hold(Right), Until(XAtLeast(5.3f)), Jump(), Until(GroundedOn("Platform_B")),
-                Until(XAtLeast(11.3f)), Jump(), Until(GroundedOn("Floor_C")),
-                Until(XAtLeast(17.3f)), Jump(), Until(GroundedOn("Floor_D")),
-                // PAX-082 (D-082): the lower jump lands at x ~21.4, short of the spikes; run on to x 23 before the spike jump.
-                Until(XAtLeast(23f)),
-                // D-056 (1): Spikes_A starts the race against Block_A; a hesitation before the spike jump is measured from rest.
-                Jump().Timed(TimedMode.Hesitate), Until(RoomComplete()));
+                Hold(Right), Until(XAtLeast(4.4f)), Jump(), Until(GroundedOn("Ground_2")),
+                // Stop as Block_1 goes: it lands ahead of the cat (and Block_2 behind it); then hop it.
+                Until(Fired("Block_1")), Release(), Until(Still()), Until(Stopped("Block_1")),
+                Hold(Right).Timed(TimedMode.Hesitate), Until(XAtLeast(10.9f)), Jump(), Until(Airborne()), Until(Grounded()),
+                Until(XAtLeast(14.9f)), Jump(), Until(GroundedOn("Shelf")),
+                // Off the end of the shelf, then over the last floor.
+                Until(XAtLeast(25.7f)), Until(Airborne()), Until(Grounded()), Until(XAtLeast(27.3f)), Jump(), Until(RoomComplete()));
 
             return new RoomRoutes(solution,
-                new Betrayal("Collapse_C drops a cat that walks onto it", "Pit2_Hazard", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Floor_C))", "walk onto Collapse_C", Until(XAtLeast(19f)), Release(), Until(Dead())),
-                    revealedBy: "Collapse_C"),
-                new Betrayal("Spikes_A rise under a cat that runs on", "Spikes_A", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Floor_D))", "run into Spikes_A", Until(Dead()))),
-                new Betrayal("Block_A falls on a cat that hesitates at the spikes", "Block_A", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=23)", "hesitate before the spikes", Release(), For(34), Hold(Right), Jump(), Until(Dead()))),
-                // PAX-083 (D-080): Retreat is a Recovers betrayal. A cat that waits out Block_A at the spikes sees the door
-                // (Retreat moves the Door, not itself) back away 2 u over 20 ticks; it jumps the spikes and the landed block
-                // and walks on to the door at x 31.
-                Betrayal.Recovers("Retreat moves the door away from a cat that waits out Block_A, which follows it to x 31", "Door",
-                    Route.PrefixOf(solution, "Until(X>=23)", "wait out Block_A and the retreat, then follow the door",
-                        Release(), Until(Moving("Door")), For(24), Hold(Right), Jump(), Until(Airborne()), Until(Grounded()), Jump(), Until(RoomComplete()))));
+                new Betrayal("T1: the first floor drops a cat that runs on", "Pit1_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Hold(Right)", "run onto Floor_2", Until(Dead())), revealedBy: "Floor_2"),
+                new Betrayal("T2: Block_1 lands on a cat that runs on to it", "Block_1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Ground_2))", "run on after the jump", Until(Dead()))),
+                new Betrayal("T3: Block_2 lands on a cat that backs away from Block_1", "Block_2", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Fired(Block_1))", "back away", Hold(Left), Until(Dead()))),
+                new Betrayal("T4: Spikes_1 rise under a cat that stays on the ground", "Spikes_1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Grounded)", "stay on the ground", Until(Dead()))),
+                new Betrayal("T5: the last floor before the door drops a cat that runs on", "Pit5_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X>=27.3)", "run on", Until(Dead())), revealedBy: "Floor_7"),
+                new Betrayal("Dead end: Spikes_2 rise on the high ledge", "Spikes_2", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Shelf))", "jump up to the ledge",
+                        Release(), Until(Still()), Hold(Left), Until(XAtMost(17.7f)), Hold(Right), Jump(), Until(Dead()))),
+                Betrayal.Recovers("The door backs away from a cat on the shelf, which follows it", "Door", solution));
         }
     }
 }

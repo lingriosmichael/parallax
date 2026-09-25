@@ -25,3 +25,6 @@ MonoBehaviour:
   - Id: L004
     SceneName: Level_004
     DisplayName: Level 4
+  - Id: L005
+    SceneName: Level_005
+    DisplayName: Level 5

@@ -1,0 +1,51 @@
+PAX-059 half A (levels 1–5): pax-reviewer, one round
+=====================================================
+
+VERDICT: Accept after fixes. There were no Blockers and two Should-fixes; both are fixed below. There was no round 2,
+because round 2 only re-checks fixes to Blockers.
+
+Reviewer's tests: 179 run in targeted batches, 178 passed. The one failure was
+LevelLayoutTests.Registry_IdsAreUniqueAndMatchLevelListConfigBothWays; it clears after the developer runs New Level… for L005.
+
+Scope: clean against §7 plus the approved extras (LevelRoutes.cs, LevelLayoutValidator.Surfaces.cs, RouteFixtures.cs,
+LevelLayoutValidator.cs, TriggerCoverage.cs). No .unity, .prefab, .asset or ProjectSettings file is changed, and no
+frozen co-op code is touched. Docs/0_TASKS/PAX-059.md §2.2 has the L2 row changed ("bottom right → top right, doubles
+back"), per the Architect's Phase 1 ruling.
+
+SHOULD-FIX (both fixed)
+1. LevelLayoutValidator.cs VerticalBounds: the frame had been loosened without saying so. The minimum was every fixed
+   solid's bottom (floor slabs and walls), so an element sunk in a floor slab passed. The comment said "unchanged".
+   Fixed with the reviewer's preferred option (a):
+   - floors contribute their top, pit bottoms their bottom, ceilings their top, and walls nothing; opening closures
+     widen the frame as before;
+   - both comments are corrected, and the "Mirrors SoloRoomsLayoutTests" comment now says the validator derives from
+     that test and that the test keeps the pre-PAX-059 frame for the frozen SoloRoomsLayout rooms;
+   - new fixture RouteFixtures.SlabHazardRoom and new test Band1RulesTests.AnElementSunkInsideTheFloorSlab_FailsTheFrameRule.
+     It was seen red before the change and is green after.
+   TallRoom, L001–L005, Trap Lab and SoloRoomsLayout all still pass.
+2. CLAUDE.md, the band-1 line: it said the Band1 code checks that every mid-air release is timed with a window ≥ 12.
+   No code checks that. Reworded: it is a route-writing convention, and the RouteValidator windows sweep measures it.
+
+NOTES (carried to D-085 or half B, no change now)
+1. Band1MinDeadEnds (1 for levels 1–5, 2 for levels 6–10) is a hard rule; record it in D-085.
+2. SequentialChain is a structural proxy (steps shared with the solution's start), not a survival proof. Every route
+   also replays to its own killer. D-085 says it is a proxy.
+3. Numbers at the floor with no slack:
+   - L005 Arrow_A–D leads are 6;
+   - L001 Spikes_2 lead is 6;
+   - the L004 hop window is 12;
+   - the L002 door clears half the playable height by 0.75 u.
+   Any motor or trap retune breaks these pins first.
+4. "Middle" start: L004 starts at x 9.5 of 32. Define "middle" before half B's direction-mix test.
+5. TriggerCoverage.cs is 456 lines (C3). A later split into a TriggerCoverage.Storeys.cs partial would help.
+6. The reviewer agrees with retiring the two Solo01-equality tests and removing the matching SceneLeakTests case. The
+   frozen fixture copies (LiftRoom, FastFlipRoom, LiftSolution) keep the old harness tests meaningful.
+
+FINAL EDITMODE RUN (after the fixes): 721 total, 714 passed, 7 failed. Baseline 685; 685 − 3 retired + 39 new.
+All 7 failures wait on the developer's menu runs:
+  - LevelLayoutTests.Registry_IdsAreUniqueAndMatchLevelListConfigBothWays (L005 isn't in LevelListConfig yet)
+  - LevelSceneTimingTests.EachListedLevelScene_TrapTickSettings_EqualTheirLayouts (scenes not rebuilt)
+  - LevelSceneTriggerTests.EachListedLevelScene_TrapTriggerBoxes_EqualTheirLayouts (scenes not rebuilt)
+  - SavedSceneSyncTests.EachListedLevelScene_TheRoom_MatchesItsLayout (scenes not rebuilt)
+  - SavedSceneSyncTests.TheSavedTrapLabScene_EveryRoom_MatchesItsLayout (the trap floor sorting order −1 needs a Trap Lab rebuild)
+  - SceneLeakTests ×2 (they wrap the timing and trigger tests above)

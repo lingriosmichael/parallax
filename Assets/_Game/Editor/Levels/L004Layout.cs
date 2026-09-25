@@ -7,55 +7,61 @@ using static Parallax.Editor.Levels.LevelElementFactory;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-051 (D-066): L004 is SoloRoomsLayout.BuildFinalRoom (SoloRoomsLayout.Rooms[3]),
-    // converted to a standalone level's local space: room id 0 (was 3), origin x 0 (was 135).
-    // Element positions are local offsets from Origin already, so they are unchanged.
+    // PAX-059 (D-085): level 4, gravity. Two bands: the lower one from the ground (top 0) to a slab (underside 7, x 0-24),
+    // and the upper one from the slab's top (8) to the roof (underside 15). The door hangs from the roof at the left. The
+    // start is mid-room; the way runs right along the ground, up a flip through the gap past the slab's end to the roof,
+    // back left upside down, down a flip to the slab's top, and up a flip under the door. Every roof section that gives way
+    // fills the recess behind it, so the recess's hazard stays hidden until it does.
     static class L004Layout
     {
         public static SoloRoomDefinition Build()
         {
             var elements = new List<SoloRoomElement> {
-                E(SoloRoomElementKind.Ceiling,"Ceiling",(16f,7.5f),(32f,1f)),
-                E(SoloRoomElementKind.Checkpoint,"Checkpoint_3",(2f,0f),(0f,0f))
+                E(SoloRoomElementKind.Wall,"Wall_L",(-.5f,13.5f),(1f,11f)),
+                E(SoloRoomElementKind.Wall,"Wall_R",(32.5f,13.5f),(1f,11f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(9.5f,0f),(0f,0f)),
+                E(SoloRoomElementKind.Floor,"Ground",(16f,-2f),(32f,4f)),
+                E(SoloRoomElementKind.Floor,"Slab",(12f,7.5f),(24f,1f)),
+                // The roof, broken by two sections that give way (x 3-6 and 16-19.5).
+                E(SoloRoomElementKind.Ceiling,"Roof_L",(1.5f,15.5f),(3f,1f)),
+                E(SoloRoomElementKind.Ceiling,"Roof_M",(11f,15.5f),(10f,1f)),
+                E(SoloRoomElementKind.Ceiling,"Roof_R",(25.75f,15.5f),(12.5f,1f)),
+                // The recesses behind them.
+                E(SoloRoomElementKind.Wall,"Recess_A_L",(2.75f,17f),(.5f,2f)),
+                E(SoloRoomElementKind.Wall,"Recess_A_R",(6.25f,17f),(.5f,2f)),
+                E(SoloRoomElementKind.Ceiling,"Recess_A_Top",(4.5f,18.5f),(4f,1f)),
+                E(SoloRoomElementKind.Wall,"Recess_B_L",(15.75f,17f),(.5f,2f)),
+                E(SoloRoomElementKind.Wall,"Recess_B_R",(19.75f,17f),(.5f,2f)),
+                E(SoloRoomElementKind.Ceiling,"Recess_B_Top",(17.75f,18.5f),(4.5f,1f)),
+                E(SoloRoomElementKind.Hazard,"Recess5_Hazard",(4.5f,17.85f),(3f,.3f)),
+                E(SoloRoomElementKind.Hazard,"Recess4_Hazard",(17.75f,17.85f),(3.5f,.3f)),
             };
-            elements.Add(E(SoloRoomElementKind.Floor,"Floor_A",(2f,-.5f),(4f,1f)));
-            // PAX-082 (D-082): refit to the lower jump (apex 1.6): two 0.5 steps over 1.5 gaps, a 3.0 drop onto FalseLanding,
-            // Flip_A low and wide enough that every hop clearing SourceSpikes flips, Flip_B within reach from the ceiling.
-            elements.Add(E(SoloRoomElementKind.Floor,"Platform_B",(7.5f,0f),(4f,1f)));
-            elements.Add(E(SoloRoomElementKind.Floor,"Platform_C",(14f,.5f),(6f,1f)));
-            AddPit(elements,1,4f,22f);
-            // PAX-080: claimed as a false landing, but no route is betrayed by it (PAX-075: a full-speed take-off from
-            // x >= 15.28 skips it; the solution's braked landing stays below its trigger). Its trigger doesn't cut the
-            // band, so it is LevelLayoutValidator.SurfaceCoverageExemptions' one entry. No layout change (D-069, PAX-078 R15).
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"FalseLanding",(20.5f,-.5f),(3f,1f),(20.5f,3.5f),(1f,3f),new SoloRoomTrapSettings(offset:new Vector2(-3f,0f),moveTicks:20,movingKind:MovingTrapKind.Solid)));
-            elements.Add(E(SoloRoomElementKind.Floor,"Floor_D",(27f,-.5f),(10f,1f)));
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"SourceSpikes",(24f,.15f),(1f,.3f),(20.5f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            // PAX-078 (D-076): retimed for 50 Hz (Block_1 delay 37 -> 28, Block_2 25 -> 4) and Flip_A moved
-            // x 26.5 -> 25.0, out of Block_1's column, so the full-speed flip is survivable.
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_1",(26.5f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:28,unitsPerTick:.36f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"SourceSpikes")));
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_2",(29f,6f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:4,unitsPerTick:.36f,travelDistance:5.5f,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_1")));
-            elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_A",(24.5f,1.8f),(1.5f,2f),settings:new SoloRoomTrapSettings(gravityMode:GravityFlipMode.Flip,rearmOnExit:true,rendererEnabled:true)));
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"CeilingHiddenSpikes",(28.75f,6.85f),(1f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:8,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_2")));
-            elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_B",(31.5f,4.5f),(1f,2f),settings:new SoloRoomTrapSettings(gravityMode:GravityFlipMode.Flip,rearmOnExit:true,rendererEnabled:true)));
-            elements.Add(E(SoloRoomElementKind.Door,"Door",(31.5f,.75f),(.6f,1.5f)));
+            var flip = new SoloRoomTrapSettings(gravityMode:GravityFlipMode.Flip,rearmOnExit:true,rendererEnabled:true);
+            // Dead end: the flip toward the door, onto spikes under the slab.
+            elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_L",(5.5f,1f),(1f,2f),settings:flip));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_L",(3f,6.85f),(6f,.3f),(5.5f,3.5f),(1f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // T1: spikes on the ground. T2: the flip floating over the ground, onto spikes under the slab.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_1",(15.75f,.15f),(1.5f,.3f),(13.25f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_A",(19.25f,2.8f),(1.5f,2f),settings:flip));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_A",(21.25f,6.85f),(5.5f,.3f),(19.25f,3.5f),(1.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // The way up: a flip on the ground under the gap past the slab.
+            elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_R",(30.5f,1f),(1f,2f),settings:flip));
+            // T3: spikes on the roof; T4: the roof where the jump over them lands gives way under a cat that stops.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_3",(21f,14.85f),(1f,.3f),(23.75f,11.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Roof_4",(17.75f,16.5f),(3.5f,3f),settings:new SoloRoomTrapSettings(delayTicks:12)));
+            // T5: the door backs away along the roof over a section that gives way. The way down: a flip floating under the
+            // roof; the way back up: a flip on the slab's top under the door's new place.
+            elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_D",(12.25f,12.75f),(1.5f,1.5f),settings:flip));
+            elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_E",(2.5f,9f),(1f,2f),settings:flip));
+            elements.Add(E(SoloRoomElementKind.Door,"Door",(6.8f,14.25f),(.6f,1.5f)));
+            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(10.75f,11.5f),(.5f,7f),settings:new SoloRoomTrapSettings(moveTicks:30,offset:new Vector2(-4.3f,0f))));
+            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Roof_5",(4.5f,16.5f),(3f,3f),settings:new SoloRoomTrapSettings()));
             var jumps = new[] {
-                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,3.5f,6f,0f,.5f,3f,sourceName:"Floor_A",destinationName:"Platform_B"),
-                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,9f,11.5f,.5f,1f,3f,sourceName:"Platform_B",destinationName:"Platform_C"),
-                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,16.5f,19.5f,1f,0f,3f,sourceName:"Platform_C",destinationName:"FalseLanding"),
-                J("Pit1_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,21.5f,22.5f,0f,0f,1f,sourceName:"FalseLanding",destinationName:"Floor_D"),
-                J("SourceSpikes",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,23f,25f,0f,0f,2f,.3f),
-                J("CeilingHiddenSpikes",RequiredJumpKind.Hazard,RequiredJumpFrame.Ceiling,RequiredJumpDirection.Right,27.75f,29.75f,0f,0f,2f,.3f)
+                J("Spikes_1",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,14.3f,17f,0f,0f,3f,.3f),
+                J("Spikes_3",RequiredJumpKind.Hazard,RequiredJumpFrame.Ceiling,RequiredJumpDirection.Left,22.4f,20f,0f,0f,3f,.3f),
+                J("Roof_4",RequiredJumpKind.Pit,RequiredJumpFrame.Ceiling,RequiredJumpDirection.Left,17.5f,15.4f,0f,0f,1f,sourceName:"Roof_4",destinationName:"Roof_M"),
             };
-            return new SoloRoomDefinition(0,0f,32f,elements.ToArray(),new[] { O(SoloRoomOpeningKind.Pit,4f,22f,"Pit1_L","Pit1_R","Pit1_Bottom","Pit1_Hazard") },jumps);
-        }
-
-        static void AddPit(List<SoloRoomElement> elements, int id, float minX, float maxX)
-        {
-            float centre = (minX + maxX) * .5f, width = maxX - minX;
-            elements.Add(E(SoloRoomElementKind.Wall,$"Pit{id}_L",(minX - .5f,-2.5f),(1f,3f)));
-            elements.Add(E(SoloRoomElementKind.Wall,$"Pit{id}_R",(maxX + .5f,-2.5f),(1f,3f)));
-            elements.Add(E(SoloRoomElementKind.PitBottom,$"Pit{id}_Bottom",(centre,-3.5f),(width,1f)));
-            elements.Add(E(SoloRoomElementKind.Hazard,$"Pit{id}_Hazard",(centre,-2.85f),(width,.3f),hazardRole:SoloRoomHazardRole.OpeningBottom));
+            return new SoloRoomDefinition(0,0f,32f,elements.ToArray(),System.Array.Empty<SoloRoomOpening>(),jumps);
         }
     }
 }

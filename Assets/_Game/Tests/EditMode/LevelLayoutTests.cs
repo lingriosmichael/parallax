@@ -22,7 +22,6 @@ namespace Parallax.Tests.EditMode
         static readonly Type ValidatorType = Type.GetType("Parallax.Editor.Setup.LevelLayoutValidator, Parallax.Editor");
         static readonly Type FixturesType = Type.GetType("Parallax.Editor.Setup.LevelLayoutValidatorFixtures, Parallax.Editor");
         static readonly Type SoloLayoutType = Type.GetType("Parallax.Editor.Setup.SoloRoomsLayout, Parallax.Editor");
-        static readonly Type BuilderType = Type.GetType("Parallax.Editor.Setup.SoloRoomBuilder, Parallax.Editor");
 
         static LevelListConfig Config()
         {
@@ -146,35 +145,13 @@ namespace Parallax.Tests.EditMode
 
         // ---------- 6. Split fidelity ----------
 
-        static readonly (string levelId, int soloRoomIndex)[] SeedPairs = { ("L001", 0), ("L002", 1), ("L003", 2), ("L004", 3) };
-
         // PAX-082 (§12 R8, D-082): SplitFidelity_L00NEqualsSoloRoomsLayoutRoomN... is removed. L001-L004 are rebuilt
         // around the new cat and no longer equal SoloRoomsLayout, which stays frozen scaffolding (D-076).
 
-        // ---------- 7. Baked bounds translate with the room ----------
+        // ---------- 7. Baked bounds ----------
 
-        [Test]
-        public void BakedBounds_L00NEqualsSoloRoomsLayoutRoomNBoundsTranslated()
-        {
-            Assert.NotNull(BuilderType, "Parallax.Editor.Setup.SoloRoomBuilder not found.");
-            MethodInfo computeBounds = BuilderType.GetMethod("ComputeRoomBounds", BindingFlags.Public | BindingFlags.Static);
-            object[] soloRooms = SoloRooms().Cast<object>().ToArray();
-            const float margin = 2f;
-
-            foreach ((string levelId, int index) in SeedPairs)
-            {
-                object levelRoom = RoomFor(levelId);
-                object soloRoom = soloRooms[index];
-                var soloBounds = (Bounds)computeBounds.Invoke(null, new object[] { soloRoom, margin });
-                var levelBounds = (Bounds)computeBounds.Invoke(null, new object[] { levelRoom, margin });
-                Vector2 translation = (Vector2)Field(levelRoom, "Origin") - (Vector2)Field(soloRoom, "Origin");
-
-                Assert.That(levelBounds.center.x, Is.EqualTo(soloBounds.center.x + translation.x).Within(.001f), levelId + " bounds centre x");
-                Assert.That(levelBounds.center.y, Is.EqualTo(soloBounds.center.y + translation.y).Within(.001f), levelId + " bounds centre y");
-                Assert.That(levelBounds.size.x, Is.EqualTo(soloBounds.size.x).Within(.001f), levelId + " bounds size x");
-                Assert.That(levelBounds.size.y, Is.EqualTo(soloBounds.size.y).Within(.001f), levelId + " bounds size y");
-            }
-        }
+        // PAX-059: BakedBounds_L00NEqualsSoloRoomsLayoutRoomNBoundsTranslated is retired. The band-1 levels are new rooms
+        // with their own heights, so their bounds no longer equal any SoloRoomsLayout room's.
 
         static IEnumerable SoloRooms()
         {
