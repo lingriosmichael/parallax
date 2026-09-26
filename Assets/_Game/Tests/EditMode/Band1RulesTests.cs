@@ -129,6 +129,15 @@ namespace Parallax.Tests.EditMode
         public void AnUpsideDownTrapThatFillsItsRecess_Passes() =>
             Assert.IsEmpty(Invoke("ValidateBand1Tells", "FIX", Fixture("RoofRecessRoom", true)));
 
+        // PAX-059b (the developer's review): a lift is a trap surface too; a hazard over it and nowhere else points at it.
+        [Test]
+        public void ALiftUnderSpikesThatSingleItOut_IsRejected() =>
+            AssertMentions(Invoke("ValidateBand1Tells", "FIX", Fixture("LiftUnderSpikesRoom", false)), "Roof_Spikes");
+
+        [Test]
+        public void ALiftUnderSpikesSpreadAlongTheRoof_Passes() =>
+            Assert.IsEmpty(Invoke("ValidateBand1Tells", "FIX", Fixture("LiftUnderSpikesRoom", true)));
+
         [Test]
         public void AFallingBlockHangingUnderTheCeiling_IsRejected() =>
             AssertMentions(Invoke("ValidateBand1Tells", "FIX", Fixture("HangingBlockRoom", false)), "Block");
@@ -179,6 +188,7 @@ namespace Parallax.Tests.EditMode
         // ---------- the level scene's cat starts on the room's checkpoint (found in play: L005 started at its door) ----------
 
         [TestCase("L001")] [TestCase("L002")] [TestCase("L003")] [TestCase("L004")] [TestCase("L005")]
+        [TestCase("L006")] [TestCase("L007")] [TestCase("L008")] [TestCase("L009")] [TestCase("L010")]
         public void TheCatStartsOnTheCheckpoint(string id)
         {
             object room = RouteValidatorTests.Room(id);

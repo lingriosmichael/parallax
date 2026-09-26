@@ -11,7 +11,7 @@ namespace Parallax.Tests.EditMode
     // validated once per fixture (R12 lever 1) and the per-aspect tests read the cached report.
     public sealed class RouteValidatorTests
     {
-        static readonly string[] Rooms = { "L001", "L002", "L003", "L004", "L005", "TrapLab3" };
+        static readonly string[] Rooms = { "L001", "L002", "L003", "L004", "L005", "L006", "L007", "L008", "L009", "L010", "TrapLab3" };
         IDisposable session;
         readonly Dictionary<string, object> reports = new();
 
@@ -38,7 +38,8 @@ namespace Parallax.Tests.EditMode
 
         static string Summary(object report) => (string)report.GetType().GetMethod("Summary").Invoke(report, null);
 
-        [TestCase("L001")] [TestCase("L002")] [TestCase("L003")] [TestCase("L004")] [TestCase("L005")] [TestCase("TrapLab3")]
+        [TestCase("L001")] [TestCase("L002")] [TestCase("L003")] [TestCase("L004")] [TestCase("L005")]
+        [TestCase("L006")] [TestCase("L007")] [TestCase("L008")] [TestCase("L009")] [TestCase("L010")] [TestCase("TrapLab3")]
         public void Solution_CompletesTheRoom_WithEveryTimedWindowAndMarginAtLeastTwelve(string id)
         {
             object report = reports[id];
@@ -48,7 +49,8 @@ namespace Parallax.Tests.EditMode
             Assert.IsTrue(((IList)F(report, "Windows")).Count + ((IList)F(report, "Margins")).Count > 0, id + " declares no timed step or margin");
         }
 
-        [TestCase("L001")] [TestCase("L002")] [TestCase("L003")] [TestCase("L004")] [TestCase("L005")] [TestCase("TrapLab3")]
+        [TestCase("L001")] [TestCase("L002")] [TestCase("L003")] [TestCase("L004")] [TestCase("L005")]
+        [TestCase("L006")] [TestCase("L007")] [TestCase("L008")] [TestCase("L009")] [TestCase("L010")] [TestCase("TrapLab3")]
         public void EveryBetrayal_DiesAtItsElementAndCause_WithALeadOfAtLeastSix(string id)
         {
             object report = reports[id];
@@ -65,7 +67,8 @@ namespace Parallax.Tests.EditMode
         }
 
         // §5.2: two replays of the same route give the same per-tick record.
-        [TestCase("L001")] [TestCase("L002")] [TestCase("L003")] [TestCase("L004")] [TestCase("L005")] [TestCase("TrapLab3")]
+        [TestCase("L001")] [TestCase("L002")] [TestCase("L003")] [TestCase("L004")] [TestCase("L005")]
+        [TestCase("L006")] [TestCase("L007")] [TestCase("L008")] [TestCase("L009")] [TestCase("L010")] [TestCase("TrapLab3")]
         public void TwoReplaysOfTheSolution_GiveTheSamePerTickRecord(string id)
         {
             Assert.IsTrue((bool)F(reports[id], "Deterministic"), Summary(reports[id]));
@@ -116,7 +119,7 @@ namespace Parallax.Tests.EditMode
             var errors = new List<string>();
             foreach (DictionaryEntry entry in layouts)
                 errors.AddRange((List<string>)validator.GetMethod("ValidateRoutes", new[] { typeof(string), entry.Value.GetType() }).Invoke(null, new[] { entry.Key, entry.Value }));
-            Assert.AreEqual(5, layouts.Count);
+            Assert.AreEqual(10, layouts.Count);
             CollectionAssert.IsEmpty(errors);
         }
 

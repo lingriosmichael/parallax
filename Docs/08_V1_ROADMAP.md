@@ -9,8 +9,8 @@ kit-gap ticket is inserted during Phase D.
 - **Done (committed):** PAX-050, PAX-051, PAX-052, PAX-053, PAX-054, KIT-1 (PAX-073), PAX-077,
   PAX-078, PAX-079, KIT-2 (PAX-074), KIT-3a (PAX-075), KIT-3b (PAX-080), PAX-081, PAX-082, KIT-4 (PAX-076), PAX-083. Acceptance so far is EditMode tests plus Editor checks (D-064); none of it is
   device-validated yet. EditMode baseline after PAX-083: 685.
-- **Next:** PAX-059 half B (levels 6–10), after the developer plays levels 1–5 (half A, PAX-059a). Phase B is complete;
-  PAX-058 was dropped by D-067. EditMode count after PAX-059a: 720 (685 − 3 retired + 38 new).
+- **Next:** the developer's play of levels 6–10 (PAX-059b, D-085), then KIT-5–KIT-9 and PAX-060. Phase B is complete;
+  PAX-058 was dropped by D-067. EditMode count after PAX-059a: 733 (with the play fixes); after PAX-059b: 771.
 - **Remaining in Phase B:** none.
 - **Kit for levels 11+ (2026-09-25):** KIT-5–KIT-9 (PAX-084–PAX-088, D-086–D-090) are built before PAX-060, one at a time; they can run while half B waits on the developer's play of levels 1–5. All five are levels 11+ only (`ValidateBand`).
 - **Remaining after Phase B:** Phase D content (PAX-059–063), Phase E art, Phase F audio and
@@ -46,7 +46,7 @@ PAX-057 (tiers) dropped by D-065.
 
 **Decisions:** D-065 difficulty bands ✓ · D-066 level format ✓ ·
 D-067 no randomness ✓ · D-068 free levels and price ✓ · D-069 precision sections ✓ (thresholds: D-083) ·
-D-070–D-080 written with PAX-052–PAX-080 ✓ · D-081 ✓ · D-082 movement feel ✓ · D-083 precision sections (KIT-4) ✓ ·
+D-070–D-080 written with PAX-052–PAX-080 ✓ · D-081 ✓ · D-082 movement feel ✓ · D-083 precision sections (KIT-4) ✓ · D-085 band-1 content ✓ ·
 D-084 camera judder ✓
 
 KIT-1–KIT-4 take PAX-073–PAX-076, and KIT-3b takes PAX-080 (the next free PAX numbers at time of writing), ordered ahead of
@@ -56,7 +56,7 @@ PAX-058 in this phase's build order even though their numbers are higher; PAX-05
 | Phase | Ticket | What | Depends on |
 |---|---|---|---|
 | B · Levels & flow | PAX-050 ✓ | Level list, next level, progress save (done, 0b2ff77) | PAX-049 |
-| D · Content | PAX-059 · half A ✓, half B next | Levels 1–10 (easy band, D-065): half A (PAX-059a) is levels 1–5; half B is levels 6–10 and D-085, after the developer plays 1–5 | PAX-052, PAX-076 |
+| D · Content | PAX-059 ✓ | Levels 1–10 (easy band, D-065): half A (PAX-059a) is levels 1–5; half B (PAX-059b) is levels 6–10 and D-085. The developer's play of 6–10 is still open | PAX-052, PAX-076 |
 | | KIT-5 (PAX-084) | Spear: fires once, extremely fast, sticks as a standable platform. Makes `ValidateBand` the shared levels-11+ check. Trap Lab room 6 | PAX-059a, D-086 |
 | | KIT-6 (PAX-085) | Inverter: touching it swaps left/right for 150 ticks, visible cue; amends D-040/D-049 for traps only. Trap Lab room 7 | KIT-5, D-087 |
 | | KIT-7 (PAX-086) | Geyser: periodic air column launching the cat (~4.8 u apex); `CatMotor2D.ApplyLaunch` seam. Trap Lab room 8 | KIT-6, D-088 |
@@ -83,6 +83,8 @@ PAX-058 in this phase's build order even though their numbers are higher; PAX-05
 | | PAX-071 | Production release on Google Play | PAX-070 |
 | I · iOS | PAX-072 | iOS port (outline only) | PAX-071 |
 | Later | — | Co-op update (D-047) | — |
+
+PAX-060 note: **Kit gaps from the Level Devil study (candidates, not scheduled).** Moving pit · door as a platform · fake exit / warp · springs · slippery floor · wraparound screen edges. Content model for levels 11–50: **one new kit element per theme, explored across ~5 rooms, with a mixed "exam" level closing each theme**. Each element gets its own KIT ticket before the levels that use it (KIT-5 to KIT-9 already planned). Not in band 1: reversed controls and reaction-based traps. Design guidance: Docs/LEVEL_DESIGN_GUIDE.md.
 
 Phase E (art) and the art tickets can run alongside B–D, as today; they don't block code.
 

@@ -1465,3 +1465,97 @@ failed with a 5 u jump of the target from a one-float-step jitter.
 **Decision:** Free levels and price. Levels 1–10 are free, and they're the hook. After level 10, the player either pays 4.99 once to unlock the full game (one in-app purchase, restorable), or waits 12 hours for the next level to unlock free.
 **Open, for PAX-066:** when the 12-hour wait starts; whether the timer runs while the app is closed (an unlock timestamp); protecting it against changes to the phone's clock (accept it, or use server time); regional price tiers; the choice screen after level 10; the total number of levels (the roadmap says 50).
 **Supersedes:** D-062's open point on the business model.
+
+### D-085 · 2026-09-25 · Accepted
+
+**Decision:** Band-1 content (PAX-059; rulings in `Docs/0_TASKS/PAX-059_halfB_rulings.md`): levels 1–10, the free
+hook (D-068). They die by troll and memory, not
+execution: many deaths the first time (one per trap), each one visible and learnable. Execution stays at D-056's
+numbers; there are no precision sections (D-065, D-083). The design guide is `Docs/LEVEL_DESIGN_GUIDE.md`; where it and
+this entry differ, this entry wins.
+
+(1) **Checked per level** (`LevelLayoutValidator.Band1.cs`, `Band1LevelTests`):
+- lethal betrayals, counted as distinct killers over every Dies route (dead ends included): ≥ 5 (L1–5), ≥ 6 (L6–7),
+  ≥ 7 (L8–10);
+- of those, in sequence on the way to the door: ≥ 4 (L1–5), ≥ 5 (L6–10). `SequentialChain` is a structural proxy
+  (betrayals that share a strictly longer start of the solution, distinct killers), not a proof that a cat survives
+  each earlier trap;
+- dead ends: ≥ 1 (L1–5), ≥ 2 (L6–10), declared as Dies routes named "Dead end…" (§2.1 of the ticket only said "may";
+  this makes it a rule). The validator also counts Recovers routes, but by (2) a band-1 dead end kills; every band-1
+  dead end is a Dies route. Each level needs at least one real side route, and every way off a dead end's approach
+  (stepping off, running off, jumping, steering in the air) is declared and dies;
+- width ≤ 32; rooms may be taller than wide and the camera follows vertically (amends D-040/D-069 for band 1);
+- the door at least half the width **or** half the playable height from the start. The playable height runs from the
+  lowest floor top to the highest ceiling underside (not the solid ground and shafts under the floor);
+- the solution: 500–1500 ticks (10–30 s once known). L001 is the one exemption: ≥ 280 ticks (the Architect said
+  "about 300"; the developer set 280 once L001's blocks moved next to their triggers);
+- no precision sections, and no learned bypasses (D-074 (4)) in band 1;
+- plus everything the kit already checks: timed windows ≥ 12 (D-056), leads ≥ 6 (D-057), the camera tell rule at
+  4:3, 16:9 and 20:9 (D-083), trigger and surface coverage (D-074, D-080), door clearance, arrow lanes (D-078), and
+  `ValidateFallingBlockLanding` (the kill quirk).
+
+(2) **From the developer's play of levels 1–5** (2026-09-25), checked from half A on:
+- a floor that gives way on touch is out of reach of a jump from below (`ValidateTrapFloorHeadroom`); treads that
+  should go only under a standing cat trigger from a box over their top;
+- a falling block or a moving hazard is set off within 3 u of it, through its chain root's trigger, so it can't be set
+  off from afar and waited out (`ValidateTriggerNearTrap`);
+- the level scene's cat starts on the room's checkpoint (`LevelSetup.CatStart`);
+- **dead ends kill.** Nothing may leave the cat alive and unable to finish (a soft-lock). A non-lethal betrayal
+  (L003's S1_Mid) must leave the way forward open.
+
+(3) **Direction mix across 1–10** (`Band1DirectionMixTests`): ≤ 3 plain left to right, ≥ 2 climb, ≥ 2 descend,
+≥ 3 start in the middle third or the right third, ≥ 2 double back. "Middle" is the middle third of the width
+(x 10.7–21.3 in a 32 u room), so L004 (x 9.5) doesn't count; the mix holds without it. As built: plain 1 (L1),
+climb 6 (L2, L3, L4, L7, L9, L10), descend 3 (L5, L6, L8), middle or right start 5 (L2, L5, L6, L7, L10), double
+back 5 (L2, L4, L6, L9, L10).
+
+(4) **No tells:** trap floors (CollapsingFloor, FakePlatform) draw at sorting −1 over solid ground, and a trap floor
+over a pit fills its whole shaft; no honest hazard singles out a trap floor or a lift in the direction it moves the cat
+(`ValidateBand1Tells`, which covers lifts from PAX-059b's review on; L008's roof spikes run 10 u along the roof); blocks sit flush in their host; disguised launchers take their host's colour;
+nothing visible points at a trap (no hazard under a trap floor and nowhere else on its storey); honest hazards
+(periodic spikes, red sweeps, L008's roof spikes) stay visible. Coverage is storey-aware (C3); every
+element sits inside the room's frame (C1). No runtime disguise was added; `02_ARCHITECTURE.md` is unchanged.
+
+(5) **Long chains** (Architect, half B Q3) link only permanent changes (floors that give way, spikes that come up and
+stay up), and the player sees the chain happen, or its result, before walking into it. Blocks keep local triggers. A
+short, local chain may rearm (L007's landing spikes go back down; L008's spikes under the lift's landing too).
+
+(6) **Retry cost (interim, amendment 1 §6, until the developer's playtest):** quick-to-pass traps go first; solutions
+aim for ≤ ~20 s in L6–L9 (L6 10.1 s, L7 18.7 s, L8 14.3 s, L9 11.5 s). L010's late death replays ≤ ~18 s (half B Q5,
+overriding the amendment's 30 s for L10, the last free level before the choice to pay or wait); later exam levels may
+take up to 30 s. Worst late-death replays: L6 t484 (9.7 s), L7 t760 (15.2 s, the dead end past S2), L8 t529 (10.6 s),
+L9 t487 (9.7 s), L10 t519 (10.4 s). After the playtest the developer picks (a) mid-room checkpoints, (b) shorter
+replays across 1–10, or (c) accept and measure in PAX-070; that ruling is still open.
+
+(7) **Progression (as built):**
+
+| Level | Lesson | Shape |
+|---|---|---|
+| L001 | The floor lies; blocks right at you | plain, left to right (281 ticks) |
+| L002 | Look up (blocks in the slab); the door backs away | climb, starts right, doubles back, door over the start |
+| L003 | Towers: the rhythm step lies; don't stop where a jump lands | climb |
+| L004 | Gravity flips; the floating flip is a lure | climb, doubles back |
+| L005 | Arrows; wait in the nook | descend, starts right |
+| L006 | Rhythm: count the spikes, don't wait twice, stand still for the sweep, floors that aren't there; the lid "toward the door" | descend, starts mid, doubles back (505 ticks) |
+| L007 | Trust nothing: the floor ahead drops; the jump meets an overhang; the drop comes back with spikes at the landing (wait); L3 reversed | climb, starts right (934 ticks) |
+| L008 | Chains: a block's landing brings up spikes ahead; a lift into visible roof spikes; a collapse brings up spikes on S1 | descend (713 ticks) |
+| L009 | Both ways: walking under the lure fires an arrow (wait in the nook); the real flip fires a roof arrow | climb, door over the start, doubles back (574 ticks) |
+| L010 | The exam: L2, L3, L6, L9/L5, L8 and L2/L1 in a new order, plus L4's lure and a stair "straight up to the door" | climb, starts mid, door over the start, loops (512 ticks, 24 u wide) |
+
+Every level's windows, killers and leads are pinned in `ShippedRouteResultsTests`.
+
+(8) **L001–L004** were redesigned; their pre-PAX-059 results are superseded (L001: `Collapse_C=30, Spikes_A=24,
+Block_A=14` → six betrayals and one Recovers; L002: windows `26, 51`, margin `16`, three leads → six windows, seven
+leads; L003: three leads → five and one Recovers; L004: two leads → six).
+
+(9) **Kit findings** (half B amendment 1, §3): MovingTrap Solid lifts the cat cleanly (used in L008); pushing it
+sideways and a lip rising in front of or under it are unproven, and two retreats on one door don't compose, so those
+patterns wait for kit-gap tickets. Also found while building: a chained HiddenSpikes' delay is its `revealDelayTicks`
+(`delayTicks` is ignored); a falling block pushes an airborne cat instead of killing it (every falling block in
+L1–L10 can meet a cat that jumps under it while it falls, so this kit gap is a priority before PAX-070's playtest); a MovingTrap needs its
+trigger box even in Periodic mode; `Stopped(arrow)` is true during the arrow's tell.
+
+(10) **Limits:** "dies the first time" is proven only as a route property. Real first-play deaths are measured with
+new players in PAX-070. The developer's play of levels 6–10 is still to come.
+
+**Supersedes:** D-040's 10–20 s room size and D-069's oversize-only-for-precision, for band 1.

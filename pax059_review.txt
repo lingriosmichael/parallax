@@ -49,3 +49,77 @@ All 7 failures wait on the developer's menu runs:
   - SavedSceneSyncTests.EachListedLevelScene_TheRoom_MatchesItsLayout (scenes not rebuilt)
   - SavedSceneSyncTests.TheSavedTrapLabScene_EveryRoom_MatchesItsLayout (the trap floor sorting order −1 needs a Trap Lab rebuild)
   - SceneLeakTests ×2 (they wrap the timing and trigger tests above)
+
+
+PAX-059 half B (levels 6–10, D-085): pax-reviewer, one round
+=============================================================
+
+VERDICT: Accept after fixes. The reviewer suspected three Blockers (shortcuts to the door) from the geometry, without
+replaying them. Each is now fixed, and each fix is proven by a declared Dies route that the route validator replays.
+It also raised two Should-fixes and four nits, all addressed below. There was no round 2: the Blocker fixes are proven
+by the new routes, which run in Band1LevelTests and ShippedRouteResultsTests.
+
+Tests (the reviewer's count): 771 total at review time, 770 passed. The one failure was
+LevelLayoutTests.Registry_IdsAreUniqueAndMatchLevelListConfigBothWays; it clears after the developer runs New Level…
+for L006–L010. The 38 new cases were checked by count. The final run after the fixes is reported in the hand-off.
+
+Scope: clean. LevelRoutes.cs (the routes registry, as in half A) and the rename of Docs/LEVEL_GUIDE.md to
+Docs/LEVEL_DESIGN_GUIDE.md (the developer's rulings) are outside §7's list but expected. No .unity, .prefab, .asset,
+.meta (other than the new scripts' own) or ProjectSettings file changed; no frozen co-op code touched.
+
+BLOCKERS (all fixed; each proven by a route)
+1. L009: the "straight up to the door" floor flip behind the start sat 1.2 u from the door. A cat steering in the air
+   could have reached it. Fixed:
+   - that flip is gone;
+   - the second dead end is now a ledge by the wall, "the first step up to the door", which gives way onto spikes on S1
+     under it (route "Dead end: the ledge behind the start…", killer Spikes_D2, lead 15);
+   - the slabs over both floating flips are widened, with their hidden spikes and triggers, so no entry reaches past
+     them. Proven by new routes that jump into each flip at its far edge: T1's variant (killer Spikes_1, lead 24) and a
+     dead-end variant (killer Spikes_D1, lead 24).
+   L010's floating flip got the same treatment: its slab and spikes are widened, with a far-edge dead-end route
+   (killer Spikes_D2, lead 25).
+2. L006: dropping gently off S1_B landed on real ground by the door. Fixed:
+   - S1_B and the pillar are gone, and S1 now ends at x 19.5;
+   - a low lid (top 3.5) roofs the ground's last stretch, with hidden spikes on top. They show as the cat reaches S1's
+     end, where the way never goes;
+   - three dead-end routes cover every way off S1's end: jumping onto the lid (Spikes_L, lead 44), running off onto the
+     lid (Spikes_L, lead 24), and stepping off onto Floor_5 (Pit5_Hazard, lead 21).
+   The floor before the door moved to x 25–27.5. The solution runs under the lid, and it is now 505 ticks.
+3. L008: dropping gently off S1's right end reached the ground by the door. Fixed: S1 now runs to the ledge (x 28), so
+   the only way off its right end is onto the ledge. A new route steps off it gently (killer Spikes_D, lead 32). The
+   solution is now 713 ticks.
+
+SHOULD-FIX (both fixed)
+1. Band1DirectionMixTests now works out "plain" from every layout and asserts that it equals the declared value.
+   Seen red: with L001 declared not plain, the test failed with "L001: declared plain left to right False, but it
+   starts at (0.60, 0.00) and ends at (30.30, 0.75)". "Doubles back" is read from the route, so it stays declared (the
+   comment says so).
+2. L007 T6 "run on" dies in T2's open pit. That is honest, since pit 2 is already open. The route name now says so
+   ("…into T2's open pit below").
+
+NITS
+1. The dead-end wording is aligned. D-085 (1) says band-1 dead ends are Dies routes (the validator also counts
+   Recovers, but (2) rules that dead ends kill) and that every way off a dead end is declared; CLAUDE.md matches.
+2. The roadmap row is marked ✓, with "the developer's play of 6–10 is still open". Kept as is.
+3. D-085 (5) now allows short, local chains to rearm (L007's landing spikes, L008's spikes under the lift's landing).
+4. The registry-count edits to existing tests are fine under §7's "re-pinned". No change.
+
+The design guide gains a §4b pitfall: declare every way off a dead end.
+
+DEVELOPER'S REVIEW (after the pax-reviewer round)
+1. The New Level… crash is fixed. AppendToLevelList now reloads LevelListConfig from its path when the reference it was
+   handed is dead: one line in LevelSetup.cs. A new test, LevelSetupAppendTests, failed first with the original
+   "Object at index 0 is null" and passes with the fix. It is committed on its own, before the menus run.
+2. The L008 lift is no longer singled out. ValidateBand1Tells now treats a lift as a trap surface. Two new
+   Band1RulesTests cases use the RouteFixtures.Tells.cs fixture; the singled-out case failed first. The real L008
+   failed the new rule too, and it passes now that its roof spikes run 10 u. Its pins are unchanged.
+3. Every falling block in L1–L10 can meet a cat that jumps under it while it falls, so the "block pushes an airborne
+   cat" kit gap is a priority before PAX-070 (D-085 (9)).
+4. The check of D-085 against PAX-059_halfB_rulings.md waits for the file. From the pasted rulings: D-085 (6) now
+   states L010's ≤ ~18 s cap as the rule.
+5. The rulings file Docs/0_TASKS/PAX-059_halfB_rulings.md is written from the developer's rulings in the session:
+   amendment 1, the five answers and the Phase 2 instruction, verbatim, plus a record of how each was applied. Checking
+   D-085 against it found one gap. D-085 (6) had made the interim retry-cost rule a late-death rule and didn't say it
+   was interim. It now states amendment 1 §6 as given (solutions ≤ ~20 s in L6–L9, until the playtest), L010's ≤ ~18 s
+   late-death cap (Q5), and the open (a)/(b)/(c) ruling. The Q3 visibility condition was already in D-085 (5) and holds
+   (camera tell rule).

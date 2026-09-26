@@ -41,6 +41,11 @@ namespace Parallax.Tests.EditMode
         [TestCase("L003", 3)]
         [TestCase("L004", 4)]
         [TestCase("L005", 5)]
+        [TestCase("L006", 6)]
+        [TestCase("L007", 7)]
+        [TestCase("L008", 8)]
+        [TestCase("L009", 9)]
+        [TestCase("L010", 10)]
         public void Level_MeetsEveryBand1Rule(string id, int level)
         {
             object room = RouteValidatorTests.Room(id), routes = RouteValidatorTests.Routes(id);

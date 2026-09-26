@@ -119,7 +119,7 @@ namespace Parallax.Editor.Setup
             var changes = new List<string>();
             if (!RegenerateScene(scenePath, layout, changes)) return;
 
-            if (existingIndex < 0) AppendToLevelList(config, levelId, sceneName, DefaultDisplayName(levelId), changes);
+            if (existingIndex < 0) AppendToLevelList(config, LevelListConfigPath, levelId, sceneName, DefaultDisplayName(levelId), changes);
             if (BuildSceneList.Sync()) changes.Add("synced Build Scene List");
             else changes.Add("Build Scene List NOT synced - see the error above; run Sync Build Scene List once its cause is fixed");
 
@@ -280,8 +280,10 @@ namespace Parallax.Editor.Setup
             return -1;
         }
 
-        static void AppendToLevelList(LevelListConfig config, string id, string sceneName, string displayName, List<string> changes)
+        static void AppendToLevelList(LevelListConfig config, string configPath, string id, string sceneName, string displayName, List<string> changes)
         {
+            // Regenerating the scene can unload the config loaded before it (PAX-059b): reload it from its path.
+            if (config == null) config = AssetDatabase.LoadAssetAtPath<LevelListConfig>(configPath);
             var so = new SerializedObject(config);
             SerializedProperty levels = so.FindProperty("levels");
             int index = levels.arraySize;

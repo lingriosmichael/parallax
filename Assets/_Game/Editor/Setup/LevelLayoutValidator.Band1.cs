@@ -93,8 +93,8 @@ namespace Parallax.Editor.Setup
             return n;
         }
 
-        // No tells (D-085): a trap floor (collapsing or fake) must not have an honest hazard that points at it in the
-        // direction it drops the cat (down, or up for one in a ceiling), down to the next solid, lying under no other part
+        // No tells (D-085): a trap floor (collapsing or fake), or a lift, must not have an honest hazard that points at it in
+        // the direction it moves the cat (down, or up for one in a ceiling or a lift that rises), down to the next solid, lying under no other part
         // of that surface; one a trap floor's box hides is covered (the Q4 way: trap floors draw over it). A falling block sits flush inside a ceiling,
         // floor or wall until it moves.
         public static List<string> ValidateBand1Tells(string levelId, SoloRoomDefinition room)
@@ -106,10 +106,11 @@ namespace Parallax.Editor.Setup
             string[] hazardNames = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Hazard || (e.Kind == SoloRoomElementKind.MovingTrap && e.Settings.MovingKind == MovingTrapKind.Hazard))
                 .Select(e => e.Name).ToArray();
             Rect[] trapFloors = room.Elements.Where(e => e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.FakePlatform).Select(e => Box(e, Vector2.zero)).ToArray();
-            foreach (SoloRoomElement trap in room.Elements.Where(e => e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.FakePlatform))
+            // A lift (a solid mover with a vertical offset) is a trap surface too: it carries the cat the way it moves.
+            foreach (SoloRoomElement trap in room.Elements.Where(e => e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.FakePlatform || IsLift(e)))
             {
                 Rect t = Box(trap, Vector2.zero);
-                bool up = room.Elements.Any(c => c.Kind == SoloRoomElementKind.Ceiling && Mathf.Abs(Box(c, Vector2.zero).yMin - t.yMin) < eps
+                bool up = IsLift(trap) ? trap.Settings.Offset.y > 0f : room.Elements.Any(c => c.Kind == SoloRoomElementKind.Ceiling && Mathf.Abs(Box(c, Vector2.zero).yMin - t.yMin) < eps
                     && Box(c, Vector2.zero).xMax >= t.xMin - eps && Box(c, Vector2.zero).xMin <= t.xMax + eps);
                 float stop = FallStop(room, trap, t, up);
                 for (int i = 0; i < hazards.Length; i++)
@@ -131,6 +132,9 @@ namespace Parallax.Editor.Setup
             }
             return errors;
         }
+
+        static bool IsLift(SoloRoomElement e) =>
+            e.Kind == SoloRoomElementKind.MovingTrap && e.Settings.MovingKind == MovingTrapKind.Solid && Mathf.Abs(e.Settings.Offset.y) > 1e-3f;
 
         // PAX-059 (a kit quirk; kit-gap ticket proposed): FallingBlockTrap tests a kill against the block's pose from the tick
         // before (MovePosition lands in the next physics step) and stops testing once its travel is complete. So a block kills

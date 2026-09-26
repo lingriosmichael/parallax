@@ -27,11 +27,17 @@ Band 1 = levels 1–10. Band 2+ numbers come from each content ticket.
 | Timing windows on every timed step, including mid-air releases | ≥ 12 ticks | D-056 |
 | Jumps | ≤ 0.75 of reach | D-056 |
 | Precision sections, bait gaps as the only difficulty | none | D-065 / D-083 |
-| Solution time once known | 10–30 s (L1 exempt, ~300 ticks) | D-085 |
+| Solution time once known | 500–1500 ticks, 10–30 s (L1 exempt: ≥ 280 ticks) | D-085 |
 | Width | ~32 (today's frame); tall rooms allowed, followed vertically | D-085 |
 | Door distance from start | ≥ half the width or half the playable height, never a straight line | D-085 |
 | Camera tell rule, trigger coverage (per storey), surface coverage, door clearance | pass | D-083, D-074, D-080 |
 | Falling blocks | pass ValidateFallingBlockLanding (the kill quirk) | PAX-059 |
+| A floor that gives way on touch | out of reach of a jump from below (ValidateTrapFloorHeadroom) | D-085 |
+| A falling block or moving hazard | set off within 3 u of it (its chain root's trigger), so it can't be set off from afar and waited out (ValidateTriggerNearTrap) | D-085 |
+| The cat's start | on the room's checkpoint (LevelSetup.CatStart) | D-085 |
+| Dead ends | kill; nothing leaves the cat alive and unable to finish (a soft-lock). A non-lethal betrayal must leave the way forward open | D-085 |
+| Retry cost (interim, until the playtest) | solutions ≤ ~20 s (L6–L9); L10's late death ≤ ~18 s; a later exam level ≤ 30 s | D-085 (6) |
+| Learned bypasses | none in band 1 | D-085 |
 
 ---
 
@@ -92,7 +98,7 @@ The player must be able to say what killed them after one death. If a death need
 Levels don't all run left to right: they climb, descend, double back, and start in the middle (the middle third) or on the right. Across each ten levels: ≤ 3 plain left-to-right, ≥ 2 climb, ≥ 2 descend, ≥ 3 start middle or right, ≥ 2 double back.
 
 ### P13 · Keep the retry cheap
-A late death replays every solved trap before it. Level Devil keeps retries to a few seconds. Until the retry-cost ruling (PAX-059 half B amendment 1, §6) is made: put the quick-to-pass traps early, keep the longest levels under ~20 s where possible, and report any level whose late deaths replay more than ~15 s.
+A late death replays every solved trap before it. Level Devil keeps retries to a few seconds. Put the quick-to-pass traps early, keep a late death's replay at ~20 s or less (an exam level up to 30 s), and report each level's worst late-death replay (D-085).
 
 ---
 
@@ -103,6 +109,18 @@ A late death replays every solved trap before it. Level Devil keeps retries to a
 - **Grazes count.** A touch within 0.05 of a surface counts. Jumps near a ledge underside, and take-offs under a low ledge, can bump the head and fall short. Leave margin and measure it.
 - **Pins with no slack break first.** A lead of exactly 6, a window of exactly 12, or a time exactly at the floor will fail after the next motor or trap retune. Aim for a little margin.
 - **Killers are the designed trap.** Never relabel a betrayal's killer to match what the harness hit. If it dies on the wrong trap, fix the geometry.
+
+## 4b · Pitfalls from building levels 6–10
+
+- **A running cat drifts.** A cat that runs off a ledge travels ~3.5 u sideways while it falls one storey. Put the killer where it lands, not under the edge it left.
+- **A chained HiddenSpikes' delay is its reveal delay.** `delayTicks` on chained spikes does nothing; set `revealDelayTicks` to the delay you want (≥ 6).
+- **A falling block pushes an airborne cat; it doesn't kill it.** Blocks kill a cat on the ground. Don't drop one onto a jump.
+- **Every trigger cuts its whole storey band,** from the floor to whatever is above, including a recess over a roof section that gives way. A trap that should fire only on a jump can't be built this way in band 1 (no learned bypasses); make the jump meet something a walker never touches instead (L007's overhang).
+- **A MovingTrap needs its trigger box even in Periodic mode,** or it disables itself.
+- **Arrows:** a lane ends at a solid's face, never crosses the door, and its launcher must be in view when it tells, so put the launcher near where it fires. `Stopped(arrow)` is already true during its 6-tick tell; wait with `Moving`, `For(8)`, then `Stopped`.
+- **Walkers fall into a one-storey dip** (a nook, or a roof alcove upside down) and stop there on their own. The betrayal is leaving it too soon, not passing it.
+- **Declare every way off a dead end.** A cat can step off, run off, jump, or steer in the air after a flip. Each one needs its own Dies route, or a shortcut to the door hides in the one nobody declared (the review of L006, L008 and L009).
+- **Permanent chain results sit off the path or narrow enough to jump.** Spikes that come up and stay up on a storey the way crosses later must be jumpable (≤ 1.5 u) or out of the way.
 
 ---
 
@@ -127,7 +145,7 @@ Full list and sources: `claude/RESEARCH_level_devil_inventory.md`.
 | A flip that looks like an escape | GravityFlip + hidden spikes | The lure isn't the killer |
 | A chain: one trigger, a delayed sequence | Trigger chains + delays | Memorise the order |
 
-**Kit check pending:** can MovingTrap Solid push or lift the cat cleanly (no crush, no sticking, no tunnelling)? Until it's confirmed (half B amendment 1, §3), don't rely on the rising-lip or pushing-wall patterns.
+**Kit check (half B):** MovingTrap Solid **lifts** the cat cleanly (L008's lift, into spikes on the roof that are always in view). **Pushing** it sideways, and a lip **rising** in front of or under it, are unproven: physics shoves the cat instead of the kit deciding, so those patterns wait for a kit-gap ticket. **Two retreats on one door** don't compose (one offset, one saved start): a door retreats once.
 
 ### Worked example: one gap, many betrayals (Level Devil, Pits)
 One screen: a pillar, a gap one block wide, a slab, a small block on the slab. The jump itself is easy. Across the stages:

@@ -22,7 +22,7 @@ namespace Parallax.Editor.Levels
                 Hold(Right), Until(GroundedOn("Nook")), Release(), Until(Still()), Until(Moving("Arrow_C")), For(8), Until(Stopped("Arrow_C")), Until(Moving("Arrow_D")), For(8), Until(Stopped("Arrow_D")),
                 Hold(Right), Jump(), Until(GroundedOn("S1_B")),
                 Until(XAtLeast(26.3f)), Jump(), Until(GroundedOn("Ground_2")),
-                Hold(Left), Until(XAtMost(6.5f)), Jump(), Until(RoomComplete()));
+                Hold(Left), Until(XAtMost(6.5f)), Jump().Timed(TimedMode.Shift), Until(RoomComplete()));
 
             return new RoomRoutes(solution,
                 new Betrayal("T1: Arrow_A hits a cat that runs along S2", "Arrow_A", DeathCause.Hazard,
@@ -31,6 +31,8 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(Grounded)", "jump the gap", Until(XAtMost(6f)), Jump(), Until(Dead()))),
                 new Betrayal("T3: the low ledge's right end gives way onto spikes", "Spikes_3b", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Ledge_Lo))", "go on to the right", Release(), Until(Still()), Hold(Right), Until(Dead())), revealedBy: "Ledge_Lo2"),
+                new Betrayal("T3: the low ledge's right end gives way under a cat that stops on it, onto the nook's spikes", "Spikes_3", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Ledge_Lo))", "stop on the right end", Release(), Until(Still()), Hold(Right), Until(XAtLeast(5.2f)), Release(), Until(Dead())), revealedBy: "Ledge_Lo2"),
                 new Betrayal("T4: Arrow_C hits a cat that jumps over the nook", "Arrow_C", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(S1_A))", "go on along S1", Hold(Right), Until(XAtLeast(4.2f)), Jump(), Until(Dead()))),
                 new Betrayal("T5: Arrow_D hits a cat that leaves the nook once Arrow_C has passed", "Arrow_D", DeathCause.Hazard,

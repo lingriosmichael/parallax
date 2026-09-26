@@ -18,7 +18,7 @@ namespace Parallax.Editor.Routes
 
     // PAX-075 (D-079): rooms and routes the harness tests replay. Rooms are built from layout data
     // exactly like shipped rooms; copies of shipped rooms change only the named value.
-    public static class RouteFixtures
+    public static partial class RouteFixtures
     {
         // ---------- synthetic rooms ----------
 

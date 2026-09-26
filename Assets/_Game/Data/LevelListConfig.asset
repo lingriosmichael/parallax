@@ -28,3 +28,18 @@ MonoBehaviour:
   - Id: L005
     SceneName: Level_005
     DisplayName: Level 5
+  - Id: L006
+    SceneName: Level_006
+    DisplayName: Level 6
+  - Id: L007
+    SceneName: Level_007
+    DisplayName: Level 7
+  - Id: L008
+    SceneName: Level_008
+    DisplayName: Level 8
+  - Id: L009
+    SceneName: Level_009
+    DisplayName: Level 9
+  - Id: L010
+    SceneName: Level_010
+    DisplayName: Level 10

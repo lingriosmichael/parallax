@@ -137,7 +137,7 @@ namespace Parallax.Tests.EditMode
             foreach (DictionaryEntry entry in Registry())
                 failures.AddRange(Coverage((string)entry.Key, entry.Value, motor, gravity.Strength, bypasses));
             Assert.IsEmpty(failures, "Trigger coverage (D-074):\n" + string.Join("\n", failures));
-            Assert.IsEmpty(bypasses, "No trap in L001-L005 may be a learned bypass without the developer's approval by name:\n" + string.Join("\n", bypasses));
+            Assert.IsEmpty(bypasses, "No trap in L001-L010 may be a learned bypass without the developer's approval by name:\n" + string.Join("\n", bypasses));
         }
 
         // ---------- R6: the extended Lift trigger still catches a standing cat (D-076) ----------
