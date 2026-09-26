@@ -14,7 +14,9 @@ namespace Parallax.Editor.Setup
     // PAX-087 (D-089): Vine is appended the same way (levels 11+ only). Position is the vine's x centre and y centre, Size
     // is (0.6, height): its grab box. Configured Settings make it a snap vine (Overlap on the secondary box, or on its own
     // box with none; or Chain; Once; DelayTicks); unconfigured, it never snaps.
-    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser, Vine }
+    // PAX-088 (D-090): StormCloud is appended the same way (levels 11+ only). Position/Size is the cloud's authored pose and
+    // box; the secondary box is its Overlap wake trigger.
+    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser, Vine, StormCloud }
     public enum SoloRoomOpeningKind { Pit, Recess }
     public enum SoloRoomHazardRole { Normal, OpeningBottom, OpeningCap, CeilingForceUpCoverage, UnjumpableFloor }
     public enum RequiredJumpKind { Pit, Hazard }
@@ -60,6 +62,17 @@ namespace Parallax.Editor.Setup
         public GeyserSettings Resolved => IsConfigured ? this : new GeyserSettings(GeyserDirection.Up);
     }
 
+    // PAX-088 (D-090): a storm cloud's range (room-local x of its centre), follow speed, cycle and strike. Default
+    // (IsConfigured false) never occurs on a StormCloud: ValidateStormCloud requires a configured one.
+    public readonly struct StormCloudSettings
+    {
+        public readonly bool IsConfigured; public readonly float MinX; public readonly float MaxX; public readonly float FollowSpeed;
+        public readonly int FirstStrikeDelay; public readonly int StrikePeriod; public readonly int TellTicks; public readonly int StrikeTicks; public readonly float StrikeWidth;
+        public StormCloudSettings(float minX, float maxX, float followSpeed = StormCloudMath.DefaultFollowSpeed, int firstStrikeDelay = StormCloudMath.DefaultFirstStrikeDelay,
+            int strikePeriod = StormCloudMath.DefaultStrikePeriod, int tellTicks = StormCloudMath.DefaultTellTicks, int strikeTicks = StormCloudMath.DefaultStrikeTicks, float strikeWidth = StormCloudMath.DefaultStrikeWidth)
+        { IsConfigured = true; MinX = minX; MaxX = maxX; FollowSpeed = followSpeed; FirstStrikeDelay = firstStrikeDelay; StrikePeriod = strikePeriod; TellTicks = tellTicks; StrikeTicks = strikeTicks; StrikeWidth = strikeWidth; }
+    }
+
     public readonly struct SoloRoomTrapSettings
     {
         public readonly bool IsConfigured; public readonly int DelayTicks; public readonly int MoveTicks; public readonly int RevealDelayTicks;
@@ -76,8 +89,10 @@ namespace Parallax.Editor.Setup
         public readonly InverterSettings Inverter;
         // PAX-086 (D-088): default for every non-geyser element.
         public readonly GeyserSettings Geyser;
+        // PAX-088 (D-090): default for every non-cloud element.
+        public readonly StormCloudSettings Cloud;
         public SoloRoomTrapSettings(int delayTicks = 0, int moveTicks = 0, int revealDelayTicks = 0, float unitsPerTick = 0f, float travelDistance = 0f, FallingBlockDirection direction = FallingBlockDirection.Down, GravityFlipMode gravityMode = GravityFlipMode.Flip, bool rearmOnExit = false, bool rendererEnabled = false, Vector2 offset = default, string triggerName = "Trigger", TrapTriggerSource triggerSource = TrapTriggerSource.Overlap, string chainSource = null, TrapRepeatMode repeatMode = TrapRepeatMode.Once, int cooldownTicks = 0, int periodTicks = 1, int phaseTicks = 0, MovingTrapKind movingKind = MovingTrapKind.Hazard, int holdTicks = 0, int returnTicks = 0, float crushDepth = 0f, string learnedBypassReason = null)
-        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; Geyser = default; }
+        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; Geyser = default; Cloud = default; }
         // PAX-074 (D-078): an arrow's lane on top of ordinary trigger/repeat settings. Two parameters on
         // purpose: tests that build settings by reflection pick the longest constructor, which stays the one above.
         public SoloRoomTrapSettings(ArrowLane arrow, SoloRoomTrapSettings timing) { this = timing; Arrow = arrow; }
@@ -85,6 +100,8 @@ namespace Parallax.Editor.Setup
         public SoloRoomTrapSettings(InverterSettings inverter, SoloRoomTrapSettings timing) { this = timing; Inverter = inverter; }
         // PAX-086 (D-088): a geyser's column and cycle on top of its Periodic timing (same two-parameter shape).
         public SoloRoomTrapSettings(GeyserSettings geyser, SoloRoomTrapSettings timing) { this = timing; Geyser = geyser; }
+        // PAX-088 (D-090): a storm cloud's range and cycle on top of its Overlap/Chain, Once timing (same two-parameter shape).
+        public SoloRoomTrapSettings(StormCloudSettings cloud, SoloRoomTrapSettings timing) { this = timing; Cloud = cloud; }
     }
 
     public readonly struct SoloRoomElement

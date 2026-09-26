@@ -132,6 +132,7 @@ namespace Parallax.Editor.Routes
             public MovingTrap Moving; public bool MovingHazard; public float MovingStep, CrushDepth;
             public ArrowTrap Arrow; public int ArrowTell;
             public InverterTrap Inverter;
+            public StormCloudTrap StormCloud;   // PAX-088 (D-090)
         }
 
         sealed class Rig
@@ -268,6 +269,7 @@ namespace Parallax.Editor.Routes
                 }
                 e.Arrow = go.GetComponent<ArrowTrap>();
                 e.Inverter = go.GetComponent<InverterTrap>();
+                e.StormCloud = go.GetComponent<StormCloudTrap>();
                 if (e.Arrow != null)
                 {
                     e.ArrowTell = (int)Get(e.Arrow, "tellTicks");
@@ -391,6 +393,8 @@ namespace Parallax.Editor.Routes
                     // (flight and stop ticks; a spear's stop + 1 check). A stopped arrow or a stuck spear is harmless.
                     else if (e.Arrow != null && e.Arrow.TryGetKillBox(out Bounds arrowBox))
                         match = Overlaps(arrowBox);
+                    // PAX-088 (D-090) ruling C: the cloud's own strike test, on its body box (no physics query).
+                    else if (e.StormCloud != null) match = e.StormCloud.StrikeHits(Body, CatCollider);
                     if (match) names.Add(e.Name);
                 }
                 return names;

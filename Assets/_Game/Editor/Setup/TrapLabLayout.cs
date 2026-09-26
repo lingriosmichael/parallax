@@ -56,6 +56,8 @@ namespace Parallax.Editor.Setup
             , Room8()
             // PAX-087 (D-089): the vine room.
             , Room9()
+            // PAX-088 (D-090): the storm cloud room.
+            , Room10()
         };
 
         // One valid route: Start_Floor -> Up_1 -> Up_2 -> Exit_Perch (door). Betrayals: Stone_A (fake, looks like the
@@ -240,6 +242,27 @@ namespace Parallax.Editor.Setup
             };
             var openings = new[] { new SoloRoomOpening(SoloRoomOpeningKind.Pit, 9f, 11f, "PitWall_Left", "Cliff", "PitBottom", "PitHazard") };
             return new SoloRoomDefinition(9, 382f, 20f, elements, openings, System.Array.Empty<RequiredJump>());
+        }
+
+        // PAX-088 (D-090): the storm cloud room, origin 415 (room 9 ends at 402; the same 13 u gap), width 28. The StormCloud
+        // (2 x 0.8 at (4, 5.5), bottom 5.1, range x 1.5-24) sleeps until the cat crosses its Trigger (x 5.5-6.0), then follows
+        // at 0.08 u a tick, charges 25 ticks and strikes every 100 ticks from wake + 50. The Rise (x 11-17, top 0.8) is the
+        // raised middle; the door is past it. Cover: the real Overhang (x 19.5-22.5, y 1.4-1.9) stops a strike on its top;
+        // Fake_Overhang (x 6.5-8.5, the same height) looks the same and doesn't. A cat that keeps running reaches the door; one
+        // that stands still, or waits under the fake, is struck.
+        static SoloRoomDefinition Room10()
+        {
+            var elements = new[] {
+                E(SoloRoomElementKind.Ceiling,"Ceiling",(14f,7.5f),(28f,1f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint",(2f,0),(0,0)),
+                E(SoloRoomElementKind.Floor,"Floor",(14f,-.5f),(28f,1f)),
+                E(SoloRoomElementKind.Wall,"Rise",(14f,.4f),(6f,.8f)),
+                E(SoloRoomElementKind.Ceiling,"Overhang",(21f,1.65f),(3f,.5f)),
+                E(SoloRoomElementKind.FakePlatform,"Fake_Overhang",(7.5f,1.65f),(2f,.5f)),
+                E(SoloRoomElementKind.Door,"Door",(26f,.75f),(.6f,1.5f)),
+                E(SoloRoomElementKind.StormCloud,"StormCloud",(4f,5.5f),(2f,.8f),(5.75f,3.5f),(.5f,7f),new SoloRoomTrapSettings(new StormCloudSettings(1.5f,24f),new SoloRoomTrapSettings(delayTicks:0))),
+            };
+            return new SoloRoomDefinition(10, 415f, 28f, elements, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
         }
 
         static RequiredJump J6(float takeoffX, float landingX, float takeoffPaw, float landingPaw, string source, string destination) =>

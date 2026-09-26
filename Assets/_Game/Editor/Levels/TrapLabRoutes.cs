@@ -11,6 +11,7 @@ namespace Parallax.Editor.Levels
     // PAX-085 (D-087): Trap Lab room 7, the inverter room.
     // PAX-086 (D-088): Trap Lab room 8, the geyser room.
     // PAX-087 (D-089): Trap Lab room 9, the vine room.
+    // PAX-088 (D-090): Trap Lab room 10, the storm cloud room.
     public static class TrapLabRoutes
     {
         public static RoomRoutes Room3()
@@ -164,6 +165,22 @@ namespace Parallax.Editor.Levels
                         Hold(Right), Until(XAtLeast(8.6f)), Jump(), Until(Airborne()), Hold(Up), Until(Climbing()), Until(YAtLeast(1.8f)),
                         Hold(Left), Jump(), ReleaseClimb(), Until(Grounded()), Until(Fired("Vine_Obvious")),
                         Hold(Right), Hold(Up), Until(Climbing()), Until(YAtLeast(4.8f)), Jump(), ReleaseClimb(), Until(RoomComplete()))));
+        }
+
+        // PAX-088 (D-090): Trap Lab room 10, the storm cloud room. The solution never stops: the cloud (0.08 u a tick) can't
+        // keep up with a running cat (0.12), so every strike lands behind it. The jump onto the Rise is the timed step. Both
+        // betrayals stop after waking the cloud; it settles over the cat and the first strike (wake + 75) kills it. The
+        // revealing element is the cloud itself: its first visible change is its first follow step (wake + 1).
+        public static RoomRoutes Room10()
+        {
+            var solution = new Route("Trap Lab room 10 solution",
+                Hold(Right), Until(XAtLeast(10f)), Jump().Timed(TimedMode.Shift), Until(GroundedOn("Rise")), Until(RoomComplete()));
+
+            return new RoomRoutes(solution,
+                new Betrayal("A cat that stops once the cloud wakes is struck where it stands", "StormCloud", DeathCause.Hazard,
+                    new Route("stand still after waking the cloud", Hold(Right), Until(Fired("StormCloud")), Release(), Until(Dead()))),
+                new Betrayal("A cat that shelters under Fake_Overhang is struck through it", "StormCloud", DeathCause.Hazard,
+                    new Route("wait under the fake overhang", Hold(Right), Until(XAtLeast(7.2f)), Release(), Until(Dead()))));
         }
 
         // PAX-076 (D-083) §2.5: the bait gap attempted from its best take-off: full speed off P8's edge, the jump in the

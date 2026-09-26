@@ -1867,3 +1867,77 @@ not a `RequiredJump`.
 and speed not device-tuned (Phase H). `ValidateVine` isn't part of `Validate()`, so a shipped level with vines needs its
 tests to call it until a follow-up wires it in. The seated-cat zeroing is untested (seating needs the frozen Control
 Station). Not device-tested.
+
+(9) **Accepted at acceptance (PAX-087, 2026-09-26):** two changes outside §7's list: the route condition `YAtLeast(y)`
+((5)), and `RouteTestApi.Call` choosing among overloads by argument type (`R.Hold` now has an `int` and a `Vertical`
+overload). Both are test and route vocabulary; no runtime behaviour changed.
+
+### D-090 · 2026-09-26 · Accepted
+
+**Decision:** The storm cloud (PAX-088, KIT-9), the kit's first hazard whose position depends on the cat, for levels 11+
+only. Rulings: `Docs/0_TASKS/PAX-088.md` §11. Deterministic (D-040): a pure function of room ticks since its wake and of
+the cat's recorded body positions; no `Time.time`, no randomness, no physics query in the follow or the strike.
+
+(1) **Element.** `SoloRoomElementKind.StormCloud` (appended). Position/Size is the cloud's authored pose and box; the
+secondary box is its wake trigger. `StormCloudSettings`: `MinX`/`MaxX` (room-local range of its centre), `FollowSpeed`
+0.08 u a tick, `FirstStrikeDelay` 50, `StrikePeriod` 100, `TellTicks` 25, `StrikeTicks` 6, `StrikeWidth` 0.8. Trigger:
+Overlap or Chain, **Once**. At most one per room. While dormant it is a plain grey cloud (disguise, D-056 (4)).
+
+(2) **Follow (§11 Q1).** `StormCloudTrap` (a `RoomTrap`) reads the LocalHuman cat's `Rigidbody2D.position` plus its
+collider offset, in its room step, before the tick's physics: the previous tick's post-physics pose, identical in Play
+and the route harness. Never the Transform, which Play interpolates. On a vine-grab tick it reads the snapped x (the
+grab moves the body in the motor step, before the room step). Each follow tick: `x += clamp(catX − x, ±FollowSpeed)`,
+clamped to the range (`StormCloudMath.Follow`). Order among traps doesn't matter: no trap moves the cat's position in the
+room step (§11 Q2); `RoomManager` is unchanged.
+
+(3) **Cycle (ruling B).** Wake W (the trap's fire tick): dormant through W, following from W+1, the first charge at
+W + 50, the first strike at W + 75, then a charge every `StrikePeriod` from the first. **Charge:** the cloud stops,
+darkens, and draws a faint target line down its locked x; harmless. **Strike:** a lethal column `StrikeWidth` wide from
+the cloud's bottom to the strike's bottom. Then it follows again. `StormCloudMath.PhaseSince` is the whole rule.
+
+(4) **What stops a strike (ruling A, §11 Q3).** The highest static top at or below the cloud's bottom that overlaps any
+part of the column's width. Static = `IsFixedSolid` (Floor, Wall, PitBottom, Ceiling); fake platforms, collapsing
+floors, moving Solids, falling blocks and stuck spears don't block lightning. The builder bakes the room's static tops
+onto the trap as (xMin, xMax, top) segments (`LevelLayoutValidator.StrikeProfile`); no runtime raycast. The drawn and the
+lethal column end at the same top.
+
+(5) **Kill test (ruling C).** `StormCloudMath.Hits(column, catBox)`, a strict overlap (touching is safe), no `Physics2D`.
+`catBox` is the body position plus the collider offset **rotated by the body's rotation** (the cat turns 180° with
+gravity up, D-052), with the collider's size; never `Collider2D.bounds`. A hit kills through `RoomDeath`,
+`DeathCause.Hazard`. The route harness names the cloud as the killer through the same function (`StrikeHits`). A cat
+wholly above the cloud's bottom can't be hit, so a gravity-up cat above it is safe; clouds are allowed in rooms with
+gravity flips (§11 Q4).
+
+(6) **Reset, hold, pause.** The phase is room ticks since the wake, so the death hold and the pause freeze it; the room
+reset returns it to its authored pose, dormant.
+
+(7) **Validator** (`LevelLayoutValidator.StormCloud.cs`, `ValidateStormCloud`, separately named, not in `Validate`, like
+`ValidateGeyser`): at most one per room; configured; Once; strike ≥ 1 tick; first strike delay ≥ 1; `StrikePeriod ≥
+TellTicks + StrikeTicks + 1`; the authored x inside the range; the swept cloud (range × its box) inside the frame and
+overlapping no static element; a static top under every column pose; the **dodge rule** (§2.4): `TellTicks ≥
+ceil(from-rest ticks to clear half the strike width plus half the collider width) + 12`, or + the precision slack (8)
+when the strikes' envelope is wholly in a precision section (defaults: 0.9 u, 10 ticks, so ≥ 22); **door clearance**
+(D-060): the strikes' envelope over the whole range, grown by one run tick (0.12 u), doesn't touch the door (or its
+retreat sweep). The dodge rule replaces `ValidatePeriodicSlack` for clouds (their trigger is Once, so that rule never
+sees them). `KillVolumes` and `TriggerCoverage` are unchanged. `ValidateBand`: a cloud in a level numbered 1–10 is an
+error naming the level.
+
+(8) **Routes.** A betrayal that dies to a strike is revealed by the cloud itself; its lead runs from the cloud's first
+visible change (its first follow step when it moves, else its charge), so it is at least `TellTicks` (§11 Q5). Adding the cloud to the
+harness's killer naming left every pinned route result identical.
+
+(9) **Trap Lab room 10** (origin 415, 28 wide). The cloud 2 × 0.8 at (4, 5.5), range x 1.5–24, trigger x 5.5–6.0; the
+`Rise` (x 11–17, top 0.8); `Overhang` (Ceiling, x 19.5–22.5, y 1.4–1.9); `Fake_Overhang` (FakePlatform, x 6.5–8.5, the
+same height); the door at x 26.
+- **Solution:** run right, jump onto the Rise, run on to the door without stopping; the cloud (0.08 u a tick) never
+  catches a running cat (0.12), so every strike lands behind it. Timed window: the jump, **51** (d −25..+25, open both).
+- **Betrayals (Dies, killer and reveal `StormCloud`):** stop once the cloud wakes; wait under `Fake_Overhang`. Both: wake
+  t28, first visible change t29, killed by the first strike at t103 (wake + 75), **lead 74**.
+- **Harness:** a cat standing still dies on the first strike; one that starts running on the charge's first tick
+  (wake + 50) clears the column and survives; one waiting under the real Overhang lives through several strikes with the
+  cloud settled over it. The camera tell rule passes at 4:3, 16:9 and 20:9.
+
+(10) **Limits:** vertical strikes only; no vertical cloud motion; one cloud per room; static geometry blocks lightning,
+moving Solids and stuck spears don't; placeholder art; no sound or VFX. `ValidateStormCloud` isn't part of `Validate()`,
+so a shipped level with a cloud needs its tests to call it. The room 10 solution never needs the Overhang; the cover is
+proven by a harness probe. Not device-tested.
