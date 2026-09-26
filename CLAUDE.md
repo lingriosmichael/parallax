@@ -132,6 +132,8 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   - `CatPlayerSetup: Rigidbody2D on 'Assets/_Game/Gameplay/Player/Cat_Player.prefab' has no
     serialized 'config' field. Stopping without saving.`, printed by `CatColliderConfigTests` (its
     tests pass).
+  - `ArrowTrap 'Spear': a spear needs its shaft collider`, logged on purpose by
+    `SpearTrapRuntimeTests` (its test passes).
   - `route-hygiene warning`, logged on purpose by `RouteHygieneTests` (it checks that the route
     session's log filter forwards warnings).
   - `[Worker0] Import Error Code:(4)` about `assets/unitymcp/log/mcp.log` (the MCP log changing while it's

@@ -19,6 +19,8 @@ namespace Parallax.Editor.Setup
                 {
                     // PAX-083: one message per case. A name that isn't in this room (chains never resolve across rooms)...
                     if (!byName.TryGetValue(s.ChainSource ?? string.Empty, out SoloRoomElement source)) { error = $"{e.Name}: chain source '{s.ChainSource}' is not an element of this room; chain names never resolve across rooms."; return false; }
+                    // PAX-089 B: a plain vine (no snap settings) never fires; a snap vine fires at a known tick like any trap.
+                    if (source.Kind == SoloRoomElementKind.Vine && !source.Settings.IsConfigured) { error = $"{e.Name}: chain source '{source.Name}' is a plain vine (no snap settings); it never fires, so it can't start a chain."; return false; }
                     // ...and an element of this room that isn't a trap.
                     if (!IsTrap(source.Kind)) { error = $"{e.Name}: chain source must be a trap; '{source.Name}' is a {source.Kind}."; return false; }
                     if (ChainDelay(e) < 1) { error = $"{e.Name}: chain delay is below one tick."; return false; }
@@ -34,7 +36,8 @@ namespace Parallax.Editor.Setup
             error = null; return true;
         }
         static int ChainDelay(SoloRoomElement e) => e.Kind == SoloRoomElementKind.HiddenSpikes ? e.Settings.RevealDelayTicks : e.Settings.DelayTicks;
-        static bool IsTrap(SoloRoomElementKind kind) => kind == SoloRoomElementKind.CollapsingFloor || kind == SoloRoomElementKind.HiddenSpikes || kind == SoloRoomElementKind.FallingBlock || kind == SoloRoomElementKind.GravityFlip || kind == SoloRoomElementKind.DoorRetreat || kind == SoloRoomElementKind.MovingTrap || kind == SoloRoomElementKind.Arrow;
+        static bool IsTrap(SoloRoomElementKind kind) => kind == SoloRoomElementKind.CollapsingFloor || kind == SoloRoomElementKind.HiddenSpikes || kind == SoloRoomElementKind.FallingBlock || kind == SoloRoomElementKind.GravityFlip || kind == SoloRoomElementKind.DoorRetreat || kind == SoloRoomElementKind.MovingTrap || kind == SoloRoomElementKind.Arrow
+            || kind == SoloRoomElementKind.Inverter || kind == SoloRoomElementKind.Vine;   // PAX-089 B
         static bool HasCycle(string start, Dictionary<string, SoloRoomElement> byName)
         {
             var seen = new HashSet<string>(); string current = start;

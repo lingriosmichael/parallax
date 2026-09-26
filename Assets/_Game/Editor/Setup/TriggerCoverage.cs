@@ -83,7 +83,9 @@ namespace Parallax.Editor.Setup
         {
             SoloRoomTrapSettings s = e.Settings;
             if (!s.IsConfigured || s.TriggerSource != TrapTriggerSource.Overlap || s.RepeatMode == TrapRepeatMode.Periodic) return false;
-            return e.Kind == SoloRoomElementKind.HiddenSpikes || e.Kind == SoloRoomElementKind.FallingBlock || e.Kind == SoloRoomElementKind.MovingTrap || e.Kind == SoloRoomElementKind.DoorRetreat || e.Kind == SoloRoomElementKind.Arrow;
+            return e.Kind == SoloRoomElementKind.HiddenSpikes || e.Kind == SoloRoomElementKind.FallingBlock || e.Kind == SoloRoomElementKind.MovingTrap || e.Kind == SoloRoomElementKind.DoorRetreat || e.Kind == SoloRoomElementKind.Arrow
+                // PAX-089 R4: inverters and snap vines (a plain vine has no settings, so it's already out) can start a chain.
+                || e.Kind == SoloRoomElementKind.Inverter || e.Kind == SoloRoomElementKind.Vine;
         }
 
         // PAX-074 (D-078): the lanes of the root and of every chain descendant that is an arrow.
@@ -133,12 +135,14 @@ namespace Parallax.Editor.Setup
         }
 
         // HiddenSpikes and DoorRetreat fall back to their own box at runtime; FallingBlock and
-        // MovingTrap disable themselves without a trigger box.
+        // MovingTrap disable themselves without a trigger box. PAX-089 R4: so do an Inverter (its body) and a snap
+        // ClimbVine (its grab box).
         internal static bool TryTrigger(SoloRoomElement trap, out Rect trigger)
         {
             if (trap.SecondarySize != Vector2.zero) { trigger = new Rect(trap.SecondaryPosition - trap.SecondarySize * .5f, trap.SecondarySize); return true; }
             trigger = Box(trap);
-            return trap.Kind == SoloRoomElementKind.HiddenSpikes || trap.Kind == SoloRoomElementKind.DoorRetreat;
+            return trap.Kind == SoloRoomElementKind.HiddenSpikes || trap.Kind == SoloRoomElementKind.DoorRetreat
+                || trap.Kind == SoloRoomElementKind.Inverter || trap.Kind == SoloRoomElementKind.Vine;
         }
 
         static List<(string owner, Rect volume)> Dangers(SoloRoomDefinition room, SoloRoomElement root)

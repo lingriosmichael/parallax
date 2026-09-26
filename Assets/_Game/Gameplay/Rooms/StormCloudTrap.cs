@@ -1,5 +1,6 @@
 using Parallax.Core;
 using Parallax.Gameplay.Observers;
+using Parallax.Gameplay.Player;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Rooms
@@ -100,7 +101,7 @@ namespace Parallax.Gameplay.Rooms
             _ => Vector2.zero,
         };
 
-        // The body and the first non-trigger collider, looked up once per cat (no per-tick allocation).
+        // The body and its body collider (CatBodyCollider, shared with RoomTrap and the route harness), looked up once per cat.
         bool TryGetCat(out Rigidbody2D body, out Collider2D collider)
         {
             body = null; collider = null;
@@ -110,8 +111,7 @@ namespace Parallax.Gameplay.Rooms
             {
                 cachedCat = observer.Cat;
                 cachedBody = cachedCat.GetComponent<Rigidbody2D>();
-                cachedCollider = null;
-                foreach (Collider2D c in cachedCat.GetComponents<Collider2D>()) if (!c.isTrigger) { cachedCollider = c; break; }
+                cachedCollider = CatBodyCollider.Of(cachedCat);
             }
             body = cachedBody; collider = cachedCollider;
             return body != null && collider != null;

@@ -705,6 +705,22 @@ PiP toggle (visible only while the panel is open, default off): when on, the **i
 
 ---
 
+### 15.3 Kit for levels 11+ (KIT-5–KIT-9, D-086–D-090; PAX-089)
+
+All five kinds are `RoomTrap`s built by `TrapKitSetup` (one partial per family: `.Classic`, `.Inverter`, `.Geyser`, `.Weather`, `.Climb`; arrows and spears are built in `SoloRoomBuilder.BuildArrow`). Levels 1–10 may use none of them (`ValidateBand`).
+
+| Kind | Runtime | Key rules |
+|---|---|---|
+| Spear (D-086) | `ArrowTrap` with the spear flag: lethal in flight, on the stop tick and on the stop + 1 check (shaft shrunk 0.02); a solid shaft from stop + 1 | Once only; shaft ≥ 0.4 thick (`spearMinThickness`), ≥ 1.0 long; end face on fixed geometry |
+| Inverter (D-087) | `InverterTrap` implements `IControlModifier`; `LocalHumanDriver` negates `Move` for motor steps T+1…T+Duration (150); cue on the inverter's own children; `Cat.Inverted` route pseudo-element | duration 25–500; no Periodic |
+| Geyser (D-088) | `GeyserTrap`, periodic tell/erupt; sets the cat's velocity along its direction through `CatMotor2D.ApplyLaunch` (clears grounded and coyote) | direction matches host face; column + cat height clear of solids; envelope to the apex inside the frame; hidden hazards in it need a betrayal route |
+| Vine (D-089) | `ClimbVine` (+ `CatClimber` owned by the motor, pure `ClimbState`); `CatCommand.Climb` axis; optional snap | grab needs Climb ≥ 0.5 (up only when grounded); stick ≈ 42.5°; Space-only jump on keyboard |
+| Storm cloud (D-090) | `StormCloudTrap`: dormant until triggered, follows the cat's body x, charges 25, strikes down to the first static top (baked profile); pure box kill test with the offset rotated by the body | one per room; dodge rule from rest + slack; door clearance over the whole range |
+
+- **Validation:** `LevelLayoutValidator.ValidateKit(levelId, room, motor, gravity, sizes, levels, routes)` runs every kit rule and returns every error; `LevelKitRulesTests` runs it for every `LevelLayouts` entry and Trap Lab rooms 6–10. `Validate()` doesn't include it.
+- **Chains:** inverters and snap vines can be chain sources and are trigger-coverage roots (D-074); a vine root must be a full-storey cut. Geysers and storm clouds can't start chains.
+- **The cat's collider:** every trap and the route harness pick it through `CatBodyCollider.Of` (the first non-trigger collider).
+
 ## 16. Performance notes
 
 - Solo renders one reality at a time and simulates both. Keep the inactive reality free of per-frame cosmetic work (disable particle systems and animators outside its camera).

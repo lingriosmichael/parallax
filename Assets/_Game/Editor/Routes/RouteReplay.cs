@@ -181,7 +181,7 @@ namespace Parallax.Editor.Routes
                 foreach (Transform t in catGo.GetComponentsInChildren<Transform>(true)) t.gameObject.layer = layer;
                 rig.Cat = catGo.GetComponent<CatMotor2D>();
                 rig.Body = catGo.GetComponent<Rigidbody2D>();
-                rig.CatCollider = catGo.GetComponent<Collider2D>();
+                rig.CatCollider = CatBodyCollider.Of(rig.Cat);   // PAX-089 E.2: the same pick as the traps
                 rig.Gravity = catGo.GetComponent<GravityReceiver>();
                 rig.Motor = motor;
 

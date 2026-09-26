@@ -1,5 +1,6 @@
 using Parallax.Core;
 using Parallax.Gameplay.Observers;
+using Parallax.Gameplay.Player;
 using Parallax.Gameplay.Reality;
 using UnityEngine;
 
@@ -99,7 +100,7 @@ namespace Parallax.Gameplay.Rooms
             if (Reality == null || observers == null) return false;
             ObserverContext candidate = observers.Get(Reality.Id);
             if (candidate == null || candidate.Driver == null || candidate.Driver.Kind != InputSourceKind.LocalHuman || candidate.Cat == null) return false;
-            Collider2D cat = candidate.Cat.GetComponent<Collider2D>();
+            Collider2D cat = CatBodyCollider.Of(candidate.Cat);
             if (cat == null) return false;
             int count = Physics2D.OverlapBox(bounds.center, bounds.size, 0f, filter, results);
             for (int i = 0; i < count; i++) if (results[i] == cat) { observer = candidate; return true; }
@@ -111,13 +112,10 @@ namespace Parallax.Gameplay.Rooms
             if (Reality == null || observers == null) return false;
             ObserverContext candidate = observers.Get(Reality.Id);
             if (candidate == null || candidate.Driver == null || candidate.Driver.Kind != InputSourceKind.LocalHuman || candidate.Cat == null) return false;
-            foreach (Collider2D collider in candidate.Cat.GetComponents<Collider2D>())
-            {
-                if (collider.isTrigger) continue;
-                bounds = collider.bounds;
-                return true;
-            }
-            return false;
+            Collider2D body = CatBodyCollider.Of(candidate.Cat);
+            if (body == null) return false;
+            bounds = body.bounds;
+            return true;
         }
     }
 }
