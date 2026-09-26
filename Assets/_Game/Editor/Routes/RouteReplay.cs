@@ -129,7 +129,7 @@ namespace Parallax.Editor.Routes
             public RoomTrap Trap; public Hazard Hazard; public BoxCollider2D Box;
             public FallingBlockTrap Block; public Vector2 BlockLanded;
             public MovingTrap Moving; public bool MovingHazard; public float MovingStep, CrushDepth;
-            public ArrowTrap Arrow; public SpriteRenderer ArrowSprite; public float ArrowLength, ArrowThickness; public int ArrowTell;
+            public ArrowTrap Arrow; public int ArrowTell;
         }
 
         sealed class Rig
@@ -267,9 +267,6 @@ namespace Parallax.Editor.Routes
                 e.Arrow = go.GetComponent<ArrowTrap>();
                 if (e.Arrow != null)
                 {
-                    e.ArrowSprite = (SpriteRenderer)Get(e.Arrow, "arrow");
-                    e.ArrowLength = (float)Get(e.Arrow, "arrowLength");
-                    e.ArrowThickness = (float)Get(e.Arrow, "arrowThickness");
                     e.ArrowTell = (int)Get(e.Arrow, "tellTicks");
                 }
                 return e;
@@ -378,8 +375,10 @@ namespace Parallax.Editor.Routes
                     { Bounds grown = e.Box.bounds; grown.Expand(2f * e.MovingStep + .02f); match = Overlaps(grown); }
                     else if (e.Moving != null && e.Trap.LatestFireTick >= 0 && e.Box != null)
                         match = TrapMotion.Crushes(CatCollider.bounds, new Bounds(e.Moving.GetComponent<Rigidbody2D>().position + e.Box.offset, e.Box.size), e.CrushDepth);
-                    else if (e.Arrow != null && e.ArrowSprite != null && e.ArrowSprite.enabled)
-                        match = Overlaps(new Bounds(e.ArrowSprite.transform.position, new Vector3(e.ArrowLength, e.ArrowThickness)));
+                    // PAX-084 (D-086) R3: only on the ticks the arrow's own kill test runs, through the same function
+                    // (flight and stop ticks; a spear's stop + 1 check). A stopped arrow or a stuck spear is harmless.
+                    else if (e.Arrow != null && e.Arrow.TryGetKillBox(out Bounds arrowBox))
+                        match = Overlaps(arrowBox);
                     if (match) names.Add(e.Name);
                 }
                 return names;

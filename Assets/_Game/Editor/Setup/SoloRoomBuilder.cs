@@ -191,6 +191,8 @@ namespace Parallax.Editor.Setup
         // PAX-074 (D-078): the launcher (sprite, no collider, ArrowTrap), its child "Arrow" (sprite only,
         // hidden until the fire) and, for a non-Periodic Overlap arrow only, the child trigger box. The
         // launcher never has a collider of its own, so it can never act as a trigger.
+        // PAX-084 (D-086): a spear's child is "<name>_Shaft" (the route harness reports ground by object name) and
+        // carries the shaft: a non-trigger box the size of the visible shaft, off until the spear sticks.
         static ArrowTrap BuildArrow(Transform parent, RealityRoot root, SoloRoomDefinition room, SoloRoomElement e, RoomManager rooms, RoomDeath death, ObserverSet observers, List<string> changes)
         {
             ArrowLane lane = e.Settings.Arrow;
@@ -201,10 +203,11 @@ namespace Parallax.Editor.Setup
 
             float sign = ArrowMath.Sign(lane.Direction);
             Vector2 mouth = new(sign * e.Size.x * .5f, lane.LaneY - e.Position.y);
-            Transform arrow = SetupUtility.EnsureChild(launcher, "Arrow", root.gameObject.layer, changes);
+            Transform arrow = SetupUtility.EnsureChild(launcher, lane.Spear ? e.Name + "_Shaft" : "Arrow", root.gameObject.layer, changes);
             SetupUtility.SetLocalPosition(arrow, mouth + new Vector2(sign * lane.Length * .5f, 0f), changes);
             SpriteRenderer arrowVisual = SetupUtility.SetVisual(arrow.gameObject, root, new Vector2(lane.Length, lane.Thickness), Red, changes);
             SetSortingOrder(arrowVisual, 0, changes);
+            BoxCollider2D shaft = lane.Spear ? BuildShaft(arrow, new Vector2(lane.Length, lane.Thickness), changes) : null;
 
             bool overlap = e.Settings.TriggerSource == TrapTriggerSource.Overlap && e.Settings.RepeatMode != TrapRepeatMode.Periodic;
             BoxCollider2D trigger = overlap ? TrapKitSetup.CreateTrigger(launcher, root, e.Settings.TriggerName, e.SecondaryPosition - e.Position, e.SecondarySize, changes) : null;
@@ -213,9 +216,19 @@ namespace Parallax.Editor.Setup
             TrapKitSetup.Write(trap, changes, ("rooms", rooms), ("roomDeath", death), ("observers", observers), ("roomId", room.Id), ("trigger", trigger),
                 ("launcher", launcherVisual), ("arrow", arrowVisual), ("direction", (int)lane.Direction), ("mouth", mouth),
                 ("travel", LevelLayoutValidator.ArrowTravel(e)), ("arrowLength", lane.Length), ("arrowThickness", lane.Thickness),
-                ("unitsPerTick", lane.UnitsPerTick), ("tellTicks", lane.TellTicks), ("delayTicks", e.Settings.DelayTicks));
+                ("unitsPerTick", lane.UnitsPerTick), ("tellTicks", lane.TellTicks), ("delayTicks", e.Settings.DelayTicks),
+                ("spear", lane.Spear), ("shaft", shaft));
             WriteColor(trap, "honestColor", LauncherGrey, changes);
             return trap;
+        }
+
+        static BoxCollider2D BuildShaft(Transform arrow, Vector2 size, List<string> changes)
+        {
+            BoxCollider2D box = SetupUtility.Ensure<BoxCollider2D>(arrow.gameObject, changes);
+            if (box.isTrigger) { box.isTrigger = false; changes.Add("set " + arrow.name + ".isTrigger"); }
+            SetupUtility.SetColliderSize(box, size, changes);
+            if (box.enabled) { box.enabled = false; changes.Add("disabled " + arrow.name + " shaft"); }
+            return box;
         }
 
         // The colour this builder gives the fixed geometry the launcher sits in.

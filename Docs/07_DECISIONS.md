@@ -1559,3 +1559,65 @@ trigger box even in Periodic mode; `Stopped(arrow)` is true during the arrow's t
 new players in PAX-070. The developer's play of levels 6–10 is still to come.
 
 **Supersedes:** D-040's 10–20 s room size and D-069's oversize-only-for-precision, for band 1.
+
+### D-086 · 2026-09-26 · Accepted
+
+**Decision:** The spear (PAX-084, KIT-5): a variant of the arrow (D-078) for levels 11+ that fires once and sticks in the
+wall at its lane end, where it becomes a small platform. Rulings: `Docs/0_TASKS/PAX-084.md` §11.
+
+(1) **What it is.** `ArrowLane.Spear` (`ArrowLane.SpearLane`: 1.4 long, 0.4 thick, 1.2 u/tick, tell 8). An `ArrowTrap` with
+`spear` set and a shaft collider on its arrow child, named `<spear>_Shaft` (the route harness reports ground by object
+name). The tell, flight and stop phases are the arrow's. It's lethal on its flight ticks and on its stop tick.
+
+(2) **Stop + 1.** On the first tick after the stop (s = T+N+1, `ArrowMath.StuckCheckTick`), before the shaft switches on,
+a cat inside the stop pose shrunk by `ArrowMath.StuckShrink` (0.02) a side is killed through `RoomDeath`
+(`DeathCause.Hazard`), and the shaft stays off through the death hold. Otherwise the shaft switches on: a non-trigger
+`BoxCollider2D` the size of the visible shaft (Length × Thickness), on the reality's layer, that the cat stands on and
+jumps from like any floor. After that the spear is harmless until the room resets (D-041), which puts it back in the
+launcher, unfired, with the shaft off. A shaft that is only sometimes solid was rejected.
+**Measured:** `Physics2D.OverlapBox` reaches about 0.02 across the two boxes' skins, not the ~0.01 §11 R2 assumed. A cat
+resting on the stop pose's top (0.005 above it, where physics leaves a standing cat) survives stop + 1. A cat exactly
+touching (a gap of 0) still counts as inside.
+
+(3) **Thickness (amends D-074 (6) for spears only).** `PlatformSizeConfig.spearMinThickness`, default 0.4: one
+max-fall tick (20 u/s × 0.02 s). Floors keep 0.5. **Measured:** a cat that walks off a ledge 7.5 u up meets a 0.4 shaft
+at 20.00 u/s and lands on it (paw 1.505 on the 1.5 top). No fall-through.
+
+(4) **Speed cap (D-078).** At the committed collider (1.0 × 0.56) and length 1.4 the cap is 1.4 + 0.44 − 0.24 =
+1.60 u/tick, so 1.2 fits. `SpearValidatorTests` reads the collider from `CatMotorConfig`.
+
+(5) **Validator** (`LevelLayoutValidator.Spears.cs`, separately named, not in `Validate`):
+- `ValidateSpear`: Once only (Rearm and Periodic are errors); length ≥ `PlatformSizeConfig.MinWidth` (1.0); thickness
+  ≥ `SpearMinThickness`; the face it sticks in belongs to fixed geometry (Wall, Floor, Ceiling, PitBottom, or the
+  room's end), never a moving Solid, `CollapsingFloor` or `FakePlatform`; the stuck shaft overlaps no other element and
+  no other arrow's lane.
+- Every arrow rule applies to spears unchanged.
+- `ValidateBand` becomes the shared "levels 11+ only" check. A spear in a level numbered 1–10 is an error naming the
+  level. KIT-6–KIT-9 add their kinds to it.
+
+(6) **Routes (amends D-079 (2)'s killer naming, harness only; no runtime change).** `RouteReplay` counts an arrow as a
+kill candidate only on the ticks its own kill test runs, through the runtime's `ArrowTrap.TryGetKillBox`: flight and
+stop ticks, plus a spear's stop + 1 check. This applies to every arrow. A stopped arrow was always harmless (D-078), so
+naming it was wrong, just never exercised. Every pinned route result was unchanged by this.
+
+(7) **`AfterFire` isn't needed.** The solution route proves the order: before the fire there's no shaft, so an early
+landing fails the replay. Jumps onto stuck spears are ordinary `RequiredJump`s, so reach is still checked.
+
+(8) **Trap Lab room 6** (origin 287, 16 wide).
+- **Layout.** Crossing the cut at x 3.5 fires `Spear_1` 30 ticks later; `Spear_2` follows 72 ticks after `Spear_1`,
+  and `Spear_3` 12 after that. Lanes run at y 0.5, 1.6 and 2.7 (3.6, 2.4 and 1.2 long) into `FarWall`'s face. The
+  steps are 1.1 apart, so each is reachable only from the one below.
+- **Cover.** `Spear_1` flies at shin height over the whole floor. The only cover is the Dip (0.4 deep); a running cat
+  drops into it.
+- **Solution.** Wait in the Dip until the volley has stuck, then climb all three spears to the door: 305 ticks.
+  Timed window: the climb out, 51 (±25, open at both ends).
+- **Betrayals.**
+  - Hopping over the Dip dies to `Spear_1`, lead 8.
+  - Climbing as soon as `Spear_1` sticks dies to `Spear_2`, lead 8.
+- The camera tell rule passes at 4:3, 16:9 and 20:9.
+- **Changed from the ticket.** The crate idea was dropped because a 0.6 crate lets a jump skip `Spear_1`. §2.5's
+  "jump to the ledge before firing" is impossible here (the cut is on the way in), so the second betrayal replaced it.
+
+(9) **Limits:** horizontal spears only, one spear per fire, no vertical or retracting spears, placeholder colour (an
+art ticket later). A stuck spear isn't fixed geometry for other rules: an arrow can't be hosted in it or stop at it.
+Not device-tested (Phase H).

@@ -48,6 +48,8 @@ namespace Parallax.Editor.Setup
             , Room4()
             // PAX-076 (D-083): the precision room.
             , Room5()
+            // PAX-084 (D-086): the spear room.
+            , Room6()
         };
 
         // One valid route: Start_Floor -> Up_1 -> Up_2 -> Exit_Perch (door). Betrayals: Stone_A (fake, looks like the
@@ -126,6 +128,43 @@ namespace Parallax.Editor.Setup
             var baits = new[] { new BaitGap("Exit_Gap", 37.4f, 0f, 43.9f, -.5f) };
             return new SoloRoomDefinition(5, 225f, 49f, elements.ToArray(), openings, jumps.ToArray(), null, sections, baits);
         }
+
+        // PAX-084 (D-086): the spear room, origin 287 (room 5 ends at 274; the same 13 u gap as rooms 4-5). A far wall
+        // (FarWall, top 4.0, the door on it) no jump can climb. Crossing the cut at x 3.5 sets off a volley 30 ticks later:
+        // three honest spears from Launcher_Wall into FarWall's face at rising heights (lanes y 0.5, 1.6, 2.7; 3.6, 2.4 and
+        // 1.2 long), Spear_2 72 ticks after Spear_1 (so a cat that climbs as soon as Spear_1 sticks meets it), Spear_3 12
+        // after that. Spear_1 flies at shin height over the whole floor; the only cover is the Dip (0.4 deep), where a cat is
+        // under every lane. Stuck, the spears are a staircase up to the door: each step 1.1 higher and 1.2 further out, so
+        // each is reachable only from the one below.
+        static SoloRoomDefinition Room6()
+        {
+            var elements = new[] {
+                E(SoloRoomElementKind.Ceiling,"Ceiling",(8f,7.5f),(16f,1f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint",(2f,0),(0,0)),
+                E(SoloRoomElementKind.Floor,"Floor_A",(2.5f,-.5f),(5f,1f)),
+                E(SoloRoomElementKind.Floor,"Dip",(5.7f,-.95f),(1.4f,1.1f)),   // bottom -1.5, not -1.4: keeps the room bounds exact in float
+                E(SoloRoomElementKind.Floor,"Floor_B",(11.2f,-.5f),(9.6f,1f)),
+                E(SoloRoomElementKind.Wall,"Launcher_Wall",(.5f,3.5f),(1f,7f)),
+                E(SoloRoomElementKind.Wall,"FarWall",(14f,2f),(4f,4f)),
+                E(SoloRoomElementKind.Door,"Door",(14.5f,4.75f),(.6f,1.5f)),
+                E(SoloRoomElementKind.Arrow,"Spear_1",(.75f,.5f),(.5f,.4f),(3.75f,3.5f),(.5f,7f),new SoloRoomTrapSettings(ArrowLane.SpearLane(ArrowDirection.Right,.5f,12f,length:3.6f),new SoloRoomTrapSettings(delayTicks:30))),
+                E(SoloRoomElementKind.Arrow,"Spear_2",(.75f,1.6f),(.5f,.4f),settings:new SoloRoomTrapSettings(ArrowLane.SpearLane(ArrowDirection.Right,1.6f,12f,length:2.4f),new SoloRoomTrapSettings(delayTicks:72,triggerSource:TrapTriggerSource.Chain,chainSource:"Spear_1"))),
+                E(SoloRoomElementKind.Arrow,"Spear_3",(.75f,2.7f),(.5f,.4f),settings:new SoloRoomTrapSettings(ArrowLane.SpearLane(ArrowDirection.Right,2.7f,12f,length:1.2f),new SoloRoomTrapSettings(delayTicks:12,triggerSource:TrapTriggerSource.Chain,chainSource:"Spear_2"))),
+            };
+            // Dip -> Floor_B, then Floor_B -> Spear_1 -> Spear_2 -> Spear_3 -> FarWall: the spears' exposed tops are x[8.4,9.6],
+            // [9.6,10.8] and [10.8,12]; each climb takes off 0.5 inside one step and lands 0.5 inside the next.
+            var jumps = new[] {
+                J6(5.9f, 6.9f, -.4f, 0f, "Dip", "Floor_B"),
+                J6(7.9f, 8.9f, 0f, .7f, "Floor_B", "Spear_1"),
+                J6(9.1f, 10.1f, .7f, 1.8f, "Spear_1", "Spear_2"),
+                J6(10.3f, 11.3f, 1.8f, 2.9f, "Spear_2", "Spear_3"),
+                J6(11.5f, 12.5f, 2.9f, 4f, "Spear_3", "FarWall"),
+            };
+            return new SoloRoomDefinition(6, 287f, 16f, elements, System.Array.Empty<SoloRoomOpening>(), jumps);
+        }
+
+        static RequiredJump J6(float takeoffX, float landingX, float takeoffPaw, float landingPaw, string source, string destination) =>
+            new(destination, RequiredJumpKind.Pit, RequiredJumpFrame.Floor, RequiredJumpDirection.Right, takeoffX, landingX, takeoffPaw, landingPaw, .5f, sourceName: source, destinationName: destination);
 
         static RequiredJump Jump(float takeoffX, float landingX, float takeoffPaw, float landingPaw, string source, string destination) =>
             new("Pit_Bottom", RequiredJumpKind.Pit, RequiredJumpFrame.Floor, RequiredJumpDirection.Right, takeoffX, landingX, takeoffPaw, landingPaw, 1.5f, sourceName: source, destinationName: destination);

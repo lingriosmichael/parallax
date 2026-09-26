@@ -26,6 +26,12 @@ namespace Parallax.Core
         public static bool IsLethal(int s, int tellTicks, int flightTicks) => s >= tellTicks && s <= tellTicks + flightTicks;
         public static bool IsStopped(int s, int tellTicks, int flightTicks) => s > tellTicks + flightTicks;
 
+        // PAX-084 (D-086): a spear's shaft becomes solid on the first tick after its stop, s = T+N+1. On that tick,
+        // before it does, a cat inside the stop pose shrunk by StuckShrink a side (the FallingBlock shrink, clear of
+        // Box2D's ~0.01 contact skin) is killed; otherwise the spear is harmless from then on.
+        public const float StuckShrink = .02f;
+        public static int StuckCheckTick(int tellTicks, int flightTicks) => tellTicks + flightTicks + 1;
+
         public static float Offset(int s, int tellTicks, float unitsPerTick, float travel) => TrapMotion.Travel(s - tellTicks, unitsPerTick, travel);
 
         public static float CentreX(float mouthX, ArrowDirection direction, float length, float offset) => mouthX + Sign(direction) * (offset + length * .5f);

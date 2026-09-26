@@ -55,14 +55,20 @@ namespace Parallax.Editor.Setup
         // LevelListConfig (D-063) plus one; an id that isn't listed (the Trap Lab, fixtures) isn't a numbered level
         // and is exempt. LevelLayoutTests keeps every shipped layout listed, and NoDevRoomIsAListedLevel keeps the
         // Trap Lab out of the list.
+        // PAX-084 (D-086): the shared "levels 11+ only" check. Each kit mechanic for levels 11+ adds its kind here
+        // (spears first; KIT-6-KIT-9 extend it).
         public static List<string> ValidateBand(string levelId, SoloRoomDefinition room, LevelListConfig levels)
         {
             var errors = new List<string>();
-            if (!HasSections(room)) return errors;
+            SoloRoomElement[] spears = room.Elements.Where(IsSpear).ToArray();
+            if (!HasSections(room) && spears.Length == 0) return errors;
             if (levels == null) { errors.Add($"{levelId}: no LevelListConfig ({LevelListPath}); the band (D-065) is undefined."); return errors; }
             int number = LevelNumber(levels, levelId);
-            if (number > 0 && number <= EasyBandLastLevel)
+            if (number <= 0 || number > EasyBandLastLevel) return errors;
+            if (HasSections(room))
                 errors.Add($"{levelId}: precision section '{room.PrecisionSections[0].Name}' in level {number}; levels 1-{EasyBandLastLevel} are the easy band and allow no precision (D-065).");
+            foreach (SoloRoomElement spear in spears)
+                errors.Add($"{levelId}: spear '{spear.Name}' in level {number}; spears are for levels {EasyBandLastLevel + 1}+ only (D-086).");
             return errors;
         }
 

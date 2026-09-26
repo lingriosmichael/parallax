@@ -4,15 +4,16 @@ Rev. 2026-09-24, per D-062, D-064 and D-069: build everything first, test once a
 Tickets run one at a time in this order unless noted. Numbers after PAX-059 may shift if a
 kit-gap ticket is inserted during Phase D.
 
-## Status at a glance (2026-09-24)
+## Status at a glance (2026-09-26)
 
 - **Done (committed):** PAX-050, PAX-051, PAX-052, PAX-053, PAX-054, KIT-1 (PAX-073), PAX-077,
   PAX-078, PAX-079, KIT-2 (PAX-074), KIT-3a (PAX-075), KIT-3b (PAX-080), PAX-081, PAX-082, KIT-4 (PAX-076), PAX-083. Acceptance so far is EditMode tests plus Editor checks (D-064); none of it is
   device-validated yet. EditMode baseline after PAX-083: 685.
 - **Next:** the developer's play of levels 6–10 (PAX-059b, D-085), then KIT-5–KIT-9 and PAX-060. Phase B is complete;
-  PAX-058 was dropped by D-067. EditMode count after PAX-059a: 733 (with the play fixes); after PAX-059b: 771.
+  PAX-058 was dropped by D-067. EditMode count after PAX-059a: 733 (with the play fixes); after PAX-059b: 771; latest
+  full run (2026-09-26, PAX-059 committed): 774, all passing. That is KIT-5's baseline.
 - **Remaining in Phase B:** none.
-- **Kit for levels 11+ (2026-09-25):** KIT-5–KIT-9 (PAX-084–PAX-088, D-086–D-090) are built before PAX-060, one at a time; they can run while half B waits on the developer's play of levels 1–5. All five are levels 11+ only (`ValidateBand`).
+- **Kit for levels 11+ (2026-09-25):** KIT-5–KIT-9 (PAX-084–PAX-088, D-086–D-090) are built before PAX-060, one at a time; they can run while the developer's play of levels 6–10 is still open. All five are levels 11+ only (`ValidateBand`).
 - **Remaining after Phase B:** Phase D content (PAX-059–063), Phase E art, Phase F audio and
   haptics, Phase G release prep, Phase H validation, then Phase I (iOS) and the co-op update.
 - **Open developer checks:** PAX-078 §9 play check of L002 and L004 (D-076 (7)); PAX-079 §9 play
@@ -57,7 +58,7 @@ PAX-058 in this phase's build order even though their numbers are higher; PAX-05
 |---|---|---|---|
 | B · Levels & flow | PAX-050 ✓ | Level list, next level, progress save (done, 0b2ff77) | PAX-049 |
 | D · Content | PAX-059 ✓ | Levels 1–10 (easy band, D-065): half A (PAX-059a) is levels 1–5; half B (PAX-059b) is levels 6–10 and D-085. The developer's play of 6–10 is still open | PAX-052, PAX-076 |
-| | KIT-5 (PAX-084) | Spear: fires once, extremely fast, sticks as a standable platform. Makes `ValidateBand` the shared levels-11+ check. Trap Lab room 6 | PAX-059a, D-086 |
+| | KIT-5 (PAX-084) | Spear: fires once, extremely fast, sticks as a standable platform. Makes `ValidateBand` the shared levels-11+ check. Trap Lab room 6. **Built 2026-09-26, awaiting acceptance:** the developer's Trap Lab menu run and play of room 6 (§9). EditMode 805 (774 + 31); 804 pass until the Trap Lab menu adds room 6 to `Sandbox_TrapLab.unity` | PAX-059a, D-086 |
 | | KIT-6 (PAX-085) | Inverter: touching it swaps left/right for 150 ticks, visible cue; amends D-040/D-049 for traps only. Trap Lab room 7 | KIT-5, D-087 |
 | | KIT-7 (PAX-086) | Geyser: periodic air column launching the cat (~4.8 u apex); `CatMotor2D.ApplyLaunch` seam. Trap Lab room 8 | KIT-6, D-088 |
 | | KIT-8 (PAX-087) | Climbable vines: new `Climb` stick axis, grab/climb/leap, snap vines. Trap Lab room 9 | KIT-7, D-089 |

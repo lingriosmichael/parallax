@@ -7,6 +7,7 @@ namespace Parallax.Editor.Levels
 {
     // PAX-075 (D-079): Trap Lab room 3 (the arrows, D-078). Not a level, so not in LevelRoutes.
     // PAX-080 (D-080): Trap Lab room 4, the troll-route room.
+    // PAX-084 (D-086): Trap Lab room 6, the spear room.
     public static class TrapLabRoutes
     {
         public static RoomRoutes Room3()
@@ -72,6 +73,34 @@ namespace Parallax.Editor.Levels
             return new RoomRoutes(solution,
                 new Betrayal("Block_P5 falls on a cat that stops on P5", "Block_P5", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(P5))", "stop on P5", Release(), Until(Dead()))));
+        }
+
+        // PAX-084 (D-086): Trap Lab room 6, the spear room. Cross the cut and run on: the cat drops into the Dip (under every
+        // lane) and waits there until the whole volley has stuck (a spear sits still at the mouth for its 8-tick tell, so each
+        // wait is for its fire, 9 ticks into the flight, then its stop). Then climb: out of the Dip, Spear_1, Spear_2, Spear_3, FarWall. Each climb jumps straight up
+        // first, clearing the spear above, then steers onto the next step and stops short of the one after.
+        public static RoomRoutes Room6()
+        {
+            var solution = new Route("Trap Lab room 6 solution",
+                Hold(Right), Until(GroundedOn("Dip")), Release(), Until(Still()), Until(Fired("Spear_3")), For(9), Until(Stopped("Spear_3")),
+                // The climb starts once the volley has stuck; the window measures how early it could.
+                Jump().Timed(TimedMode.Shift), For(4), Hold(Right), Until(XAtLeast(6.6f)), Release(), Until(GroundedOn("Floor_B")), Until(Still()),
+                Hold(Right), Until(XAtLeast(7.6f)), Release(), Until(Still()),
+                Jump(), For(5), Hold(Right), Until(XAtLeast(8.6f)), Release(), Until(GroundedOn("Spear_1_Shaft")), Until(Still()),
+                Jump(), For(8), Hold(Right), Until(XAtLeast(10f)), Release(), Until(GroundedOn("Spear_2_Shaft")), Until(Still()),
+                Jump(), For(8), Hold(Right), Until(XAtLeast(11f)), Release(), Until(GroundedOn("Spear_3_Shaft")), Until(Still()),
+                Jump(), For(8), Hold(Right), Until(RoomComplete()));
+
+            return new RoomRoutes(solution,
+                // "Standing in a lane": hop the Dip like a gap and Spear_1, at shin height over the floor, runs through you.
+                new Betrayal("Spear_1 runs through a cat that hops over the Dip", "Spear_1", DeathCause.Hazard,
+                    new Route("hop over the Dip", Hold(Right), Until(XAtLeast(4.4f)), Jump(), Until(XAtLeast(6.8f)), Release(), Until(GroundedOn("Floor_B")), Until(Dead()))),
+                new Betrayal("Spear_2 hits a cat that climbs onto Spear_1 as soon as it sticks", "Spear_2", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Still)", "climb as soon as Spear_1 sticks",
+                        Until(Fired("Spear_1")), For(9), Until(Stopped("Spear_1")),
+                        Jump(), For(4), Hold(Right), Until(XAtLeast(6.6f)), Release(), Until(GroundedOn("Floor_B")), Until(Still()),
+                        Hold(Right), Until(XAtLeast(7.6f)), Release(), Until(Still()),
+                        Jump(), For(5), Hold(Right), Until(XAtLeast(8.6f)), Release(), Until(Dead()))));
         }
 
         // PAX-076 (D-083) §2.5: the bait gap attempted from its best take-off: full speed off P8's edge, the jump in the
