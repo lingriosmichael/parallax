@@ -52,6 +52,8 @@ namespace Parallax.Editor.Setup
             , Room6()
             // PAX-085 (D-087): the inverter room.
             , Room7()
+            // PAX-086 (D-088): the geyser room.
+            , Room8()
         };
 
         // One valid route: Start_Floor -> Up_1 -> Up_2 -> Exit_Perch (door). Betrayals: Stone_A (fake, looks like the
@@ -190,6 +192,28 @@ namespace Parallax.Editor.Setup
                 new RequiredJump("Pit_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,10.5f,13f,0f,0f,1f,sourceName:"Floor_A",destinationName:"Floor_C"),
             };
             return new SoloRoomDefinition(7, 316f, 20f, elements, openings, jumps);
+        }
+
+        // PAX-086 (D-088): the geyser room, origin 349 (room 7 ends at 336; the same 13 u gap). The exit Ledge (top 3.5, over
+        // the start) is out of any jump's reach. The Geyser, a vent in the floor at x 9, erupts every 100 ticks (2 s): tell
+        // from room tick 80, erupt 105-144. Stand on it and ride the eruption, then steer left onto the Ledge and the door.
+        // Right of the vent, the side the solution never goes: a LowCeiling with hidden Ceiling_Spikes under it, revealed by
+        // a full-storey cut (x 9.6-10.1, floor to ceiling underside, R4), so a launch steered right rises into them. A cat that
+        // walks there on the floor sees them pop out, harmlessly. Stepping on the vent during the tell and walking off leaves
+        // the cat under the Ledge; it walks back and rides the next eruption.
+        static SoloRoomDefinition Room8()
+        {
+            var elements = new[] {
+                E(SoloRoomElementKind.Ceiling,"Ceiling",(10f,7.5f),(20f,1f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint",(2f,0),(0,0)),
+                E(SoloRoomElementKind.Floor,"Floor",(10f,-.5f),(20f,1f)),
+                E(SoloRoomElementKind.Floor,"Ledge",(3.75f,3.25f),(7.5f,.5f)),
+                E(SoloRoomElementKind.Door,"Door",(2.5f,4.25f),(.6f,1.5f)),
+                E(SoloRoomElementKind.Geyser,"Geyser",(9f,-.15f),(1f,.3f),settings:new SoloRoomTrapSettings(new GeyserSettings(),new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:100,phaseTicks:80))),
+                E(SoloRoomElementKind.Ceiling,"LowCeiling",(15.5f,5.5f),(9f,.6f)),
+                E(SoloRoomElementKind.HiddenSpikes,"Ceiling_Spikes",(15.5f,5.05f),(9f,.3f),(9.85f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)),
+            };
+            return new SoloRoomDefinition(8, 349f, 20f, elements, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
         }
 
         static RequiredJump J6(float takeoffX, float landingX, float takeoffPaw, float landingPaw, string source, string destination) =>

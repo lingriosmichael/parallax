@@ -9,6 +9,7 @@ namespace Parallax.Editor.Levels
     // PAX-080 (D-080): Trap Lab room 4, the troll-route room.
     // PAX-084 (D-086): Trap Lab room 6, the spear room.
     // PAX-085 (D-087): Trap Lab room 7, the inverter room.
+    // PAX-086 (D-088): Trap Lab room 8, the geyser room.
     public static class TrapLabRoutes
     {
         public static RoomRoutes Room3()
@@ -120,6 +121,25 @@ namespace Parallax.Editor.Levels
                 Betrayal.Recovers("A cat that plays it inverted (holds left to go right) jumps the pit and reaches the door", CatInverted,
                     Route.PrefixOf(solution, "Until(Fired(Inverter))", "play it inverted",
                         Hold(Left), Until(XAtLeast(10.4f)), Jump(), Until(Airborne()), Until(RoomComplete()))));
+        }
+
+        // PAX-086 (D-088): Trap Lab room 8, the geyser room. Walk onto the vent and wait: the eruption launches the cat. Ten
+        // ticks into the flight, steer left over the Ledge's edge, land on it and run on to the door. The window measures how
+        // early and late the steer can start.
+        public static RoomRoutes Room8()
+        {
+            var solution = new Route("Trap Lab room 8 solution",
+                Hold(Right), Until(XAtLeast(8.4f)), Release(), Until(Still()), Until(Airborne()),
+                For(10), Hold(Left).Timed(TimedMode.Shift), Until(RoomComplete()));
+
+            return new RoomRoutes(solution,
+                new Betrayal("A launch steered right rises into the Ceiling_Spikes", "Ceiling_Spikes", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Airborne)", "steer the launch right", Hold(Right), Until(Dead()))),
+                Betrayal.Recovers("A cat that steps on the vent during the tell and walks off is left under the Ledge, and rides the next eruption", "Geyser",
+                    Route.PrefixOf(solution, "Until(Still)", "walk off the vent during the tell, then come back",
+                        Until(Fired("Geyser")), Hold(Left), Until(XAtMost(6.5f)), Release(), Until(Still()), For(50),
+                        Hold(Right), Until(XAtLeast(8.4f)), Release(), Until(Still()), Until(Airborne()),
+                        For(10), Hold(Left), Until(RoomComplete()))));
         }
 
         // PAX-076 (D-083) §2.5: the bait gap attempted from its best take-off: full speed off P8's edge, the jump in the

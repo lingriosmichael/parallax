@@ -1691,3 +1691,87 @@ result was unchanged.
 (9) **Limits:** it inverts the horizontal axis only. No jump or gravity inversion, no permanent (until-reset) inversion,
 no toggles, placeholder art. KIT-8's `Climb` axis is not inverted (KIT-8's decision will state it). The Inverter element's own route signature
 includes its cue children, where they're built; betrayals read `Cat.Inverted`, never that. Not device-tested (Phase H).
+
+### D-088 · 2026-09-26 · Accepted
+
+**Decision:** The geyser (PAX-086, KIT-7): a vent that erupts on a Periodic cycle and launches the cat far above its jump, for
+levels 11+ only. Rulings: `Docs/0_TASKS/PAX-086.md` §11. **Amends D-056 (3)** for geysers only: a geyser launch into a
+*hidden* hazard may be a betrayal (with a declared, measured route, (6)). Moving Solids keep D-056 (3) unchanged: their
+launch is never a betrayal.
+
+(1) **What it is.** `SoloRoomElementKind.Geyser` (appended), built as a `GeyserTrap` (a `RoomTrap`). The element's box is
+the vent, flush in a Floor's top (direction Up) or a Ceiling's underside (Down). The vent is a trigger, so the host holds
+the cat. `GeyserSettings`: `Direction`, `ColumnWidth` 1.0, `ColumnHeight` 1.5 (from the vent's face), `TellTicks` 25,
+`EruptTicks` 40, `LaunchSpeed` 14 u/s (the defaults, `GeyserMath`). Always Periodic (D-055 (2)): `PeriodTicks` and
+`PhaseTicks` are the ordinary timing settings. Placeholder art: a grey vent that turns orange through the tell and the
+eruption, and a pale translucent `Column` child shown only while erupting.
+
+(2) **The cycle, in room ticks** (`Parallax.Core.GeyserMath`). It fires every period from room tick `phase` (TrapTiming's
+Periodic rule); the fire tick is the tell's first tick. Tell (a visible change of the vent, harmless, no push), then
+erupt, then idle. The runtime reads the phase from room ticks since the latest fire, so the death hold (D-058) and the
+pause (D-073) freeze it, and the room reset (D-041) restarts it from room start.
+
+(3) **The push (Q1).** In the room step (traps -> hazards -> bounds -> door), after the tick's motor step and before
+physics, in Play and in the route harness alike: while erupting, a LocalHuman cat whose collider overlaps the column (the
+previous physics pose, like every trap) gets `CatMotor2D.ApplyLaunch(direction, LaunchSpeed)`. The next tick's motor step
+adds gravity to it as usual; the push sets it back while the cat is still in the column. Not lethal. `Physics2D.gravity`
+and every Physics2D setting are untouched.
+
+(4) **The seam (Q2).** `ApplyLaunch` sets the velocity component along the direction to the speed (absolute, not added),
+keeps the cross component (the player steers at the motor's acceleration and run speed), sets coyote to 0 and
+`IsGrounded` false, and leaves the jump buffer alone. Frozen (the death hold): nothing. `JumpWindows` is unchanged.
+- A jump pressed on the first push tick fires in that tick's motor step and is then overwritten by the launch (measured:
+  the record shows 14 u/s, not the jump's 9.8).
+- A press after the launch is no coyote jump; it waits in the buffer, and one made up to 6 ticks before landing jumps on
+  the landing (measured on the Ledge in room 8).
+
+(5) **No speed cap (Q4).** The motor's cap (`MaxFallSpeed` 20) is along gravity only, and the push is applied after the
+motor step, so nothing clamps it. At 14 u/s the push moves 0.28 u a tick, under the cat's 0.56 collider height, so it
+can't tunnel through a ceiling (`m_MaxTranslationSpeed` 100, continuous collision).
+
+(6) **Validator** (`LevelLayoutValidator.Geyser.cs`, separately named, not in `Validate`, like `ValidateSpear`):
+- `ValidateGeyser`: Periodic; tell ≥ 6 (D-057); erupt ≥ 1; tell + erupt < period. The vent is inside a Floor or Ceiling
+  and flush with its top or underside, and the direction matches that face (Floor → Up, Ceiling → Down), else an error
+  (R6). The room's gravity isn't checked: a Down geyser in a gravity-down room pushes the cat into the floor, harmlessly.
+  The column **plus the cat's collider height** (from `CatMotorConfig`, 0.56) beyond it overlaps no solid (fixed
+  geometry, collapsing floors, falling blocks, Solid moving traps), or the cat would be pinned into it (R5). A bonk in
+  the ballistic rise beyond that is allowed.
+- `ValidateGeyserEnvelope` (R2): the launch envelope, counted from the first push to the apex: the column's width plus one
+  run tick (0.12 u) each side per tick of flight, from the vent's face out to the pushes × 0.28, the discrete rise and the
+  cat's height. (1) It stays inside the room's frame (no launch out through the top or sides; D-058). (2) A *disguised*
+  hazard in it (hidden spikes, a disguised arrow's lane, a chained trap's kill volume) needs a declared Dies betrayal with
+  it as the killer, so its lead is measured (≥ 6). Honest, visible hazards are allowed without one (D-056 (4)). Past the
+  apex the cat falls like after any jump; the bounds kill and the route replays cover that.
+- `ValidateBand`: a geyser in a level numbered 1–10 is an error naming the level.
+- A geyser is never a kill volume, so door clearance ignores it.
+- Timing: a route step that must enter the column during an eruption is a timed step (window ≥ 12, ≥ 8 inside a
+  precision section, D-083). Room 8's solution stands on the vent before the eruption, so its timed step is the steer.
+
+(7) **Measured flight (Q5), defaults, D-082's cat** (gravity 30, 50 Hz). The cat is pushed on 6 ticks (its collider
+starts in the 1.5 column at 0, 0.28 … 1.40), leaving 1.68 u up. Then 23 rising ticks, the sum of (14 − 0.6 k) × 0.02:
+**3.128 u** (the continuous v²/2g is 3.27). **Apex 4.808 u** above where the cat stood, measured in the harness equal to
+the prediction; tolerance one push tick (0.28 u), since the overshoot past the column's top depends on where the cat
+starts. From the first push to the apex, 29 ticks: the envelope reaches 3.48 u each side. The ticket's 3.27/4.8 figures
+are superseded by these.
+
+(8) **Trap Lab room 8** (origin 349, 20 wide).
+- **Layout.** The exit `Ledge` (top 3.5, over the start, out of any jump's reach) with the door on it. The `Geyser`, a
+  vent in the floor at x 9, period 100 (2 s), phase 80: tell from room tick 80, erupt 105–144. Right of the vent, the
+  side the solution never goes: a `LowCeiling` (underside 5.2) with hidden `Ceiling_Spikes` under it, revealed by a
+  full-storey cut (x 9.6–10.1, floor to ceiling underside), so `ValidateTriggerCoverage` passes with no exemption or
+  learned bypass (R4). A cat walking there on the floor sees them pop out, harmlessly.
+- **Solution.** Walk onto the vent, wait, ride the eruption, and 10 ticks into the flight steer left onto the Ledge and
+  on to the door. Timed window: the steer, 34 (d −9..+24). Earlier, the cat meets the Ledge's face below its top.
+- **Betrayals.**
+  - **Dies:** a launch steered right rises into `Ceiling_Spikes`. Revealed t119, kill t127, lead 8.
+  - **Recovers:** step on the vent during the tell and walk off: the cat is left under the Ledge. It walks back and
+    rides the next eruption to the door (the Geyser's tell visible t81, complete t264).
+- The camera tell rule passes at 4:3, 16:9 and 20:9 (lead 8 at each).
+
+(9) **Limits:** Periodic only (no constant or trigger/chain geysers), up and down only (no sideways), placeholder art, no
+particles or sound. A geyser can't be a chain source: `TrapLayoutValidator`'s list of trap kinds doesn't include it
+(that file was outside PAX-086's allowed list), which also keeps room 8's spikes on their own trigger (R4). A room that
+stops being live mid-eruption (the door) leaves its column drawn, since nothing steps a room that isn't live;
+presentation only, and the next room is 13 u away. `ValidateGeyser` and `ValidateGeyserEnvelope` aren't part of
+`Validate()`, so a shipped level with a geyser needs its tests to call them until a follow-up wires them in. Not
+device-tested (Phase H).

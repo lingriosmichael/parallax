@@ -58,9 +58,9 @@ PAX-058 in this phase's build order even though their numbers are higher; PAX-05
 |---|---|---|---|
 | B · Levels & flow | PAX-050 ✓ | Level list, next level, progress save (done, 0b2ff77) | PAX-049 |
 | D · Content | PAX-059 ✓ | Levels 1–10 (easy band, D-065): half A (PAX-059a) is levels 1–5; half B (PAX-059b) is levels 6–10 and D-085. The developer's play of 6–10 is still open | PAX-052, PAX-076 |
-| | KIT-5 (PAX-084) | Spear: fires once, extremely fast, sticks as a standable platform. Makes `ValidateBand` the shared levels-11+ check. Trap Lab room 6. **Built 2026-09-26, awaiting acceptance:** the developer's Trap Lab menu run and play of room 6 (§9). EditMode 805 (774 + 31); 804 pass until the Trap Lab menu adds room 6 to `Sandbox_TrapLab.unity` | PAX-059a, D-086 |
-| | KIT-6 (PAX-085) | Inverter: touching it swaps left/right for 150 ticks, visible cue; amends D-040/D-049 for traps only. Trap Lab room 7. **Built 2026-09-26, awaiting acceptance:** the developer's Trap Lab menu run and play of room 7 (§9). EditMode expected 843 (805 + 38), to be confirmed by the developer's Test Runner run; 842 pass until the Trap Lab menu adds room 7 to `Sandbox_TrapLab.unity` | KIT-5, D-087 |
-| | KIT-7 (PAX-086) | Geyser: periodic air column launching the cat (~4.8 u apex); `CatMotor2D.ApplyLaunch` seam. Trap Lab room 8 | KIT-6, D-088 |
+| | KIT-5 (PAX-084) | Spear: fires once, extremely fast, sticks as a standable platform. Makes `ValidateBand` the shared levels-11+ check. Trap Lab room 6. **Done** (2c0cdb9). EditMode 805 (774 + 31) | PAX-059a, D-086 |
+| | KIT-6 (PAX-085) | Inverter: touching it swaps left/right for 150 ticks, visible cue; amends D-040/D-049 for traps only. Trap Lab room 7. **Done** (32fd29b). EditMode 843 (805 + 38) | KIT-5, D-087 |
+| | KIT-7 (PAX-086) | Geyser: periodic air column launching the cat (apex 4.81 u, measured); `CatMotor2D.ApplyLaunch` seam. Trap Lab room 8. **Done** (2026-09-26; developer accepted room 8, no issues). EditMode 900 (843 + 57) | KIT-6, D-088 |
 | | KIT-8 (PAX-087) | Climbable vines: new `Climb` stick axis, grab/climb/leap, snap vines. Trap Lab room 9 | KIT-7, D-089 |
 | | KIT-9 (PAX-088) | Storm cloud: wakes on a trigger, follows the cat, charges and strikes lightning. Trap Lab room 10 | KIT-8, D-090 |
 | | PAX-060 | Levels 11–20 (hard, batch 1) | PAX-059, KIT-4, KIT-5–KIT-9 |

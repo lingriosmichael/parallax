@@ -61,6 +61,17 @@ namespace Parallax.Gameplay.Player
             body.rotation = Vector2.SignedAngle(Vector2.down, gravity.Direction);
         }
 
+        /// <summary>PAX-086 (D-088): a geyser's push, called in the room step (after this tick's Step, before physics).
+        /// Sets the velocity along `direction` to `speed` (absolute) and keeps the cross component; the cat is airborne
+        /// and has no coyote left, so no coyote jump follows a launch. The jump buffer is untouched. Frozen: nothing.</summary>
+        public void ApplyLaunch(Vector2 direction, float speed)
+        {
+            if (IsFrozen || body == null) return;
+            body.linearVelocity = GeyserMath.Launch(body.linearVelocity, direction, speed);
+            coyoteTimer = 0f;
+            IsGrounded = false;
+        }
+
         void Awake()
         {
             body = GetComponent<Rigidbody2D>();

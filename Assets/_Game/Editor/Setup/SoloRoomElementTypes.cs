@@ -10,7 +10,8 @@ namespace Parallax.Editor.Setup
     // PAX-080 (D-080): FakePlatform is appended so every earlier value keeps its number. It looks like a Floor
     // and isn't solid; the builder makes it a CollapsingFloorTrap with a trigger body, Overlap, Once, delay 0.
     // PAX-085 (D-087): Inverter is appended the same way (levels 11+ only).
-    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter }
+    // PAX-086 (D-088): Geyser is appended the same way (levels 11+ only).
+    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser }
     public enum SoloRoomOpeningKind { Pit, Recess }
     public enum SoloRoomHazardRole { Normal, OpeningBottom, OpeningCap, CeilingForceUpCoverage, UnjumpableFloor }
     public enum RequiredJumpKind { Pit, Hazard }
@@ -43,6 +44,19 @@ namespace Parallax.Editor.Setup
         public int Duration => IsConfigured ? DurationTicks : ControlInversion.DefaultDurationTicks;
     }
 
+    // PAX-086 (D-088): a geyser's column and cycle. The element's box is the vent, flush in a Floor (Up) or a Ceiling
+    // (Down); the column rises from the vent's face. Its period and phase are the ordinary Periodic settings. Default
+    // (IsConfigured false) reads as the GeyserMath defaults, Up.
+    public readonly struct GeyserSettings
+    {
+        public readonly bool IsConfigured; public readonly GeyserDirection Direction; public readonly float ColumnWidth; public readonly float ColumnHeight;
+        public readonly int TellTicks; public readonly int EruptTicks; public readonly float LaunchSpeed;
+        public GeyserSettings(GeyserDirection direction = GeyserDirection.Up, float columnWidth = GeyserMath.DefaultColumnWidth, float columnHeight = GeyserMath.DefaultColumnHeight,
+            int tellTicks = GeyserMath.DefaultTellTicks, int eruptTicks = GeyserMath.DefaultEruptTicks, float launchSpeed = GeyserMath.DefaultLaunchSpeed)
+        { IsConfigured = true; Direction = direction; ColumnWidth = columnWidth; ColumnHeight = columnHeight; TellTicks = tellTicks; EruptTicks = eruptTicks; LaunchSpeed = launchSpeed; }
+        public GeyserSettings Resolved => IsConfigured ? this : new GeyserSettings(GeyserDirection.Up);
+    }
+
     public readonly struct SoloRoomTrapSettings
     {
         public readonly bool IsConfigured; public readonly int DelayTicks; public readonly int MoveTicks; public readonly int RevealDelayTicks;
@@ -57,13 +71,17 @@ namespace Parallax.Editor.Setup
         public readonly ArrowLane Arrow;
         // PAX-085 (D-087): default for every non-inverter element.
         public readonly InverterSettings Inverter;
+        // PAX-086 (D-088): default for every non-geyser element.
+        public readonly GeyserSettings Geyser;
         public SoloRoomTrapSettings(int delayTicks = 0, int moveTicks = 0, int revealDelayTicks = 0, float unitsPerTick = 0f, float travelDistance = 0f, FallingBlockDirection direction = FallingBlockDirection.Down, GravityFlipMode gravityMode = GravityFlipMode.Flip, bool rearmOnExit = false, bool rendererEnabled = false, Vector2 offset = default, string triggerName = "Trigger", TrapTriggerSource triggerSource = TrapTriggerSource.Overlap, string chainSource = null, TrapRepeatMode repeatMode = TrapRepeatMode.Once, int cooldownTicks = 0, int periodTicks = 1, int phaseTicks = 0, MovingTrapKind movingKind = MovingTrapKind.Hazard, int holdTicks = 0, int returnTicks = 0, float crushDepth = 0f, string learnedBypassReason = null)
-        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; }
+        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; Geyser = default; }
         // PAX-074 (D-078): an arrow's lane on top of ordinary trigger/repeat settings. Two parameters on
         // purpose: tests that build settings by reflection pick the longest constructor, which stays the one above.
         public SoloRoomTrapSettings(ArrowLane arrow, SoloRoomTrapSettings timing) { this = timing; Arrow = arrow; }
         // PAX-085 (D-087): an inverter's duration and look on top of ordinary trigger/repeat settings (same two-parameter shape).
         public SoloRoomTrapSettings(InverterSettings inverter, SoloRoomTrapSettings timing) { this = timing; Inverter = inverter; }
+        // PAX-086 (D-088): a geyser's column and cycle on top of its Periodic timing (same two-parameter shape).
+        public SoloRoomTrapSettings(GeyserSettings geyser, SoloRoomTrapSettings timing) { this = timing; Geyser = geyser; }
     }
 
     public readonly struct SoloRoomElement
