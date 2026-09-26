@@ -56,12 +56,13 @@ namespace Parallax.Editor.Setup
         // and is exempt. LevelLayoutTests keeps every shipped layout listed, and NoDevRoomIsAListedLevel keeps the
         // Trap Lab out of the list.
         // PAX-084 (D-086): the shared "levels 11+ only" check. Each kit mechanic for levels 11+ adds its kind here
-        // (spears first; KIT-6-KIT-9 extend it).
+        // (spears first; KIT-6-KIT-9 extend it). PAX-085 (D-087): inverters.
         public static List<string> ValidateBand(string levelId, SoloRoomDefinition room, LevelListConfig levels)
         {
             var errors = new List<string>();
             SoloRoomElement[] spears = room.Elements.Where(IsSpear).ToArray();
-            if (!HasSections(room) && spears.Length == 0) return errors;
+            SoloRoomElement[] inverters = room.Elements.Where(IsInverter).ToArray();
+            if (!HasSections(room) && spears.Length == 0 && inverters.Length == 0) return errors;
             if (levels == null) { errors.Add($"{levelId}: no LevelListConfig ({LevelListPath}); the band (D-065) is undefined."); return errors; }
             int number = LevelNumber(levels, levelId);
             if (number <= 0 || number > EasyBandLastLevel) return errors;
@@ -69,6 +70,8 @@ namespace Parallax.Editor.Setup
                 errors.Add($"{levelId}: precision section '{room.PrecisionSections[0].Name}' in level {number}; levels 1-{EasyBandLastLevel} are the easy band and allow no precision (D-065).");
             foreach (SoloRoomElement spear in spears)
                 errors.Add($"{levelId}: spear '{spear.Name}' in level {number}; spears are for levels {EasyBandLastLevel + 1}+ only (D-086).");
+            foreach (SoloRoomElement inverter in inverters)
+                errors.Add($"{levelId}: inverter '{inverter.Name}' in level {number}; inverters are for levels {EasyBandLastLevel + 1}+ only (D-087).");
             return errors;
         }
 

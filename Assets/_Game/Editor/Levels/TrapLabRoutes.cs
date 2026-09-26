@@ -8,6 +8,7 @@ namespace Parallax.Editor.Levels
     // PAX-075 (D-079): Trap Lab room 3 (the arrows, D-078). Not a level, so not in LevelRoutes.
     // PAX-080 (D-080): Trap Lab room 4, the troll-route room.
     // PAX-084 (D-086): Trap Lab room 6, the spear room.
+    // PAX-085 (D-087): Trap Lab room 7, the inverter room.
     public static class TrapLabRoutes
     {
         public static RoomRoutes Room3()
@@ -101,6 +102,24 @@ namespace Parallax.Editor.Levels
                         Jump(), For(4), Hold(Right), Until(XAtLeast(6.6f)), Release(), Until(GroundedOn("Floor_B")), Until(Still()),
                         Hold(Right), Until(XAtLeast(7.6f)), Release(), Until(Still()),
                         Jump(), For(5), Hold(Right), Until(XAtLeast(8.6f)), Release(), Until(Dead()))));
+        }
+
+        // PAX-085 (D-087): Trap Lab room 7, the inverter room. Hop Spikes_Back and run into the Inverter; then stop and wait
+        // out the 150 inverted steps (the step after Until(Fired) is the first inverted one), go right again, and jump the pit.
+        // The window measures how early the run can restart while still inverted.
+        public static RoomRoutes Room7()
+        {
+            var solution = new Route("Trap Lab room 7 solution",
+                Hold(Right), Until(XAtLeast(4f)), Jump(), Until(Airborne()), Until(Fired("Inverter")),
+                Release(), For(150),
+                Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(10.4f)), Jump(), Until(Airborne()), Until(RoomComplete()));
+
+            return new RoomRoutes(solution,
+                new Betrayal("A cat that keeps holding right after the Inverter runs back into Spikes_Back", "Spikes_Back", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Fired(Inverter))", "keep holding right", Until(Dead())), revealedBy: CatInverted),
+                Betrayal.Recovers("A cat that plays it inverted (holds left to go right) jumps the pit and reaches the door", CatInverted,
+                    Route.PrefixOf(solution, "Until(Fired(Inverter))", "play it inverted",
+                        Hold(Left), Until(XAtLeast(10.4f)), Jump(), Until(Airborne()), Until(RoomComplete()))));
         }
 
         // PAX-076 (D-083) §2.5: the bait gap attempted from its best take-off: full speed off P8's edge, the jump in the

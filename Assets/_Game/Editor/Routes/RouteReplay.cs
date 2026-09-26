@@ -65,6 +65,7 @@ namespace Parallax.Editor.Routes
             var result = new ReplayResult { Route = route.Name };
             foreach (Element e in rig.Elements) result.Elements.Add(e.Name);
             result.Elements.Add(R.CatGravity);
+            result.Elements.Add(R.CatInverted);
             result.Records.Add(rig.Snapshot(0, default));
             var view = new RouteView { Result = result };
             var runner = new RouteRunner(route, options, result);
@@ -130,6 +131,7 @@ namespace Parallax.Editor.Routes
             public FallingBlockTrap Block; public Vector2 BlockLanded;
             public MovingTrap Moving; public bool MovingHazard; public float MovingStep, CrushDepth;
             public ArrowTrap Arrow; public int ArrowTell;
+            public InverterTrap Inverter;
         }
 
         sealed class Rig
@@ -265,6 +267,7 @@ namespace Parallax.Editor.Routes
                     e.CrushDepth = depth > 0f ? depth : ((CrushConfig)Get(e.Moving, "crushConfig")).DefaultCrushDepth;
                 }
                 e.Arrow = go.GetComponent<ArrowTrap>();
+                e.Inverter = go.GetComponent<InverterTrap>();
                 if (e.Arrow != null)
                 {
                     e.ArrowTell = (int)Get(e.Arrow, "tellTicks");
@@ -294,8 +297,8 @@ namespace Parallax.Editor.Routes
                     GravityUp = down.y > 0f, Ground = "",
                     Dead = Death.IsHolding || Death.WasKilledThisTick(ObserverId.A, tick), Holding = Death.IsHolding, Complete = Rooms.LevelComplete,
                     Move = Mathf.RoundToInt(command.Move), JumpPressed = command.JumpPressed,
-                    FireTick = new int[Elements.Count + 1], Signature = new int[Elements.Count + 1],
-                    RenderBounds = new Rect[Elements.Count + 1], Rendered = new bool[Elements.Count + 1],
+                    FireTick = new int[Elements.Count + 2], Signature = new int[Elements.Count + 2],
+                    RenderBounds = new Rect[Elements.Count + 2], Rendered = new bool[Elements.Count + 2],
                 };
                 // PAX-076 (D-083) R3: what the camera tell rule reads.
                 Vector3 catPosition = Cat.transform.position;
@@ -317,6 +320,14 @@ namespace Parallax.Editor.Routes
                 }
                 r.FireTick[Elements.Count] = -1;
                 r.Signature[Elements.Count] = r.GravityUp ? 1 : 0;
+                // PAX-085 (D-087) R1/R2: Cat.Inverted. Visible while any inverter's cue is on (its first change is the fire
+                // tick); for the camera tell rule it is drawn where the cat is (its collider), never where the cue is placed.
+                int inverted = Elements.Count + 1;
+                r.FireTick[inverted] = -1;
+                r.Signature[inverted] = 0;
+                foreach (Element e in Elements) if (e.Inverter != null && e.Inverter.IsCueShown) r.Signature[inverted] = 1;
+                r.Rendered[inverted] = true;
+                r.RenderBounds[inverted] = Rect.MinMaxRect(b.min.x - Origin.x, b.min.y - Origin.y, b.max.x - Origin.x, b.max.y - Origin.y);
                 return r;
             }
 

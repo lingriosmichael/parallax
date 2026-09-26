@@ -1621,3 +1621,73 @@ landing fails the replay. Jumps onto stuck spears are ordinary `RequiredJump`s, 
 (9) **Limits:** horizontal spears only, one spear per fire, no vertical or retracting spears, placeholder colour (an
 art ticket later). A stuck spear isn't fixed geometry for other rules: an arrow can't be hosted in it or stop at it.
 Not device-tested (Phase H).
+
+### D-087 · 2026-09-26 · Accepted
+
+**Decision:** The inverter (PAX-085, KIT-6): a visible, timed swap of horizontal input on touch, for levels 11+ only.
+Rulings: `Docs/0_TASKS/PAX-085.md` §11. **Amends D-040's and D-049's "no controls-reversed death":** reversal as a
+*trap* is allowed in levels 11+; accidental reversal (from gravity or projection) stays banned, and the default mapping
+stays D-049's screen-relative one.
+
+(1) **What it is.** `SoloRoomElementKind.Inverter` (appended), built as an `InverterTrap` (a `RoomTrap`). Trigger: Overlap
+on its own body (a trigger box), a separate child box (the element's secondary box), or Chain. Repeat: Once (default) or
+Rearm; Periodic is an error. `InverterSettings`: `DurationTicks` (default 150 = 3 s at 50 Hz) and `Disguised`. Honest
+(default): a cyan orb on its body, hidden while fired and shown again when it rearms or the room resets. Disguised: no
+body visual, an invisible trigger (D-056 (4)).
+
+(2) **The window, in motor steps (§11 R4).** Fired in the room step at tick T, after that tick's motor step, it inverts
+the motor steps T+1 through T+DurationTicks: exactly DurationTicks of them. A refire at T′ restarts the full window at
+T′+1. The pure timer is `Parallax.Core.ControlInversion` (`Fire`, `IsActive`, `Remaining`, `IsCueVisible`, `Clear`).
+
+(3) **Where it applies.** `LocalHumanDriver` negates the motor command's `Move`, after `SeatCommandFilter`, and nothing
+else: Jump, the interactor's command and the recorded input are untouched. It's the only code path that inverts input.
+The driver collects every `IControlModifier` (`{ bool InvertsMove { get; } }`, Core) under its own reality root in
+`Activate`; a reality with none (`Sandbox_Realities`) changes nothing. `InvertsMove` is true only while the trap's room
+is live, the death hold isn't running, and the upcoming motor step is inside the window. Several inverters active at
+once: the cat is inverted while any one is active; they never toggle each other. Play and the route harness use the
+same driver.
+
+(4) **Counted in room ticks.** The death hold (D-059) and the pause (D-073) freeze it. The room reset (D-041) clears it.
+A pause's `router.ResetTransientState` doesn't. When its room stops being live (door, level complete) the trap clears
+itself (`ObserverSet.Stepped`) by the next tick at the latest (the same tick when it's subscribed after `RoomManager`),
+so no cue follows the cat into the next room. `InvertsMove` is false from the tick the room stops being live. Disabling
+the trap clears it too.
+
+(5) **Cue (§11 R1).** Two child renderers of the trap: `Cue_Ring` (1.5 × 1.1, translucent, behind the cat) and `Cue_Mark`
+(0.7 × 0.2, over the cat's head side, never rotated). Placeholder art; the cat prefab and `CatVisualPresenter` are
+untouched. On/off is game state, set in the room step: on from the fire tick through the last inverted step, and over
+the last 30 ticks off/on in runs of 5, ending on. Their position is presentation only: `LateUpdate` puts them on the
+cat, and nothing in the game or the harness reads it. If the ring doesn't read clearly in play, a later ticket adds an
+overlay through `CatVisualPresenter`.
+
+(6) **Validator** (`LevelLayoutValidator.Inverter.cs`, separately named, not in `Validate`, like `ValidateSpear`):
+- `ValidateInverter`: a duration of 25–500 ticks, never Periodic, a non-empty box, and the box (and any separate
+  trigger) inside the room's frame. The frame rule doesn't list inverters, so it's checked here.
+- An inverter is never a kill volume, so door clearance ignores it.
+- `ValidateBand`: an inverter in a level numbered 1–10 is an error naming the level.
+- **Limits:** an inverter can be a chain target but not a chain source. `TrapLayoutValidator`'s list of trap kinds doesn't
+  include it; that file was outside PAX-085's allowed list. `ValidateInverter`, which also does the inverter's frame
+  containment, isn't part of `Validate()`, so a shipped level with an inverter needs its tests to call it until a
+  follow-up wires it into `LevelLayoutValidator.cs`.
+
+(7) **Routes (amends D-079 (3)).** A second extra element, `Cat.Inverted` (`R.CatInverted`), after `Cat.Gravity`. It is
+visible while any inverter's cue is on, so its first visible change is the fire tick. Its render box for the camera
+tell rule is the cat's collider. A betrayal that dies because of the inversion declares `revealedBy: Cat.Inverted`, with
+a lead ≥ 6 as usual. Route moves stay screen-relative *input*: `Hold(Right)` pushes the stick right, and the cat goes
+left while inverted. No `Inverted()` condition was needed: the solution waits with `For(150)`. Every pinned route
+result was unchanged.
+
+(8) **Trap Lab room 7** (origin 316, 20 wide).
+- **Layout.** A corridor: hop `Spikes_Back` (1 wide), then the `Inverter` (an honest pillar 0.6 × 3, so no jump clears
+  it) just before a 1.5 u spike pit, and the door beyond.
+- **Solution.** Stop, wait out the 150 steps (`Release`, `For(150)`), then run and jump the pit. Timed window: the restart
+  after the wait, 50 (d −24..+25). Starting up to 24 ticks early walks the cat left, still inverted, and it turns before
+  `Spikes_Back`.
+- **Betrayals.**
+  - **Dies:** keep holding right, and the cat runs back into `Spikes_Back`. Fire t63, kill t97, lead 34.
+  - **Recovers:** play it inverted. Hold left to go right, jump the pit while inverted, and reach the door (t130).
+- The camera tell rule passes at 4:3, 16:9 and 20:9.
+
+(9) **Limits:** it inverts the horizontal axis only. No jump or gravity inversion, no permanent (until-reset) inversion,
+no toggles, placeholder art. KIT-8's `Climb` axis is not inverted (KIT-8's decision will state it). The Inverter element's own route signature
+includes its cue children, where they're built; betrayals read `Cat.Inverted`, never that. Not device-tested (Phase H).

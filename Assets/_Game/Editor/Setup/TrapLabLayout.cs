@@ -50,6 +50,8 @@ namespace Parallax.Editor.Setup
             , Room5()
             // PAX-084 (D-086): the spear room.
             , Room6()
+            // PAX-085 (D-087): the inverter room.
+            , Room7()
         };
 
         // One valid route: Start_Floor -> Up_1 -> Up_2 -> Exit_Perch (door). Betrayals: Stone_A (fake, looks like the
@@ -161,6 +163,33 @@ namespace Parallax.Editor.Setup
                 J6(11.5f, 12.5f, 2.9f, 4f, "Spear_3", "FarWall"),
             };
             return new SoloRoomDefinition(6, 287f, 16f, elements, System.Array.Empty<SoloRoomOpening>(), jumps);
+        }
+
+        // PAX-085 (D-087): the inverter room, origin 316 (room 6 ends at 303; the same 13 u gap). A corridor: hop Spikes_Back,
+        // then the Inverter (an honest cyan pillar, 3 tall, so no jump clears it) just before a 1.5 u spike pit, and the
+        // door beyond. Touching it swaps left and right for 150 ticks: a cat still holding right runs back into Spikes_Back.
+        // Wait it out (the cue blinks over its last 30 ticks), or play it inverted: hold left to go right.
+        static SoloRoomDefinition Room7()
+        {
+            var elements = new[] {
+                E(SoloRoomElementKind.Ceiling,"Ceiling",(10f,7.5f),(20f,1f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint",(2f,0),(0,0)),
+                E(SoloRoomElementKind.Floor,"Floor_A",(5.5f,-.5f),(11f,1f)),
+                E(SoloRoomElementKind.Hazard,"Spikes_Back",(5.5f,.15f),(1f,.3f)),
+                E(SoloRoomElementKind.Inverter,"Inverter",(10f,1.5f),(.6f,3f),settings:new SoloRoomTrapSettings(new InverterSettings(),new SoloRoomTrapSettings(delayTicks:0))),
+                E(SoloRoomElementKind.Wall,"Pit_L",(10.5f,-2.5f),(1f,3f)),
+                E(SoloRoomElementKind.Wall,"Pit_R",(13f,-2.5f),(1f,3f)),
+                E(SoloRoomElementKind.PitBottom,"Pit_Bottom",(11.75f,-3.5f),(1.5f,1f)),
+                new SoloRoomElement(SoloRoomElementKind.Hazard,"Pit_Hazard",new Vector2(11.75f,-2.85f),new Vector2(1.5f,.3f),hazardRole:SoloRoomHazardRole.OpeningBottom),
+                E(SoloRoomElementKind.Floor,"Floor_C",(16.25f,-.5f),(7.5f,1f)),
+                E(SoloRoomElementKind.Door,"Door",(18f,.75f),(.6f,1.5f)),
+            };
+            var openings = new[] { new SoloRoomOpening(SoloRoomOpeningKind.Pit, 11f, 12.5f, "Pit_L", "Pit_R", "Pit_Bottom", "Pit_Hazard") };
+            var jumps = new[] {
+                new RequiredJump("Spikes_Back",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,4.5f,6.5f,0f,0f,2.5f,hazardHeight:.3f,sourceName:"Floor_A",destinationName:"Floor_A"),
+                new RequiredJump("Pit_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,10.5f,13f,0f,0f,1f,sourceName:"Floor_A",destinationName:"Floor_C"),
+            };
+            return new SoloRoomDefinition(7, 316f, 20f, elements, openings, jumps);
         }
 
         static RequiredJump J6(float takeoffX, float landingX, float takeoffPaw, float landingPaw, string source, string destination) =>

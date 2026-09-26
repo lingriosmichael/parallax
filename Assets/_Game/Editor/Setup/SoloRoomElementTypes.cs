@@ -9,7 +9,8 @@ namespace Parallax.Editor.Setup
     // readonly modifier, and no behaviour changed by the move.
     // PAX-080 (D-080): FakePlatform is appended so every earlier value keeps its number. It looks like a Floor
     // and isn't solid; the builder makes it a CollapsingFloorTrap with a trigger body, Overlap, Once, delay 0.
-    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform }
+    // PAX-085 (D-087): Inverter is appended the same way (levels 11+ only).
+    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter }
     public enum SoloRoomOpeningKind { Pit, Recess }
     public enum SoloRoomHazardRole { Normal, OpeningBottom, OpeningCap, CeilingForceUpCoverage, UnjumpableFloor }
     public enum RequiredJumpKind { Pit, Hazard }
@@ -33,6 +34,15 @@ namespace Parallax.Editor.Setup
             new(direction, laneY, laneEndX, length, thickness, unitsPerTick, tellTicks, disguised, spear: true);
     }
 
+    // PAX-085 (D-087): an inverter's settings. Default (IsConfigured false) reads as 150 ticks, honest.
+    public readonly struct InverterSettings
+    {
+        public readonly bool IsConfigured; public readonly int DurationTicks; public readonly bool Disguised;
+        public InverterSettings(int durationTicks = ControlInversion.DefaultDurationTicks, bool disguised = false)
+        { IsConfigured = true; DurationTicks = durationTicks; Disguised = disguised; }
+        public int Duration => IsConfigured ? DurationTicks : ControlInversion.DefaultDurationTicks;
+    }
+
     public readonly struct SoloRoomTrapSettings
     {
         public readonly bool IsConfigured; public readonly int DelayTicks; public readonly int MoveTicks; public readonly int RevealDelayTicks;
@@ -45,11 +55,15 @@ namespace Parallax.Editor.Setup
         public readonly string LearnedBypassReason;
         // PAX-074 (D-078): default (IsConfigured false) for every non-arrow element.
         public readonly ArrowLane Arrow;
+        // PAX-085 (D-087): default for every non-inverter element.
+        public readonly InverterSettings Inverter;
         public SoloRoomTrapSettings(int delayTicks = 0, int moveTicks = 0, int revealDelayTicks = 0, float unitsPerTick = 0f, float travelDistance = 0f, FallingBlockDirection direction = FallingBlockDirection.Down, GravityFlipMode gravityMode = GravityFlipMode.Flip, bool rearmOnExit = false, bool rendererEnabled = false, Vector2 offset = default, string triggerName = "Trigger", TrapTriggerSource triggerSource = TrapTriggerSource.Overlap, string chainSource = null, TrapRepeatMode repeatMode = TrapRepeatMode.Once, int cooldownTicks = 0, int periodTicks = 1, int phaseTicks = 0, MovingTrapKind movingKind = MovingTrapKind.Hazard, int holdTicks = 0, int returnTicks = 0, float crushDepth = 0f, string learnedBypassReason = null)
-        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; }
+        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; }
         // PAX-074 (D-078): an arrow's lane on top of ordinary trigger/repeat settings. Two parameters on
         // purpose: tests that build settings by reflection pick the longest constructor, which stays the one above.
         public SoloRoomTrapSettings(ArrowLane arrow, SoloRoomTrapSettings timing) { this = timing; Arrow = arrow; }
+        // PAX-085 (D-087): an inverter's duration and look on top of ordinary trigger/repeat settings (same two-parameter shape).
+        public SoloRoomTrapSettings(InverterSettings inverter, SoloRoomTrapSettings timing) { this = timing; Inverter = inverter; }
     }
 
     public readonly struct SoloRoomElement

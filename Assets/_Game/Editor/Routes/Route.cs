@@ -119,6 +119,9 @@ namespace Parallax.Editor.Routes
     {
         public const int Right = 1, Left = -1;
         public const string CatGravity = "Cat.Gravity";
+        // PAX-085 (D-087): the second extra element. Its first visible change is the inverter cue switching on (the fire
+        // tick); its render box for the camera tell rule is the cat's collider.
+        public const string CatInverted = "Cat.Inverted";
 
         public static RouteStep Hold(int direction) => new(RouteStepKind.Hold, direction: direction);
         public static RouteStep Release() => new(RouteStepKind.Release);
