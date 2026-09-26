@@ -10,6 +10,7 @@ namespace Parallax.Editor.Levels
     // PAX-084 (D-086): Trap Lab room 6, the spear room.
     // PAX-085 (D-087): Trap Lab room 7, the inverter room.
     // PAX-086 (D-088): Trap Lab room 8, the geyser room.
+    // PAX-087 (D-089): Trap Lab room 9, the vine room.
     public static class TrapLabRoutes
     {
         public static RoomRoutes Room3()
@@ -140,6 +141,29 @@ namespace Parallax.Editor.Levels
                         Until(Fired("Geyser")), Hold(Left), Until(XAtMost(6.5f)), Release(), Until(Still()), For(50),
                         Hold(Right), Until(XAtLeast(8.4f)), Release(), Until(Still()), Until(Airborne()),
                         For(10), Hold(Left), Until(RoomComplete()))));
+        }
+
+        // PAX-087 (D-089): Trap Lab room 9, the vine room. Walk right pushing up: the cat grabs Vine_Real from the ground,
+        // climbs to its top (collider top at the vine's 5.1, its bottom at 4.54, just above the Cliff) and leaps right onto the Cliff. The leap is the
+        // timed step: how much earlier (lower on the vine) or later it can go. ReleaseClimb() after the leap, so the cat in
+        // the air never grabs Vine_Obvious. The betrayals push up only once airborne: up on the jump tick would grab from
+        // the ground, and a jump press on a grab tick leaps (D-089).
+        public static RoomRoutes Room9()
+        {
+            var solution = new Route("Trap Lab room 9 solution",
+                Hold(Right), Hold(Up), Until(Climbing()), Until(YAtLeast(4.8f)),
+                Jump().Timed(TimedMode.Shift), ReleaseClimb(), Until(RoomComplete()));
+
+            return new RoomRoutes(solution,
+                new Betrayal("The obvious vine next to the Cliff snaps halfway up and drops the cat onto the PitHazard", "PitHazard", DeathCause.Hazard,
+                    new Route("climb the obvious vine",
+                        Hold(Right), Until(XAtLeast(8.6f)), Jump(), Until(Airborne()), Hold(Up), Until(Climbing()), Until(Dead())),
+                    revealedBy: "Vine_Obvious"),
+                Betrayal.Recovers("A cat that leaps back off the obvious vine once it has touched the snap sees it go, and takes the real vine", "Vine_Obvious",
+                    new Route("touch the snap, leap back, take the real vine",
+                        Hold(Right), Until(XAtLeast(8.6f)), Jump(), Until(Airborne()), Hold(Up), Until(Climbing()), Until(YAtLeast(1.8f)),
+                        Hold(Left), Jump(), ReleaseClimb(), Until(Grounded()), Until(Fired("Vine_Obvious")),
+                        Hold(Right), Hold(Up), Until(Climbing()), Until(YAtLeast(4.8f)), Jump(), ReleaseClimb(), Until(RoomComplete()))));
         }
 
         // PAX-076 (D-083) §2.5: the bait gap attempted from its best take-off: full speed off P8's edge, the jump in the

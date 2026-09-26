@@ -61,7 +61,7 @@ PAX-058 in this phase's build order even though their numbers are higher; PAX-05
 | | KIT-5 (PAX-084) | Spear: fires once, extremely fast, sticks as a standable platform. Makes `ValidateBand` the shared levels-11+ check. Trap Lab room 6. **Done** (2c0cdb9). EditMode 805 (774 + 31) | PAX-059a, D-086 |
 | | KIT-6 (PAX-085) | Inverter: touching it swaps left/right for 150 ticks, visible cue; amends D-040/D-049 for traps only. Trap Lab room 7. **Done** (32fd29b). EditMode 843 (805 + 38) | KIT-5, D-087 |
 | | KIT-7 (PAX-086) | Geyser: periodic air column launching the cat (apex 4.81 u, measured); `CatMotor2D.ApplyLaunch` seam. Trap Lab room 8. **Done** (2026-09-26; developer accepted room 8, no issues). EditMode 900 (843 + 57) | KIT-6, D-088 |
-| | KIT-8 (PAX-087) | Climbable vines: new `Climb` stick axis, grab/climb/leap, snap vines. Trap Lab room 9 | KIT-7, D-089 |
+| | KIT-8 (PAX-087) | Climbable vines: new `Climb` stick axis (grab at 42.5° full push; Space-only jump on the keyboard), grab/climb/leap, snap vines. Trap Lab room 9 (window 48, lead 38). **Implemented** (2026-09-26); awaiting the developer's room 9 play and full EditMode run | KIT-7, D-089 |
 | | KIT-9 (PAX-088) | Storm cloud: wakes on a trigger, follows the cat, charges and strikes lightning. Trap Lab room 10 | KIT-8, D-090 |
 | | PAX-060 | Levels 11–20 (hard, batch 1) | PAX-059, KIT-4, KIT-5–KIT-9 |
 | | PAX-061 | Levels 21–30 (hard, batch 2) | PAX-060 |

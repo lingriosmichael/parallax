@@ -69,6 +69,7 @@ namespace Parallax.Gameplay.Input
         {
             var result = CatCommand.None;
             float bestMagnitude = -1f;
+            float bestClimb = -1f;
 
             for (int i = 0; i < validSources.Count; i++)
             {
@@ -79,6 +80,14 @@ namespace Parallax.Gameplay.Input
                 {
                     bestMagnitude = magnitude;
                     result.Move = cmd.Move;
+                }
+
+                // PAX-087 (D-089): Climb merges like Move, the largest magnitude wins.
+                float climb = Mathf.Abs(cmd.Climb);
+                if (climb > bestClimb)
+                {
+                    bestClimb = climb;
+                    result.Climb = cmd.Climb;
                 }
 
                 result.JumpPressed     |= cmd.JumpPressed;

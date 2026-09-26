@@ -46,6 +46,11 @@ namespace Parallax.Gameplay.Presentation
         CatAnimStateMachine stateMachine;
 
         bool initialized;
+        // PAX-087 (D-089): the climb pose turns this transform; its authored pose is restored on leaving Climb.
+        Vector3 restLocalPosition;
+        Quaternion restLocalRotation;
+        Collider2D bodyCollider;
+        bool climbPosed;
         Vector2 lastWorldPosition;
         Vector2 smoothedVelocity;
         float clipClock;
@@ -65,6 +70,9 @@ namespace Parallax.Gameplay.Presentation
             gravity = motor.GetComponent<GravityReceiver>();
             reality = motor.GetComponentInParent<RealityRoot>();
             motionRoot = motor.transform;
+            restLocalPosition = transform.localPosition;
+            restLocalRotation = transform.localRotation;
+            foreach (Collider2D c in motor.GetComponents<Collider2D>()) if (!c.isTrigger) { bodyCollider = c; break; }
 
             if (gravity == null)
             {
@@ -148,11 +156,53 @@ namespace Parallax.Gameplay.Presentation
             CatAnimState previous = stateMachine.State;
             CatAnimState next = teleported
                 ? stateMachine.State
-                : stateMachine.Step(motor.IsGrounded, rawAlong, rawVelocityAlongGravity, dt);
+                : stateMachine.Step(motor.IsClimbing, motor.IsGrounded, rawAlong, rawVelocityAlongGravity, dt);
             if (next != previous) clipClock = 0f;
 
             UpdateEchoAlpha();
-            UpdateSprite(next, rawAlong, dt);
+            ApplyClimbPose(next == CatAnimState.Climb, down);
+            // PAX-087 (D-089): until the art ticket's climb sheet, Climb shows the Walk frames while the cat moves on the
+            // vine (at the vertical speed) and the Idle frame while it hangs still, turned by the climb pose.
+            if (next == CatAnimState.Climb)
+            {
+                bool moving = Mathf.Abs(rawVelocityAlongGravity) > config.WalkEnter;
+                UpdateSprite(moving ? CatAnimState.Walk : CatAnimState.Idle, rawVelocityAlongGravity, dt);
+            }
+            else UpdateSprite(next, rawAlong, dt);
+        }
+
+        /// <summary>PAX-087 (D-089): the climb pose. Turns the visual by the returned angle so the head points screen-up
+        /// for either facing and either gravity, and places it so the sprite's own centre (`spriteCentre`, in the visual's
+        /// unscaled local space, e.g. the current frame's bounds centre) lands on the collider's centre. `facing` is the
+        /// sign of the visual's localScale.x; positions are in the cat's local space.</summary>
+        public static float ClimbPose(float facing, bool gravityDown, Vector2 spriteCentre, Vector2 colliderCentre, out Vector2 position)
+        {
+            float sign = Mathf.Sign(facing);
+            float angle = 90f * sign * (gravityDown ? 1f : -1f);
+            Vector2 scaled = new(spriteCentre.x * sign, spriteCentre.y);
+            position = colliderCentre - (Vector2)(Quaternion.Euler(0f, 0f, angle) * scaled);
+            return angle;
+        }
+
+        void ApplyClimbPose(bool climbing, Vector2 down)
+        {
+            if (!climbing)
+            {
+                if (!climbPosed) return;
+                transform.localPosition = restLocalPosition;
+                transform.localRotation = restLocalRotation;
+                climbPosed = false;
+                return;
+            }
+            Vector2 centre = bodyCollider != null ? bodyCollider.offset : (Vector2)restLocalPosition;
+            Vector2 spriteCentre = bodyRenderer.sprite != null ? (Vector2)bodyRenderer.sprite.bounds.center : Vector2.zero;
+            if (bodyRenderer.transform != transform) spriteCentre += (Vector2)bodyRenderer.transform.localPosition;
+            Vector3 scale = transform.localScale;
+            spriteCentre = Vector2.Scale(spriteCentre, new Vector2(Mathf.Abs(scale.x), scale.y));
+            float angle = ClimbPose(transform.localScale.x, down.y <= 0f, spriteCentre, centre, out Vector2 position);
+            transform.localPosition = new Vector3(position.x, position.y, restLocalPosition.z);
+            transform.localRotation = Quaternion.Euler(0f, 0f, angle);
+            climbPosed = true;
         }
 
         void UpdateFacing(float along)
@@ -227,6 +277,7 @@ namespace Parallax.Gameplay.Presentation
                 case CatAnimState.Rise: return riseClip;
                 case CatAnimState.Fall: return fallClip;
                 case CatAnimState.Land: return landClip;
+                // PAX-087 (D-089): Climb shows the Idle frames until the art ticket delivers a climb sheet.
                 default: return idleClip;
             }
         }

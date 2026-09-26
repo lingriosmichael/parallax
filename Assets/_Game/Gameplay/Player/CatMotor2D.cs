@@ -1,5 +1,6 @@
 using Parallax.Core;
 using Parallax.Gameplay.Reality;
+using Parallax.Gameplay.Rooms;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Player
@@ -24,9 +25,20 @@ namespace Parallax.Gameplay.Player
         float jumpBufferTimer;
 
         RigidbodyConstraints2D savedConstraints;
+        // PAX-087 (D-089): the climbing branch; null only when Awake disabled the motor.
+        CatClimber climber;
 
         public bool IsGrounded { get; private set; }
         public bool IsFrozen { get; private set; }
+        public bool IsClimbing => climber != null && climber.IsClimbing;
+        public ClimbVine ClimbedVine => climber?.Vine;
+
+        /// <summary>PAX-087 (D-089): the vines this cat may climb, handed over by LocalHumanDriver.Activate (null: none).
+        /// Any climb in progress ends.</summary>
+        public void SetClimbVines(ClimbVine[] vines) => climber?.SetVines(vines);
+
+        /// <summary>PAX-087 (D-089): a snap vine lets go of the cat (with the regrab lock). Nothing unless climbing it.</summary>
+        public void ReleaseClimb(ClimbVine vine) => climber?.Release(vine);
 
         /// <summary>PAX-047 (D-058): freezes the cat in place for a death hold. Step() no-ops while frozen.</summary>
         public void Freeze()
@@ -58,6 +70,7 @@ namespace Parallax.Gameplay.Player
             coyoteTimer = 0f;
             jumpBufferTimer = 0f;
             command = CatCommand.None;
+            climber?.Clear();   // PAX-087 (D-089): a death, reset or respawn ends a climb, with no regrab lock
             body.rotation = Vector2.SignedAngle(Vector2.down, gravity.Direction);
         }
 
@@ -67,6 +80,7 @@ namespace Parallax.Gameplay.Player
         public void ApplyLaunch(Vector2 direction, float speed)
         {
             if (IsFrozen || body == null) return;
+            climber?.Release();   // PAX-087 (D-089): a launch lets go of the vine (with the regrab lock)
             body.linearVelocity = GeyserMath.Launch(body.linearVelocity, direction, speed);
             coyoteTimer = 0f;
             IsGrounded = false;
@@ -94,6 +108,10 @@ namespace Parallax.Gameplay.Player
             groundFilter = new ContactFilter2D();
             groundFilter.useTriggers = false;
             groundFilter.SetLayerMask(reality != null ? reality.PhysicsMask : (LayerMask)0);
+
+            Collider2D bodyCollider = null;
+            foreach (Collider2D c in GetComponents<Collider2D>()) if (!c.isTrigger) { bodyCollider = c; break; }
+            climber = new CatClimber(body, bodyCollider, config);
         }
 
         public void Step(in CatCommand input, float dt)
@@ -115,6 +133,17 @@ namespace Parallax.Gameplay.Player
             float fall  = Vector2.Dot(v, down);
 
             UpdateGrounded(down, fall);
+
+            // PAX-087 (D-089): climbing, or a leap off a vine, owns this step. With Climb 0 and no climb in progress it
+            // returns false having touched nothing, so everything below runs exactly as before.
+            if (climber != null && climber.Step(command, down, right, IsGrounded, jumpBufferTimer > 0f, JumpMath.SpeedForHeight(config.JumpHeight, gravity.Strength), dt))
+            {
+                IsGrounded = false;
+                coyoteTimer = 0f;
+                jumpBufferTimer = 0f;
+                body.rotation = Vector2.SignedAngle(Vector2.down, down);
+                return;
+            }
 
             int coyote = (int)coyoteTimer;
             int buffer = (int)jumpBufferTimer;

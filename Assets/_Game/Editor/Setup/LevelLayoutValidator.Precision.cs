@@ -56,14 +56,15 @@ namespace Parallax.Editor.Setup
         // and is exempt. LevelLayoutTests keeps every shipped layout listed, and NoDevRoomIsAListedLevel keeps the
         // Trap Lab out of the list.
         // PAX-084 (D-086): the shared "levels 11+ only" check. Each kit mechanic for levels 11+ adds its kind here
-        // (spears first; KIT-6-KIT-9 extend it). PAX-085 (D-087): inverters. PAX-086 (D-088): geysers.
+        // (spears first; KIT-6-KIT-9 extend it). PAX-085 (D-087): inverters. PAX-086 (D-088): geysers. PAX-087 (D-089): vines.
         public static List<string> ValidateBand(string levelId, SoloRoomDefinition room, LevelListConfig levels)
         {
             var errors = new List<string>();
             SoloRoomElement[] spears = room.Elements.Where(IsSpear).ToArray();
             SoloRoomElement[] inverters = room.Elements.Where(IsInverter).ToArray();
             SoloRoomElement[] geysers = room.Elements.Where(IsGeyser).ToArray();
-            if (!HasSections(room) && spears.Length == 0 && inverters.Length == 0 && geysers.Length == 0) return errors;
+            SoloRoomElement[] vines = room.Elements.Where(IsVine).ToArray();
+            if (!HasSections(room) && spears.Length == 0 && inverters.Length == 0 && geysers.Length == 0 && vines.Length == 0) return errors;
             if (levels == null) { errors.Add($"{levelId}: no LevelListConfig ({LevelListPath}); the band (D-065) is undefined."); return errors; }
             int number = LevelNumber(levels, levelId);
             if (number <= 0 || number > EasyBandLastLevel) return errors;
@@ -75,6 +76,8 @@ namespace Parallax.Editor.Setup
                 errors.Add($"{levelId}: inverter '{inverter.Name}' in level {number}; inverters are for levels {EasyBandLastLevel + 1}+ only (D-087).");
             foreach (SoloRoomElement geyser in geysers)
                 errors.Add($"{levelId}: geyser '{geyser.Name}' in level {number}; geysers are for levels {EasyBandLastLevel + 1}+ only (D-088).");
+            foreach (SoloRoomElement vine in vines)
+                errors.Add($"{levelId}: vine '{vine.Name}' in level {number}; vines are for levels {EasyBandLastLevel + 1}+ only (D-089).");
             return errors;
         }
 

@@ -8,8 +8,11 @@ namespace Parallax.Editor.Routes
     // PAX-075 (D-079): a room's anatomy as data. A route is a list of scripted steps the harness
     // turns into one CatCommand per tick. Conditions read the previous tick's post-physics record
     // (the frame the player last saw), before this tick's motor step.
-    public enum RouteStepKind { Hold, Release, Jump, Until, For, Margin }
+    // PAX-087 (D-089): HoldClimb and ReleaseClimb are appended; Climb is held beside Move, and Release() clears Move only.
+    public enum RouteStepKind { Hold, Release, Jump, Until, For, Margin, HoldClimb, ReleaseClimb }
     public enum TimedMode { None, Shift, Hesitate }
+    // PAX-087 (D-089): a vertical hold, screen-relative like Hold(Right/Left) (Climb is never gravity-projected).
+    public enum Vertical { Down = -1, Up = 1 }
 
     public sealed class RouteCondition
     {
@@ -44,6 +47,8 @@ namespace Parallax.Editor.Routes
         {
             RouteStepKind.Hold => Direction > 0 ? "Hold(Right)" : "Hold(Left)",
             RouteStepKind.Release => "Release()",
+            RouteStepKind.HoldClimb => Direction > 0 ? "Hold(Up)" : "Hold(Down)",
+            RouteStepKind.ReleaseClimb => "ReleaseClimb()",
             RouteStepKind.Jump => "Jump()",
             RouteStepKind.Until => "Until(" + Condition.Label + ")",
             RouteStepKind.For => "For(" + Ticks + ")",
@@ -118,6 +123,7 @@ namespace Parallax.Editor.Routes
     public static class R
     {
         public const int Right = 1, Left = -1;
+        public const Vertical Up = Vertical.Up, Down = Vertical.Down;
         public const string CatGravity = "Cat.Gravity";
         // PAX-085 (D-087): the second extra element. Its first visible change is the inverter cue switching on (the fire
         // tick); its render box for the camera tell rule is the cat's collider.
@@ -125,6 +131,9 @@ namespace Parallax.Editor.Routes
 
         public static RouteStep Hold(int direction) => new(RouteStepKind.Hold, direction: direction);
         public static RouteStep Release() => new(RouteStepKind.Release);
+        // PAX-087 (D-089): hold the stick up or down (Climb ±1, full magnitude like every route move, D-081 (4)).
+        public static RouteStep Hold(Vertical direction) => new(RouteStepKind.HoldClimb, direction: (int)direction);
+        public static RouteStep ReleaseClimb() => new(RouteStepKind.ReleaseClimb);
         public static RouteStep Jump() => new(RouteStepKind.Jump);
         public static RouteStep Until(RouteCondition condition) => new(RouteStepKind.Until, condition: condition);
         public static RouteStep For(int ticks) => new(RouteStepKind.For, ticks: ticks);
@@ -133,6 +142,8 @@ namespace Parallax.Editor.Routes
 
         public static RouteCondition XAtLeast(float x) => new("X>=" + x.ToString(CultureInfo.InvariantCulture), v => v.Last.X >= x);
         public static RouteCondition XAtMost(float x) => new("X<=" + x.ToString(CultureInfo.InvariantCulture), v => v.Last.X <= x);
+        // PAX-087 (D-089): how high the cat has climbed (its collider centre, room-local), like XAtLeast.
+        public static RouteCondition YAtLeast(float y) => new("Y>=" + y.ToString(CultureInfo.InvariantCulture), v => v.Last.Y >= y);
         public static RouteCondition Grounded() => new("Grounded", v => v.Last.Grounded);
         public static RouteCondition Airborne() => new("Airborne", v => !v.Last.Grounded);
         public static RouteCondition GroundedOn(string element) => new($"GroundedOn({element})", v => v.Last.Grounded && v.Last.Ground == element);
@@ -148,5 +159,7 @@ namespace Parallax.Editor.Routes
         public static RouteCondition Home(string element) => new($"Home({element})", v => v.Home(element));
         public static RouteCondition RoomComplete() => new("RoomComplete", v => v.Last.Complete);
         public static RouteCondition Dead() => new("Dead", v => v.Last.Dead);
+        // PAX-087 (D-089): the cat was on a vine at the end of the last tick.
+        public static RouteCondition Climbing() => new("Climbing", v => v.Last.IsClimbing);
     }
 }

@@ -11,7 +11,10 @@ namespace Parallax.Editor.Setup
     // and isn't solid; the builder makes it a CollapsingFloorTrap with a trigger body, Overlap, Once, delay 0.
     // PAX-085 (D-087): Inverter is appended the same way (levels 11+ only).
     // PAX-086 (D-088): Geyser is appended the same way (levels 11+ only).
-    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser }
+    // PAX-087 (D-089): Vine is appended the same way (levels 11+ only). Position is the vine's x centre and y centre, Size
+    // is (0.6, height): its grab box. Configured Settings make it a snap vine (Overlap on the secondary box, or on its own
+    // box with none; or Chain; Once; DelayTicks); unconfigured, it never snaps.
+    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser, Vine }
     public enum SoloRoomOpeningKind { Pit, Recess }
     public enum SoloRoomHazardRole { Normal, OpeningBottom, OpeningCap, CeilingForceUpCoverage, UnjumpableFloor }
     public enum RequiredJumpKind { Pit, Hazard }

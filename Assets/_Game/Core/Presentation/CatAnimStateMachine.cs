@@ -29,6 +29,20 @@ namespace Parallax.Core
 
         public CatAnimState State { get; private set; }
 
+        /// <summary>PAX-087 (D-089): Climb while the motor climbs; leaving it, the ordinary rules pick the next state
+        /// (a leap reads as Rise, a release as Fall, a cat on the ground as Idle or Walk).</summary>
+        public CatAnimState Step(
+            bool climbing,
+            bool grounded,
+            float speedAlongSurface,
+            float velocityAlongGravity,
+            float dt)
+        {
+            if (!climbing) return Step(grounded, speedAlongSurface, velocityAlongGravity, dt);
+            landTimeRemaining = 0f;
+            return SetState(CatAnimState.Climb);
+        }
+
         public CatAnimState Step(
             bool grounded,
             float speedAlongSurface,

@@ -37,5 +37,17 @@ namespace Parallax.Core
 
             return Mathf.Clamp(value, -1f, 1f);
         }
+
+        /// PAX-087 (D-089): the climb dead zone on the stick's y, higher than x's so a slightly diagonal run never climbs.
+        public const float DefaultClimbDeadZone = .35f;
+
+        // PAX-087 (D-089) R2: the stick's screen y (already dead-zoned and rescaled by Evaluate) to CatCommand.Climb,
+        // screen-up positive. 0 inside `deadZone`; rescaled so its edge maps to 0 and full y to 1.
+        public static float ToClimb(Vector2 stick, float deadZone)
+        {
+            float y = Mathf.Abs(stick.y);
+            if (y <= deadZone || deadZone >= 1f) return 0f;
+            return Mathf.Sign(stick.y) * Mathf.Clamp01((y - deadZone) / (1f - deadZone));
+        }
     }
 }

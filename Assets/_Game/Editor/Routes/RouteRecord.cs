@@ -13,6 +13,8 @@ namespace Parallax.Editor.Routes
         public bool Grounded, GravityUp, Dead, Holding, Complete;
         public string Ground;
         public bool JumpPressed; public int Move;
+        // PAX-087 (D-089): the route's Climb this tick and whether the cat ended it on a vine (0/false with no vines).
+        public int Climb; public bool IsClimbing;
         // Per element, in ReplayResult.Elements order.
         public int[] FireTick;   // the element's LatestFireTick (room ticks), -1 before its first fire
         public int[] Signature;  // hash of every SpriteRenderer in the element's subtree (Q5)
@@ -27,13 +29,13 @@ namespace Parallax.Editor.Routes
         {
             if (Tick != o.Tick || RoomLifeTick != o.RoomLifeTick || X != o.X || Y != o.Y || Vx != o.Vx || Vy != o.Vy
                 || Grounded != o.Grounded || GravityUp != o.GravityUp || Dead != o.Dead || Holding != o.Holding || Complete != o.Complete
-                || Ground != o.Ground || JumpPressed != o.JumpPressed || Move != o.Move) return false;
+                || Ground != o.Ground || JumpPressed != o.JumpPressed || Move != o.Move || Climb != o.Climb || IsClimbing != o.IsClimbing) return false;
             for (int i = 0; i < FireTick.Length; i++) if (FireTick[i] != o.FireTick[i] || Signature[i] != o.Signature[i]) return false;
             return true;
         }
 
         public override string ToString() =>
-            $"t{Tick} r{RoomLifeTick} x{X:F4} y{Y:F4} vx{Vx:F3} vy{Vy:F3} g{(Grounded ? 1 : 0)}:{Ground} up{(GravityUp ? 1 : 0)} m{Move}{(JumpPressed ? " J" : "")}{(Dead ? " DEAD" : "")}{(Complete ? " DONE" : "")}";
+            $"t{Tick} r{RoomLifeTick} x{X:F4} y{Y:F4} vx{Vx:F3} vy{Vy:F3} g{(Grounded ? 1 : 0)}:{Ground} up{(GravityUp ? 1 : 0)} m{Move}{(Climb != 0 ? " c" + Climb : "")}{(IsClimbing ? " CLIMB" : "")}{(JumpPressed ? " J" : "")}{(Dead ? " DEAD" : "")}{(Complete ? " DONE" : "")}";
     }
 
     // What a route condition sees: the previous tick's record plus element lookups by name.
@@ -65,7 +67,7 @@ namespace Parallax.Editor.Routes
     public sealed class ReplayResult
     {
         public string Route;
-        public List<string> Elements = new();          // element names; index matches TickRecord arrays; last is R.CatGravity
+        public List<string> Elements = new();          // element names; index matches TickRecord arrays; then R.CatGravity, and last R.CatInverted
         public List<TickRecord> Records = new();       // Records[0] = the built room before tick 1
         public Dictionary<int, int> StepStartTick = new();
         public bool Completed;                          // the route's goal was reached with no death

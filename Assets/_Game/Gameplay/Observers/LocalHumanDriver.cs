@@ -2,6 +2,7 @@ using Parallax.Core;
 using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Interaction;
 using Parallax.Gameplay.GravityControl;
+using Parallax.Gameplay.Rooms;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -32,6 +33,9 @@ namespace Parallax.Gameplay.Observers
             modifiers = observer != null && observer.Reality != null
                 ? observer.Reality.GetComponentsInChildren<IControlModifier>(true)
                 : System.Array.Empty<IControlModifier>();
+            // PAX-087 (D-089) R6: the reality's climbable vines, found once (inactive included); only this cat climbs them.
+            if (observer != null && observer.Cat != null)
+                observer.Cat.SetClimbVines(observer.Reality != null ? observer.Reality.GetComponentsInChildren<ClimbVine>(true) : null);
 
             if (router == null)
             {
@@ -53,6 +57,8 @@ namespace Parallax.Gameplay.Observers
             CatCommand motorCommand = SeatCommandFilter.Apply(cmd, seated);
             // PAX-085 (D-087): the one place input is inverted. The motor's Move only; Jump and the interactor's cmd are not.
             if (InvertsMove()) motorCommand.Move = -motorCommand.Move;
+            // PAX-087 (D-089): a seated cat never climbs (SeatCommandFilter is frozen co-op code). Climb is never inverted.
+            if (seated) motorCommand.Climb = 0f;
             observer.Cat.Step(motorCommand, Time.fixedDeltaTime);
             if (stand) seat.Release();
             if (interactor != null) interactor.Step(in cmd, observer);
@@ -73,6 +79,7 @@ namespace Parallax.Gameplay.Observers
         public void Deactivate()
         {
             if (seat != null && seat.IsSeated) seat.Release();
+            if (observer != null && observer.Cat != null) observer.Cat.SetClimbVines(null);
             if (router != null) router.ResetTransientState();
         }
     }

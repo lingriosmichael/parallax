@@ -16,6 +16,8 @@ namespace Parallax.Gameplay.Input
         [SerializeField] Rect interactZone = new Rect(0.56f, 0.00f, 0.18f, 0.40f);
         [SerializeField] float stickRadius = 0.12f;
         [SerializeField] float deadZone = 0.15f;
+        [Tooltip("PAX-087 (D-089): dead zone on the stick's y for Climb, after the radial dead zone. Higher than x's so a slightly diagonal run never climbs.")]
+        [SerializeField] float climbDeadZone = VirtualStick.DefaultClimbDeadZone;
         [SerializeField] StickProjection projection = StickProjection.CatRelative;
         [SerializeField] bool showDebugOverlay = true;
         [SerializeField] MonoBehaviour[] reservedRegions = System.Array.Empty<MonoBehaviour>();
@@ -28,6 +30,7 @@ namespace Parallax.Gameplay.Input
         Vector2 stickCurrent;
         Vector2 lastStickVector;
         float currentMove;
+        float currentClimb;
 
         readonly HashSet<int> jumpFingerIds = new HashSet<int>();
         readonly HashSet<int> interactFingerIds = new HashSet<int>();
@@ -154,6 +157,8 @@ namespace Parallax.Gameplay.Input
             lastStickVector = stickFingerId >= 0
                 ? VirtualStick.Evaluate(stickOrigin, stickCurrent, radiusPixels, deadZone)
                 : Vector2.zero;
+            // PAX-087 (D-089): screen-up positive; the camera never rotates (D-020), so no gravity frame is needed.
+            currentClimb = VirtualStick.ToClimb(lastStickVector, climbDeadZone);
 
             if (gravityReceiver == null)
             {
@@ -183,6 +188,7 @@ namespace Parallax.Gameplay.Input
             var cmd = CatCommand.None;
 
             cmd.Move = currentMove;
+            cmd.Climb = currentClimb;
 
             cmd.JumpHeld = jumpFingerIds.Count > 0;
             cmd.JumpPressed = jumpPressedLatch;
@@ -203,6 +209,7 @@ namespace Parallax.Gameplay.Input
             ignoredFingerIds.Clear();
             lastStickVector = Vector2.zero;
             currentMove = 0f;
+            currentClimb = 0f;
             jumpPressedLatch = false;
             interactPressedLatch = false;
         }
@@ -214,7 +221,7 @@ namespace Parallax.Gameplay.Input
 
             Rect safeArea = Screen.safeArea;
 
-            GUI.Label(new Rect(10f, 10f, 400f, 20f), $"Move: {currentMove:F2}  Projection: {projection}");
+            GUI.Label(new Rect(10f, 10f, 400f, 20f), $"Move: {currentMove:F2}  Climb: {currentClimb:F2}  Projection: {projection}");
             DrawZone(interactZone, safeArea, new Color(0.4f, 0.9f, 1f, 0.2f));
 
             if (stickFingerId >= 0)

@@ -54,6 +54,8 @@ namespace Parallax.Editor.Setup
             , Room7()
             // PAX-086 (D-088): the geyser room.
             , Room8()
+            // PAX-087 (D-089): the vine room.
+            , Room9()
         };
 
         // One valid route: Start_Floor -> Up_1 -> Up_2 -> Exit_Perch (door). Betrayals: Stone_A (fake, looks like the
@@ -214,6 +216,30 @@ namespace Parallax.Editor.Setup
                 E(SoloRoomElementKind.HiddenSpikes,"Ceiling_Spikes",(15.5f,5.05f),(9f,.3f),(9.85f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)),
             };
             return new SoloRoomDefinition(8, 349f, 20f, elements, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
+        }
+
+        // PAX-087 (D-089): the vine room, origin 382 (room 8 ends at 369; the same 13 u gap). The Cliff (x 11-20, top 4.5)
+        // holds the door; no jump reaches it. Two vines, both reaching y 5.1 (the Cliff's top plus about the cat's height, so
+        // a cat stopped at a vine's top has its feet level with the Cliff): Vine_Real stands on Floor_Left at x 7.9; climb
+        // it and leap right onto the Cliff. Vine_Obvious hangs over the Pit (x 9-11) at x 9.6, next to the Cliff: a snap
+        // vine whose Trigger is at y 2-2.5; 12 ticks after a climbing cat touches it, it vanishes and the cat falls onto the
+        // PitHazard. A cat that leaps back to Floor_Left in those 12 ticks sees it snap, and takes Vine_Real.
+        static SoloRoomDefinition Room9()
+        {
+            var elements = new[] {
+                E(SoloRoomElementKind.Ceiling,"Ceiling",(10f,7.5f),(20f,1f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint",(2f,0),(0,0)),
+                E(SoloRoomElementKind.Floor,"Floor_Left",(4.5f,-.5f),(9f,1f)),
+                E(SoloRoomElementKind.Wall,"PitWall_Left",(8.5f,-2.5f),(1f,3f)),
+                E(SoloRoomElementKind.PitBottom,"PitBottom",(10f,-3.5f),(2f,1f)),
+                E(SoloRoomElementKind.Hazard,"PitHazard",(10f,-2.85f),(2f,.3f)),
+                E(SoloRoomElementKind.Wall,"Cliff",(15.5f,.25f),(9f,8.5f)),
+                E(SoloRoomElementKind.Door,"Door",(18f,5.25f),(.6f,1.5f)),
+                E(SoloRoomElementKind.Vine,"Vine_Real",(7.9f,2.55f),(.6f,5.1f)),
+                E(SoloRoomElementKind.Vine,"Vine_Obvious",(9.6f,2.55f),(.6f,5.1f),(9.6f,2.25f),(.6f,.5f),new SoloRoomTrapSettings(delayTicks:12)),
+            };
+            var openings = new[] { new SoloRoomOpening(SoloRoomOpeningKind.Pit, 9f, 11f, "PitWall_Left", "Cliff", "PitBottom", "PitHazard") };
+            return new SoloRoomDefinition(9, 382f, 20f, elements, openings, System.Array.Empty<RequiredJump>());
         }
 
         static RequiredJump J6(float takeoffX, float landingX, float takeoffPaw, float landingPaw, string source, string destination) =>

@@ -1775,3 +1775,95 @@ stops being live mid-eruption (the door) leaves its column drawn, since nothing 
 presentation only, and the next room is 13 u away. `ValidateGeyser` and `ValidateGeyserEnvelope` aren't part of
 `Validate()`, so a shipped level with a geyser needs its tests to call them until a follow-up wires them in. Not
 device-tested (Phase H).
+
+### D-089 · 2026-09-26 · Accepted
+
+**Decision:** Climbable vines (PAX-087, KIT-8): the input's first vertical axis, a climbing state in the motor, and snap
+vines, for levels 11+ only. Rulings: `Docs/0_TASKS/PAX-087.md` §11. Not the frozen co-op vine (`VineInteractable`,
+`VineManifestation`, D-025): the new classes are `ClimbVine`, `CatClimber`, `ClimbState`.
+
+(1) **The Climb axis.** `CatCommand.Climb`, −1..1, **screen-up positive** (D-049), never gravity-projected and never
+inverted (D-087 inverts Move only). Default 0, so every existing path is unchanged. `CatCommand` now has two axes, and
+D-081 (4)'s gap (routes can't express a stick magnitude below 1) covers Climb too.
+- **Touch:** `VirtualStick.ToClimb` on `Evaluate`'s already dead-zoned output: `Climb = sign(y)·(|y| − 0.35)/0.65`, 0
+  inside `climbDeadZone` (0.35, a serialized field on `TouchStickCatInput`, above x's 0.15). The camera never rotates
+  (D-020), so the stick's y is screen up. Measured by the angle sweep through `Evaluate`: at full push, the smallest angle
+  that reaches the 0.5 grab threshold is **42.5°** above horizontal (asin 0.675); every push within 20° reads Climb 0.
+  Device tuning is Phase H.
+- **Keyboard (R1):** **Space is the only jump key.** W/Up climb up, S/Down climb down; A/D and Left/Right move.
+  `KeyboardCatInput.Axis(negative, positive)` is the pure key mapping (both held: 0). The keyboard is Editor/dev input.
+- **Router:** Climb merges like Move, independently: the largest |Climb| of all sources wins.
+- **Seated:** `LocalHumanDriver` zeroes Climb while the cat is seated (`SeatCommandFilter` is frozen co-op code).
+- **Echo** records poses, not commands, and ignores Climb.
+
+(2) **Vines.** `SoloRoomElementKind.Vine` (appended). Position is the vine's centre, Size (0.6, height): the grab box, a
+trigger `BoxCollider2D` on a `ClimbVine` (a `RoomTrap`). The grab test is bounds math (the vine's box against the cat's
+collider), not a physics query. `LocalHumanDriver.Activate` finds the reality's `ClimbVine`s (inactive included) and
+hands them to the motor; only the LocalHuman cat climbs, and `Deactivate` ends any climb.
+- **Rendering (R3):** the vine sprite (`A_OBJ_Vine.png`, 236 × 433) stacked in Simple child renderers `Segment_i`, each
+  scaled to the 0.6 width (≈ 1.10 u a segment), the top one squashed so the vine ends exactly at its top. Not Tiled: the
+  sprite's importer mesh is Tight, and Tiled needs Full Rect (it warns otherwise); the `.meta` is the art ticket's.
+
+(3) **The rules** (`ClimbState`, pure; `CatClimber`, owned by `CatMotor2D`, not a component, so the cat prefab is unchanged).
+- **Grab (R5 (1)):** the cat's collider overlaps a grabbable vine and, grounded, Climb ≥ +0.5 (up only: pushing down at a
+  vine's foot does nothing), or, airborne, |Climb| ≥ 0.5. No automatic grab. x snaps to the vine's centre on the grab tick.
+- **Climbing:** no gravity; velocity (0, Climb × `ClimbSpeed`), `ClimbSpeed` 4 u/s = 0.08 u a tick (a shallow push climbs
+  slower). Move alone does nothing. **Top (R5 (2), amended by the developer after the first play, 2026-09-26):** the
+  collider's *top* stops at the vine's top, so the cat never climbs off the vine; a vine that reaches about the cat's
+  height (0.56) above a ledge lets a cat at its top leap straight onto it. **Bottom:** climbing down releases once the collider's centre is below the
+  vine's bottom, or when the cat stands on ground while pushing down.
+- **Leap:** a jump press while climbing (or a buffered jump on the grab tick) sets the velocity to the normal jump launch
+  (`JumpMath`, 1.6 u apex) against gravity plus `sign(Move) × MaxSpeed` along the cat's right (straight up with Move 0).
+  Move is the motor's, after the inverter, so an inverted cat leaps the other way. Coyote and buffer are 0 after it.
+- **Release causes:** the leap; climbing below the bottom; a gravity-side change (the step it's seen, the cat falls
+  under the new gravity); `ApplyLaunch` (a geyser); a snap; and `ResetMotion` (death, room reset, respawn). The death hold
+  freezes a climb as it is (`IsFrozen`), and the pause runs no motor step.
+- **Regrab lock:** after any release but a reset, the same vine can't be grabbed for the next `RegrabLockTicks` (10)
+  motor steps, whether the release happened in the motor step or after it (a launch in the room step). Other vines can.
+- **Where it runs:** `CatMotor2D.Step`, after the ground test, as an early return. With no vines, or Climb 0 and no climb
+  in progress, it returns having touched nothing, so the rest of the step is unchanged. Proven: every
+  `RouteHarnessFidelityTests` pin and every shipped and Trap Lab route result are identical.
+- **Tunables** (`CatMotorConfig`, field initializers; the `.asset` isn't edited): `ClimbSpeed` 4, `RegrabLockTicks` 10,
+  `GrabThreshold` 0.5.
+- **Presentation:** `CatAnimState.Climb` (appended), entered while climbing; leaving it, the ordinary rules pick Rise
+  (a leap), Fall (a release) or Idle/Walk. Until the art ticket's climb sheet, the presenter turns the Visual ±90° around
+  the collider's centre, placing the current sprite's own centre on it (head screen-up for either facing and gravity,
+  `CatVisualPresenter.ClimbPose`), and shows the Walk
+  frames while the cat moves on the vine, the Idle frame while it hangs still. No Animator.
+
+(4) **Snap vines.** A vine with configured trap settings snaps: Overlap on its `Trigger` child (the element's secondary
+box) or on its own box without one, or Chain; Once; `DelayTicks`. When it fires, every segment renderer goes off (its
+visible reveal, D-080 (1)), it can't be grabbed, and it releases the LocalHuman cat in that room step; the cat falls from
+the next motor step. The room reset restores it. A snap vine can't be a chain source (`TrapLayoutValidator`'s trap list,
+outside the allowed list, as for geysers).
+
+(5) **Routes (D-079 (1)).** `Hold(Up)`, `Hold(Down)` (the `Vertical` enum, a `Hold` overload), `ReleaseClimb()`,
+conditions `Climbing()` and `YAtLeast(y)`; `Release()` still clears Move only. `TickRecord` gains `Climb` and
+`IsClimbing` (0/false on every existing route). No existing route file changed. A leap off a vine is a timed route step,
+not a `RequiredJump`.
+
+(6) **Validator** (`LevelLayoutValidator.Vine.cs`, separately named, not in `Validate`, like `ValidateGeyser`):
+- `ValidateVine`: width 0.6; height ≥ 1.5; inside the frame; overlaps no solid; the cat snapped to its centre, over the
+  vine's height (standing at its bottom to its collider's top at its top), overlaps no solid and stays in the frame (R6); its bottom is reachable: some
+  solid top beside it (the cat's centre within 0.8 u) is below its top and within the cat's height plus a jump (1.6 u)
+  below its bottom (R5); a snap vine is Once, and its Overlap trigger overlaps the vine.
+- `ValidateVineRoutes`: a snap vine needs a declared betrayal revealed by it.
+- `ValidateBand`: a vine in a level numbered 1–10 is an error naming the level. A vine is never a kill volume.
+
+(7) **Trap Lab room 9** (origin 382, 20 wide).
+- **Layout.** `Floor_Left` (x 0–9), a `Pit` (x 9–11, `PitHazard` on `PitBottom`), and the `Cliff` (x 11–20, top 4.5, out
+  of any jump's reach) with the door on it. `Vine_Real`, x 7.9, y 0–5.1, standing on Floor_Left. `Vine_Obvious`, x 9.6,
+  y 0–5.1, over the pit next to the Cliff: a snap vine, `Trigger` y 2–2.5, delay 12. At a vine's top the cat's feet are
+  at 4.54, just above the Cliff.
+- **Solution.** Walk right pushing up: grabbed from the ground, 57 ticks to the top, leap right onto the Cliff (lands at
+  x 11.98, 33 ticks after the leap). Timed window: the leap, **48** (d −22..+25, open high: the cat can wait at the top).
+- **Betrayals.**
+  - **Dies:** jump at the obvious vine and climb it: it snaps (t88) and the cat falls onto the `PitHazard` (t126),
+    **lead 38**.
+  - **Recovers:** touch the snap, leap back to Floor_Left, see it go (t88), take the real vine (complete t281).
+- The camera tell rule passes at 4:3, 16:9 and 20:9 (lead 38 at each).
+
+(8) **Limits:** no ropes or swinging, no wall climbing without a vine, placeholder climb pose, levels 11+ only, dead zone
+and speed not device-tuned (Phase H). `ValidateVine` isn't part of `Validate()`, so a shipped level with vines needs its
+tests to call it until a follow-up wires it in. The seated-cat zeroing is untested (seating needs the frozen Control
+Station). Not device-tested.

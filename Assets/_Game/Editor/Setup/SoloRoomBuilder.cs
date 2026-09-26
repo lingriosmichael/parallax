@@ -186,6 +186,7 @@ namespace Parallax.Editor.Setup
                 case SoloRoomElementKind.Arrow: TrapKitSetup.ConfigureTiming(BuildArrow(parent, root, room, e, rooms, death, observers, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.Inverter: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildInverterCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.Geyser: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildGeyserCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings.Geyser, changes), e.Settings, parent, changes); break;
+                case SoloRoomElementKind.Vine: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildClimbVineCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.MovingTrap: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildMovingTrapCore(parent, root, e.Name, position, e.Size, e.Settings.MovingKind == MovingTrapKind.Hazard ? Red : Ground, room.Id, rooms, death, observers, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings, AssetDatabase.LoadAssetAtPath<CrushConfig>("Assets/_Game/Data/CrushConfig_Default.asset"), -2, changes), e.Settings, parent, changes); break;
             }
         }

@@ -38,6 +38,15 @@ namespace Parallax.Gameplay.Player
         [Tooltip("Minimum alignment (dot product) between a hit's normal and -gravity for it to count as ground.")]
         [SerializeField] float groundNormalThreshold = 0.7f;
 
+        [Tooltip("PAX-087 (D-089): climbing speed at full Climb, in units/second (screen-vertical).")]
+        [SerializeField] float climbSpeed = Parallax.Core.ClimbState.DefaultClimbSpeed;
+
+        [Tooltip("PAX-087 (D-089): motor steps after a release or leap during which the same vine can't be grabbed again.")]
+        [SerializeField] int regrabLockTicks = Parallax.Core.ClimbState.DefaultRegrabLockTicks;
+
+        [Tooltip("PAX-087 (D-089): the Climb magnitude that grabs a vine (up only while grounded).")]
+        [SerializeField] float grabThreshold = Parallax.Core.ClimbState.DefaultGrabThreshold;
+
         public float MaxSpeed => maxSpeed;
         public float Acceleration => acceleration;
         public float Deceleration => deceleration;
@@ -50,5 +59,8 @@ namespace Parallax.Gameplay.Player
         public Vector2 ColliderOffset => colliderOffset;
         public float ColliderBottom => colliderOffset.y - colliderSize.y * 0.5f;
         public float GroundNormalThreshold => groundNormalThreshold;
+        public float ClimbSpeed => climbSpeed;
+        public int RegrabLockTicks => regrabLockTicks;
+        public float GrabThreshold => grabThreshold;
     }
 }

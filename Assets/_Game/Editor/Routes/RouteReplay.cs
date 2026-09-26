@@ -297,6 +297,7 @@ namespace Parallax.Editor.Routes
                     GravityUp = down.y > 0f, Ground = "",
                     Dead = Death.IsHolding || Death.WasKilledThisTick(ObserverId.A, tick), Holding = Death.IsHolding, Complete = Rooms.LevelComplete,
                     Move = Mathf.RoundToInt(command.Move), JumpPressed = command.JumpPressed,
+                    Climb = Mathf.RoundToInt(command.Climb), IsClimbing = Cat.IsClimbing,
                     FireTick = new int[Elements.Count + 2], Signature = new int[Elements.Count + 2],
                     RenderBounds = new Rect[Elements.Count + 2], Rendered = new bool[Elements.Count + 2],
                 };
@@ -463,7 +464,7 @@ namespace Parallax.Editor.Routes
         public const int UntilCapTicks = 600;
 
         readonly Route route; readonly ReplayOptions options; readonly ReplayResult result;
-        int index, move, forLeft = -1, insertLeft;
+        int index, move, climb, forLeft = -1, insertLeft;
         bool jump, inserted, idle;
 
         public RouteRunner(Route route, ReplayOptions options, ReplayResult result) { this.route = route; this.options = options; this.result = result; }
@@ -481,12 +482,14 @@ namespace Parallax.Editor.Routes
                 if (!result.StepStartTick.ContainsKey(index)) result.StepStartTick[index] = tick;
                 if (index == options.TimedStep && !inserted && options.Delta > 0)
                 { inserted = true; insertLeft = options.Delta; idle = options.Mode == TimedMode.Hesitate; }
-                if (insertLeft > 0) { insertLeft--; command = new CatCommand { Move = idle ? 0 : move }; return true; }
+                if (insertLeft > 0) { insertLeft--; command = new CatCommand { Move = idle ? 0 : move, Climb = idle ? 0 : climb }; return true; }
 
                 switch (step.Kind)
                 {
                     case RouteStepKind.Hold: move = step.Direction; index++; continue;
                     case RouteStepKind.Release: move = 0; index++; continue;
+                    case RouteStepKind.HoldClimb: climb = step.Direction; index++; continue;
+                    case RouteStepKind.ReleaseClimb: climb = 0; index++; continue;
                     case RouteStepKind.Jump: jump = true; index++; continue;
                     case RouteStepKind.Margin: index++; continue;
                     case RouteStepKind.Until:
@@ -510,7 +513,7 @@ namespace Parallax.Editor.Routes
 
         bool Emit(out CatCommand command)
         {
-            command = new CatCommand { Move = move, JumpPressed = jump };
+            command = new CatCommand { Move = move, Climb = climb, JumpPressed = jump };
             jump = false;
             return true;
         }

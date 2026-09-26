@@ -28,8 +28,19 @@ namespace Parallax.Tests.EditMode
 
         public static object Call(Type type, string method, params object[] args)
         {
-            MethodInfo m = type.GetMethod(method, BindingFlags.Public | BindingFlags.Static);
-            Assert.NotNull(m, type.Name + "." + method + " not found.");
+            // PAX-087: R.Hold has two overloads (int, Vertical); pick the one whose parameters take these arguments.
+            MethodInfo m = null;
+            foreach (MethodInfo candidate in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
+            {
+                if (candidate.Name != method) continue;
+                ParameterInfo[] ps = candidate.GetParameters();
+                if (ps.Length != args.Length) continue;
+                bool fits = true;
+                for (int i = 0; i < ps.Length && fits; i++)
+                    fits = args[i] == null ? !ps[i].ParameterType.IsValueType || Nullable.GetUnderlyingType(ps[i].ParameterType) != null : ps[i].ParameterType.IsInstanceOfType(args[i]);
+                if (fits) { m = candidate; break; }
+            }
+            Assert.NotNull(m, type.Name + "." + method + " not found for these arguments.");
             try { return m.Invoke(null, args); }
             catch (TargetInvocationException e) { ExceptionDispatchInfo.Capture(e.InnerException).Throw(); throw; }
         }

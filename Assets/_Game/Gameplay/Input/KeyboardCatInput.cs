@@ -8,6 +8,7 @@ namespace Parallax.Gameplay.Input
     public sealed class KeyboardCatInput : MonoBehaviour, ICatCommandSource
     {
         float move;
+        float climb;
         GravityReceiver gravityReceiver;
         bool warnedNoGravityFrame;
         bool jumpHeld;
@@ -20,6 +21,7 @@ namespace Parallax.Gameplay.Input
             var keyboard = Keyboard.current;
 
             move = 0f;
+            climb = 0f;
             jumpHeld = false;
             interactHeld = false;
 
@@ -27,22 +29,27 @@ namespace Parallax.Gameplay.Input
             {
                 bool left  = keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed;
                 bool right = keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed;
+                bool up    = keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed;
+                bool down  = keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed;
 
-                float screenMove = 0f;
-                if (left && !right) screenMove = -1f;
-                else if (right && !left) screenMove = 1f;
-                move = ProjectScreenMove(screenMove);
+                move = ProjectScreenMove(Axis(left, right));
+                climb = Axis(down, up);
 
-                jumpPressedLatched |= keyboard.spaceKey.wasPressedThisFrame
-                                      || keyboard.wKey.wasPressedThisFrame
-                                      || keyboard.upArrowKey.wasPressedThisFrame;
-
-                jumpHeld = keyboard.spaceKey.isPressed
-                           || keyboard.wKey.isPressed
-                           || keyboard.upArrowKey.isPressed;
+                // PAX-087 (D-089) R1: Space is the only jump key; W/Up and S/Down climb.
+                jumpPressedLatched |= keyboard.spaceKey.wasPressedThisFrame;
+                jumpHeld = keyboard.spaceKey.isPressed;
                 interactPressedLatched |= keyboard.fKey.wasPressedThisFrame;
                 interactHeld = keyboard.fKey.isPressed;
             }
+        }
+
+        /// <summary>PAX-087 (D-089) R1: two opposing keys to a screen axis: -1, 0 or +1, and 0 while both are held.
+        /// Move is Axis(left, right) before the gravity projection; Climb is Axis(down, up), screen-up positive.</summary>
+        public static float Axis(bool negative, bool positive)
+        {
+            if (negative && !positive) return -1f;
+            if (positive && !negative) return 1f;
+            return 0f;
         }
 
         public void SetGravityFrame(GravityReceiver gravity)
@@ -71,6 +78,7 @@ namespace Parallax.Gameplay.Input
         {
             var cmd = CatCommand.None;
             cmd.Move = move;
+            cmd.Climb = climb;
             cmd.JumpPressed = jumpPressedLatched;
             cmd.JumpHeld = jumpHeld;
             cmd.InteractPressed = interactPressedLatched;
@@ -85,6 +93,7 @@ namespace Parallax.Gameplay.Input
         public void ResetTransientState()
         {
             move = 0f;
+            climb = 0f;
             jumpHeld = false;
             jumpPressedLatched = false;
             interactHeld = false;

@@ -143,6 +143,7 @@ public sealed class ObserverContext : MonoBehaviour
 public struct CatCommand
 {
     public float Move;          // -1..1 along the cat's local "right" (perpendicular to gravity)
+    public float Climb;         // PAX-087 (D-089): -1..1, screen-up positive; 0 unless the stick/keys push up or down
     public bool  JumpPressed;   // edge: pressed this tick
     public bool  JumpHeld;
     public bool  InteractPressed;
@@ -193,6 +194,8 @@ The Input System's touch controls produce `CatCommand` via `TouchCatInput`. `Key
 **As built (PAX-021, D-025):** immediately after stepping the motor with a command, `LocalHumanDriver` calls `CatInteractor.Step` with that same command and Observer context. F produces the same latched/cleared `InteractPressed` edge as jump. Touch has an interact rectangle immediately left of jump: `(0.56, 0.00, 0.18, 0.40)` in normalized safe-area coordinates; a touch beginning there is never claimed by stick or jump.
 
 **As built (PAX-039, D-049):** movement is ScreenRelative for touch and keyboard. In either gravity direction, pushing right moves the cat screen-right and pushing left moves it screen-left; both sources use `VirtualStick.ToMove` for the projection.
+
+**As built (PAX-085 to PAX-087, D-087, D-089):** `LocalHumanDriver` applies two filters between the router and the motor: an active inverter (`IControlModifier`, found under its reality on Activate) negates `Move` only, and `Climb` is zeroed while seated. `CatCommand.Climb` is the second axis: touch takes the stick's y past a 0.35 dead zone, rescaled (`VirtualStick.ToClimb`; grabbing needs about 42.5° above horizontal at full push); the keyboard maps W/Up to +1 and S/Down to −1, and **Space is the only jump key**. The router merges `Climb` by largest magnitude, like `Move`. `CatMotor2D` owns a plain `CatClimber` (vines handed over by the driver) that runs as an early return after the ground test; `ApplyLaunch` (geysers, D-088) is the only other outside write to the cat's velocity.
 
 ### 5.2 Gravity control input
 
