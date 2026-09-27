@@ -2009,6 +2009,11 @@ exact; four betrayals (leads 21, 8, 79, 34), Act2's and Act3's from their gates.
 or saved; no mid-level save between sessions; the section's time is measured on the solution from the gate, not from a
 respawn. Not device-tested.
 
+(10) **Fix (PAX-060 §13 R5, 2026-09-27).** `SoloRoomBuilder.BuildCheckpointSections` returns early when the room has no
+sections or no `RoomManager` is given. Before, it wrote an empty section list through `new SerializedObject(rooms)` for
+every room, which threw on a bare room build (`ThinPlatformTests`' Trap Lab build passes none). Rooms without
+sections wrote nothing before either, so every built scene and result is unchanged.
+
 ### D-092 · 2026-09-26 · Accepted (Architect, 2026-09-27; PAX-090 item B as built)
 
 **Decision:** Amends D-089 / PAX-087 R5. A **grounded** cat grabs a vine by pushing **away from its ground**: Climb ≥
@@ -2018,3 +2023,61 @@ grab tick itself never releases. Airborne grabs (|Climb| ≥ threshold), climbin
 bottom release (collider centre below the vine's bottom while climbing screen-down) stay screen-relative (D-049). Every
 gravity-down expression is identical, so no route result moved. `ClimbState.WantsGrab` and `ReleasesAtBottom` take
 `gravityUp` (default false). Tests: `ClimbGravityUpTests`.
+
+### D-093 · 2026-09-27 · Proposed (PAX-060 half A as built; half B completes it)
+
+**Decision:** Band-2 content rules for levels 11–20, checked by `LevelLayoutValidator.Band2.cs` (`IsBand2`: levels 11–20).
+Rulings: `Docs/0_TASKS/PAX-060.md` §12. Band 1's rules (D-085) are unchanged.
+
+(1) **The rules as built** (`ValidateBand2Content`, `ValidateBand2Duration`, `ValidateBand2Replays`):
+- **Lethal:** ≥ 8 distinct killers over Dies routes. §12 asks every band-2 level for 9 as a design margin; the check stays 8.
+- **In sequence:** ≥ 6 (`SequentialChain`, as band 1). **Dead ends:** ≥ 2 (Dies routes named "Dead end…", or Recovers).
+- **Door far from start:** band 1's D-085 rule (half the room's width or height), rechecked here because band 1's check
+  stops at level 10.
+- **Sections:** 2–3 (D-091's ≤ 1000 ticks each is `ValidateSections`'). **Solution:** 1100–2500 ticks
+  (§13 R4 lowered the floor from 1500: length comes from content, not distance or waits). A reported (not checked)
+  review item (§14 R2): no stretch of the solution over 250 ticks without a decision, a decision being a betrayal
+  branching off the solution or a timed step with a measured window (one exception: L013's sync wait, the counting).
+- **Precision sections:** only in L012 (one section, at most one `RequiredJump` inside it), L015 and L019.
+- **Answers (P7):** every betrayal's name starts with a tag, `"T4 [BAIT]: …"`, from J, NJ, W, NW, SS, B, OL, LW, BAIT; a
+  missing tag is an error. Counted per trap (the label before the tag), dead ends aside: a code answers ≤ 3 traps, BAIT ≤ 1.
+- **The level's element in ≥ 3 betrayals** (11 spear, 12 inverter, 13 geyser, 14 vine, 15 storm cloud): by the killer
+  or `RevealedBy` being one (`Cat.Inverted` counts for the inverter), or by the betrayal's own replay (after the shared
+  steps, or after its rewind) showing it act on the cat: standing on a spear's shaft, the inversion changing, a push
+  (|Vy| ≥ 13 inside a vent's bounds), climbing.
+- **Everything else** as band 1 (§2.2): trigger and surface coverage, the camera tell rule, falling-block landing,
+  trap-floor headroom, trigger near trap, `ValidateKit`, `ValidateSections`.
+
+(2) **The chaos moment** (§12 finding 4). An onset is an element's signature change after a tick with no change (or its
+first change); the cat's extras, gate markers and the door don't count. The solution's best 60-tick window needs ≥ 5
+distinct elements whose onset is in the 16:9 view at its tick: the camera tell rule's worst case over its 24 camera
+cases (`InView16x9`). A periodic level has onsets every cycle, so its best window can be a beat the solution doesn't ride;
+PAX-060's report names both.
+
+(3) **Replay cap** (§12 finding 1): `1000 × max(1, sections) + 500` ticks (1500 without sections, as before).
+
+(4) **Half A as built** (solution ticks; sections; chaos):
+- **L011 Scaffold** (spear, BUILD): a Z climb, 32 × 27, start (20, 0), door top left. 1614 ticks; 723 / 622 / 269; the
+  volley t940–t999, V1–V5 all in view. 12 killers, 10 in sequence (after §14's padding pass).
+- **L012 Mirror, Mirror** (inverter, UNLEARN): five stacked halls walked west, east, west, east, west, about 32 × 26
+  (ruled 32 × 16; grown for length). 1323 ticks; 265 / 579 / 479 (after §14: no inversion is waited out); t283–t342, 5 of 5 in view. 12
+  killers, 10 in sequence.
+- **L013 Old Faithful** (geyser, COUNT): mirrored as ruled, 32 × 27.5, five storeys and a three-geyser stack, rhythms of
+  100, 150 and 300 ticks. 1613 ticks; 653 / 682 / 278. The validator's best window is t911–t970 (10 of 14 in view, an earlier
+  beat of the same rhythms); the sync the solution rides is t1216–t1275, 10 of 14 in view (the stack, its pads and G_D
+  among them). 10 killers, 8 in sequence.
+- **L014, L015:** stopped (outcome (c)) and redrawn under the 1100 floor (§13 R4).
+
+(5) **Limits found (half A):**
+- The coverage search can't see geyser launches (§12 Q5): a hidden hazard in a storey that only a launch reaches is
+  judged from the checkpoint's side. L013's `Spikes_D2` now takes its whole ledge's storey as its trigger (§13 R3), the
+  same pattern as L012's orbs; PAX-091 teaches the search launches, vine climbs and stuck spears before half B, and
+  half B uses no such workaround.
+- Surface coverage's band isn't per storey (`BandLow`, `TryCeilingUnderside`) and takes its side from the first
+  checkpoint. A chained collapsing floor in a stacked level passes only when its root's trigger holds the floor's top
+  strip (L012's orbs).
+- `ApproachSides` lets the cat drop off a surface's end through a closed pit below it. L012's `Spikes_D` sits inside
+  `Orb_A`'s trigger box for that reason.
+- A periodic hidden-spike strip shows on its fire tick; `RevealDelayTicks` delays only an overlap fire.
+
+Direction mix across 11–20: half B. Tests: `Band2RulesTests` (30), `Band2LevelTests`, `Band2RouteResultsTests`.

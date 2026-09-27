@@ -117,16 +117,19 @@ namespace Parallax.Tests.EditMode
             var byId = (IEnumerable)LayoutsType.GetField("ById", BindingFlags.Public | BindingFlags.Static).GetValue(null);
             var errors = new List<string>();
             CatMotorConfig real = UnityEditor.AssetDatabase.LoadAssetAtPath<CatMotorConfig>("Assets/_Game/Data/CatMotorConfig_Default.asset");
-            int count = 0;
+            var ids = new List<string>();
             foreach (object pair in byId)
             {
                 string id = (string)pair.GetType().GetProperty("Key").GetValue(pair);
                 object room = pair.GetType().GetProperty("Value").GetValue(pair);
                 foreach (string rule in Rules) errors.AddRange(Rule(rule, room, id));
                 errors.AddRange(Coverage(room, real, id));
-                count++;
+                ids.Add(id);
             }
-            Assert.AreEqual(10, count, "L001-L010");
+            // PAX-060 (§12 finding 2): L001-L010 are all there, and every listed level has a layout (no more, no fewer).
+            for (int n = 1; n <= 10; n++) CollectionAssert.Contains(ids, $"L{n:000}");
+            var levels = UnityEditor.AssetDatabase.LoadAssetAtPath<Parallax.Gameplay.Levels.LevelListConfig>("Assets/_Game/Data/LevelListConfig.asset");
+            Assert.AreEqual(levels.Levels.Count, ids.Count, "LevelLayouts entries vs LevelListConfig levels");
             AssertPasses(errors.ToArray());
         }
 

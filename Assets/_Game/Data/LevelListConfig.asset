@@ -43,3 +43,12 @@ MonoBehaviour:
   - Id: L010
     SceneName: Level_010
     DisplayName: Level 10
+  - Id: L011
+    SceneName: Level_011
+    DisplayName: Level 11
+  - Id: L012
+    SceneName: Level_012
+    DisplayName: Level 12
+  - Id: L013
+    SceneName: Level_013
+    DisplayName: Level 13

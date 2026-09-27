@@ -119,7 +119,10 @@ namespace Parallax.Tests.EditMode
             var errors = new List<string>();
             foreach (DictionaryEntry entry in layouts)
                 errors.AddRange((List<string>)validator.GetMethod("ValidateRoutes", new[] { typeof(string), entry.Value.GetType() }).Invoke(null, new[] { entry.Key, entry.Value }));
-            Assert.AreEqual(10, layouts.Count);
+            // PAX-060 (§12 finding 2): L001-L010 are all there, and every listed level has a layout (no more, no fewer).
+            for (int n = 1; n <= 10; n++) Assert.IsTrue(layouts.Contains($"L{n:000}"), $"L{n:000} has no layout");
+            var levels = UnityEditor.AssetDatabase.LoadAssetAtPath<Parallax.Gameplay.Levels.LevelListConfig>("Assets/_Game/Data/LevelListConfig.asset");
+            Assert.AreEqual(levels.Levels.Count, layouts.Count, "LevelLayouts entries vs LevelListConfig levels");
             CollectionAssert.IsEmpty(errors);
         }
 

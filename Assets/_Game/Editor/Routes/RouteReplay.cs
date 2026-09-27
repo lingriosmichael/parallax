@@ -22,7 +22,7 @@ namespace Parallax.Editor.Routes
         public int Delta;                   // Shift: +d holds the previous command d more ticks, -d starts d ticks early. Hesitate: +d idle ticks.
         public int AuthoredStartTick = -1;  // the swept step's start tick in the authored replay (needed for Shift -d)
         public bool ResolveCause = true;    // after a kill, run the death hold until RoomDeath reports the cause
-        public int MaxTicks = 1500;
+        public int? MaxTicks;               // PAX-060 (§12 finding 1): null = 1000 × max(1, checkpoint sections) + 500 (1500 without sections)
         // Start-state override (R18): the cat's collider centre, room-local, and its velocity before tick 1.
         public Vector2? StartCentre;
         public Vector2 StartVelocity;
@@ -55,12 +55,12 @@ namespace Parallax.Editor.Routes
             try
             {
                 rig = Rig.Build(room, options);
-                return Run(rig, route, options);
+                return Run(rig, route, options, options.MaxTicks ?? 1000 * System.Math.Max(1, room.CheckpointSections?.Length ?? 0) + 500);
             }
             finally { rig?.UnsubscribeDeath(); session.Clear(); }
         }
 
-        static ReplayResult Run(Rig rig, Route route, ReplayOptions options)
+        static ReplayResult Run(Rig rig, Route route, ReplayOptions options, int maxTicks)
         {
             var result = new ReplayResult { Route = route.Name };
             foreach (Element e in rig.Elements) result.Elements.Add(e.Name);
@@ -78,7 +78,7 @@ namespace Parallax.Editor.Routes
 
             for (int k = 1; ; k++)
             {
-                if (k > options.MaxTicks) { result.Failure = $"tick cap {options.MaxTicks} reached"; result.AliveAtCap = true; break; }
+                if (k > maxTicks) { result.Failure = $"tick cap {maxTicks} reached"; result.AliveAtCap = true; break; }
                 if (!runner.Next(view, k, out CatCommand command)) break;
                 if (runner.TakeRewind()) { k = ForceRewind(rig, result, k); continue; }
                 rig.Input.Queue(rig.ToCatFrame(command));

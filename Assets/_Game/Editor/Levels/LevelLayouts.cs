@@ -20,6 +20,9 @@ namespace Parallax.Editor.Levels
             ["L008"] = L008Layout.Build(),
             ["L009"] = L009Layout.Build(),
             ["L010"] = L010Layout.Build(),
+            ["L011"] = L011Layout.Build(),
+            ["L012"] = L012Layout.Build(),
+            ["L013"] = L013Layout.Build(),
         };
 
         public static bool TryGet(string id, out SoloRoomDefinition layout) => ById.TryGetValue(id, out layout);

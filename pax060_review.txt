@@ -1,0 +1,104 @@
+PAX-060 half A (levels 11–15): pax-reviewer, one round
+======================================================
+
+VERDICT: Accept after fixes, pending two Architect rulings (Blockers 1–2 need rulings, not code). The three should-fixes
+are fixed below. There was no round 2: round 2 only re-checks fixes to Blockers, and neither Blocker has a code fix.
+
+Built: L011 (spear), L012 (inverter), L013 (geyser). Stopped (outcome (c)): L014 (vines) and L015 (storm cloud); as
+sketched they fall well short of the 1500-tick band-2 minimum. The reviewer judged that stop justified.
+
+Reviewer's tests: 183 run in targeted batches, 178 passed. Every failure was a known red:
+- LevelLayoutTests.Registry_IdsAreUniqueAndMatchLevelListConfigBothWays, ArrowValidatorTests.EveryLevelLayoutsEntry_PassesEveryArrowRuleAndCoverage
+  and ValidateRoutesTests.ValidateRoutes_EveryLevelLayoutsEntry_HasRoutesAndNoErrors (L011–L013 not listed yet), and
+  Band2LevelTests.Level_MeetsEveryBand2Rule ("No arguments were provided": no band-2 level listed yet). All clear after
+  New Level… is run three times.
+- TriggerCoverageTests.EveryLevelLayoutsEntry_PassesTriggerCoverage_WithNoLearnedBypass: L013 Spikes_D2, the §12 Q5 stop
+  (a geyser-launch false error), left standing for a ruling.
+- ThinPlatformTests.TrapLabThinPlatform_BuildsASolidTwoSidedFloorOfItsAuthoredSizeAndPosition: pre-existing since
+  PAX-090 (d4374af). SoloRoomBuilder.BuildCheckpointSections calls WireSections, which runs new SerializedObject(rooms)
+  even for a room with no sections; this test passes rooms = null. Outside §7; not changed.
+
+Scope: clean against §7 and §12 (RouteReplay.cs changes only the cap; the two count tests change only their
+assertions). No .unity, .prefab, .asset, .meta or ProjectSettings file was hand-edited. L001–L010, the Trap Lab and
+frozen code are untouched, and there is no runtime code. The Docs/A_TASKS, Docs/V_TASKS and Docs/Art changes, and the
+roadmap's other hunks, are the developer's own uncommitted work and are out of scope.
+
+BLOCKERS (rulings)
+1. Assets/_Game/Editor/Routes/Band2Fixtures.cs isn't in §7. It is test-only support in the Parallax.Editor assembly,
+   because the tests reach Editor types by reflection; RouteFixtures.cs and PrecisionFixtures.cs are the precedent.
+   Ask: add it to §7.
+2. L012 was built as an unruled variant: about 32 × 26 with five halls, where §12 ruled 32 × 16 with three bands. It was
+   grown to reach 1500 ticks rather than stopped under §4 (c), which is how L014 and L015 were handled. It also raises
+   a §1.4 skeleton question: L011 is a Z climb, and L012 is a switchback descent. Ask: rule on the five-hall variant. If
+   it is rejected, remove L012 from LevelLayouts.cs, LevelRoutes.cs and Band2RouteResultsTests.
+
+SHOULD-FIX (all fixed)
+1. L012 Orb_A and Orb_B trigger boxes (from the orb's face over the floor each one drops; Orb_A's reaches x 14.4 and
+   holds Spikes_D):
+   - They are a workaround for two false errors: surface coverage's band isn't per storey, and ApproachSides drops
+     through closed pits. Hall 4 is entered only from the west and hall 5's pits are closed, so a first touch still
+     happens at the orb's face.
+   - Fixed: a new betrayal, "T5 [NW]: a cat that turns back after the hop walks into Spikes_D", walks back west into
+     Orb_A's box from x > 14.4 after the room has gone off. It dies on Spikes_D at t712 with lead 28, and the lead is
+     pinned in Band2RouteResultsTests. Chained traps are Once, so Orb_A re-firing only restarts the inversion.
+   - Reported for a ruling as a Q5-adjacent blind spot, alongside L013 Spikes_D2. A full-strip trigger would clear
+     Spikes_D2 the same way.
+2. The element detectors for levels 11–13 were never seen red.
+   - Fixed: Band2Fixtures.ElementRoom / ElementRoutes / ElementReplays and
+     Band2RulesTests.TheElementActingInTwoBetrayals_IsRejected(11/12/13) / TheElementActingInThreeBetrayals_Passes(11/12/13).
+   - All six went red with the detectors temporarily disabled, and are green with them restored. Band2RulesTests is
+     now 36 of 36.
+3. Band2LevelTests.cs said an empty case source "runs nothing". Fixed: the comment now says that Unity fails the test
+   until the first band-2 level is listed, and it is on the known-reds list above.
+
+DOC UPDATES (done)
+- D-093 (2) and (4) now name both of L013's chaos windows: the validator's best, t911–t970, and the ridden sync,
+  t1216–t1275.
+
+NOTES
+1. L013 Spikes_D2 is verified as a genuine launch false error. S3_W is enclosed, and the cut spans the whole entry
+   gap. L013 Spikes_A's cut is both-sided because a real west approach exists (dropping back down G_B's shaft);
+   its lead of 12 is pinned.
+2. L011's door margin is 3.2 u on x (19.2 against 16), which meets the ≥ 1 u ruling.
+3. Band2DevTests.cs is a temporary [Explicit] helper with a hard-coded scratch path; it stays out of git add.
+4. Not reviewed (budget): line-by-line route files, L011 Block_Door's swept clearance, L012 T9's retreated-pose
+   clearance (Full(12) passes those validators), the camera tell tables, and a number audit.
+
+After the fixes, the implementer's targeted batch:
+- Band2RulesTests: 36 of 36. Band2RouteResultsTests: 3 of 3.
+- Band2LevelTests, TriggerCoverageTests, ArrowValidatorTests, RouteValidatorTests and ValidateRoutesTests: 81 run,
+  77 passed. The 4 failures are the known reds above: the two count tests, Level_MeetsEveryBand2Rule, and L013
+  Spikes_D2.
+
+ROUND-2 RULINGS APPLIED (§13, 2026-09-27)
+- R3: L013 Spikes_D2's trigger now covers its whole ledge (x 0–5, y 8–11.5), a full-storey cut; it fires at the same
+  tick as before (lead 10, pin unchanged). L013 now passes every band-2 rule, and TriggerCoverageTests is green.
+- R4: Band2MinTicks is 1100 (Band2RulesTests.Duration_TwentyTwoToFiftySeconds: 1050 and 1099 fail, 1100 passes; seen
+  red before the change). D-093 updated.
+- R5: SoloRoomBuilder.BuildCheckpointSections returns early with no RoomManager or no sections; ThinPlatformTests is
+  green. Noted in D-091 (10).
+- Targeted batch after: 147 run, 144 passed; the 3 failures are the listing reds (clear after New Level… ×3). The
+  second batch (route pins, route validators, Trap Lab builder tests) did not run: the MCP session dropped.
+
+ROUND-3 RULINGS APPLIED (§14, 2026-09-27)
+- The second batch (route pins, route validators, ShippedRouteResultsTests, Trap Lab and builder tests) ran after the
+  §13 changes: 164 run, 163 passed; the one failure is the layout-count test, which clears after New Level… ×3.
+- R2 padding pass. A decision is a betrayal branch or a timed step; the limit is 250 ticks. Gaps before → after:
+  - L011: t177–t766 (589) and t924–t1182 (258) → none. Added Spear_L (T3b [NW], linger on step 4; the jump off it is a
+    timed step), Ledge_M (T3c [OL], a fake ledge in the open middle of the stair, falls to the foot) and Spear_K
+    (T4b [NW], linger on V3). 12 killers, 10 in sequence; NW at 3.
+  - L012: t47–t399, t672–t939, t988–t1239, t1257–t1579 → none. No inversion is waited out: Floor_1 under Inv_1 (120
+    ticks) forces mirrored play over P1 and Floor_2, with a timed switch as it ends; Inv_2 is gone; Orb_A lasts 140 and
+    ends on the run east (a timed switch); hall 2's 40-tick wait is gone (Orb_B, now 230, carries through Orb_G); hall 1
+    gained PK and Inv_H (unseen, 30; T10 [SS]). T6 retagged SS (freezing at the orb survives Block_E). Pit_S is a unit
+    deeper and Slot_Floor reaches over its hazard (the Slot's lead 5 → 8). 1602 → 1323 ticks; 12 killers, 10 in sequence.
+  - L013: t0–t327 → none (Spikes_S, a 100-tick rhythm on S1, crossed as a timed step). t465–t657 and the S4 walk already
+    held decisions under the new definition (the G_B and G_C steers are timed steps).
+- Re-pinned Band2RouteResultsTests (old → new): L011 windows 32/27/30/44/16 → 32/27/27/30/44/16, leads + Spear_L=8,
+  Ledge_M=93, Spear_K=8; L012 1602 → 1323 ticks, windows 17/15/31 → 31/23/37/17/51/15/33/30/31, leads now Floor_1=14,
+  Cat.Inverted=912 (T8), Cat.Inverted=1207 (T10), Slot_Floor=8 (was 6); L013 windows → 31/28/28/28/28/36/32/34, leads
+  +1 tick each where the S1 count shifts them (Spikes_A 13, Spikes_P2 1087, G_D 1265, Spikes_C1 1331, Spikes_C2 1410,
+  Spikes_D2 11), Alcove visible t1172.
+- After the pass: 144 run, 141 passed (the 3 listing reds only; the pins pass).
+- Second batch after the pass (route validators, ShippedRouteResultsTests, Trap Lab, builder and scene tests): 167 run,
+  166 passed; the one failure is the layout-count test (clears after New Level… ×3).

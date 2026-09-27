@@ -180,7 +180,9 @@ namespace Parallax.Editor.Setup
         // checkpoint's convention, turned for gravity up). A room with no sections writes nothing.
         static void BuildCheckpointSections(Transform roomRoot, RealityRoot root, SoloRoomDefinition room, RoomManager rooms, CatMotorConfig config, List<string> changes)
         {
-            CheckpointSection[] sections = room.CheckpointSections ?? System.Array.Empty<CheckpointSection>();
+            // PAX-060 §13 R5: nothing to write without sections or a RoomManager (a bare room build in a test passes none).
+            if (rooms == null || room.CheckpointSections == null || room.CheckpointSections.Length == 0) return;
+            CheckpointSection[] sections = room.CheckpointSections;
             var entries = new List<RoomSectionEntry>();
             foreach (CheckpointSection section in sections)
             {
