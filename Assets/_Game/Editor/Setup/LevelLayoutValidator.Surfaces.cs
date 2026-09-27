@@ -19,15 +19,18 @@ namespace Parallax.Editor.Setup
         // surface whose root trigger holds its whole top strip is covered by that trigger (PAX-059a play).
         // Every other betraying surface (a chained one, checked against its root trigger, or a Solid MovingTrap that
         // moves down or off its own x span) needs that trigger to be D-074's cut: over its x span it covers the
-        // cat's band from the lowest standable top to the ceiling underside, and the strip lies beyond its near
-        // edge as seen from the checkpoint. Periodic surfaces are ValidatePeriodicSlack's, and are skipped here.
+        // cat's band, and the strip lies beyond its near edge as seen from where the cat reaches it. Periodic surfaces
+        // are ValidatePeriodicSlack's, and are skipped here.
+        // PAX-091 (Q6): per storey, like trigger coverage: the band is the trigger's storey (TriggerCoverage.StoreyLow to
+        // TryStoreyCeiling), and the sides are the approach search's (TriggerCoverage.ApproachSides), not the checkpoint's.
         public static List<string> ValidateSurfaceCoverage(string levelId, SoloRoomDefinition room, CatMotorConfig motor)
         {
             var errors = new List<string>();
             if (motor == null) { errors.Add($"{levelId}: surface coverage: no CatMotorConfig; the top strip is undefined."); return errors; }
             const float eps = 1e-3f;
             var byName = room.Elements.ToDictionary(e => e.Name);
-            float checkpointX = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Checkpoint).Select(e => e.Position.x).DefaultIfEmpty(0f).First();
+            Vector2 checkpoint = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Checkpoint).Select(e => e.Position).DefaultIfEmpty(Vector2.zero).First();
+            float gravity = GravityStrength();
             foreach (SoloRoomElement surface in room.Elements.Where(IsBetrayingSurface))
             {
                 if (SurfaceCoverageExemptions.ContainsKey(levelId + "/" + surface.Name) || IsSelfCovered(surface)) continue;
@@ -41,15 +44,19 @@ namespace Parallax.Editor.Setup
                 // A trigger over the surface's whole top strip holds any cat standing on it, so the surface can't be stood on
                 // unseen (and a jump from below doesn't set it off: ValidateTrapFloorHeadroom). After PAX-059a play.
                 if (trigger.xMin <= strip.xMin + eps && trigger.xMax >= strip.xMax - eps && trigger.yMin <= strip.yMin + eps && trigger.yMax >= strip.yMax - eps) continue;
-                if (!TriggerCoverage.TryCeilingUnderside(room, trigger, out float ceiling))
+                float low = TriggerCoverage.StoreyLow(room, trigger);
+                if (!TriggerCoverage.TryStoreyCeiling(room, trigger, low, out float ceiling))
                 { errors.Add($"{levelId}: surface coverage: no ceiling over {root.Name}'s trigger; the band is undefined."); continue; }
-                float low = TriggerCoverage.BandLow(room, trigger);
                 if (trigger.yMin > low + eps || trigger.yMax < ceiling - eps)
                 { errors.Add($"{levelId}: surface coverage: {surface.Name}{via}: {root.Name}'s trigger {Describe(trigger)} does not cut the cat's band y [{low:F2}, {ceiling:F2}]: {TriggerCoverage.UncoveredBands(trigger, low, ceiling)}."); continue; }
-                bool fromLeft = checkpointX <= trigger.center.x;
-                float nearEdge = fromLeft ? trigger.xMin : trigger.xMax;
-                bool beyond = fromLeft ? strip.xMin >= nearEdge - eps : strip.xMax <= nearEdge + eps;
-                if (!beyond) errors.Add($"{levelId}: surface coverage: {surface.Name}{via} top strip {Describe(strip)} lies before {root.Name}'s trigger near edge x {nearEdge:F2}, seen from the checkpoint.");
+                TriggerCoverage.Side sides = TriggerCoverage.ApproachSides(room, trigger, low, ceiling, checkpoint, motor, gravity, root);
+                foreach (TriggerCoverage.Side side in new[] { TriggerCoverage.Side.Left, TriggerCoverage.Side.Right })
+                {
+                    if ((sides & side) == 0) continue;
+                    float nearEdge = side == TriggerCoverage.Side.Left ? trigger.xMin : trigger.xMax;
+                    bool beyond = side == TriggerCoverage.Side.Left ? strip.xMin >= nearEdge - eps : strip.xMax <= nearEdge + eps;
+                    if (!beyond) errors.Add($"{levelId}: surface coverage: {surface.Name}{via} top strip {Describe(strip)} lies before {root.Name}'s trigger near edge x {nearEdge:F2}, {TriggerCoverage.SeenFrom(side, sides)}.");
+                }
             }
             return errors;
         }
@@ -70,7 +77,7 @@ namespace Parallax.Editor.Setup
 
         static bool IsBetrayingSurface(SoloRoomElement e)
         {
-            if (e.Kind == SoloRoomElementKind.FakePlatform || e.Kind == SoloRoomElementKind.CollapsingFloor) return true;
+            if (e.Kind == SoloRoomElementKind.FakePlatform || e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.ShrinkingFloor) return true;
             if (e.Kind != SoloRoomElementKind.MovingTrap || e.Settings.MovingKind != MovingTrapKind.Solid) return false;
             // The moved pose covers the strip's x span only when it doesn't move sideways.
             return e.Settings.Offset.y < 0f || !Mathf.Approximately(e.Settings.Offset.x, 0f);
@@ -78,6 +85,7 @@ namespace Parallax.Editor.Setup
 
         static bool IsSelfCovered(SoloRoomElement e) =>
             e.Kind == SoloRoomElementKind.FakePlatform
+            || (e.Kind == SoloRoomElementKind.ShrinkingFloor && e.SecondarySize == Vector2.zero && e.Settings.TriggerSource == TrapTriggerSource.Overlap && e.Settings.RepeatMode != TrapRepeatMode.Periodic)   // PAX-093: its own top
             || (e.Kind == SoloRoomElementKind.CollapsingFloor && e.Settings.TriggerSource == TrapTriggerSource.Overlap && e.Settings.RepeatMode != TrapRepeatMode.Periodic);
 
         static SoloRoomElement ChainRoot(SoloRoomElement e, Dictionary<string, SoloRoomElement> byName)

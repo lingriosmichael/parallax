@@ -112,8 +112,10 @@ namespace Parallax.Editor.Levels
             elements.Add(Spear("Spear_Gap", 23.85f, 15.95f+h, ArrowDirection.Left, 17.1f, 3f, (22.8f, 19.325f+h), (.4f, 7.35f), new SoloRoomTrapSettings(delayTicks:30), tell: 12));
             elements.Add(E(SoloRoomElementKind.FakePlatform,"Lip",(6f,14.15f+h),(5f,3f)));
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_Door",(2.15f,23f),(1.5f,1f),(3.3f,21.025f),(.4f,2.95f),new SoloRoomTrapSettings(delayTicks:3,unitsPerTick:.36f,travelDistance:2.95f)));
-            // Dead end: the high ledge, above the door ledge.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D2",(9.7f,18.15f+h),(1.4f,.3f),(10.6f,20.5f+h),(.4f,5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // Dead end: the high ledge, above the door ledge. PAX-091: its trigger holds Ledge_Hi's whole top strip; Stop_Hi, a post
+            // on its west face (top 21.4, a 1.85 rise from the stuck Spear_Door), keeps the ledge out of a jump's reach from the west.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D2",(9.7f,18.15f+h),(1.4f,.3f),(10f,20.5f+h),(2f,5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.Wall,"Stop_Hi",(8.85f,18f+h),(.3f,1f)));
 
             var openings = new[] {
                 O(SoloRoomOpeningKind.Pit, 2.6f, 5f, "Foot_L", "Ground", "Foot_Pit", "Pit_Foot"),

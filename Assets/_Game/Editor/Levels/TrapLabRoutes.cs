@@ -217,6 +217,40 @@ namespace Parallax.Editor.Levels
                     revealedBy: CatInverted));
         }
 
+        // PAX-093 (D-095): Trap Lab room 12, one of each moving floor. The solution: board Mover at home and ride it over P1;
+        // land on Slider and jump again at once (it slides away the next tick); hop on and off Drop before its 20 ticks run out;
+        // run the Shrink bridge without stopping (its edge chases at 5 u/s); cross the cut at x 58, which sends Pusher back at
+        // you, jump up onto Ledge_P and let it pass under; then on to the door. One betrayal per pattern; the second and third
+        // sections' start from their gate (Route.FromSection).
+        public static RoomRoutes Room12()
+        {
+            var solution = new Route("Trap Lab room 12 solution",
+                Hold(Right), Until(XAtLeast(7f)), Release(), Until(Still()),
+                Until(XAtLeast(16.3f)),
+                Hold(Right), Until(GroundedOn("F1")), Until(XAtLeast(23f)), Jump(), Until(GroundedOn("Slider")), Jump().Timed(TimedMode.Shift), Until(GroundedOn("F2")),
+                Until(XAtLeast(36.6f)), Jump(), Until(GroundedOn("Drop")), Jump().Timed(TimedMode.Shift), Until(GroundedOn("F3")),
+                Until(GroundedOn("F5")),
+                Until(XAtLeast(57.9f)), Jump().Timed(TimedMode.Shift), Until(GroundedOn("Ledge_P")), Release(), Until(Still()),
+                For(70),
+                Hold(Right), Until(RoomComplete()));
+
+            return new RoomRoutes(solution,
+                new Betrayal("Mover: a cat that walks on once the Mover has left falls into P1", "P1_Hazard", DeathCause.Hazard,
+                    new Route("walk on after the mover", Until(Moving("Mover")), Hold(Right), Until(Dead())), revealedBy: "Mover"),
+                new Betrayal("Slider: a cat that stops on the Slider drops as it slides away", "P2_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Slider))", "stop on the slider", Release(), Until(Dead())), revealedBy: "Slider"),
+                new Betrayal("From the Sink checkpoint: a cat that stops on the Drop falls with it", "P3_Hazard", DeathCause.Hazard,
+                    Route.FromSection(solution, "Sink", "stop on the drop", Hold(Right), Until(XAtLeast(36.6f)), Jump(), Until(GroundedOn("Drop")), Release(), Until(Dead())),
+                    revealedBy: "Drop"),
+                new Betrayal("From the Sink checkpoint: a cat that stops on the Shrink bridge falls as its edge catches up", "P4_Hazard", DeathCause.Hazard,
+                    Route.FromSection(solution, "Sink", "stop on the bridge", Hold(Right), Until(XAtLeast(36.6f)), Jump(), Until(GroundedOn("Drop")), Jump(), Until(GroundedOn("F3")),
+                        Until(XAtLeast(50f)), Release(), Until(Dead())),
+                    revealedBy: "Shrink"),
+                new Betrayal("From the Shove checkpoint: a cat that stays on the floor is shoved back into P4", "P4_Hazard", DeathCause.Hazard,
+                    Route.FromSection(solution, "Shove", "stay on the floor", Hold(Right), Until(XAtLeast(58.5f)), Release(), Until(Dead())),
+                    revealedBy: "Pusher"));
+        }
+
         // PAX-076 (D-083) §2.5: the bait gap attempted from its best take-off: full speed off P8's edge, the jump in the
         // coyote window. It dies in the pit. Not a Betrayal: nothing reveals (the gap is visible all along), so
         // RouteValidator's lead has nothing to measure; TrapLabRoom5Tests replays it on its own.

@@ -29,7 +29,7 @@ namespace Parallax.Editor.Setup
                     if (HasCycle(e.Name, byName)) { error = $"{e.Name}: chain cycle."; return false; }
                 }
                 if (e.Kind == SoloRoomElementKind.DoorRetreat && s.RepeatMode != TrapRepeatMode.Once) { error = $"{e.Name}: DoorRetreat is Once only."; return false; }
-                if ((e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.GravityFlip) && s.RepeatMode == TrapRepeatMode.Periodic) { error = $"{e.Name}: this trap cannot be Periodic."; return false; }
+                if ((e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.GravityFlip || e.Kind == SoloRoomElementKind.ShrinkingFloor) && s.RepeatMode == TrapRepeatMode.Periodic) { error = $"{e.Name}: this trap cannot be Periodic."; return false; }
                 if (s.RepeatMode == TrapRepeatMode.Periodic && s.CooldownTicks >= s.PeriodTicks) { error = $"{e.Name}: periodic cooldown must be below period."; return false; }
                 if (e.Kind == SoloRoomElementKind.MovingTrap && s.RepeatMode != TrapRepeatMode.Once && s.CooldownTicks < s.MoveTicks + s.HoldTicks + s.ReturnTicks) { error = $"{e.Name}: moving cooldown ends before motion."; return false; }
             }

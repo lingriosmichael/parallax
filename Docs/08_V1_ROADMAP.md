@@ -70,7 +70,8 @@ PAX-058 in this phase's build order even though their numbers are higher; PAX-05
 | | PAX-062 | Levels 31–40 (hard, batch 3) | PAX-061 |
 | | PAX-063 | Levels 41–50 (hard, batch 4) | PAX-062 |
 | | (as needed) | Kit-gap tickets: chained flips, rearming doors, queued chains… | raised by a batch |
-| | PAX-091 | Coverage search sees launches, vine climbs and stuck spears; per-storey surface coverage; closed pits (before PAX-060 half B) | PAX-060a |
+| | PAX-091 | Coverage search sees launches, vine climbs and stuck spears; per-storey surface coverage; closed pits (before PAX-060 half B). **Implemented** (2026-09-27); awaiting the Architect's acceptance. One new error on an existing level (L011 `Spikes_D2`, reached from the stuck Spear_Door), reported, layout unchanged | PAX-060a |
+| | PAX-093 | KIT-10 floors that move: riding (motor carry), mover, slide-away (carry/slip), drop-and-return, shrinker, push wall; Trap Lab room 12 (D-095); before L014–L015. **Implemented** (2026-09-27); awaiting acceptance, the developer's Trap Lab menu and play of room 12 | PAX-091 |
 | E · Look & feel (D-094, target `Docs/Art/LOOK_AND_FEEL.md`) | PAX-V03 | Look slice on L011 + performance budget: layer stack, vertical parallax, 2D lights + normal maps, fog/grade/bloom, reflective water, 50 Hz judder fix; one recommended phone check | PAX-060 |
 | | PAX-A12 | Environment kit: full Reality A layer stack, platform/wall/ceiling/thin-platform pieces, water, dressing, normal maps | PAX-V03 |
 | | PAX-A08 | The full Cat A animation set (15 slots, absorbs PAX-A11 climb + seamless vine) | PAX-V03 |

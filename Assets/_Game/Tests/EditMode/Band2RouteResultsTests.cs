@@ -35,9 +35,10 @@ namespace Parallax.Tests.EditMode
         static string Summary(object report) => (string)report.GetType().GetMethod("Summary").Invoke(report, null);
 
         // §14 R2 (the padding pass) re-pinned all three: L011 gained Spear_L, Ledge_M and Spear_K; L012's inversions are no
-        // longer waited out (1602 → 1323 ticks); L013 gained the Spikes_S count on S1.
+        // longer waited out (1602 → 1323 ticks); L013 gained the Spikes_S count on S1. PAX-091: L011's Spikes_D2 trigger holds
+        // Ledge_Hi's whole top strip, so D2's lead is 8 (was 7).
         [TestCase("L011", 1614, new[] { 32, 27, 27, 30, 44, 16 },
-            new[] { "Spear_1=8", "Foot_C=21", "Spear_2=8", "Spear_L=8", "Ledge_M=93", "V1=8", "Spear_K=8", "Spear_Top=8", "Spear_Gap=12", "Lip=26", "Block_Door=7", "Spikes_D1=9", "Spikes_D2=7" }, new string[0])]
+            new[] { "Spear_1=8", "Foot_C=21", "Spear_2=8", "Spear_L=8", "Ledge_M=93", "V1=8", "Spear_K=8", "Spear_Top=8", "Spear_Gap=12", "Lip=26", "Block_Door=7", "Spikes_D1=9", "Spikes_D2=8" }, new string[0])]
         [TestCase("L012", 1323, new[] { 31, 23, 37, 17, 51, 15, 33, 30, 31 },
             new[] { "Cat.Inverted=17", "Floor_1=14", "Floor_2=14", "Collapse_B=22", "Orb_A=55", "Spikes_D=28", "Block_E=7", "Collapse_F=19", "Cat.Inverted=912", "FakeFloor_D=25", "Cat.Inverted=1207", "Slot_Floor=8", "Spikes_D2=10" }, new string[0])]
         [TestCase("L013", 1613, new[] { 31, 28, 28, 28, 28, 36, 32, 34 },

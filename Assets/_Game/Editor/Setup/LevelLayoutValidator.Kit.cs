@@ -9,7 +9,7 @@ namespace Parallax.Editor.Setup
     {
         // ---------- PAX-089 (R1): every KIT-5-KIT-9 rule in one call ----------
         // Separately named, not part of Validate() (the kit convention). A fixed order: Spear, Inverter, Geyser, Vine,
-        // StormCloud, Band, Sections (PAX-090); with routes, also GeyserEnvelope and VineRoutes (they read the declared betrayals; no replay).
+        // StormCloud, Band, Sections (PAX-090), MovingFloors (PAX-093); with routes, also GeyserEnvelope and VineRoutes (they read the declared betrayals; no replay).
         // Every error is kept, each prefixed with its rule's name. ValidateStormCloud loads its own PrecisionThresholds.
         public static List<string> ValidateKit(string levelId, SoloRoomDefinition room, CatMotorConfig motor, float gravity,
             PlatformSizeConfig sizes, LevelListConfig levels, Routes.RoomRoutes routes = null)
@@ -22,6 +22,7 @@ namespace Parallax.Editor.Setup
             AddPrefixed(errors, nameof(ValidateStormCloud), ValidateStormCloud(levelId, room, motor));
             AddPrefixed(errors, nameof(ValidateBand), ValidateBand(levelId, room, levels));
             AddPrefixed(errors, nameof(ValidateSections), ValidateSections(levelId, room));   // PAX-090 (D-091)
+            AddPrefixed(errors, nameof(ValidateMovingFloors), ValidateMovingFloors(levelId, room, levels));   // PAX-093 (D-095)
             if (routes == null) return errors;
             AddPrefixed(errors, nameof(ValidateGeyserEnvelope), ValidateGeyserEnvelope(levelId, room, motor, gravity, routes));
             AddPrefixed(errors, nameof(ValidateVineRoutes), ValidateVineRoutes(levelId, room, routes));

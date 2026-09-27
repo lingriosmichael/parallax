@@ -118,7 +118,7 @@ namespace Parallax.Editor.Setup
             return (minY, maxY);
         }
 
-        static bool IsGameplayElement(SoloRoomElement e) => e.Kind == SoloRoomElementKind.Door || e.Kind == SoloRoomElementKind.Hazard || e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.HiddenSpikes || e.Kind == SoloRoomElementKind.FallingBlock || e.Kind == SoloRoomElementKind.GravityFlip || e.Kind == SoloRoomElementKind.DoorRetreat || e.Kind == SoloRoomElementKind.MovingTrap || e.Kind == SoloRoomElementKind.Checkpoint || e.Kind == SoloRoomElementKind.FakePlatform;
+        static bool IsGameplayElement(SoloRoomElement e) => e.Kind == SoloRoomElementKind.ShrinkingFloor || e.Kind == SoloRoomElementKind.Door || e.Kind == SoloRoomElementKind.Hazard || e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.HiddenSpikes || e.Kind == SoloRoomElementKind.FallingBlock || e.Kind == SoloRoomElementKind.GravityFlip || e.Kind == SoloRoomElementKind.DoorRetreat || e.Kind == SoloRoomElementKind.MovingTrap || e.Kind == SoloRoomElementKind.Checkpoint || e.Kind == SoloRoomElementKind.FakePlatform;
 
         // D-058: the checkpoint and door also sit inside the baked bounds (ComputeRoomBounds
         // with RoomSafetyConfig's default margin) — the same volume RoomManager checks at

@@ -152,6 +152,20 @@ namespace Parallax.Gameplay.Rooms
 
         public void UnregisterHazard(Hazard hazard) => hazards.Remove(hazard);
 
+        // PAX-093 (D-095): after every trap stepped (so a launch this tick has already cleared the grounding) and before the
+        // hazards (so a cat carried into spikes dies this tick): a LocalHuman cat grounded on a Carry MovingTrap moves with
+        // this tick's displacement (CatMotor2D.ApplyCarry). Nothing for any other surface, so no pin moves without one.
+        void CarryOnMovingFloor()
+        {
+            ObserverContext observer = observers != null ? observers.Get(soloReality) : null;
+            if (observer == null || observer.Cat == null || observer.Driver == null || observer.Driver.Kind != InputSourceKind.LocalHuman) return;
+            CatMotor2D motor = observer.Cat;
+            if (!motor.IsGrounded || motor.GroundCollider == null) return;
+            MovingTrap floor = motor.GroundCollider.GetComponent<MovingTrap>();
+            if (floor == null || floor.Motion != SurfaceMotion.Carry || floor.DisplacementTick != RoomLifeTick) return;
+            motor.ApplyCarry(floor.Displacement, TickTime.SecondsPerTick);
+        }
+
         void OnStepped(int tick)
         {
             if (progress.LevelComplete || checkpoints == null) return;
@@ -180,6 +194,7 @@ namespace Parallax.Gameplay.Rooms
                 trapSnapshot[i].StepIfLive();
                 if (roomDeath != null && roomDeath.WasKilledThisTick(soloReality, tick)) return;
             }
+            CarryOnMovingFloor();
             hazardSnapshot.Clear();
             hazardSnapshot.AddRange(hazards);
             for (int i = 0; i < hazardSnapshot.Count; i++) hazardSnapshot[i].KillOverlappingCat();

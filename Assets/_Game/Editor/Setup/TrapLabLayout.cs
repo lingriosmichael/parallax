@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Parallax.Editor.Setup
 {
     /// <summary>Plain PAX-045 component test bench; it is intentionally not a troll level.</summary>
-    public static class TrapLabLayout
+    public static partial class TrapLabLayout
     {
         public static readonly IReadOnlyList<SoloRoomDefinition> Rooms = new[]
         {
@@ -60,6 +60,8 @@ namespace Parallax.Editor.Setup
             , Room10()
             // PAX-090 (D-091): the checkpoint-section room.
             , Room11()
+            // PAX-093 (D-095): the moving-floor room (TrapLabLayout.MovingFloors.cs).
+            , Room12()
         };
 
         // One valid route: Start_Floor -> Up_1 -> Up_2 -> Exit_Perch (door). Betrayals: Stone_A (fake, looks like the

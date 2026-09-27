@@ -917,6 +917,12 @@ changes `Time.timeScale` must go through `RunningState`.
 
 ### D-074 · 2026-09-23 · Accepted
 
+**Note (PAX-091, 2026-09-27):** the approach search ("seen from the checkpoint", per storey) also sees a geyser launch
+(Up vents; Down vents in rooms with a gravity flip), a vine climb (a grab, then a leap or release from any height) and a
+stuck spear shaft as ways up. A shaft counts for every trap outside the spear's own chain family. A drop is blocked
+where fixed solids (Floor, Wall, PitBottom, Ceiling) between the two heights cover every x of its way to the landing.
+No threshold changed. Code: `TriggerCoverage.Edges.cs`.
+
 **Decision:** Trigger coverage and thin platforms (PAX-073, KIT-1).
 (1) **Coverage.** Every trap fired from an Overlap trigger must catch the cat before it can reach
 the trap's danger, from every approach: walking in from either side, jumping, falling in from
@@ -1225,6 +1231,10 @@ V3 narratives (D-076 (5)).
   own untitled scratch scene first.
 
 ### D-080 · 2026-09-24 · Accepted
+
+**Note (PAX-091, 2026-09-27):** surface coverage works per storey, like D-074's trigger coverage: the band is the root
+trigger's storey (`StoreyLow` to `TryStoreyCeiling`), and the top strip must lie beyond the trigger from every side the
+approach search reaches it from, not only the checkpoint's side.
 
 **Decision:** Troll-route kit (PAX-080, KIT-3b).
 (1) **The fake platform.** A new element kind, `SoloRoomElementKind.FakePlatform`, appended to the
@@ -2073,6 +2083,15 @@ PAX-060's report names both.
   judged from the checkpoint's side. L013's `Spikes_D2` now takes its whole ledge's storey as its trigger (§13 R3), the
   same pattern as L012's orbs; PAX-091 teaches the search launches, vine climbs and stuck spears before half B, and
   half B uses no such workaround.
+- **PAX-091 closed** the launch, vine-climb, stuck-spear, per-storey surface and closed-pit blind spots below (D-074 and
+  D-080 notes). Still open: a drop past a **vertical wall** (fixed solids spanning the drop's full height between
+  departure and landing; PAX-093's coverage item) and **gravity-up** vine and launch edges (only Down vents launch a
+  flipped cat).
+- **PAX-091 finding (L011):** the search saw a jump from the stuck `Spear_Door` onto `Ledge_Hi`'s west end, onto
+  `Spikes_D2` before their trigger. The ledge is 2 u wide, so a landing from the west lands on the spikes the tick it
+  enters any trigger over the ledge (replayed: lead 0). Fix (ruled 2026-09-27): the trigger holds the ledge's whole top
+  strip (x 9–11), and `Stop_Hi`, a post on its west face (x 8.7–9.0, y 20.4–21.4, a 1.85 rise from the shaft), takes the
+  west jump away (replayed: it never lands). D2's lead is 8 (was 7); every other pin is unchanged.
 - Surface coverage's band isn't per storey (`BandLow`, `TryCeilingUnderside`) and takes its side from the first
   checkpoint. A chained collapsing floor in a stacked level passes only when its root's trigger holds the floor's top
   strip (L012's orbs).
@@ -2081,3 +2100,44 @@ PAX-060's report names both.
 - A periodic hidden-spike strip shows on its fire tick; `RevealDelayTicks` delays only an overlap fire.
 
 Direction mix across 11–20: half B. Tests: `Band2RulesTests` (30), `Band2LevelTests`, `Band2RouteResultsTests`.
+
+### D-095 · 2026-09-27 · Proposed (PAX-093 as built; rulings §7)
+
+**Decision:** KIT-10, floors that move (PAX-093).
+(1) **The carry.** A `MovingTrap` Solid has a `SurfaceMotion`: **Legacy** (the default, every element before PAX-093: not
+carried, exactly as before), **Carry** or **Slip** (not carried, declared). A LocalHuman cat grounded on a Carry floor
+(`CatMotor2D.GroundCollider`) moves with its displacement this tick, pose(t) − pose(t−1), in the room step after every trap
+and before the hazards (`RoomManager`, `CatMotor2D.ApplyCarry`). The part along the ground moves the cat by position; the
+part away from the ground raises its fall speed to at least the floor's for the step (a position shift there starts the
+physics step inside the floor, and the solver undoes it); the part into the cat stays physics', so D-056 (3)'s
+launch-on-stop is unchanged. Not while climbing, frozen (the death hold) or not grounded; a launch that tick has already
+cleared the grounding. On the tick a grounded cat jumps, the floor's sideways speed is added to its velocity once instead
+(Q3); walking off adds nothing. The carry keeps no state (a rewind has nothing to restore).
+(2) **The patterns.** A *mover* is a Periodic Carry Solid; a *slide-away* moves sideways once (Carry: you ride it into
+danger; Slip: it slides out from under you); a *drop-and-return* floor drops and rises back (Rearm, move/hold/return,
+cooldown ≥ move + hold + return; the return is the existing return motion, not the Rearm snap); a *push wall* is a Solid with
+`Pushes`: the kit puts a cat in its way flush against its leading edge each tick (no physics shove), and a push into its
+named crush partner by the crush depth kills (D-055 (3)); `Crusher` and every Legacy Solid are untouched. A *shrinking
+floor* (`ShrinkingFloor`, appended) narrows its one collider and its sliced look together, from its left, right or both
+edges, over `ShrinkTicks` to `MinWidth`, as a pure function of the ticks since its fire; Rearm, reset and rewind restore it
+by the same formula. A PAX-093 `MovingTrap` honours its `DelayTicks` (a drop is harmless until it goes); a Legacy one keeps
+the 0 it always had, so `Crusher`'s and `SlidingSpikes`' unused 6 still do nothing. A Periodic `MovingTrap` runs without a
+trigger box (there were none before).
+(3) **Validators** (`ValidateMovingFloors`, in `ValidateKit`): in levels 14+ and Trap Lab room 12 a sideways Solid declares
+Carry or Slip; a repeating Solid's cooldown covers its motion; a shrinker's settings (ticks ≥ 1, 0 ≤ minimum < width); a push
+path (the wall's leading edge to its stop, plus one cat width, over its height) ends against its named partner or in open
+space, and runs into no other fixed solid; D-056 (3), a Solid's swept path overlaps no fixed geometry; D-065, movers,
+shrinkers and push walls are levels 11+, slide-away and drop-and-return are allowed in 1–10. Surface coverage treats a
+shrinker as a betraying surface (its own top covers it, as a collapsing floor's).
+(4) **Coverage** (D-074): a Carry mover carries the cat between the ends of its path (both ways when it returns); a drop is
+also blocked by a vertical wall, fixed solids spanning its whole height between where the cat leaves and where it could
+land. Existing results: no error appears or disappears; L012's `Spikes_D2` (the Nook) is now reached only from the east.
+L012 `Orb_B`'s natural form still fails, for a real reason: the Shelf carries a cat over the orb to Collapse_F's west side.
+(5) **The harness** sees the carry and the shrink with no new format; its sprite signature gains the drawn size, so a
+shrink is a visible change (every other element's comparisons are unchanged). A push wall's partner crush names the wall.
+(6) **Trap Lab room 12**, one of each pattern in three checkpoint sections (Ride 584, Sink 177, Shove 172 ticks; solution
+933): windows 51 (off the Slider, open both ways), 15 (off the Drop), 25 (up onto Ledge_P); leads Mover 60, Slider 30, Drop
+25, Shrink 56, Pusher 74; both rewinds exact.
+**Why:** Level Devil's core moves; the kit had moving Solids that carried a cat only upward and nothing that shrank.
+**Tests:** `MovingFloorMathTests`, `MovingFloorHarnessTests`, `MovingFloorValidatorTests`, `CoverageEdgesTests`
+(`MoverOnlyLedge`, `VerticalWallDrop`), `TrapLabRoom12Tests`.

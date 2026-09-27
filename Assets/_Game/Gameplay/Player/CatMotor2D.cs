@@ -29,6 +29,10 @@ namespace Parallax.Gameplay.Player
         CatClimber climber;
 
         public bool IsGrounded { get; private set; }
+        /// <summary>PAX-093 (D-095): the collider this step's ground test stood the cat on (null when not grounded).</summary>
+        public Collider2D GroundCollider { get; private set; }
+        /// <summary>PAX-093 (D-095): true on the step a grounded cat jumped (not a leap off a vine).</summary>
+        public bool JumpedThisStep { get; private set; }
         public bool IsFrozen { get; private set; }
         public bool IsClimbing => climber != null && climber.IsClimbing;
         public ClimbVine ClimbedVine => climber?.Vine;
@@ -86,6 +90,34 @@ namespace Parallax.Gameplay.Player
             IsGrounded = false;
         }
 
+        /// <summary>PAX-093 (D-095): a Carry floor's move, called in the room step (after this tick's Step, before physics),
+        /// for a cat grounded on it (MovingFloorMath.Carry; the part into the cat stays physics'). The part along the ground
+        /// moves the cat by position; the part away from the ground raises its fall speed to at least the floor's for this
+        /// step, so physics moves it with the floor (a position shift there would start the step inside the floor, and the
+        /// solver would push it back out). On the step the cat jumped, the floor's sideways speed is added to its velocity
+        /// instead, once (Q3). Frozen, climbing or not grounded: nothing.</summary>
+        public void ApplyCarry(Vector2 displacement, float dt)
+        {
+            if (IsFrozen || body == null || IsClimbing || !IsGrounded || dt <= 0f) return;
+            Vector2 down = gravity.Direction, right = new(-down.y, down.x);
+            Vector2 carry = MovingFloorMath.Carry(displacement, down);
+            float along = Vector2.Dot(carry, right), away = Vector2.Dot(carry, down);
+            if (JumpedThisStep) { body.linearVelocity += right * (along / dt); return; }
+            body.position += right * along;
+            Vector2 v = body.linearVelocity;
+            float fall = Vector2.Dot(v, down);
+            if (away > 0f && fall < away / dt) body.linearVelocity = v + down * (away / dt - fall);
+        }
+
+        /// <summary>PAX-093 (D-095): a push wall's shove, called in the room step: the kit moves the cat by `delta` (no physics
+        /// shove). It lets go of a vine. Frozen: nothing.</summary>
+        public void ApplyPush(Vector2 delta)
+        {
+            if (IsFrozen || body == null) return;
+            climber?.Release();
+            body.position += delta;
+        }
+
         void Awake()
         {
             body = GetComponent<Rigidbody2D>();
@@ -119,6 +151,7 @@ namespace Parallax.Gameplay.Player
             // PAX-047 (D-058): frozen during a death hold — the command is drained by the
             // driver upstream (so no source's latched edges leak past the hold) but discarded
             // here; velocity/rotation/gravity stay exactly as Freeze() left them.
+            JumpedThisStep = false;
             if (IsFrozen) return;
 
             SetCommand(input);
@@ -161,6 +194,7 @@ namespace Parallax.Gameplay.Player
             if (jump)
             {
                 fall = -JumpMath.SpeedForHeight(config.JumpHeight, gravity.Strength);
+                JumpedThisStep = true;
             }
 
             fall = Mathf.Min(fall, config.MaxFallSpeed);
@@ -187,16 +221,19 @@ namespace Parallax.Gameplay.Player
             int count = body.Cast(down, groundFilter, groundHits, config.GroundProbeDistance);
 
             bool touchingGround = false;
+            Collider2D ground = null;
             for (int i = 0; i < count; i++)
             {
                 if (Vector2.Dot(groundHits[i].normal, -down) > config.GroundNormalThreshold)
                 {
                     touchingGround = true;
+                    ground = groundHits[i].collider;
                     break;
                 }
             }
 
             IsGrounded = touchingGround && fall >= -0.01f;
+            GroundCollider = IsGrounded ? ground : null;
         }
     }
 }

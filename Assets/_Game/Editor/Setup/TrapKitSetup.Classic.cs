@@ -86,6 +86,7 @@ namespace Parallax.Editor.Setup
             BoxCollider2D trigger = settings.TriggerSource == TrapTriggerSource.Overlap ? CreateTrigger(go.transform, root, settings.TriggerName, triggerLocalPosition, triggerSize, changes) : null;
             MovingTrap trap = go.GetComponent<MovingTrap>();
             Write(trap, changes, ("trigger", trigger), ("kind", (int)settings.MovingKind), ("offset", settings.Offset), ("moveTicks", settings.MoveTicks), ("holdTicks", settings.HoldTicks), ("returnTicks", settings.ReturnTicks), ("crushDepth", settings.CrushDepth), ("crushConfig", crushConfig));
+            ConfigureMovingFloor(trap, settings, changes);   // PAX-093 (D-095)
             return trap;
         }
     }

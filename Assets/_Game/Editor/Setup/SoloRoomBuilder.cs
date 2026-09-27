@@ -170,6 +170,7 @@ namespace Parallax.Editor.Setup
             if (!TrapLayoutValidator.TryValidate(room, out string error)) { Debug.LogError("SoloRoomBuilder: " + error); return; }
             Transform roomRoot = SetupUtility.EnsureChild(parent, $"Room_{room.Id + 1}", root.gameObject.layer, changes);
             foreach (SoloRoomElement element in room.Elements) BuildElement(roomRoot, root, room, element, checkpoints, rooms, death, observers, config, changes);
+            TrapKitSetup.WireCrushPartners(roomRoot, room, changes);   // PAX-093 (D-095): push walls, once every element is built
             BuildGeometry(roomRoot, root, "Wall_Left", room.Origin + new Vector2(-.5f, 2f), new Vector2(1f, 12f), changes);
             BuildGeometry(roomRoot, root, "Wall_Right", room.Origin + new Vector2(room.Width + .5f, 2f), new Vector2(1f, 12f), changes);
             BuildCheckpointSections(roomRoot, root, room, rooms, config, changes);
@@ -315,6 +316,7 @@ namespace Parallax.Editor.Setup
                 case SoloRoomElementKind.Inverter: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildInverterCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.Geyser: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildGeyserCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings.Geyser, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.Vine: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildClimbVineCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;
+                case SoloRoomElementKind.ShrinkingFloor: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildShrinkingFloorCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, TrapFloorSortingOrder, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.StormCloud: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildStormCloudCore(parent, root, room, e, rooms, death, observers, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.MovingTrap: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildMovingTrapCore(parent, root, e.Name, position, e.Size, e.Settings.MovingKind == MovingTrapKind.Hazard ? Red : Ground, room.Id, rooms, death, observers, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings, AssetDatabase.LoadAssetAtPath<CrushConfig>("Assets/_Game/Data/CrushConfig_Default.asset"), -2, changes), e.Settings, parent, changes); break;
             }

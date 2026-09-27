@@ -117,7 +117,7 @@ namespace Parallax.Editor.Setup
         }
 
         static bool IsGeyserSolid(SoloRoomElement e) =>
-            IsFixedSolid(e) || e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.FallingBlock
+            IsFixedSolid(e) || e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.ShrinkingFloor || e.Kind == SoloRoomElementKind.FallingBlock
             || (e.Kind == SoloRoomElementKind.MovingTrap && e.Settings.MovingKind == MovingTrapKind.Solid);
 
         static bool IsDisguisedHazard(SoloRoomElement e) =>

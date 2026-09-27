@@ -153,7 +153,7 @@ namespace Parallax.Editor.Routes
             public string Name; public GameObject Go; public SpriteRenderer[] Renderers;
             public RoomTrap Trap; public Hazard Hazard; public BoxCollider2D Box;
             public FallingBlockTrap Block; public Vector2 BlockLanded;
-            public MovingTrap Moving; public bool MovingHazard; public float MovingStep, CrushDepth;
+            public MovingTrap Moving; public bool MovingHazard; public float MovingStep, CrushDepth; public Collider2D PushPartner;
             public ArrowTrap Arrow; public int ArrowTell;
             public InverterTrap Inverter;
             public StormCloudTrap StormCloud;   // PAX-088 (D-090)
@@ -296,6 +296,7 @@ namespace Parallax.Editor.Routes
                     e.MovingStep = ((Vector2)Get(e.Moving, "offset")).magnitude / Mathf.Max(1, (int)Get(e.Moving, "moveTicks"));
                     float depth = (float)Get(e.Moving, "crushDepth");
                     e.CrushDepth = depth > 0f ? depth : ((CrushConfig)Get(e.Moving, "crushConfig")).DefaultCrushDepth;
+                    if ((bool)Get(e.Moving, "pushes")) e.PushPartner = Get(e.Moving, "crushPartner") as Collider2D;   // PAX-093
                 }
                 e.Arrow = go.GetComponent<ArrowTrap>();
                 e.Inverter = go.GetComponent<InverterTrap>();
@@ -383,6 +384,10 @@ namespace Parallax.Editor.Routes
                         Vector3 p = s.transform.position;
                         h = h * 31 + Mathf.RoundToInt(p.x * 1e4f); h = h * 31 + Mathf.RoundToInt(p.y * 1e4f);
                         h = h * 31 + Mathf.RoundToInt(s.transform.eulerAngles.z * 100f);
+                        // PAX-093 (D-095) Q5: the drawn size, so a shrinking floor's shrink is a visible change. Constant for every
+                        // element that never resizes, so their comparisons are unchanged.
+                        Vector2 drawn = s.drawMode == SpriteDrawMode.Simple ? (Vector2)s.transform.lossyScale : s.size;
+                        h = h * 31 + Mathf.RoundToInt(drawn.x * 1e4f); h = h * 31 + Mathf.RoundToInt(drawn.y * 1e4f);
                     }
                     return h;
                 }
@@ -418,7 +423,11 @@ namespace Parallax.Editor.Routes
                     else if (e.Moving != null && e.Trap.LatestFireTick >= 0 && e.Box != null && e.MovingHazard)
                     { Bounds grown = e.Box.bounds; grown.Expand(2f * e.MovingStep + .02f); match = Overlaps(grown); }
                     else if (e.Moving != null && e.Trap.LatestFireTick >= 0 && e.Box != null)
+                    {
                         match = TrapMotion.Crushes(CatCollider.bounds, new Bounds(e.Moving.GetComponent<Rigidbody2D>().position + e.Box.offset, e.Box.size), e.CrushDepth);
+                        // PAX-093 (D-095) Q6: a push wall kills against its named partner, through the same test.
+                        if (!match && e.PushPartner != null) match = TrapMotion.Crushes(CatCollider.bounds, e.PushPartner.bounds, e.CrushDepth);
+                    }
                     // PAX-084 (D-086) R3: only on the ticks the arrow's own kill test runs, through the same function
                     // (flight and stop ticks; a spear's stop + 1 check). A stopped arrow or a stuck spear is harmless.
                     else if (e.Arrow != null && e.Arrow.TryGetKillBox(out Bounds arrowBox))

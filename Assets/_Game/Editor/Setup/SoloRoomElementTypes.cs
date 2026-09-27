@@ -16,7 +16,9 @@ namespace Parallax.Editor.Setup
     // box with none; or Chain; Once; DelayTicks); unconfigured, it never snaps.
     // PAX-088 (D-090): StormCloud is appended the same way (levels 11+ only). Position/Size is the cloud's authored pose and
     // box; the secondary box is its Overlap wake trigger.
-    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser, Vine, StormCloud }
+    // PAX-093 (D-095): ShrinkingFloor is appended the same way (levels 11+ only). Position/Size is the full floor; the
+    // secondary box, when set, is its Overlap trigger (else its own top, like a collapsing floor).
+    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser, Vine, StormCloud, ShrinkingFloor }
     public enum SoloRoomOpeningKind { Pit, Recess }
     public enum SoloRoomHazardRole { Normal, OpeningBottom, OpeningCap, CeilingForceUpCoverage, UnjumpableFloor }
     public enum RequiredJumpKind { Pit, Hazard }
@@ -73,6 +75,24 @@ namespace Parallax.Editor.Setup
         { IsConfigured = true; MinX = minX; MaxX = maxX; FollowSpeed = followSpeed; FirstStrikeDelay = firstStrikeDelay; StrikePeriod = strikePeriod; TellTicks = tellTicks; StrikeTicks = strikeTicks; StrikeWidth = strikeWidth; }
     }
 
+    // PAX-093 (D-095): a MovingTrap Solid's floor behaviour: the SurfaceMotion (Q1), and a push wall's opt-in (Q6) with its
+    // named crush partner. Default (IsConfigured false) reads as Legacy, no push: every element before PAX-093.
+    public readonly struct MovingFloorSettings
+    {
+        public readonly bool IsConfigured; public readonly SurfaceMotion Motion; public readonly bool Pushes; public readonly string CrushPartner;
+        public MovingFloorSettings(SurfaceMotion motion, bool pushes = false, string crushPartner = null)
+        { IsConfigured = true; Motion = motion; Pushes = pushes; CrushPartner = crushPartner; }
+    }
+
+    // PAX-093 (D-095): a shrinking floor's width over time. Default (IsConfigured false) never occurs on a ShrinkingFloor:
+    // ValidateMovingFloors requires a configured one.
+    public readonly struct ShrinkSettings
+    {
+        public readonly bool IsConfigured; public readonly int ShrinkTicks; public readonly float MinWidth; public readonly ShrinkFrom From;
+        public ShrinkSettings(int shrinkTicks, float minWidth, ShrinkFrom from)
+        { IsConfigured = true; ShrinkTicks = shrinkTicks; MinWidth = minWidth; From = from; }
+    }
+
     public readonly struct SoloRoomTrapSettings
     {
         public readonly bool IsConfigured; public readonly int DelayTicks; public readonly int MoveTicks; public readonly int RevealDelayTicks;
@@ -91,8 +111,11 @@ namespace Parallax.Editor.Setup
         public readonly GeyserSettings Geyser;
         // PAX-088 (D-090): default for every non-cloud element.
         public readonly StormCloudSettings Cloud;
+        // PAX-093 (D-095): default for every element that isn't a PAX-093 floor.
+        public readonly MovingFloorSettings Floor;
+        public readonly ShrinkSettings Shrink;
         public SoloRoomTrapSettings(int delayTicks = 0, int moveTicks = 0, int revealDelayTicks = 0, float unitsPerTick = 0f, float travelDistance = 0f, FallingBlockDirection direction = FallingBlockDirection.Down, GravityFlipMode gravityMode = GravityFlipMode.Flip, bool rearmOnExit = false, bool rendererEnabled = false, Vector2 offset = default, string triggerName = "Trigger", TrapTriggerSource triggerSource = TrapTriggerSource.Overlap, string chainSource = null, TrapRepeatMode repeatMode = TrapRepeatMode.Once, int cooldownTicks = 0, int periodTicks = 1, int phaseTicks = 0, MovingTrapKind movingKind = MovingTrapKind.Hazard, int holdTicks = 0, int returnTicks = 0, float crushDepth = 0f, string learnedBypassReason = null)
-        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; Geyser = default; Cloud = default; }
+        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; Geyser = default; Cloud = default; Floor = default; Shrink = default; }
         // PAX-074 (D-078): an arrow's lane on top of ordinary trigger/repeat settings. Two parameters on
         // purpose: tests that build settings by reflection pick the longest constructor, which stays the one above.
         public SoloRoomTrapSettings(ArrowLane arrow, SoloRoomTrapSettings timing) { this = timing; Arrow = arrow; }
@@ -102,6 +125,9 @@ namespace Parallax.Editor.Setup
         public SoloRoomTrapSettings(GeyserSettings geyser, SoloRoomTrapSettings timing) { this = timing; Geyser = geyser; }
         // PAX-088 (D-090): a storm cloud's range and cycle on top of its Overlap/Chain, Once timing (same two-parameter shape).
         public SoloRoomTrapSettings(StormCloudSettings cloud, SoloRoomTrapSettings timing) { this = timing; Cloud = cloud; }
+        // PAX-093 (D-095): a MovingTrap Solid's floor behaviour, and a shrinking floor's shrink (same two-parameter shape).
+        public SoloRoomTrapSettings(MovingFloorSettings floor, SoloRoomTrapSettings timing) { this = timing; Floor = floor; }
+        public SoloRoomTrapSettings(ShrinkSettings shrink, SoloRoomTrapSettings timing) { this = timing; Shrink = shrink; }
     }
 
     public readonly struct SoloRoomElement

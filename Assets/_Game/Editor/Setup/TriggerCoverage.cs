@@ -22,7 +22,7 @@ namespace Parallax.Editor.Setup
     // is covered when the trigger is a cut and the lane extends at least one collider width beyond its
     // near edge, or when the trigger contains the lane box (jump-arc triggers). Checked before the
     // band rule, for the root and every chain descendant that is an arrow.
-    static class TriggerCoverage
+    static partial class TriggerCoverage
     {
         const float Epsilon = 1e-3f;
 
@@ -49,7 +49,7 @@ namespace Parallax.Editor.Setup
                 // PAX-059 (C3): the band is the trigger's storey, and the sides are those the cat can reach it from.
                 float low = StoreyLow(room, trigger);
                 if (!TryStoreyCeiling(room, trigger, low, out float ceiling)) { errors.Add($"{levelId}: no ceiling over {trap.Name}: coverage band undefined."); continue; }
-                Side sides = ApproachSides(room, trigger, low, ceiling, checkpoint, motor, gravityStrength);
+                Side sides = ApproachSides(room, trigger, low, ceiling, checkpoint, motor, gravityStrength, trap);
                 CheckArrowLanes(levelId, trap, trigger, low, ceiling, sides, lanes, motor, errors);
                 if (dangers.Count == 0) continue;
                 if (trigger.yMin <= low + Epsilon && trigger.yMax >= ceiling - Epsilon)
@@ -183,20 +183,8 @@ namespace Parallax.Editor.Setup
             return !float.IsNegativeInfinity(underside);
         }
 
-        // The lowest top the cat can stand on anywhere under the x-span: a solid's top counts when
-        // no other solid covers it. Pit interiors are death: an opening's closure (its PitBottom)
-        // and any top under an OpeningBottom hazard never count; every other solid does.
-        internal static float BandLow(SoloRoomDefinition room, Rect span)
-        {
-            var samples = new List<float> { span.xMin + Epsilon, span.center.x, span.xMax - Epsilon };
-            foreach (SoloRoomElement e in room.Elements.Where(IsSolid))
-            {
-                Rect r = Box(e);
-                foreach (float edge in new[] { r.xMin + Epsilon, r.xMax - Epsilon }) if (edge > span.xMin && edge < span.xMax) samples.Add(edge);
-            }
-            return samples.Min(x => LowestStandableTop(room, x));
-        }
-
+        // The lowest top the cat can stand on at x: a solid's top counts when no other solid covers it. Pit interiors are
+        // death: an opening's closure (its PitBottom) and any top under an OpeningBottom hazard never count.
         static float LowestStandableTop(SoloRoomDefinition room, float x)
         {
             float lowest = StandableTops(room, x).DefaultIfEmpty(float.PositiveInfinity).Min();
@@ -224,7 +212,7 @@ namespace Parallax.Editor.Setup
 
         [System.Flags] internal enum Side { None = 0, Left = 1, Right = 2 }
 
-        static string SeenFrom(Side side, Side sides) => sides == (Side.Left | Side.Right)
+        internal static string SeenFrom(Side side, Side sides) => sides == (Side.Left | Side.Right)
             ? $"reached from both sides (here from the {(side == Side.Left ? "left" : "right")})"
             : "seen from where the cat enters its storey";
 
@@ -271,23 +259,33 @@ namespace Parallax.Editor.Setup
         // searched from the checkpoint's; a surface in the band is split at the trigger, and a walk, jump, drop or flip
         // whose path passes through the trigger inside the band is not taken. Without a motor, or when nothing in the
         // band is reached, it falls back to the checkpoint's side, the rule before PAX-059.
-        internal static Side ApproachSides(SoloRoomDefinition room, Rect trigger, float low, float ceiling, Vector2 checkpoint, CatMotorConfig motor, float gravity)
+        // PAX-091: also stuck spear shafts (except for `trap`'s own chain family), vines, geyser launches and closed pits
+        // (TriggerCoverage.Edges.cs).
+        internal static Side ApproachSides(SoloRoomDefinition room, Rect trigger, float low, float ceiling, Vector2 checkpoint, CatMotorConfig motor, float gravity, SoloRoomElement trap)
         {
             Side fallback = checkpoint.x <= trigger.center.x ? Side.Left : Side.Right;
             if (motor == null || gravity <= 0f) return fallback;
             var reach = new Reach(motor, gravity);
             List<Piece> pieces = Pieces(room, trigger, low, ceiling, motor.ColliderSize.y);
-            Piece start = pieces.Where(p => !p.Up && p.XMin - Epsilon <= checkpoint.x && p.XMax + Epsilon >= checkpoint.x && p.Y <= checkpoint.y + Epsilon)
+            AddStuckShafts(pieces, room, trap, trigger, low, ceiling, motor.ColliderSize.y);
+            AddVines(pieces, room, trigger, low, ceiling, reach);
+            AddMovers(pieces, room, trigger, low, ceiling, motor.ColliderSize.y);
+            Piece start = pieces.Where(p => !p.Up && !p.Vine && p.XMin - Epsilon <= checkpoint.x && p.XMax + Epsilon >= checkpoint.x && p.Y <= checkpoint.y + Epsilon)
                 .OrderByDescending(p => p.Y).FirstOrDefault();
             if (start == null) return fallback;
             SoloRoomElement[] flips = room.Elements.Where(e => e.Kind == SoloRoomElementKind.GravityFlip).ToArray();
+            Rect[] fixedSolids = FixedSolids(room);
+            Vent[] vents = Vents(room, motor, gravity);
             var reached = new HashSet<Piece> { start };
             var frontier = new Queue<Piece>(); frontier.Enqueue(start);
             while (frontier.Count > 0)
             {
                 Piece a = frontier.Dequeue();
                 foreach (Piece b in pieces)
-                    if (!reached.Contains(b) && (Walks(a, b, trigger, low, ceiling, reach, room.Width) || flips.Any(f => Flips(room, a, b, Box(f), trigger, low, ceiling, reach))))
+                    if (!reached.Contains(b) && (Walks(a, b, trigger, low, ceiling, reach, room.Width, fixedSolids)
+                        || flips.Any(f => Flips(room, a, b, Box(f), trigger, low, ceiling, reach))
+                        || Climbs(a, b, trigger, low, ceiling, reach, room.Width, fixedSolids) || Launches(a, b, vents, trigger, low, ceiling, reach)
+                        || Rides(a, b, trigger, low, ceiling)))
                     { reached.Add(b); frontier.Enqueue(b); }
             }
             Side sides = Side.None;
@@ -299,7 +297,9 @@ namespace Parallax.Editor.Setup
             return sides == Side.None ? fallback : sides;
         }
 
-        sealed class Piece { public float XMin, XMax, Y; public bool Up, InBand; }
+        // PAX-091: a vine node is a Piece with Vine set, climbable from paws P0 to P1 (TriggerCoverage.Edges.cs).
+        // PAX-093: a Carry mover's piece has Mover set (MoverEnd at its end pose).
+        sealed class Piece { public float XMin, XMax, Y, P0, P1; public bool Up, InBand, Vine; public string Mover; public bool MoverEnd, MoverReturns; public Rect MoverSweep; }
 
         readonly struct Reach
         {
@@ -357,10 +357,10 @@ namespace Parallax.Editor.Setup
         // A walk, jump or drop between two surfaces of the same gravity, not through the trigger inside its band. The
         // cat leaves a surface at an end (it can't pass through a solid), and never at the room's side walls; the path is
         // the horizontal stretch it covers, from the lower surface up to a jump's height above the higher one (mirrored
-        // for undersides).
-        static bool Walks(Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach, float width)
+        // for undersides). PAX-091: a drop through a closed pit isn't taken.
+        static bool Walks(Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach, float width, Rect[] fixedSolids)
         {
-            if (a.Up != b.Up) return false;
+            if (a.Up != b.Up || a.Vine || b.Vine) return false;
             float rise = a.Up ? a.Y - b.Y : b.Y - a.Y;
             float gap = Mathf.Max(0f, Mathf.Max(b.XMin - a.XMax, a.XMin - b.XMax));
             float limit = reach.Gap(rise);
@@ -374,9 +374,13 @@ namespace Parallax.Editor.Setup
                 IEnumerable<float> ends = (rise > 0f ? new[] { b.XMin, b.XMax }.Where(x => x >= a.XMin - Epsilon && x <= a.XMax + Epsilon)
                                                      : new[] { a.XMin, a.XMax }.Where(x => x >= b.XMin - Epsilon && x <= b.XMax + Epsilon))
                     .Where(x => x > Epsilon && x < width - Epsilon);
-                return ends.Any(x => !Crosses(x - reach.HalfWidth, x + reach.HalfWidth, a, b, trigger, low, ceiling, reach));
+                return ends.Any(x => !Crosses(x - reach.HalfWidth, x + reach.HalfWidth, a, b, trigger, low, ceiling, reach)
+                    && !ClosedPit(x - reach.HalfWidth, x + reach.HalfWidth, a, b, reach, fixedSolids, width)
+                    && !Walled(a, b, x, Mathf.Abs(x - a.XMin) < Epsilon ? -1 : 1, reach, fixedSolids));
             }
-            return !Crosses(Mathf.Min(xa, xb), Mathf.Max(xa, xb), a, b, trigger, low, ceiling, reach);
+            return !Crosses(Mathf.Min(xa, xb), Mathf.Max(xa, xb), a, b, trigger, low, ceiling, reach)
+                && !ClosedPit(Mathf.Min(xa, xb), Mathf.Max(xa, xb), a, b, reach, fixedSolids, width)
+                && !Walled(a, b, xa, Mathf.Abs(xa - a.XMin) < Epsilon ? -1 : 1, reach, fixedSolids);
         }
 
         static bool Crosses(float x0, float x1, Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach)
@@ -391,7 +395,7 @@ namespace Parallax.Editor.Setup
         // first surface of the other gravity it meets on its way, within the drift of the flip's span.
         static bool Flips(SoloRoomDefinition room, Piece a, Piece b, Rect flip, Rect trigger, float low, float ceiling, Reach reach)
         {
-            if (a.Up == b.Up) return false;
+            if (a.Up == b.Up || a.Vine || b.Vine) return false;
             float lift = reach.Rise + reach.Height, flat = reach.Gap(0f);
             bool inReach = a.Up ? flip.yMax >= a.Y - lift && flip.yMin <= a.Y : flip.yMin <= a.Y + lift && flip.yMax >= a.Y;
             if (!inReach || flip.xMax < a.XMin - flat || flip.xMin > a.XMax + flat) return false;
@@ -447,6 +451,7 @@ namespace Parallax.Editor.Setup
 
         static bool IsSolid(SoloRoomElement e) =>
             e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall || e.Kind == SoloRoomElementKind.PitBottom || e.Kind == SoloRoomElementKind.CollapsingFloor
+            || e.Kind == SoloRoomElementKind.ShrinkingFloor   // PAX-093 (D-095): standable at its full width
             || (e.Kind == SoloRoomElementKind.MovingTrap && e.Settings.MovingKind == MovingTrapKind.Solid);
 
         internal static string UncoveredBands(Rect trigger, float low, float ceiling)
