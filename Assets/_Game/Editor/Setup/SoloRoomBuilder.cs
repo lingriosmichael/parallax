@@ -27,6 +27,12 @@ namespace Parallax.Editor.Setup
         // PAX-059 (D-085, no tells): collapsing floors and fake platforms draw over the geometry and pit hazards (-2) they
         // fill, so a trap floor that fills its shaft hides the shaft until it gives way.
         const int TrapFloorSortingOrder = -1;
+        // PAX-090 (D-091): a passed gate lights its section's checkpoint marker (the existing checkpoint art), drawn standing
+        // on the checkpoint, MarkerHeight tall, dim until RoomManager lights it.
+        internal const string CheckpointSpritePath = "Assets/_Game/Art/RealityA/Environment/A_OBJ_Checkpoint.png";
+        const float MarkerHeight = 1.2f;
+        const int MarkerSortingOrder = -1;
+        static readonly Color MarkerDim = new(.45f, .45f, .5f, .8f);
 
         public static RoomSafetyConfig EnsureRoomSafetyConfig(string assetPath, List<string> changes)
         {
@@ -166,7 +172,127 @@ namespace Parallax.Editor.Setup
             foreach (SoloRoomElement element in room.Elements) BuildElement(roomRoot, root, room, element, checkpoints, rooms, death, observers, config, changes);
             BuildGeometry(roomRoot, root, "Wall_Left", room.Origin + new Vector2(-.5f, 2f), new Vector2(1f, 12f), changes);
             BuildGeometry(roomRoot, root, "Wall_Right", room.Origin + new Vector2(room.Width + .5f, 2f), new Vector2(1f, 12f), changes);
+            BuildCheckpointSections(roomRoot, root, room, rooms, config, changes);
         }
+
+        // PAX-090 (D-091): each section's marker (not for section 0), and the room's RoomSectionEntry list on the RoomManager,
+        // in section order: the gate box, and the spawn as the body position standing on the checkpoint (the room
+        // checkpoint's convention, turned for gravity up). A room with no sections writes nothing.
+        static void BuildCheckpointSections(Transform roomRoot, RealityRoot root, SoloRoomDefinition room, RoomManager rooms, CatMotorConfig config, List<string> changes)
+        {
+            CheckpointSection[] sections = room.CheckpointSections ?? System.Array.Empty<CheckpointSection>();
+            var entries = new List<RoomSectionEntry>();
+            foreach (CheckpointSection section in sections)
+            {
+                Vector2 paw = room.Origin + section.Checkpoint;
+                Vector2 spawn = root.ToWorld(paw - section.Gravity * -config.ColliderBottom);
+                SpriteRenderer marker = section.HasGate ? BuildMarker(roomRoot, root, section, paw, changes) : null;
+                if (section.HasGate) BuildGate(roomRoot, root, room, section, changes);
+                Vector2 gateCentre = section.HasGate ? root.ToWorld(room.Origin + section.Gate.center) : Vector2.zero;
+                entries.Add(new RoomSectionEntry(room.Id, section.Name, gateCentre, section.HasGate ? section.Gate.size : Vector2.zero, spawn, section.Gravity, marker));
+            }
+            WireSections(rooms, room.Id, entries, changes);
+        }
+
+        // An empty object at the gate box (position, and the size as its scale): nothing reads it at runtime. It puts the gate
+        // in the room's tree, so TrapLabSetup's layout comparison sees a moved gate and rebuilds the room (which rewires it).
+        static void BuildGate(Transform roomRoot, RealityRoot root, SoloRoomDefinition room, CheckpointSection section, List<string> changes)
+        {
+            Transform gate = SetupUtility.EnsureChild(roomRoot, section.Name + "_Gate", root.gameObject.layer, changes);
+            SetupUtility.SetLocalPosition(gate, room.Origin + section.Gate.center, changes);
+            Vector3 scale = new(section.Gate.width, section.Gate.height, 1f);
+            if (gate.localScale != scale) { gate.localScale = scale; changes.Add("set " + gate.name + ".localScale"); }
+        }
+
+        static SpriteRenderer BuildMarker(Transform roomRoot, RealityRoot root, CheckpointSection section, Vector2 paw, List<string> changes)
+        {
+            Transform t = SetupUtility.EnsureChild(roomRoot, section.MarkerName, root.gameObject.layer, changes);
+            Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(CheckpointSpritePath);
+            SpriteRenderer marker;
+            float scale = 1f, bottom = -MarkerHeight * .5f;
+            if (sprite == null)
+            {
+                Debug.LogError($"SoloRoomBuilder: no checkpoint sprite at '{CheckpointSpritePath}'; '{section.MarkerName}' uses a greybox placeholder.");
+                marker = SetupUtility.SetVisual(t.gameObject, root, new Vector2(.5f, MarkerHeight), MarkerDim, changes);
+            }
+            else
+            {
+                scale = MarkerHeight / sprite.bounds.size.y;
+                bottom = sprite.bounds.min.y * scale;
+                Vector3 local = new(scale, scale, 1f);
+                if (t.localScale != local) { t.localScale = local; changes.Add("set " + t.name + ".localScale"); }
+                marker = SetupUtility.Ensure<SpriteRenderer>(t.gameObject, changes);
+                if (marker.sprite != sprite) { marker.sprite = sprite; changes.Add("set " + t.name + ".sprite"); }
+                if (marker.drawMode != SpriteDrawMode.Simple) { marker.drawMode = SpriteDrawMode.Simple; changes.Add("set " + t.name + ".drawMode"); }
+                string layer = RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay);
+                if (marker.sortingLayerName != layer) { marker.sortingLayerName = layer; changes.Add("set " + t.name + ".sortingLayer"); }
+            }
+            // Standing on the checkpoint: its foot on the paw point, upside down under a ceiling.
+            Vector2 up = -section.Gravity;
+            SetupUtility.SetLocalPosition(t, paw - up * bottom, changes);
+            Quaternion rotation = Quaternion.Euler(0f, 0f, section.GravityUp ? 180f : 0f);
+            if (t.localRotation != rotation) { t.localRotation = rotation; changes.Add("set " + t.name + ".localRotation"); }
+            if (marker != null && marker.color != MarkerDim) { marker.color = MarkerDim; changes.Add("set " + t.name + ".color"); }
+            SetSortingOrder(marker, MarkerSortingOrder, changes);
+            return marker;
+        }
+
+        // This room's entries replace any it had; other rooms' entries keep their order. Nothing is written when nothing
+        // changes (a room with no sections, before and after, never touches the field). An entry whose data is unchanged
+        // keeps its live marker: TrapLabSetup compares a room against a scratch build of it (same RoomManager), and that
+        // scratch's markers are destroyed afterwards.
+        static void WireSections(RoomManager rooms, int roomId, List<RoomSectionEntry> entries, List<string> changes)
+        {
+            var serialized = new SerializedObject(rooms);
+            SerializedProperty array = serialized.FindProperty("sections");
+            var wanted = new List<RoomSectionEntry>();
+            var current = new List<RoomSectionEntry>();
+            for (int i = 0; i < array.arraySize; i++)
+            {
+                RoomSectionEntry old = ReadSection(array.GetArrayElementAtIndex(i));
+                if (old.RoomId != roomId || old.Marker == null) continue;
+                for (int j = 0; j < entries.Count; j++)
+                    if (SameSection(entries[j], old, ignoreMarker: true)) entries[j] = old;
+            }
+            bool inserted = false;
+            for (int i = 0; i < array.arraySize; i++)
+            {
+                RoomSectionEntry entry = ReadSection(array.GetArrayElementAtIndex(i));
+                current.Add(entry);
+                if (entry.RoomId != roomId) { wanted.Add(entry); continue; }
+                if (!inserted) { wanted.AddRange(entries); inserted = true; }
+            }
+            if (!inserted) wanted.AddRange(entries);
+
+            bool changed = wanted.Count != current.Count;
+            for (int i = 0; !changed && i < wanted.Count; i++) changed = !SameSection(wanted[i], current[i], ignoreMarker: false);
+            if (!changed) return;
+
+            array.arraySize = wanted.Count;
+            for (int i = 0; i < wanted.Count; i++)
+            {
+                SerializedProperty element = array.GetArrayElementAtIndex(i);
+                element.FindPropertyRelative("RoomId").intValue = wanted[i].RoomId;
+                element.FindPropertyRelative("Name").stringValue = wanted[i].Name;
+                element.FindPropertyRelative("GateCenter").vector2Value = wanted[i].GateCenter;
+                element.FindPropertyRelative("GateSize").vector2Value = wanted[i].GateSize;
+                element.FindPropertyRelative("Spawn").vector2Value = wanted[i].Spawn;
+                element.FindPropertyRelative("Gravity").vector2Value = wanted[i].Gravity;
+                element.FindPropertyRelative("Marker").objectReferenceValue = wanted[i].Marker;
+            }
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            changes.Add("wired " + rooms.name + ".sections (room " + roomId + ")");
+        }
+
+        static RoomSectionEntry ReadSection(SerializedProperty e) => new(
+            e.FindPropertyRelative("RoomId").intValue, e.FindPropertyRelative("Name").stringValue,
+            e.FindPropertyRelative("GateCenter").vector2Value, e.FindPropertyRelative("GateSize").vector2Value,
+            e.FindPropertyRelative("Spawn").vector2Value, e.FindPropertyRelative("Gravity").vector2Value,
+            e.FindPropertyRelative("Marker").objectReferenceValue as SpriteRenderer);
+
+        static bool SameSection(RoomSectionEntry a, RoomSectionEntry b, bool ignoreMarker) =>
+            a.RoomId == b.RoomId && a.Name == b.Name && a.GateCenter == b.GateCenter && a.GateSize == b.GateSize
+            && a.Spawn == b.Spawn && a.Gravity == b.Gravity && (ignoreMarker || a.Marker == b.Marker);
 
         static void BuildElement(Transform parent, RealityRoot root, SoloRoomDefinition room, SoloRoomElement e, CheckpointManager checkpoints, RoomManager rooms, RoomDeath death, ObserverSet observers, CatMotorConfig config, List<string> changes)
         {

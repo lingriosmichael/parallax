@@ -9,7 +9,9 @@ namespace Parallax.Editor.Routes
     // turns into one CatCommand per tick. Conditions read the previous tick's post-physics record
     // (the frame the player last saw), before this tick's motor step.
     // PAX-087 (D-089): HoldClimb and ReleaseClimb are appended; Climb is held beside Move, and Release() clears Move only.
-    public enum RouteStepKind { Hold, Release, Jump, Until, For, Margin, HoldClimb, ReleaseClimb }
+    // PAX-090 (D-091): Rewind is appended: the harness kills the cat (a forced death, not the route's) and steps the death
+    // hold until the rewind to the current checkpoint section; the next step starts on the tick after it.
+    public enum RouteStepKind { Hold, Release, Jump, Until, For, Margin, HoldClimb, ReleaseClimb, Rewind }
     public enum TimedMode { None, Shift, Hesitate }
     // PAX-087 (D-089): a vertical hold, screen-relative like Hold(Right/Left) (Climb is never gravity-projected).
     public enum Vertical { Down = -1, Up = 1 }
@@ -52,6 +54,7 @@ namespace Parallax.Editor.Routes
             RouteStepKind.Jump => "Jump()",
             RouteStepKind.Until => "Until(" + Condition.Label + ")",
             RouteStepKind.For => "For(" + Ticks + ")",
+            RouteStepKind.Rewind => "Rewind()",
             _ => "Margin(" + MarginName + ")",
         };
     }
@@ -62,11 +65,38 @@ namespace Parallax.Editor.Routes
         public readonly IReadOnlyList<RouteStep> Steps;
         // What "completes" a replay of this route: the room's door by default.
         public readonly RouteCondition Goal;
+        // PAX-090 (D-091), FromSection only: the checkpoint section whose gate the prefix replays to, how many more ticks
+        // of the prefix run before the Rewind step, and that step's index. Null section: an ordinary route.
+        public readonly string RewindSection;
+        public readonly int RewindAfterTicks;
+        public readonly int RewindIndex = -1;
 
         public Route(string name, params RouteStep[] steps) : this(name, null, steps) { }
         public Route(string name, RouteCondition goal, params RouteStep[] steps)
         {
             Name = name; Steps = steps; Goal = goal ?? R.RoomComplete();
+        }
+
+        Route(string name, RouteCondition goal, RouteStep[] steps, string rewindSection, int rewindAfterTicks, int rewindIndex) : this(name, goal, steps)
+        {
+            RewindSection = rewindSection; RewindAfterTicks = rewindAfterTicks; RewindIndex = rewindIndex;
+        }
+
+        // PAX-090 (D-091) Q4: the solution's steps (untimed) until it passes checkpointSection's gate, then a real death and
+        // the rewind to that gate, then `then`. The harness jumps from wherever the prefix is to the Rewind step on the tick
+        // the gate is passed (plus rewindAfterTicks); a prefix that never passes it fails the replay.
+        public static Route FromSection(Route solution, string checkpointSection, string name, params RouteStep[] then) =>
+            FromSection(solution, checkpointSection, 0, name, then);
+
+        public static Route FromSection(Route solution, string checkpointSection, int rewindAfterTicks, string name, params RouteStep[] then)
+        {
+            if (string.IsNullOrEmpty(checkpointSection)) throw new ArgumentException($"Route.FromSection '{name}': checkpointSection is required.");
+            var steps = new List<RouteStep>();
+            foreach (RouteStep step in solution.Steps) steps.Add(step.Timing == TimedMode.None ? step : step.Timed(TimedMode.None));
+            int rewind = steps.Count;
+            steps.Add(R.Rewind());
+            steps.AddRange(then);
+            return new Route(name, solution.Goal, steps.ToArray(), checkpointSection, rewindAfterTicks < 0 ? 0 : rewindAfterTicks, rewind);
         }
 
         // R8: a betrayal reuses the solution's steps up to and including the first step with this label.
@@ -134,6 +164,8 @@ namespace Parallax.Editor.Routes
         // PAX-087 (D-089): hold the stick up or down (Climb ±1, full magnitude like every route move, D-081 (4)).
         public static RouteStep Hold(Vertical direction) => new(RouteStepKind.HoldClimb, direction: (int)direction);
         public static RouteStep ReleaseClimb() => new(RouteStepKind.ReleaseClimb);
+        // PAX-090 (D-091): see RouteStepKind.Rewind. Only Route.FromSection places it.
+        public static RouteStep Rewind() => new(RouteStepKind.Rewind);
         public static RouteStep Jump() => new(RouteStepKind.Jump);
         public static RouteStep Until(RouteCondition condition) => new(RouteStepKind.Until, condition: condition);
         public static RouteStep For(int ticks) => new(RouteStepKind.For, ticks: ticks);

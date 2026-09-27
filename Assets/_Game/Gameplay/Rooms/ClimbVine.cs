@@ -76,6 +76,15 @@ namespace Parallax.Gameplay.Rooms
             ApplyVisuals();
         }
 
+        // PAX-090 (D-091): snapped or whole, as at the gate tick (the cat's own hold ends with its respawn).
+        protected override void CaptureExtra(ref TrapSnapshot snapshot) => snapshot.ExtraInt = IsSnapped ? 1 : 0;
+
+        protected override void OnRestore(in TrapSnapshot snapshot, int roomTick)
+        {
+            IsSnapped = snapshot.ExtraInt != 0;
+            ApplyVisuals();
+        }
+
         void ApplyVisuals()
         {
             foreach (SpriteRenderer segment in segments) if (segment != null) segment.enabled = !IsSnapped;

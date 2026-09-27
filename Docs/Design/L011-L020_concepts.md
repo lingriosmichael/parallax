@@ -1,6 +1,6 @@
 # Levels 11–20 · Concepts (draft for the developer's markup)
 
-**Status:** Draft, 2026-09-26. Architect's concepts for PAX-060. Mark each level keep / change / cut; the kept ones become the PAX-060 ticket's sketch brief.
+**Status:** Approved by the developer, all ten as drafted (2026-09-26). This is PAX-060's sketch brief. Retry cost decided: longer levels with checkpoint sections (PAX-090, D-091), i.e. option (a) in spirit, inside one continuous room.
 **Built from:** `LEVEL_DESIGN_GUIDE.md` (P1–P13), the Level Devil inventory, the kit as built (D-086–D-090, PAX-089).
 
 ## The idea behind the batch

@@ -76,6 +76,16 @@ namespace Parallax.Gameplay.Rooms
             ApplyVisuals(-1);
         }
 
+        // PAX-090 (D-091): the window's fire tick (its duration is this trap's), and the cue as it was at the gate tick.
+        protected override void CaptureExtra(ref TrapSnapshot snapshot) => snapshot.ExtraInt = inversion.FireTick;
+
+        protected override void OnRestore(in TrapSnapshot snapshot, int roomTick)
+        {
+            if (snapshot.ExtraInt < 0) inversion.Clear();
+            else inversion.Fire(snapshot.ExtraInt, durationTicks);
+            ApplyVisuals(roomTick);
+        }
+
         // The room ended (door, level complete) with the window still open: nothing steps a room that isn't live, so
         // the timer and the cue are cleared here: in the same tick when this runs after RoomManager's step, otherwise on
         // the next (Stepped subscription order). InvertsMove is false from the tick the room stops being live either way.

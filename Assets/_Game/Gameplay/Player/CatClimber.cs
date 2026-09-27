@@ -62,7 +62,7 @@ namespace Parallax.Gameplay.Player
             if (command.JumpPressed) return Leap(command, down, right, jumpSpeed);
 
             Bounds b = collider.bounds;
-            if (ClimbState.ReleasesAtBottom(command.Climb, b.center.y, vine.yMin, grounded))
+            if (ClimbState.ReleasesAtBottom(command.Climb, b.center.y, vine.yMin, grounded, gravityUp))
             { state.Release(config.RegrabLockTicks); return false; }
 
             body.linearVelocity = new Vector2(0f, ClimbState.ClimbVelocity(command.Climb, config.ClimbSpeed, b.max.y, vine.yMax, dt));
@@ -78,7 +78,7 @@ namespace Parallax.Gameplay.Player
 
         bool TryGrab(float climb, bool grounded, bool gravityUp)
         {
-            if (!ClimbState.WantsGrab(climb, grounded, config.GrabThreshold)) return false;
+            if (!ClimbState.WantsGrab(climb, grounded, config.GrabThreshold, gravityUp)) return false;
             Rect cat = ToRect(collider.bounds);
             for (int i = 0; i < vines.Length; i++)
             {

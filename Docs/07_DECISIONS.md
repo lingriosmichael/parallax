@@ -1941,3 +1941,80 @@ same height); the door at x 26.
 moving Solids and stuck spears don't; placeholder art; no sound or VFX. `ValidateStormCloud` isn't part of `Validate()`,
 so a shipped level with a cloud needs its tests to call it. The room 10 solution never needs the Overhang; the cover is
 proven by a harness probe. Not device-tested.
+
+### D-091 · 2026-09-26 · Accepted (Architect, 2026-09-27; PAX-090 as built, rulings §11–§12)
+
+**Decision:** Checkpoint sections. A level stays one scene, one room, one continuous space and one camera frame (D-063,
+D-071), and may be divided into **sections**; a death replays only the current one. Rulings: `Docs/0_TASKS/PAX-090.md`
+§11. Amends D-041: "every trap returns to its declared initial value" becomes "every element returns to its state when
+the cat reached the current checkpoint". A room with no sections behaves exactly as before.
+
+(1) **Layout.** `SoloRoomDefinition.CheckpointSections` (`CheckpointSection`: `Name`, `Checkpoint` (room-local paw
+point), `Gate` (a box), `Owns`, `GravityUp`). Section 0 is the start: no gate, its checkpoint is the room's Checkpoint
+element. Allowed in every level, used from level 11 (§11 Q6).
+
+(2) **Runtime.** `SoloRoomBuilder.BuildRoom` bakes a `RoomSectionEntry[]` on `RoomManager` (world gate box, spawn body
+position and gravity, marker) for sectioned rooms only, plus a `<Name>_Marker` (the checkpoint art, dim) and an empty
+`<Name>_Gate` in the room. Each live tick, after every kill check and before the door, the LocalHuman cat's collider
+overlapping the next gate (in order only) makes that section current, lights its marker, and snapshots every trap of the
+room (`IRoomSnapshot.Capture`, a `TrapSnapshot` by value) with `RoomLifeTick`. Gates are not `CheckpointMarker`s: the
+room's checkpoint id (= room id) never changes. Everything stays live in every section.
+
+(3) **Rewind.** After the death hold (unchanged, D-058), with a gate passed: the cat respawns at rest at the section's
+checkpoint through `CatRespawn.RespawnAt`; the ordinary room reset runs; then `RoomLifeTick` goes back to the gate tick
+and every snapshotted trap is restored (`Restore(snapshot, gateTick)`); the next live tick is gate tick + 1 (§11 Q5).
+`RoomLifeTick` is set inside the reset, so the first motor step after it (the inverter's `RoomLifeTick + 1`) reads the
+restored clock. With no gate passed, today's reset runs unchanged, including its known `HoldTicks = 0` quirk (a falling
+block's move queued on the kill tick overrides its reset pose; the rewind path sets the pose and the move target both).
+The cat's body is then taken out of the simulation and put back, which drops the contacts Box2D kept from where it died
+(their warm-start impulses left a 1e-14 u/s residue that differed with the place of death), so a rewind replays
+identically however the cat died. `CheckpointManager` and `CatRespawn` are unchanged.
+
+(4) **The snapshot (§11 Q1/Q2).** Every trap: `State` and the whole `TrapTiming` (pending, seen-source, armed-since, fire
+tick, armed, just-rearmed). Extras by value: a geyser's phase, a cloud's `OffsetX` and phase (its x follows the cat, so
+it isn't a function of ticks), a retreated door's pose (a rearmed retreat stays where it stopped), a `rearmOnExit` flip's
+`TrapCountdown`, an inverter's fire tick, a vine's snapped flag. Everything else is redrawn from the timing at the gate
+tick: arrow and spear poses, the spear's shaft, collapses, hidden spikes; kinematic falling blocks and moving traps are
+set to their formula pose at the gate tick and given it as their `MovePosition` target. The cat's own state (climb,
+motion) is cleared by its respawn. A sectioned room must not own anchors: no layout element can, and `RoomDeath` logs an
+error if a scene pairs them (the rewind resets anchors to their initial values).
+
+(5) **Deaths.** Counted per section in `SectionProgress` and logged when the room completes as `PARALLAX_SECTIONS
+room=<id> <name>=<deaths> … total=<n>`; `PARALLAX_STATS`, the level total and the level-complete screen are unchanged
+(D-061).
+
+(6) **Rules.** Layout (`LevelLayoutValidator.ValidateSections`, part of `ValidateKit`): at least two sections, unique
+names that aren't element names; section 0 as in (1); every later section has a gate and a checkpoint inside the room,
+standable on a fixed surface (checked against the room's x range and vertical bounds, not the level camera's
+frame), outside its gate and on the gate's far side from the previous checkpoint; every trap
+element owned by exactly one section. Routes (`RouteValidator.ValidateSections`, run by `RouteValidator.Run` for a
+sectioned room): the solution passes every gate in order; each section's time on the solution (gate to next gate, or
+the door) ≤ **1000 ticks** (20 s; the design target is 750, over it needs a sentence in the sketch); standing still at
+each checkpoint after a rewind survives ≥ **50 ticks**; each gate's rewind is exact (`CheckRewind`: two replays dying at
+the gate and 10 ticks later give the same 100 ticks after their rewinds, and every element looks at the rewind as it did
+at the gate).
+
+(7) **Routes.** `Route.FromSection(solution, checkpointSection, [rewindAfterTicks,] name, then…)`: the solution's steps
+(untimed) until the gate is passed, then `R.Rewind()` (the harness kills the cat through `RoomDeath.Kill` and steps the
+death hold), then `then`. One forced rewind per rig (`CatRespawn`'s same-frame guard). A `FromSection` betrayal's reveal
+and arrow first-lethal ticks are measured after the rewind. Gate markers are harness elements (`<Name>_Marker`), whose
+first visible change is the gate tick.
+
+(8) **Trap Lab room 11** (origin 456, 66 wide): Act1 (Collapse_1, Spear_1), Act2 (gate x 23.5, checkpoint under the
+Overhang: the awake StormCloud, the Geyser under Vent_Roof), Act3 (gate x 41.5: Spikes_Back, the Inverter, Vine_Real to
+the Cliff). Solution per section 222 / 234 / 388 ticks; standing still at each checkpoint survives 50; both rewinds
+exact; four betrayals (leads 21, 8, 79, 34), Act2's and Act3's from their gates.
+
+(9) **Limits.** A checkpoint must stand on fixed geometry (not a stuck spear); per-section deaths aren't shown in the UI
+or saved; no mid-level save between sessions; the section's time is measured on the solution from the gate, not from a
+respawn. Not device-tested.
+
+### D-092 · 2026-09-26 · Accepted (Architect, 2026-09-27; PAX-090 item B as built)
+
+**Decision:** Amends D-089 / PAX-087 R5. A **grounded** cat grabs a vine by pushing **away from its ground**: Climb ≥
++threshold with gravity down (unchanged), Climb ≤ −threshold with gravity up (a cat on the ceiling pushes screen-down).
+A grounded, climbing cat lets go by pushing **into** its ground (Climb < 0 with gravity down, > 0 with gravity up), so the
+grab tick itself never releases. Airborne grabs (|Climb| ≥ threshold), climbing speed and direction, the top stop and the
+bottom release (collider centre below the vine's bottom while climbing screen-down) stay screen-relative (D-049). Every
+gravity-down expression is identical, so no route result moved. `ClimbState.WantsGrab` and `ReleasesAtBottom` take
+`gravityUp` (default false). Tests: `ClimbGravityUpTests`.

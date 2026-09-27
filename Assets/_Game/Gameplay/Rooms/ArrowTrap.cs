@@ -86,6 +86,17 @@ namespace Parallax.Gameplay.Rooms
             if (shaft != null) shaft.enabled = false;
         }
 
+        // PAX-090 (D-091): the pose, the look and the shaft all follow from the timing (the live step's rules at roomTick).
+        protected override void OnRestore(in TrapSnapshot snapshot, int roomTick)
+        {
+            if (!enabled || !IsTimingEffectActive) { ShowUnfired(); return; }
+            int s = roomTick - LatestFireTick;
+            arrow.transform.localPosition = LocalPose(s);
+            arrow.enabled = true;
+            launcher.color = honestColor;
+            if (shaft != null) shaft.enabled = spear && s >= ArrowMath.StuckCheckTick(tellTicks, flightTicks);
+        }
+
         protected override void OnReset() => ShowUnfired();
         protected override void OnTimingRearmed() => ShowUnfired();
     }

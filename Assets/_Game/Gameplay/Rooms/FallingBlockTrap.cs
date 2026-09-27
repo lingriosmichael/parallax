@@ -35,6 +35,16 @@ namespace Parallax.Gameplay.Rooms
         }
         protected override void OnReset() { countdown.Reset(); body.position = start; }
         protected override void OnTimingRearmed() { body.position = start; }
+        // PAX-090 (D-091) Q2: the pose at roomTick from its formula (the gate tick's MovePosition was still pending when the
+        // snapshot was taken), set now and as the move target, so nothing queued earlier this tick can win.
+        protected override void OnRestore(in TrapSnapshot snapshot, int roomTick)
+        {
+            if (body == null) return;
+            Vector2 pose = start;
+            if (IsTimingEffectActive) pose = start + (direction == FallingBlockDirection.Up ? Vector2.up : Vector2.down) * TrapMotion.Travel(roomTick - LatestFireTick, unitsPerTick, travelDistance);
+            body.position = pose;
+            body.MovePosition(pose);
+        }
         protected override int DelayTicks => delayTicks;
     }
 }

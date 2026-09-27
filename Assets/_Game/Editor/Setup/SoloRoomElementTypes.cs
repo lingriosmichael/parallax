@@ -149,16 +149,40 @@ namespace Parallax.Editor.Setup
         { Name = name; TakeoffX = takeoffX; TakeoffPawHeight = takeoffPawHeight; TargetX = targetX; TargetPawHeight = targetPawHeight; }
     }
 
+    // PAX-090 (D-091): a checkpoint section, held on the room like a PrecisionSection. Room-local: Checkpoint is the paw point
+    // the cat respawns standing on (on a floor with gravity down, under a ceiling with it up), Gate the box whose first
+    // overlap, from the section before, makes this section current. Owns names this section's trap elements (R4: every
+    // element with runtime state belongs to exactly one section). Section 0 is the start: no gate, the room's Checkpoint.
+    public readonly struct CheckpointSection
+    {
+        public readonly string Name; public readonly Vector2 Checkpoint; public readonly Rect Gate; public readonly string[] Owns; public readonly bool GravityUp;
+        public CheckpointSection(string name, Vector2 checkpoint, Rect gate, string[] owns, bool gravityUp = false)
+        { Name = name; Checkpoint = checkpoint; Gate = gate; Owns = owns ?? System.Array.Empty<string>(); GravityUp = gravityUp; }
+        public static CheckpointSection Start(string name, Vector2 checkpoint, string[] owns) => new(name, checkpoint, default, owns);
+        public bool HasGate => Gate.width > 0f && Gate.height > 0f;
+        public Vector2 Gravity => GravityUp ? Vector2.up : Vector2.down;
+        // The builder's marker object, and the name the route harness reports it by.
+        public string MarkerName => Name + "_Marker";
+    }
+
     public readonly struct SoloRoomDefinition
     {
         public readonly int Id; public readonly Vector2 Origin; public readonly float Width; public readonly SoloRoomElement[] Elements; public readonly SoloRoomOpening[] Openings; public readonly RequiredJump[] RequiredJumps; public readonly RequiredStep[] RequiredSteps;
         // PAX-076 (D-083): never null through a constructor; null only on default(SoloRoomDefinition), read as none.
         public readonly PrecisionSection[] PrecisionSections; public readonly BaitGap[] BaitGaps;
+        // PAX-090 (D-091): never null through a constructor; empty = one implicit section, exactly as before.
+        public readonly CheckpointSection[] CheckpointSections;
         public SoloRoomDefinition(int id, float originX, float width, SoloRoomElement[] elements, SoloRoomOpening[] openings, RequiredJump[] requiredJumps)
             : this(id, originX, width, elements, openings, requiredJumps, System.Array.Empty<RequiredStep>()) { }
         public SoloRoomDefinition(int id, float originX, float width, SoloRoomElement[] elements, SoloRoomOpening[] openings, RequiredJump[] requiredJumps, RequiredStep[] requiredSteps = null)
             : this(id, originX, width, elements, openings, requiredJumps, requiredSteps, null) { }
         public SoloRoomDefinition(int id, float originX, float width, SoloRoomElement[] elements, SoloRoomOpening[] openings, RequiredJump[] requiredJumps, RequiredStep[] requiredSteps, PrecisionSection[] precisionSections, BaitGap[] baitGaps = null)
-        { Id = id; Origin = new Vector2(originX, 0f); Width = width; Elements = elements; Openings = openings; RequiredJumps = requiredJumps; RequiredSteps = requiredSteps ?? System.Array.Empty<RequiredStep>(); PrecisionSections = precisionSections ?? System.Array.Empty<PrecisionSection>(); BaitGaps = baitGaps ?? System.Array.Empty<BaitGap>(); }
+            : this(id, originX, width, elements, openings, requiredJumps, requiredSteps, precisionSections, baitGaps, null) { }
+        public SoloRoomDefinition(int id, float originX, float width, SoloRoomElement[] elements, SoloRoomOpening[] openings, RequiredJump[] requiredJumps, RequiredStep[] requiredSteps, PrecisionSection[] precisionSections, BaitGap[] baitGaps, CheckpointSection[] checkpointSections)
+        { Id = id; Origin = new Vector2(originX, 0f); Width = width; Elements = elements; Openings = openings; RequiredJumps = requiredJumps; RequiredSteps = requiredSteps ?? System.Array.Empty<RequiredStep>(); PrecisionSections = precisionSections ?? System.Array.Empty<PrecisionSection>(); BaitGaps = baitGaps ?? System.Array.Empty<BaitGap>(); CheckpointSections = checkpointSections ?? System.Array.Empty<CheckpointSection>(); }
+        // PAX-090: the same room with these checkpoint sections (tests and fixtures).
+        public SoloRoomDefinition WithCheckpointSections(CheckpointSection[] sections) =>
+            new(Id, Origin.x, Width, Elements, Openings, RequiredJumps, RequiredSteps, PrecisionSections, BaitGaps, sections);
+        public bool HasCheckpointSections => CheckpointSections != null && CheckpointSections.Length > 0;
     }
 }

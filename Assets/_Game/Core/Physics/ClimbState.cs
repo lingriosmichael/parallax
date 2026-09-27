@@ -3,7 +3,8 @@ using UnityEngine;
 namespace Parallax.Core
 {
     /// <summary>PAX-087 (D-089): the climbing rules, pure. CatClimber owns one per cat and feeds it motor steps.
-    /// Grab: a grounded cat needs Climb ≥ +threshold (up only), an airborne cat |Climb| ≥ threshold, never while the
+    /// Grab: a grounded cat needs Climb ≥ +threshold pushing away from its ground (up with gravity down, down with gravity
+    /// up: PAX-090 R1, D-092), an airborne cat |Climb| ≥ threshold, never while the
     /// same vine is locked. Climbing: screen-vertical speed Climb × speed, stopped so the collider's top never rises
     /// past the vine's top (the cat stays on the vine); no gravity. Leap: the jump launch plus sign(Move) × MaxSpeed. A release (other than a reset)
     /// locks that vine for the next lockTicks motor steps, counted by BeginStep, whether it happens inside or after one.</summary>
@@ -26,14 +27,14 @@ namespace Parallax.Core
         /// <summary>Once per motor step, before any grab or climb decision.</summary>
         public void BeginStep() => step++;
 
-        public static bool WantsGrab(float climb, bool grounded, float threshold) =>
-            grounded ? climb >= threshold : Mathf.Abs(climb) >= threshold;
+        public static bool WantsGrab(float climb, bool grounded, float threshold, bool gravityUp = false) =>
+            grounded ? (gravityUp ? -climb : climb) >= threshold : Mathf.Abs(climb) >= threshold;
 
         public bool IsLocked(int vine) => vine == lockedVine && step <= lockedUntilStep;
 
         public bool TryGrab(int vine, float climb, bool grounded, float threshold, bool gravityUp)
         {
-            if (IsClimbing || vine < 0 || IsLocked(vine) || !WantsGrab(climb, grounded, threshold)) return false;
+            if (IsClimbing || vine < 0 || IsLocked(vine) || !WantsGrab(climb, grounded, threshold, gravityUp)) return false;
             IsClimbing = true;
             Vine = vine;
             GrabbedWithGravityUp = gravityUp;
@@ -69,10 +70,11 @@ namespace Parallax.Core
             return Mathf.Min(v, Mathf.Max(0f, (vineTop - colliderTop) / dt));
         }
 
-        /// <summary>R5 (2): climbing down releases once the collider's centre is below the vine's bottom, or when the
-        /// cat stands on ground while pushing down.</summary>
-        public static bool ReleasesAtBottom(float climb, float colliderCentreY, float vineBottom, bool grounded) =>
-            climb < 0f && (colliderCentreY < vineBottom || grounded);
+        /// <summary>R5 (2): climbing down releases once the collider's centre is below the vine's bottom (screen-relative),
+        /// or when the cat stands on ground while pushing into it (PAX-090 R1, D-092: down with gravity down, up with
+        /// gravity up). With gravity down this is exactly PAX-087's rule.</summary>
+        public static bool ReleasesAtBottom(float climb, float colliderCentreY, float vineBottom, bool grounded, bool gravityUp = false) =>
+            (climb < 0f && colliderCentreY < vineBottom) || (grounded && (gravityUp ? climb > 0f : climb < 0f));
 
         /// <summary>The leap: the normal jump launch against gravity plus sign(move) × maxSpeed along the cat's right
         /// (straight up when move is 0). Move is the motor's (after the inverter, D-087).</summary>

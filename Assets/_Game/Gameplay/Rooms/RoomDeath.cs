@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Parallax.Core;
 using Parallax.Gameplay.Checkpoints;
 using Parallax.Gameplay.Observers;
+using Parallax.Gameplay.Player;
 using Parallax.Gameplay.Transport;
 using UnityEngine;
 
@@ -93,6 +94,7 @@ namespace Parallax.Gameplay.Rooms
             }
 
             deathCounter.Record(room);
+            rooms.RecordSectionDeath(room);   // PAX-090 (D-091) R6: nothing unless the room has checkpoint sections
             pendingObserver = observer;
             pendingRoom = room;
             pendingCause = cause;
@@ -116,10 +118,19 @@ namespace Parallax.Gameplay.Rooms
 
         void PerformReset()
         {
-            checkpoints.Respawn(pendingObserver);
+            // PAX-090 (D-091): with a checkpoint section's gate passed, the same reset, then a rewind to the gate: the cat
+            // respawns at the section's checkpoint and every trap is restored to its snapshot. Otherwise exactly as before.
+            bool rewind = rooms != null && rooms.TryRewind(pendingRoom, out Vector2 spawn, out Vector2 gravity) && RespawnAtSection(spawn, gravity);
+            if (!rewind) checkpoints.Respawn(pendingObserver);
 
             anchorResets.Clear();
             RoomResetResult result = resetRegistry.Reset(pendingRoom, anchorResets);
+            if (rewind)
+            {
+                rooms.RestoreRewind();
+                if (anchorResets.Count > 0)
+                    Debug.LogError($"RoomDeath: room {pendingRoom} has checkpoint sections and owns {anchorResets.Count} anchor(s); a rewind returns them to their initial values, not to the gate (D-091 forbids anchors in a sectioned room).", this);
+            }
             int anchorsSent = 0;
             if (transportHost == null || transportHost.Transport == null || transportHost.Sequencer == null)
             {
@@ -143,6 +154,25 @@ namespace Parallax.Gameplay.Rooms
             }
 
             Died?.Invoke(new DeathInfo(pendingObserver.Id, pendingCause, pendingRoom, pendingTick, result.TrapsReset, anchorsSent));
+        }
+
+        // True once RespawnAt is called. Like today's checkpoints.Respawn, it can't see CatRespawn's same-frame guard (a
+        // second respawn in one Time.frameCount is dropped). A rewind comes a whole death hold after anything before it, so
+        // in Play it's always a later frame; EditMode rigs don't advance frames, hence one rewind per rig (§11 Q4).
+        bool RespawnAtSection(Vector2 spawn, Vector2 gravity)
+        {
+            CatRespawn respawn = pendingObserver.Cat != null ? pendingObserver.Cat.GetComponent<CatRespawn>() : null;
+            if (respawn == null)
+            {
+                Debug.LogError($"RoomDeath: cat of {pendingObserver.Id} has no CatRespawn; it can't respawn at the section's checkpoint.", this);
+                return false;
+            }
+            respawn.RespawnAt(spawn, gravity);
+            // Box2D keeps the cat's contacts (and their warm-start impulses) from where it died; dropping them makes the
+            // rewind independent of the death, so it replays the same from the checkpoint every time (D-091 (3)).
+            Rigidbody2D body = pendingObserver.Cat.GetComponent<Rigidbody2D>();
+            if (body != null) { body.simulated = false; body.simulated = true; }
+            return true;
         }
     }
 }

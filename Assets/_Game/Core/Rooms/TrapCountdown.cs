@@ -2,6 +2,13 @@ namespace Parallax.Core
 {
     public enum TrapCountdownState { Armed, Counting, Fired }
 
+    /// <summary>PAX-090 (D-091): every field TrapCountdown changes after construction, by value.</summary>
+    public struct TrapCountdownSnapshot
+    {
+        public TrapCountdownState State;
+        public int Elapsed, TicksSinceFired;
+    }
+
     public sealed class TrapCountdown
     {
         readonly int delayTicks;
@@ -35,6 +42,14 @@ namespace Parallax.Core
             if (State != TrapCountdownState.Counting) return false;
             elapsed++;
             return elapsed >= delayTicks && Fire();
+        }
+
+        // PAX-090 (D-091): capture and restore only; no other member's behaviour changes.
+        public TrapCountdownSnapshot Capture() => new() { State = State, Elapsed = elapsed, TicksSinceFired = TicksSinceFired };
+
+        public void Restore(in TrapCountdownSnapshot snapshot)
+        {
+            State = snapshot.State; elapsed = snapshot.Elapsed; TicksSinceFired = snapshot.TicksSinceFired;
         }
 
         public void Reset()

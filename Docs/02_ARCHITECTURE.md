@@ -583,6 +583,14 @@ PAX-059 adds one builder-only disguise: `SoloRoomBuilder` draws every `Collapsin
 at sorting order −1 (`TrapFloorSortingOrder`), so a trap floor that fills a pit's shaft hides the pit's
 hazard until it gives way. No runtime code changed.
 
+### 11.1a Checkpoint sections and rewind (as built PAX-090, D-091)
+
+- **Data:** `SoloRoomDefinition.CheckpointSections` (section 0 = the room's start, no gate); `SoloRoomBuilder.BuildRoom` bakes `RoomSectionEntry[]` onto `RoomManager` (keyed by room id), a gate object and a marker (checkpoint art) per section. Rooms without sections get no entry.
+- **Room step order:** hold gate → `RoomLifeTick` → **section gate check** (the next gate only, LocalHuman overlap; on crossing: current section advances, marker lights, `IRoomSnapshot.Capture` on every trap plus `RoomLifeTick`) → traps → hazards → bounds → door.
+- **Death:** the hold is unchanged. At hold end, `RoomDeath.PerformReset` either runs today's reset (no gate crossed) or the **rewind path**: restore every trap from the snapshot (kinematic bodies to `pose(T)` by formula, then `MovePosition(pose(T))`; cloud x, retreated door pose and flip countdown by value), set `RoomLifeTick := T` immediately, respawn the cat once via `CatRespawn.RespawnAt(sectionSpawn, gravity)`, and toggle the cat's `Rigidbody2D.simulated` off/on to drop Box2D's cached contacts (rewind path only).
+- **Routes:** `Route.FromSection(solution, checkpointSection, …)` + `R.Rewind()`; the route half of `ValidateSections` checks gate order, the 1000-tick budget, 50-tick respawn safety and exact rewind (two rigs, K ticks compared). Per-section deaths log under `PARALLAX_SECTIONS`.
+- **Vine grab (D-092):** a grounded cat grabs by pushing away from its ground and releases by pushing into it; stops stay screen-relative.
+
 ### 11.2 Level flow and scene loading (as built PAX-053, D-072)
 
 The device build starts in `LevelSelect.unity` (Build Settings index 0). Its grid is generated at

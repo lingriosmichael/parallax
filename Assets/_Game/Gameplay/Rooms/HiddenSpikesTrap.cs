@@ -25,5 +25,7 @@ namespace Parallax.Gameplay.Rooms
         protected override void OnLiveRoomStep() { if (!enabled) return; if (StepTiming(trigger != null && IsLocalHumanOverlapping(trigger, observers, filter, results, out _))) { hazard.SetArmed(true); visual.enabled = true; } }
         protected override void OnReset() { countdown.Reset(); hazard.SetArmed(false); visual.enabled = false; }
         protected override void OnTimingRearmed() { hazard.SetArmed(false); visual.enabled = false; }
+        // PAX-090 (D-091): revealed from the fire until the rearm, as the live step leaves it.
+        protected override void OnRestore(in TrapSnapshot snapshot, int roomTick) { if (hazard == null || visual == null) return; hazard.SetArmed(IsTimingEffectActive); visual.enabled = IsTimingEffectActive; }
     }
 }

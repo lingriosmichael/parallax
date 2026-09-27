@@ -12,6 +12,7 @@ namespace Parallax.Editor.Levels
     // PAX-086 (D-088): Trap Lab room 8, the geyser room.
     // PAX-087 (D-089): Trap Lab room 9, the vine room.
     // PAX-088 (D-090): Trap Lab room 10, the storm cloud room.
+    // PAX-090 (D-091): Trap Lab room 11, the checkpoint-section room.
     public static class TrapLabRoutes
     {
         public static RoomRoutes Room3()
@@ -181,6 +182,39 @@ namespace Parallax.Editor.Levels
                     new Route("stand still after waking the cloud", Hold(Right), Until(Fired("StormCloud")), Release(), Until(Dead()))),
                 new Betrayal("A cat that shelters under Fake_Overhang is struck through it", "StormCloud", DeathCause.Hazard,
                     new Route("wait under the fake overhang", Hold(Right), Until(XAtLeast(7.2f)), Release(), Until(Dead()))));
+        }
+
+        // PAX-090 (D-091): Trap Lab room 11, three checkpoint sections. The solution: jump the collapse; stop under the spear
+        // lane and wait for Spear_1 to stick; climb it onto the Step (waking the cloud) and run through the Act2 gate to the
+        // Overhang; wait there for the Geyser's eruption to end, then run under Vent_Roof and through the Act3 gate; hop
+        // Spikes_Back, touch the Inverter and wait out its 150 steps; climb Vine_Real and leap onto the Cliff. One betrayal
+        // per act; Act2's and Act3's start from their gate (Route.FromSection: replay to it, die, rewind).
+        public static RoomRoutes Room11()
+        {
+            var solution = new Route("Trap Lab room 11 solution",
+                Hold(Right), Until(XAtLeast(7.2f)), Jump(), Until(Airborne()), Until(GroundedOn("Floor_B")),
+                Until(XAtLeast(15.1f)), Release(), Until(Still()), Until(Fired("Spear_1")), For(9), Until(Stopped("Spear_1")),
+                Jump(), For(5), Hold(Right), Until(XAtLeast(16.9f)), Release(), Until(GroundedOn("Spear_1_Shaft")), Until(Still()),
+                Jump(), For(8), Hold(Right), Until(GroundedOn("Step")),
+                Until(XAtLeast(27.8f)), Release(), Until(Still()),
+                Until(Moving("Geyser").And(Home("Geyser"))),
+                Hold(Right), Until(XAtLeast(44f)), Jump(), Until(Airborne()), Until(GroundedOn("Floor_C").And(XAtLeast(46.5f))),
+                Until(Fired("Inverter")), Release(), For(150),
+                Hold(Right), Hold(Up), Until(Climbing()), Until(YAtLeast(4.8f)), Jump(), ReleaseClimb(), Until(RoomComplete()));
+
+            return new RoomRoutes(solution,
+                new Betrayal("Collapse_1 drops a cat that walks on over the pit", "Pit_Hazard", DeathCause.Hazard,
+                    new Route("walk onto Collapse_1", Hold(Right), Until(Dead())), revealedBy: "Collapse_1"),
+                new Betrayal("Spear_1 runs through a cat that jumps at the Step as it flies in", "Spear_1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Floor_B))", "jump at the Step's face",
+                        Until(XAtLeast(17f)), Release(), Until(Fired("Spear_1")), For(8), Jump(), Until(Dead()))),
+                new Betrayal("From the Act2 checkpoint: a cat that waits on the vent is launched into Vent_Spikes", "Vent_Spikes", DeathCause.Hazard,
+                    Route.FromSection(solution, "Act2", "wait on the vent", Hold(Right), Until(XAtLeast(31.6f)), Release(), Until(Dead())), revealedBy: "Geyser"),
+                new Betrayal("From the Act3 checkpoint: a cat that keeps holding right after the Inverter runs back into Spikes_Back", "Spikes_Back", DeathCause.Hazard,
+                    Route.FromSection(solution, "Act3", "keep holding right",
+                        Hold(Right), Until(XAtLeast(44f)), Jump(), Until(Airborne()), Until(GroundedOn("Floor_C").And(XAtLeast(46.5f))),
+                        Until(Fired("Inverter")), Until(Dead())),
+                    revealedBy: CatInverted));
         }
 
         // PAX-076 (D-083) §2.5: the bait gap attempted from its best take-off: full speed off P8's edge, the jump in the

@@ -51,5 +51,13 @@ namespace Parallax.Gameplay.Rooms
 
         protected override void OnReset() { if (body != null) body.position = start; }
         protected override void OnTimingRearmed() { if (body != null) body.position = start; }
+        // PAX-090 (D-091) Q2: as FallingBlockTrap, the pose at roomTick from its formula.
+        protected override void OnRestore(in TrapSnapshot snapshot, int roomTick)
+        {
+            if (body == null) return;
+            Vector2 pose = IsTimingEffectActive ? start + TrapMotion.MovingOffset(offset, roomTick - LatestFireTick, moveTicks, holdTicks, returnTicks) : start;
+            body.position = pose;
+            body.MovePosition(pose);
+        }
     }
 }

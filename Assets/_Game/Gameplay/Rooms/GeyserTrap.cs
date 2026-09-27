@@ -81,6 +81,15 @@ namespace Parallax.Gameplay.Rooms
             ApplyVisuals();
         }
 
+        // PAX-090 (D-091): the phase at the gate tick, drawn.
+        protected override void CaptureExtra(ref TrapSnapshot snapshot) => snapshot.ExtraInt = (int)Phase;
+
+        protected override void OnRestore(in TrapSnapshot snapshot, int roomTick)
+        {
+            Phase = (GeyserPhase)snapshot.ExtraInt;
+            ApplyVisuals();
+        }
+
         void ApplyVisuals()
         {
             if (vent != null) vent.color = Phase == GeyserPhase.Idle ? idleColor : tellColor;

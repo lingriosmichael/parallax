@@ -3,6 +3,13 @@ namespace Parallax.Core
     public enum TrapTriggerSource { Overlap, Chain }
     public enum TrapRepeatMode { Once, Rearm, Periodic }
 
+    /// <summary>PAX-090 (D-091): every field TrapTiming changes after construction, by value.</summary>
+    public struct TrapTimingState
+    {
+        public int PendingTick, SeenSourceTick, ArmedSinceTick, LatestFireTick;
+        public bool IsArmed, JustRearmed;
+    }
+
     /// <summary>Pure, room-life-tick timing shared by every PAX-045 trap.</summary>
     public sealed class TrapTiming
     {
@@ -38,6 +45,19 @@ namespace Parallax.Core
                 return roomTick >= phase && (roomTick - phase) % period == 0 && Fire(roomTick);
             if (source != TrapTriggerSource.Chain && pendingTick < 0 && overlapping) pendingTick = roomTick + delay;
             return pendingTick == roomTick && Fire(roomTick);
+        }
+
+        // PAX-090 (D-091): capture and restore only; no other member's behaviour changes.
+        public TrapTimingState Capture() => new()
+        {
+            PendingTick = pendingTick, SeenSourceTick = seenSourceTick, ArmedSinceTick = armedSinceTick,
+            LatestFireTick = LatestFireTick, IsArmed = IsArmed, JustRearmed = JustRearmed,
+        };
+
+        public void Restore(in TrapTimingState state)
+        {
+            pendingTick = state.PendingTick; seenSourceTick = state.SeenSourceTick; armedSinceTick = state.ArmedSinceTick;
+            LatestFireTick = state.LatestFireTick; IsArmed = state.IsArmed; JustRearmed = state.JustRearmed;
         }
 
         public void Reset() { IsArmed = true; JustRearmed = false; LatestFireTick = -1; pendingTick = -1; seenSourceTick = -1; armedSinceTick = -1; }

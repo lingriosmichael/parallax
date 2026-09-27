@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Parallax.Gameplay.Rooms
 {
-    public abstract class RoomTrap : MonoBehaviour, IRoomResettable
+    public abstract class RoomTrap : MonoBehaviour, IRoomResettable, IRoomSnapshot
     {
         [SerializeField] int roomId;
         [SerializeField] TrapState initialState = TrapState.Armed;
@@ -74,6 +74,26 @@ namespace Parallax.Gameplay.Rooms
             timing?.Reset();
             OnReset();
         }
+
+        // PAX-090 (D-091): a checkpoint section's snapshot. The base captures State and the timing; a kind with more state
+        // (or a look that isn't redrawn until its next step) overrides CaptureExtra/OnRestore. Restore runs after the room's
+        // reset, with RoomLifeTick already back at roomTick, the gate tick.
+        public TrapSnapshot Capture()
+        {
+            var snapshot = new TrapSnapshot { State = State, Timing = timing != null ? timing.Capture() : default };
+            CaptureExtra(ref snapshot);
+            return snapshot;
+        }
+
+        public void Restore(in TrapSnapshot snapshot, int roomTick)
+        {
+            State = snapshot.State;
+            timing?.Restore(snapshot.Timing);
+            OnRestore(snapshot, roomTick);
+        }
+
+        protected virtual void CaptureExtra(ref TrapSnapshot snapshot) { }
+        protected virtual void OnRestore(in TrapSnapshot snapshot, int roomTick) { }
 
         protected virtual int DelayTicks => 0;
         protected bool StepTiming(bool overlapping)

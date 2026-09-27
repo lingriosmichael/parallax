@@ -14,5 +14,8 @@ namespace Parallax.Gameplay.Rooms
         protected override int DelayTicks => delayTicks;
         protected override void OnLiveRoomStep() { if (!enabled) return; bool overlap = IsLocalHumanOverlapping(trigger, observers, filter, results, out _); bool fired = rearmOnExit ? countdown.Step(overlap) : StepTiming(overlap); if (fired) { State = TrapState.Fired; ObserverContext observer = observers.Get(Reality.Id); if (observer == null || observer.Driver == null || observer.Driver.Kind != InputSourceKind.LocalHuman || observer.Cat == null) return; GravityReceiver gravity = observer.Cat.GetComponent<GravityReceiver>(); if (gravity != null) gravity.SetTargetDirection(GravityFlipRule.Resolve(mode, gravity.TargetDirection)); } if (rearmOnExit && countdown.State == TrapCountdownState.Armed) State = TrapState.Armed; }
         protected override void OnReset() { countdown.Reset(); }
+        // PAX-090 (D-091): a rearmOnExit flip steps its own countdown, not the timing.
+        protected override void CaptureExtra(ref TrapSnapshot snapshot) { if (countdown != null) snapshot.Countdown = countdown.Capture(); }
+        protected override void OnRestore(in TrapSnapshot snapshot, int roomTick) { countdown?.Restore(snapshot.Countdown); }
     }
 }

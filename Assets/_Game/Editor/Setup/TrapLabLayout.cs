@@ -58,6 +58,8 @@ namespace Parallax.Editor.Setup
             , Room9()
             // PAX-088 (D-090): the storm cloud room.
             , Room10()
+            // PAX-090 (D-091): the checkpoint-section room.
+            , Room11()
         };
 
         // One valid route: Start_Floor -> Up_1 -> Up_2 -> Exit_Perch (door). Betrayals: Stone_A (fake, looks like the
@@ -263,6 +265,61 @@ namespace Parallax.Editor.Setup
                 E(SoloRoomElementKind.StormCloud,"StormCloud",(4f,5.5f),(2f,.8f),(5.75f,3.5f),(.5f,7f),new SoloRoomTrapSettings(new StormCloudSettings(1.5f,24f),new SoloRoomTrapSettings(delayTicks:0))),
             };
             return new SoloRoomDefinition(10, 415f, 28f, elements, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
+        }
+
+        // PAX-090 (D-091): the checkpoint-section room, origin 456 (room 10 ends at 443; the same 13 u gap), width 66: three
+        // acts in one continuous room, one camera, one door. Each act is a checkpoint section (§4).
+        //  - Act1 (start, checkpoint x 2.5): Collapse_1 fills the pit at x 8-10 and drops a cat that walks on; jump it. The
+        //    cut at x 12.5 fires Spear_1 from Launcher_Wall along lane y 0.9 (over a walking cat's head) into the Step's face
+        //    at x 18, 30 ticks later: it arrives as a cat reaches the Step's face, and one that jumps there then dies in it. Stuck (x 16.6-18, top 1.1), it's the only way up
+        //    onto the Step (top 2.0, out of any jump's reach from the floor).
+        //  - Act2 (gate x 23.4-23.6, checkpoint x 28.2 under the real Overhang): the StormCloud woke on the Step (its trigger
+        //    x 19.25-19.75), so it's awake at the gate. The Geyser (vent x 31.5-32.5, every 100 ticks from room tick 80)
+        //    launches a cat into Vent_Spikes under Vent_Roof (x 30.5-35). Wait under the Overhang for an eruption to end,
+        //    then run on under the roof: the cloud can't strike through it, or catch a running cat.
+        //  - Act3 (gate x 41.4-41.6, checkpoint x 42.5): hop Spikes_Back, touch the Inverter and wait out its 150 steps (a
+        //    cat that keeps holding right runs back into the spikes), then climb Vine_Real and leap onto the Cliff and the
+        //    door. The floor runs on from Act2, so a cat can walk back into it.
+        static SoloRoomDefinition Room11()
+        {
+            var elements = new[] {
+                E(SoloRoomElementKind.Ceiling,"Ceiling",(33f,7.5f),(66f,1f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint",(2.5f,0),(0,0)),
+                E(SoloRoomElementKind.Wall,"Launcher_Wall",(.5f,3.5f),(1f,7f)),
+                E(SoloRoomElementKind.Floor,"Floor_A",(4f,-.5f),(8f,1f)),
+                E(SoloRoomElementKind.Wall,"Pit_L",(7.5f,-2.5f),(1f,3f)),
+                E(SoloRoomElementKind.Wall,"Pit_R",(10.5f,-2.5f),(1f,3f)),
+                E(SoloRoomElementKind.PitBottom,"Pit_Bottom",(9f,-3.5f),(2f,1f)),
+                new SoloRoomElement(SoloRoomElementKind.Hazard,"Pit_Hazard",new Vector2(9f,-2.85f),new Vector2(2f,.3f),hazardRole:SoloRoomHazardRole.OpeningBottom),
+                E(SoloRoomElementKind.CollapsingFloor,"Collapse_1",(9f,-.5f),(2f,1f),settings:new SoloRoomTrapSettings(delayTicks:6)),
+                E(SoloRoomElementKind.Floor,"Floor_B",(15.5f,-.5f),(11f,1f)),
+                E(SoloRoomElementKind.Wall,"Step",(19.5f,1f),(3f,2f)),
+                E(SoloRoomElementKind.Arrow,"Spear_1",(.75f,.9f),(.5f,.4f),(12.75f,3.5f),(.5f,7f),new SoloRoomTrapSettings(ArrowLane.SpearLane(ArrowDirection.Right,.9f,18f),new SoloRoomTrapSettings(delayTicks:30))),
+                E(SoloRoomElementKind.Floor,"Floor_C",(39f,-.5f),(36f,1f)),
+                E(SoloRoomElementKind.Ceiling,"Overhang",(28.2f,1.65f),(3f,.5f)),
+                E(SoloRoomElementKind.StormCloud,"StormCloud",(22f,6.3f),(2f,.8f),(19.5f,3.5f),(.5f,7f),new SoloRoomTrapSettings(new StormCloudSettings(20f,38f),new SoloRoomTrapSettings(delayTicks:0))),
+                E(SoloRoomElementKind.Geyser,"Geyser",(32f,-.15f),(1f,.3f),settings:new SoloRoomTrapSettings(new GeyserSettings(),new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:100,phaseTicks:80))),
+                E(SoloRoomElementKind.Ceiling,"Vent_Roof",(32.75f,5.3f),(4.5f,.4f)),
+                E(SoloRoomElementKind.Hazard,"Vent_Spikes",(32.75f,4.95f),(4.5f,.3f)),
+                E(SoloRoomElementKind.Hazard,"Spikes_Back",(45.5f,.15f),(1f,.3f)),
+                E(SoloRoomElementKind.Inverter,"Inverter",(50f,1.5f),(.6f,3f),settings:new SoloRoomTrapSettings(new InverterSettings(),new SoloRoomTrapSettings(delayTicks:0))),
+                E(SoloRoomElementKind.Vine,"Vine_Real",(53.9f,2.55f),(.6f,5.1f)),
+                E(SoloRoomElementKind.Wall,"Cliff",(61.5f,.25f),(9f,8.5f)),
+                E(SoloRoomElementKind.Door,"Door",(64f,5.25f),(.6f,1.5f)),
+            };
+            var openings = new[] { new SoloRoomOpening(SoloRoomOpeningKind.Pit, 8f, 10f, "Pit_L", "Pit_R", "Pit_Bottom", "Pit_Hazard") };
+            var jumps = new[] {
+                new RequiredJump("Pit_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,7.6f,10.4f,0f,0f,2f,sourceName:"Floor_A",destinationName:"Floor_B"),
+                J6(15.9f, 16.9f, 0f, 1.1f, "Floor_B", "Spear_1"),
+                J6(17.4f, 18.5f, 1.1f, 2f, "Spear_1", "Step"),
+                new RequiredJump("Spikes_Back",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,44.5f,46.5f,0f,0f,2f,hazardHeight:.3f,sourceName:"Floor_C",destinationName:"Floor_C"),
+            };
+            var sections = new[] {
+                CheckpointSection.Start("Act1", new Vector2(2.5f, 0f), new[] { "Collapse_1", "Spear_1" }),
+                new CheckpointSection("Act2", new Vector2(28.2f, 0f), new Rect(23.4f, -1f, .2f, 8f), new[] { "StormCloud", "Geyser" }),
+                new CheckpointSection("Act3", new Vector2(42.5f, 0f), new Rect(41.4f, -1f, .2f, 8f), new[] { "Inverter", "Vine_Real" }),
+            };
+            return new SoloRoomDefinition(11, 456f, 66f, elements, openings, jumps, null, null, null, sections);
         }
 
         static RequiredJump J6(float takeoffX, float landingX, float takeoffPaw, float landingPaw, string source, string destination) =>

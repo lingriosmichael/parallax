@@ -68,7 +68,7 @@ namespace Parallax.Editor.Routes
             result.Elements.Add(R.CatInverted);
             result.Records.Add(rig.Snapshot(0, default));
             var view = new RouteView { Result = result };
-            var runner = new RouteRunner(route, options, result);
+            var runner = new RouteRunner(route, options, result) { Rooms = rig.Rooms };
 
             if (options.TimedStep >= 0 && options.Mode == TimedMode.Shift && options.Delta < 0 && options.AuthoredStartTick + options.Delta < 1)
             {
@@ -80,6 +80,7 @@ namespace Parallax.Editor.Routes
             {
                 if (k > options.MaxTicks) { result.Failure = $"tick cap {options.MaxTicks} reached"; result.AliveAtCap = true; break; }
                 if (!runner.Next(view, k, out CatCommand command)) break;
+                if (runner.TakeRewind()) { k = ForceRewind(rig, result, k); continue; }
                 rig.Input.Queue(rig.ToCatFrame(command));
 
                 ObserverSetFixedUpdate.Invoke(rig.Observers, null);
@@ -108,6 +109,29 @@ namespace Parallax.Editor.Routes
                 if (route.Goal.Test(view)) { result.Completed = true; break; }
             }
             return result;
+        }
+
+        // PAX-090 (D-091) Q4: the Rewind step. A real kill between ticks (RoomDeath.Kill, like any kill source outside the room
+        // step), then the death hold stepped with no input and recorded, until RoomDeath's reset (the rewind) reports it.
+        // Returns that tick; the route's next step starts on the one after. CatRespawn's same-frame guard allows one of
+        // these per rig (§11 Q4).
+        static int ForceRewind(Rig rig, ReplayResult result, int k)
+        {
+            rig.DeathReported = false;
+            rig.Death.Kill(ObserverId.A, DeathCause.Hazard);
+            result.ArrowFirstLethalTick.Clear();   // the prefix's arrows; leads are measured after the rewind
+            for (int t = k; t < k + 200; t++)
+            {
+                rig.Input.Queue(default);
+                ObserverSetFixedUpdate.Invoke(rig.Observers, null);
+                if (rig.Observers.Tick != t) throw new InvalidOperationException($"RouteHarness: ObserverSet.Tick is {rig.Observers.Tick} at harness tick {t}.");
+                Physics2D.Simulate(Time.fixedDeltaTime);
+                result.Records.Add(rig.Snapshot(t, default));
+                if (!rig.DeathReported) continue;
+                rig.DeathReported = false;
+                return t;
+            }
+            throw new InvalidOperationException("RouteHarness: the forced death before Rewind() never reset.");
         }
 
         // The death hold keeps the room frozen; RoomDeath reports the cause when it resets (D-058).
@@ -243,6 +267,12 @@ namespace Parallax.Editor.Routes
                 {
                     Transform t = roomRoot.Find(e.Name);
                     if (t != null) rig.Elements.Add(Describe(e.Name, t.gameObject));
+                }
+                // PAX-090 (D-091): each gate's marker, by its object name; its first visible change is the gate tick.
+                foreach (CheckpointSection section in room.CheckpointSections ?? Array.Empty<CheckpointSection>())
+                {
+                    Transform t = section.HasGate ? roomRoot.Find(section.MarkerName) : null;
+                    if (t != null) rig.Elements.Add(Describe(section.MarkerName, t.gameObject));
                 }
                 return rig;
             }
@@ -470,14 +500,35 @@ namespace Parallax.Editor.Routes
         readonly Route route; readonly ReplayOptions options; readonly ReplayResult result;
         int index, move, climb, forLeft = -1, insertLeft;
         bool jump, inserted, idle;
+        // PAX-090 (D-091): Route.FromSection's jump to its Rewind step.
+        public RoomManager Rooms;
+        int gateSeenTick = -1;
+        bool rewindDue, rewound;
 
         public RouteRunner(Route route, ReplayOptions options, ReplayResult result) { this.route = route; this.options = options; this.result = result; }
+
+        /// <summary>True once, on the tick the Rewind step is reached: the harness runs the forced death instead of a command.</summary>
+        public bool TakeRewind()
+        {
+            bool due = rewindDue;
+            rewindDue = false;
+            return due;
+        }
+
+        int RewindTarget => Rooms != null && route.RewindSection != null ? Rooms.SectionIndex(route.RewindSection) : -1;
 
         public bool Next(RouteView view, int tick, out CatCommand command)
         {
             if (options.TimedStep >= 0 && options.Mode == TimedMode.Shift && options.Delta < 0
                 && tick == options.AuthoredStartTick + options.Delta && index < options.TimedStep)
             { index = options.TimedStep; forLeft = -1; }
+
+            // PAX-090 (D-091): the prefix stops where it is once the gate has been passed (and RewindAfterTicks more).
+            if (route.RewindSection != null && !rewound && index < route.RewindIndex && RewindTarget > 0 && Rooms.CurrentSection >= RewindTarget)
+            {
+                if (gateSeenTick < 0) gateSeenTick = tick;
+                if (tick - gateSeenTick >= route.RewindAfterTicks) { index = route.RewindIndex; forLeft = -1; }
+            }
 
             while (true)
             {
@@ -496,6 +547,18 @@ namespace Parallax.Editor.Routes
                     case RouteStepKind.ReleaseClimb: climb = 0; index++; continue;
                     case RouteStepKind.Jump: jump = true; index++; continue;
                     case RouteStepKind.Margin: index++; continue;
+                    case RouteStepKind.Rewind:
+                        if (RewindTarget <= 0 || Rooms.CurrentSection < RewindTarget)
+                        {
+                            result.Failure = $"step #{index} Rewind(): checkpoint section '{route.RewindSection ?? "(none)"}' not reached";
+                            command = default;
+                            return false;
+                        }
+                        rewound = true; rewindDue = true;
+                        move = 0; climb = 0; jump = false;
+                        index++;
+                        command = default;
+                        return true;
                     case RouteStepKind.Until:
                         if (step.Condition.Test(view)) { index++; continue; }
                         if (tick - result.StepStartTick[index] >= UntilCapTicks)

@@ -140,6 +140,20 @@ namespace Parallax.Gameplay.Rooms
             if (renderer.drawMode != SpriteDrawMode.Simple) renderer.size = local.size;
         }
 
+        // PAX-090 (D-091): its x follows the cat, so it's kept by value, with the phase; then drawn.
+        protected override void CaptureExtra(ref TrapSnapshot snapshot)
+        {
+            snapshot.ExtraFloat = OffsetX;
+            snapshot.ExtraInt = (int)Phase;
+        }
+
+        protected override void OnRestore(in TrapSnapshot snapshot, int roomTick)
+        {
+            OffsetX = snapshot.ExtraFloat;
+            Phase = (StormCloudPhase)snapshot.ExtraInt;
+            ApplyVisuals();
+        }
+
         // Disabled mid-chase: drawn at its authored pose, dormant, as the room reset leaves it.
         protected override void OnDisable()
         {

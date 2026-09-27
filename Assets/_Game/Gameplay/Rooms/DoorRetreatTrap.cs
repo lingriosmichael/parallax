@@ -12,5 +12,8 @@ namespace Parallax.Gameplay.Rooms
         protected override int DelayTicks => delayTicks;
         protected override void OnLiveRoomStep() { if (!enabled) return; StepTiming(trigger != null && IsLocalHumanOverlapping(trigger, observers, filter, results, out _)); if (IsTimingEffectActive) doorRoot.position = start + (Vector3)(offset * TrapMotion.Progress(RoomLifeTick - LatestFireTick, moveTicks)); }
         protected override void OnReset() { countdown.Reset(); doorRoot.position = start; }
+        // PAX-090 (D-091): by value; a rearmed retreat stays where it stopped, so the pose isn't a function of the timing.
+        protected override void CaptureExtra(ref TrapSnapshot snapshot) { if (doorRoot != null) snapshot.ExtraVector = doorRoot.position; }
+        protected override void OnRestore(in TrapSnapshot snapshot, int roomTick) { if (doorRoot != null) doorRoot.position = snapshot.ExtraVector; }
     }
 }

@@ -26,5 +26,7 @@ namespace Parallax.Gameplay.Rooms
         protected override void OnLiveRoomStep() { if (!enabled) return; Bounds bounds = box.bounds; bounds.Expand(touchSkin * 2f); bool touched = IsLocalHumanOverlapping(bounds, observers, filter, results, out _); if (StepTiming(touched)) { box.enabled = false; visual.enabled = false; } }
         protected override void OnReset() { countdown.Reset(); box.enabled = true; visual.enabled = true; }
         protected override void OnTimingRearmed() { box.enabled = true; visual.enabled = true; }
+        // PAX-090 (D-091): gone from the fire until the rearm, as the live step leaves it.
+        protected override void OnRestore(in TrapSnapshot snapshot, int roomTick) { if (box == null || visual == null) return; box.enabled = !IsTimingEffectActive; visual.enabled = !IsTimingEffectActive; }
     }
 }

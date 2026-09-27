@@ -212,6 +212,14 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   or reload. A cat whose collider centre leaves its room's computed kill bounds dies the same way,
   cause `OutOfBounds` (D-058) — never build a room whose intended play space isn't inside its
   bounds.
+- **Checkpoint sections (D-091).** A room may declare `CheckpointSections`. Crossing a section's gate
+  (in order) snapshots every trap and `RoomLifeTick`; a later death then **rewinds** to that
+  snapshot and respawns the cat at the section's checkpoint instead of resetting the room to its
+  authored state. With no gate crossed, or no sections, D-041's reset runs exactly as before.
+  Every element stays live in every section. New trap kinds implement `IRoomSnapshot` restore
+  exactly (by formula from ticks, or by value); a state that can't be restored exactly is a stop
+  condition. Validators: gates in order, ≤ 1000 ticks per section (aim ≤ 750), the cat survives
+  50 ticks standing at each checkpoint, rewinds are exact.
 - **The tick is 50 Hz (D-075):** one `FixedUpdate` of 0.02 s, owned by `ObserverSet.FixedUpdate`.
   No seconds↔ticks conversion hard-codes a rate (`60f`, `/3600f`, `.1f` u/tick). Validators,
   layout tests and new code convert through `Parallax.Core.TickTime`; existing runtime reads of

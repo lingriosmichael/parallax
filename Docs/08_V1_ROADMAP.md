@@ -64,7 +64,8 @@ PAX-058 in this phase's build order even though their numbers are higher; PAX-05
 | | KIT-8 (PAX-087) | Climbable vines: new `Climb` stick axis (grab at 42.5° full push; Space-only jump on the keyboard), grab/climb/leap, snap vines. Trap Lab room 9 (window 48, lead 38). **Done** (61023fe). EditMode 973 expected (900 + 73); the developer's Run All total wasn't recorded | KIT-7, D-089 |
 | | KIT-9 (PAX-088) | Storm cloud: wakes on a trigger, follows the cat's body x (0.08 u a tick), charges 25 ticks and strikes to the first static top. Trap Lab room 10 (window 51, leads 74). **Done** (70fc760; developer accepted room 10). EditMode 1042 (developer's Run All; 1034 was expected) | KIT-8, D-090 |
 | | PAX-089 | Kit cleanup: every level runs every kit rule (`ValidateKit`, `LevelKitRulesTests`), inverters and snap vines as chain sources and trigger-coverage roots, seated-climb test, `TrapKitSetup` split into partials, storm cloud nits (no root box; one shared `CatBodyCollider`). No D-091 (validator-only). **Implemented** (2026-09-26); awaiting the developer's Trap Lab menu + Rebuild All Levels, Run All (expected 1074 = 1042 + 32) and rooms 6–10 play | KIT-9 |
-| | PAX-060 | Levels 11–20 (hard, batch 1) | PAX-059, KIT-4, KIT-5–KIT-9, PAX-089 |
+| ✓ | PAX-090 | Checkpoint sections: long levels split into sections, death rewinds to the last checkpoint (D-091); vine grab "away from the ground" (D-092); Trap Lab room 11 (sections 222 / 234 / 388 ticks, both rewinds exact). **Implemented** (2026-09-26); awaiting the developer's Trap Lab menu + Rebuild All Levels, Run All and room 11 play | PAX-089 |
+| | PAX-060 | Levels 11–20 (hard, batch 1), from `Docs/Design/L011-L020_concepts.md` (all ten approved 2026-09-26), with sections | PAX-059, KIT-4, KIT-5–KIT-9, PAX-089, PAX-090 |
 | | PAX-061 | Levels 21–30 (hard, batch 2) | PAX-060 |
 | | PAX-062 | Levels 31–40 (hard, batch 3) | PAX-061 |
 | | PAX-063 | Levels 41–50 (hard, batch 4) | PAX-062 |
