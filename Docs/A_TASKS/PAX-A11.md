@@ -1,6 +1,6 @@
 # PAX-A11 · Cat climb animation and a seamless vine
 
-**Status:** Draft. Starts after PAX-087 is accepted.
+**Status:** Superseded by PAX-A08 (2026-09-27): the climb clip and the seamless vine are items 10 and 15 there. Kept for history.
 **Depends on:** PAX-087 (climbing, `CatAnimState.Climb`, the interim pose), PAX-A01 (walk sheet: PPU and pivot), the
 existing `CatSpriteImporter` flipbook, PAX-A06 tooling.
 **Decisions:** D-089 (vines, the Climb state, the interim pose), D-052 (hitbox follows art, paw line −0.4), D-036 (no

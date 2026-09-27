@@ -1,6 +1,6 @@
 # PAX-A10 · App icon and store graphics
 
-**Status:** Draft. Starts after PAX-A06 and PAX-A09.
+**Status:** Approved (last in Phase E). Starts after PAX-A09; screenshots only once PAX-A12, A13, V05 and V06 are in (the store shows the finished look).
 **Depends on:** PAX-A06, PAX-A09
 
 ## Scope

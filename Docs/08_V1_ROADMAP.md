@@ -65,15 +65,21 @@ PAX-058 in this phase's build order even though their numbers are higher; PAX-05
 | | KIT-9 (PAX-088) | Storm cloud: wakes on a trigger, follows the cat's body x (0.08 u a tick), charges 25 ticks and strikes to the first static top. Trap Lab room 10 (window 51, leads 74). **Done** (70fc760; developer accepted room 10). EditMode 1042 (developer's Run All; 1034 was expected) | KIT-8, D-090 |
 | | PAX-089 | Kit cleanup: every level runs every kit rule (`ValidateKit`, `LevelKitRulesTests`), inverters and snap vines as chain sources and trigger-coverage roots, seated-climb test, `TrapKitSetup` split into partials, storm cloud nits (no root box; one shared `CatBodyCollider`). No D-091 (validator-only). **Implemented** (2026-09-26); awaiting the developer's Trap Lab menu + Rebuild All Levels, Run All (expected 1074 = 1042 + 32) and rooms 6–10 play | KIT-9 |
 | ✓ | PAX-090 | Checkpoint sections: long levels split into sections, death rewinds to the last checkpoint (D-091); vine grab "away from the ground" (D-092); Trap Lab room 11 (sections 222 / 234 / 388 ticks, both rewinds exact). **Implemented** (2026-09-26); awaiting the developer's Trap Lab menu + Rebuild All Levels, Run All and room 11 play | PAX-089 |
-| next | PAX-060 | Levels 11–20, one verb per level, organised chaos, checkpoint sections; brief `Docs/Design/L011-L020_concepts.md`; D-093 band-2 rules. Two halves (11–15, play, 16–20) | PAX-059, KIT-4, KIT-5–KIT-9, PAX-089, PAX-090 |
+| next | PAX-060 | Levels 11–20, one verb per level, organised chaos, checkpoint sections; brief `Docs/Design/L011-L020_concepts.md`; D-093 band-2 rules. Two halves (11–15, play, 16–20). **Half A:** L011–L013 built (L013 has one coverage false error from geyser launches, left for a ruling); L014 and L015 redrawn under §13's 1100-tick floor, awaiting the Architect before code; the developer's play of L011–L013 next. PAX-091 (coverage sees launches, vine climbs, stuck spears) runs before half B | PAX-059, KIT-4, KIT-5–KIT-9, PAX-089, PAX-090 |
 | | PAX-061 | Levels 21–30 (hard, batch 2) | PAX-060 |
 | | PAX-062 | Levels 31–40 (hard, batch 3) | PAX-061 |
 | | PAX-063 | Levels 41–50 (hard, batch 4) | PAX-062 |
 | | (as needed) | Kit-gap tickets: chained flips, rearming doors, queued chains… | raised by a batch |
-| E · Art | PAX-A06 / A07 | Reality A environment, trap art (already planned) | — |
-| | PAX-A08 | Remaining cat animations (death, flip, jump set) | — |
-| | PAX-A09 | UI art: title, level select, buttons, font | PAX-054 |
-| | PAX-A10 | App icon + store graphics | PAX-A06 |
+| | PAX-091 | Coverage search sees launches, vine climbs and stuck spears; per-storey surface coverage; closed pits (before PAX-060 half B) | PAX-060a |
+| E · Look & feel (D-094, target `Docs/Art/LOOK_AND_FEEL.md`) | PAX-V03 | Look slice on L011 + performance budget: layer stack, vertical parallax, 2D lights + normal maps, fog/grade/bloom, reflective water, 50 Hz judder fix; one recommended phone check | PAX-060 |
+| | PAX-A12 | Environment kit: full Reality A layer stack, platform/wall/ceiling/thin-platform pieces, water, dressing, normal maps | PAX-V03 |
+| | PAX-A08 | The full Cat A animation set (15 slots, absorbs PAX-A11 climb + seamless vine) | PAX-V03 |
+| | PAX-V07 | Wire the cat animation set (state machine, presenter, importer) | PAX-A08 |
+| | PAX-A13 | Trap art kit: every trap, every state, death effects | PAX-A12 |
+| | PAX-V05 | Trap presentation: flipbooks driven by trap state, effects, particles, no-tell by sprite | PAX-A13 |
+| | PAX-V06 | Game feel: squash/stretch, dust, camera impulse, death/checkpoint/complete beats, transitions (with PAX-064/065) | PAX-V05, PAX-V07 |
+| | PAX-A09 | UI art to the premium target (live title scene, line-icon HUD, styled stick) | PAX-V06 |
+| | PAX-A10 | App icon + store graphics (after the finished look) | PAX-A09 |
 | F · Audio & haptics | PAX-064 | Audio: mixer, ambient bed, trap/death/UI cues, volume wiring | PAX-054 |
 | | PAX-065 | Haptics: trap and death cues, toggle | PAX-064 |
 | G · Release prep | PAX-066 | Paid unlock (Unity IAP), locked levels, restore | PAX-053, D-068 |
