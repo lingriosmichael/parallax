@@ -198,3 +198,11 @@ Every sketch, one per level:
 The content model for levels 11–50: **one new kit element per theme, explored across ~5 rooms, with an exam level closing each theme** (Level Devil's doors and boss doors). Tight execution starts at level 11 (D-065), so band 2 adds precision sections on top of everything above; it doesn't replace the troll.
 
 The planned kit elements (`claude/KIT-5-9_levels11plus_mechanics.md`): spear (KIT-5), inverter (KIT-6), geyser (KIT-7), vines (KIT-8), storm cloud (KIT-9). Later candidates from the research: moving pit, door as a platform, fake exit, springs, slippery floor, wraparound. For each new element, draft its five-room theme using P1–P5 before building the kit ticket, so the kit is built for the levels it has to serve.
+## 9 · Band 2 (levels 11–20), from PAX-060
+
+The brief is `Docs/Design/L011-L020_concepts.md` (approved 2026-09-26). On top of everything above:
+- **One verb per level.** Each level is solved by its own way of thinking; a solution that fits another level's verb is a redesign.
+- **Longer, in sections.** 30–50 s once known, split into 2–3 checkpoint sections (D-091), each ≤ 20 s, aiming for ≤ 15 s. Put the checkpoint *after* the lesson, not before it, so a death replays the part you haven't learned yet. The cat must survive 1 s standing at every checkpoint.
+- **A chaos moment per level:** ≥ 5 elements changing within about a second, as one fixed chain with an idea behind it (a crossfire that becomes a staircase, a room that rearranges itself). Chaos is choreography, never randomness.
+- **Kit reminders:** geysers and storm clouds can't start chains; snap vines and inverters can; a cat above the cloud can't be hit; a cat on the ceiling grabs a vine by pushing away from the ceiling (D-092).
+- Band-2 numbers: PAX-060 §2.2 (D-093 when written).
