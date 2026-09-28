@@ -2137,8 +2137,8 @@ PAX-060's report names both.
   half B uses no such workaround.
 - **PAX-091 closed** the launch, vine-climb, stuck-spear, per-storey surface and closed-pit blind spots below (D-074 and
   D-080 notes). Still open: a drop past a **vertical wall** (fixed solids spanning the drop's full height between
-  departure and landing; PAX-093's coverage item) and **gravity-up** vine and launch edges (only Down vents launch a
-  flipped cat).
+  departure and landing; PAX-093's coverage item, closed by D-095 (4)) and **gravity-up** vine and launch edges (only
+  Down vents launch a flipped cat; closed by PAX-095, D-098).
 - **PAX-091 finding (L011):** the search saw a jump from the stuck `Spear_Door` onto `Ledge_Hi`'s west end, onto
   `Spikes_D2` before their trigger. The ledge is 2 u wide, so a landing from the west lands on the spikes the tick it
   enters any trigger over the ledge (replayed: lead 0). Fix (ruled 2026-09-27): the trigger holds the ledge's whole top
@@ -2392,3 +2392,27 @@ escape works, with time to do it) and fails D-083, which measures up to the kill
 **Tests:** `CameraTellTests.AnEscapeBackedReveal_ThatLeavesTheViewBeforeTheLastEscape_Fails` (`PrecisionFixtures.EscapeTellRoom`:
 Lip on screen 50 of 103 ticks; seen red with the span check weakened to 12 ticks) and
 `L014_T1_WithItsEscapeDeclared_Passes` (seen red under D-083 before the check existed).
+
+### D-098 · 2026-09-28 · Accepted (PAX-095 as built, ruled 2026-09-28 before L016)
+
+**Decision:** The trigger-coverage approach search (`TriggerCoverage`, D-074; PAX-091) follows a gravity-up cat onto and
+off vines, launches a climbing cat, and starts where the checkpoint stands, an underside included.
+(1) **Gravity-up vines.** In a room with a gravity flip, each vine also gets gravity-up nodes. A cat keeps its gravity
+on a vine (D-089 (3): a gravity change releases it; D-092: a grounded gravity-up cat grabs by pushing screen-down), so a
+grab or a leap never changes gravity: a gravity-up cat grabs a vine from an underside and leaves it (a leap or a release)
+falling up onto an underside or another gravity-up vine node. These edges are the gravity-down ones on the room mirrored
+top to bottom (`Mirror`: y → −y, an underside becomes a top, a gravity-up node's top range a paws range), so every rule
+the gravity-down edges keep (the trigger cut, the closed pit, the vertical wall, D-096's grab through a slab) holds for
+them too. Before, `Climbs` refused an underside and a leap onto one.
+(2) **A launch from a vine.** A cat climbing a vine whose collider overlaps a vent's column is launched with that vent's
+envelope, as one standing on the vent is (the eruption launches whatever overlaps the column, and the launch releases the
+climb, D-089 (3)); a Down vent launches a gravity-up node. Before, `Launches` refused a vine.
+(3) **The start.** The search starts on the surface the checkpoint stands on, a top or an underside (a gravity-up start);
+otherwise, as before, on the highest top at or below it.
+(4) **No change elsewhere:** the approach sides of every trigger, and every coverage error, of L001–L015 and Trap Lab
+rooms 0–12 are identical before and after (snapshotted; L017–L020 too). Everything here only adds reach.
+**Why:** L016 (two surfaces) moves between a slab's faces by flips and vines; the search couldn't follow it (D-093
+half-B stop 1). **Tests:** `CoverageEdgesTests`: `DangerBeyondItsTrigger…`/`DangerBeforeItsTrigger…` with
+`CeilingVineSlab` (ceiling → vine → underside) and `CeilingStartVineSlab` (a gravity-up start), and the launch edge on
+hand-made pieces (`ACatOnAVineInsideAnUpVentsColumn_IsLaunched`, `…OutsideTheColumn_IsNotLaunched`,
+`AGravityUpCatOnAVineInsideADownVentsColumn_IsLaunched`); all but the control were seen red before the change.

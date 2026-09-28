@@ -58,6 +58,8 @@ namespace Parallax.Tests.EditMode
         [TestCase("ClimbOnlyLedge")]
         [TestCase("SpearOnlyLedge")]
         [TestCase("MoverOnlyLedge")]   // PAX-093 (D-095)
+        [TestCase("CeilingVineSlab")]   // PAX-095 (D-098)
+        [TestCase("CeilingStartVineSlab")]   // PAX-095 (D-098)
         public void DangerBeyondItsTrigger_SeenFromTheOnlyWayUp_Passes(string fixture) =>
             AssertNotMentioned(TriggerCoverage(Fixture(fixture, true)), "Ledge_Spikes");
 
@@ -65,6 +67,8 @@ namespace Parallax.Tests.EditMode
         [TestCase("ClimbOnlyLedge")]
         [TestCase("SpearOnlyLedge")]
         [TestCase("MoverOnlyLedge")]   // PAX-093 (D-095)
+        [TestCase("CeilingVineSlab")]   // PAX-095 (D-098)
+        [TestCase("CeilingStartVineSlab")]   // PAX-095 (D-098)
         public void DangerBeforeItsTrigger_SeenFromTheOnlyWayUp_IsRejected(string fixture) =>
             AssertMentioned(TriggerCoverage(Fixture(fixture, false)), "Ledge_Spikes", "lies before Ledge_Spikes's trigger near edge");
 
@@ -113,5 +117,45 @@ namespace Parallax.Tests.EditMode
         [Test]
         public void DropThroughAPitClosedByACollapsingFloor_IsAWayIn_SoTheCutIsRejectedFromBothSides() =>
             AssertMentioned(TriggerCoverage(Fixture("ClosedPitDrop", false)), "Low_Spikes", "reached from both sides");
+
+        // ---------- PAX-095 (D-098): a launch from a vine ----------
+
+        // The search's own launch edge, on hand-made pieces in VineLaunchRoom: a cat climbing a vine inside an erupting column
+        // is launched (the launch releases the climb, D-089 (3)), and reaches a surface within the envelope. A room can't
+        // isolate this edge: the search always lets the cat stand on the vent itself.
+        static readonly Type CoverageType = Type.GetType("Parallax.Editor.Setup.TriggerCoverage, Parallax.Editor");
+        const BindingFlags AnyStatic = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+
+        static object Piece(float xMin, float xMax, float y, bool up, bool vine = false, float p0 = 0f, float p1 = 0f)
+        {
+            Type type = CoverageType.GetNestedType("Piece", BindingFlags.NonPublic);
+            object piece = Activator.CreateInstance(type, true);
+            foreach ((string field, object value) in new (string, object)[] { ("XMin", xMin), ("XMax", xMax), ("Y", y), ("Up", up), ("Vine", vine), ("P0", p0), ("P1", p1), ("InBand", true) })
+                type.GetField(field).SetValue(piece, value);
+            return piece;
+        }
+
+        static bool Launches(object a, object b)
+        {
+            object room = FixturesType.GetMethod("VineLaunchRoom", BindingFlags.Public | BindingFlags.Static).Invoke(null, null);
+            object vents = CoverageType.GetMethod("Vents", AnyStatic).Invoke(null, new[] { room, Motor(), (object)Gravity() });
+            object reach = Activator.CreateInstance(CoverageType.GetNestedType("Reach", BindingFlags.NonPublic), Motor(), Gravity());
+            var farTrigger = new Rect(0f, 0f, .4f, 7f);
+            return (bool)CoverageType.GetMethod("Launches", AnyStatic).Invoke(null, new[] { a, b, vents, farTrigger, (object)0f, 7f, reach });
+        }
+
+        // A vine at the vent (x 20, paws 0.5-1.0, inside the column y 0-1.5), to a floor piece at y 3 beside the column.
+        [Test]
+        public void ACatOnAVineInsideAnUpVentsColumn_IsLaunched() =>
+            Assert.IsTrue(Launches(Piece(19.5f, 20.5f, .5f, false, true, .5f, 1f), Piece(20f, 22f, 3f, false)));
+
+        [Test]
+        public void ACatOnAVineOutsideTheColumn_IsNotLaunched() =>
+            Assert.IsFalse(Launches(Piece(24.5f, 25.5f, .5f, false, true, .5f, 1f), Piece(20f, 22f, 3f, false)));
+
+        // Mirrored: a gravity-up cat on a vine inside Vent_Down's column (y 5.5-7; the cat's top 5.8-6.3) to an underside at 4.
+        [Test]
+        public void AGravityUpCatOnAVineInsideADownVentsColumn_IsLaunched() =>
+            Assert.IsTrue(Launches(Piece(19.5f, 20.5f, 6.3f, true, true, 5.8f, 6.3f), Piece(20f, 22f, 4f, true)));
     }
 }

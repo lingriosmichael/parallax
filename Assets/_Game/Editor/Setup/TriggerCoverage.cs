@@ -270,7 +270,11 @@ namespace Parallax.Editor.Setup
             AddStuckShafts(pieces, room, trap, trigger, low, ceiling, motor.ColliderSize.y);
             AddVines(pieces, room, trigger, low, ceiling, reach);
             AddMovers(pieces, room, trigger, low, ceiling, motor.ColliderSize.y);
-            Piece start = pieces.Where(p => !p.Up && !p.Vine && p.XMin - Epsilon <= checkpoint.x && p.XMax + Epsilon >= checkpoint.x && p.Y <= checkpoint.y + Epsilon)
+            // PAX-095 (D-098): the surface the checkpoint stands on, a top or (a gravity-up start) an underside; otherwise, as
+            // before, the highest top at or below it.
+            Piece start = pieces.Where(p => !p.Vine && p.XMin - Epsilon <= checkpoint.x && p.XMax + Epsilon >= checkpoint.x && Mathf.Abs(p.Y - checkpoint.y) <= Epsilon)
+                .OrderBy(p => p.Up).FirstOrDefault()
+                ?? pieces.Where(p => !p.Up && !p.Vine && p.XMin - Epsilon <= checkpoint.x && p.XMax + Epsilon >= checkpoint.x && p.Y <= checkpoint.y + Epsilon)
                 .OrderByDescending(p => p.Y).FirstOrDefault();
             if (start == null) return fallback;
             SoloRoomElement[] flips = room.Elements.Where(e => e.Kind == SoloRoomElementKind.GravityFlip).ToArray();

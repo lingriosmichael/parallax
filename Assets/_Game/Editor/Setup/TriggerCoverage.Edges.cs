@@ -23,6 +23,10 @@ namespace Parallax.Editor.Setup
     // - PAX-093 (D-095): a Carry mover carries the cat between the ends of its path (both ways when it returns), unless its
     //   swept top passes through the trigger inside its band; and a drop is also blocked by a vertical wall: fixed solids
     //   spanning its full height between where the cat leaves and where it could land.
+    // - PAX-095 (D-098): gravity-up vines and launches. In a room with a gravity flip, each vine also has gravity-up nodes:
+    //   a cat keeps its gravity on a vine (D-089 (3), D-092), so a gravity-up cat grabs one from an underside and leaves it
+    //   falling up onto an underside. Those edges are the gravity-down ones mirrored top to bottom. A cat climbing a vine
+    //   inside an erupting column is launched as one standing on the vent is (the launch releases the climb).
     // Everything here only adds reach, except the closed pit and the vertical wall, which block only where no way down is left.
     static partial class TriggerCoverage
     {
@@ -71,27 +75,41 @@ namespace Parallax.Editor.Setup
         // from the vine's bottom (P0) to the top stop (P1), minus the paws where it would touch the trigger.
         static void AddVines(List<Piece> pieces, SoloRoomDefinition room, Rect trigger, float low, float ceiling, Reach reach)
         {
+            bool flips = room.Elements.Any(e => e.Kind == SoloRoomElementKind.GravityFlip);
             foreach (SoloRoomElement v in room.Elements.Where(LevelLayoutValidator.IsVine))
             {
-                Rect box = Box(v);
-                float x0 = v.Position.x - reach.HalfWidth, x1 = v.Position.x + reach.HalfWidth;
-                var spans = new List<(float from, float to)> { (box.yMin, Mathf.Max(box.yMin, box.yMax - reach.Height)) };
-                if (x1 > trigger.xMin + Epsilon && x0 < trigger.xMax - Epsilon)
+                AddVineNodes(pieces, Box(v), v.Position.x, trigger, low, ceiling, reach);
+                // PAX-095: a gravity-up cat's nodes are the mirror image's: built on the mirrored vine and trigger, then mirrored back.
+                if (flips)
                 {
-                    float cut0 = trigger.yMin - reach.Height, cut1 = trigger.yMax;
-                    spans = spans.SelectMany(s => new[] { (s.from, Mathf.Min(s.to, cut0)), (Mathf.Max(s.from, cut1), s.to) }).Where(s => s.Item2 >= s.Item1 - Epsilon).ToList();
+                    var mirrored = new List<Piece>();
+                    AddVineNodes(mirrored, Mirror(Box(v)), v.Position.x, Mirror(trigger), -ceiling, -low, reach);
+                    pieces.AddRange(mirrored.Select(Mirror));
                 }
-                foreach ((float from, float to) in spans)
-                    pieces.Add(new Piece { XMin = x0, XMax = x1, Y = from, P0 = from, P1 = to, Vine = true, InBand = to >= low - Epsilon && from <= ceiling + Epsilon });
             }
+        }
+
+        static void AddVineNodes(List<Piece> pieces, Rect box, float centreX, Rect trigger, float low, float ceiling, Reach reach)
+        {
+            float x0 = centreX - reach.HalfWidth, x1 = centreX + reach.HalfWidth;
+            var spans = new List<(float from, float to)> { (box.yMin, Mathf.Max(box.yMin, box.yMax - reach.Height)) };
+            if (x1 > trigger.xMin + Epsilon && x0 < trigger.xMax - Epsilon)
+            {
+                float cut0 = trigger.yMin - reach.Height, cut1 = trigger.yMax;
+                spans = spans.SelectMany(s => new[] { (s.from, Mathf.Min(s.to, cut0)), (Mathf.Max(s.from, cut1), s.to) }).Where(s => s.Item2 >= s.Item1 - Epsilon).ToList();
+            }
+            foreach ((float from, float to) in spans)
+                pieces.Add(new Piece { XMin = x0, XMax = x1, Y = from, P0 = from, P1 = to, Vine = true, InBand = to >= low - Epsilon && from <= ceiling + Epsilon });
         }
 
         // A grab onto a vine from a surface, a leap or release from a vine onto a surface, or a leap from one vine to another.
         static bool Climbs(Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach, float width, Rect[] fixedSolids)
         {
             if (!a.Vine && !b.Vine) return false;
-            if (!a.Vine) return !a.Up && Grabs(a, b, trigger, low, ceiling, reach, fixedSolids, width);
-            if (b.Up) return false;
+            // PAX-095: a grab or a leap keeps the cat's gravity; a gravity-up one is the gravity-down one mirrored.
+            if (a.Up != b.Up) return false;
+            if (a.Up) return Climbs(Mirror(a), Mirror(b), Mirror(trigger), -ceiling, -low, reach, width, fixedSolids.Select(Mirror).ToArray());
+            if (!a.Vine) return Grabs(a, b, trigger, low, ceiling, reach, fixedSolids, width);
             foreach (float h in LeapHeights(a, b, trigger, reach))
             {
                 var from = new Piece { XMin = a.XMin, XMax = a.XMax, Y = h };
@@ -151,9 +169,9 @@ namespace Parallax.Editor.Setup
 
         readonly struct Vent
         {
-            public readonly float X0, X1, ColumnX0, ColumnX1, FaceY; public readonly bool Down; public readonly Rect Envelope;
-            public Vent(float x0, float x1, float columnX0, float columnX1, float faceY, bool down, Rect envelope)
-            { X0 = x0; X1 = x1; ColumnX0 = columnX0; ColumnX1 = columnX1; FaceY = faceY; Down = down; Envelope = envelope; }
+            public readonly float X0, X1, ColumnX0, ColumnX1, FaceY, ColumnHeight; public readonly bool Down; public readonly Rect Envelope;
+            public Vent(float x0, float x1, float columnX0, float columnX1, float faceY, bool down, Rect envelope, float columnHeight)
+            { X0 = x0; X1 = x1; ColumnX0 = columnX0; ColumnX1 = columnX1; FaceY = faceY; Down = down; Envelope = envelope; ColumnHeight = columnHeight; }
         }
 
         // Up vents always; Down vents only in a room with a gravity flip (only a flipped cat stands under them).
@@ -169,7 +187,7 @@ namespace Parallax.Editor.Setup
                 Rect vent = Box(e);
                 float face = down ? vent.yMin : vent.yMax;
                 vents.Add(new Vent(vent.xMin, vent.xMax, e.Position.x - g.ColumnWidth * .5f, e.Position.x + g.ColumnWidth * .5f, face, down,
-                    LevelLayoutValidator.LaunchEnvelope(e, g, face, motor, gravity)));
+                    LevelLayoutValidator.LaunchEnvelope(e, g, face, motor, gravity), g.ColumnHeight));
             }
             return vents.ToArray();
         }
@@ -177,15 +195,17 @@ namespace Parallax.Editor.Setup
         // From surface a, standing on a vent flush in it, to surface or vine b: b is at or below the apex (mirrored for a
         // Down vent) and within the fall's drift of the envelope, and neither the rise up the column nor the fall across to
         // b passes through the trigger in its band.
+        // PAX-095: or from vine a, when the climbing cat's collider overlaps the column: launched with the same envelope.
         static bool Launches(Piece a, Piece b, Vent[] vents, Rect trigger, float low, float ceiling, Reach reach)
         {
-            if (a.Vine || (b.Up != a.Up && !b.Vine) || (b.Vine && a.Up)) return false;
+            if (b.Up != a.Up) return false;
             foreach (Vent v in vents)
             {
-                if (v.Down != a.Up || Mathf.Abs(v.FaceY - a.Y) > Epsilon || v.X1 <= a.XMin + Epsilon || v.X0 >= a.XMax - Epsilon) continue;
+                if (v.Down != a.Up) continue;
+                if (a.Vine ? !InColumn(a, v, reach) : Mathf.Abs(v.FaceY - a.Y) > Epsilon || v.X1 <= a.XMin + Epsilon || v.X0 >= a.XMax - Epsilon) continue;
                 Rect env = v.Envelope;
                 float apex = v.Down ? env.yMin + reach.Height : env.yMax - reach.Height;
-                float target = b.Vine ? b.P0 - reach.Height : b.Y;
+                float target = b.Vine ? (b.Up ? b.P1 + reach.Height : b.P0 - reach.Height) : b.Y;
                 float fall = v.Down ? target - apex : apex - target;
                 if (fall < -Epsilon) continue;
                 float gap = Mathf.Max(0f, Mathf.Max(b.XMin - env.xMax, env.xMin - b.XMax));
@@ -200,6 +220,25 @@ namespace Parallax.Editor.Setup
             }
             return false;
         }
+
+        // A climbing cat (vine node a: paws P0-P1 gravity down, its top P0-P1 gravity up) overlaps v's column somewhere.
+        static bool InColumn(Piece a, Vent v, Reach reach)
+        {
+            float c0 = v.Down ? v.FaceY - v.ColumnHeight : v.FaceY, c1 = v.Down ? v.FaceY : v.FaceY + v.ColumnHeight;
+            float y0 = a.Up ? a.P0 - reach.Height : a.P0, y1 = a.Up ? a.P1 : a.P1 + reach.Height;
+            return a.XMax > v.ColumnX0 + Epsilon && a.XMin < v.ColumnX1 - Epsilon && y1 > c0 + Epsilon && y0 < c1 - Epsilon;
+        }
+
+        // ---------- PAX-095: the mirror (top to bottom) ----------
+
+        // y -> -y: an underside becomes a top, a gravity-up vine node a gravity-down one (its top range becomes a paws range).
+        static Piece Mirror(Piece p) => new Piece
+        {
+            XMin = p.XMin, XMax = p.XMax, Y = -p.Y, P0 = -p.P1, P1 = -p.P0, Up = !p.Up, InBand = p.InBand, Vine = p.Vine,
+            Mover = p.Mover, MoverEnd = p.MoverEnd, MoverReturns = p.MoverReturns, MoverSweep = Mirror(p.MoverSweep),
+        };
+
+        static Rect Mirror(Rect r) => Rect.MinMaxRect(r.xMin, -r.yMax, r.xMax, -r.yMin);
 
         static bool Overlaps(Rect band, float x0, float x1, float y0, float y1) =>
             band.width > Epsilon && band.height > Epsilon && x1 > band.xMin + Epsilon && x0 < band.xMax - Epsilon && y1 > band.yMin + Epsilon && y0 < band.yMax - Epsilon;

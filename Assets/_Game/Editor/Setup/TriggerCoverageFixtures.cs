@@ -209,6 +209,47 @@ namespace Parallax.Editor.Setup
             E(SoloRoomElementKind.HiddenSpikes, "Low_Spikes", (8f, .15f), (1f, .3f), (12f, 1f), (.5f, 2f), new SoloRoomTrapSettings(revealDelayTicks: 6)),
         }, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
 
+        // PAX-095 (D-098): a gravity-up cat on the ceiling grabs a vine and, leaving it, falls up onto an underside. The cat
+        // starts on Floor_E (top -1, below the band) and Flip_E puts it on the Ceiling (underside 7); Floor_W (x 0-12) lies
+        // beyond an 8 u gap. The Slab (x 2.5-14, underside 4.5) is too far below the Ceiling to reach from it (2.5 against a
+        // 1.6 rise); the only way onto its underside is down Vine (x 1.5, y 1-7) from the Ceiling and off it. Ledge_Spikes hang
+        // under the Slab, and their cut at x 8 spans the lower storey (y 0-4.5): seen from the only way in, the west, the
+        // spikes at x 12 lie beyond it (dangerBeyond) and those at x 5 before it. The checkpoint's side is the east.
+        public static SoloRoomDefinition CeilingVineSlab(bool dangerBeyond) => CeilingVineRoom(dangerBeyond, false);
+
+        // The same room with the checkpoint on the Ceiling (a gravity-up start) and Flip_E (x 31, y 3-6) out of a jump's reach
+        // from Floor_E, leading only back down to it: the ceiling is reached only because the search starts there.
+        public static SoloRoomDefinition CeilingStartVineSlab(bool dangerBeyond) => CeilingVineRoom(dangerBeyond, true);
+
+        static SoloRoomDefinition CeilingVineRoom(bool dangerBeyond, bool ceilingStart) => new(0, 0f, 32f, new[] {
+            E(SoloRoomElementKind.Ceiling, "Ceiling", (16f, 7.5f), (32f, 1f)),
+            E(SoloRoomElementKind.Checkpoint, "Checkpoint_0", (30f, ceilingStart ? 7f : -1f), (0f, 0f)),
+            E(SoloRoomElementKind.Floor, "Floor_E", (26f, -1.5f), (12f, 1f)),
+            E(SoloRoomElementKind.Floor, "Floor_W", (6f, -.5f), (12f, 1f)),
+            E(SoloRoomElementKind.Door, "Door", (31f, -.25f), (.6f, 1.5f)),
+            ceilingStart
+                ? E(SoloRoomElementKind.GravityFlip, "Flip_E", (31f, 4.5f), (1f, 3f), settings: new SoloRoomTrapSettings(rearmOnExit: true, rendererEnabled: true))
+                : E(SoloRoomElementKind.GravityFlip, "Flip_E", (26f, 3f), (1f, 6f), settings: new SoloRoomTrapSettings(rearmOnExit: true, rendererEnabled: true)),
+            E(SoloRoomElementKind.Floor, "Slab", (8.25f, 4.75f), (11.5f, .5f)),
+            E(SoloRoomElementKind.Vine, "Vine", (1.5f, 4f), (LevelLayoutValidator.VineWidth, 6f)),
+            E(SoloRoomElementKind.HiddenSpikes, "Ledge_Spikes", (dangerBeyond ? 12f : 5f, 4.35f), (1f, .3f), (8f, 2.25f), (.4f, 4.5f), new SoloRoomTrapSettings(revealDelayTicks: 6)),
+        }, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
+
+        // PAX-095 (D-098): the edge test's room for a launch from a vine: Floor (top 0), Vent_Up flush in it at x 20 (the
+        // default column, x 19.5-20.5, y 0-1.5), and, with a gravity flip in the room, Vent_Down flush in the Ceiling
+        // (underside 7) at x 20.
+        public static SoloRoomDefinition VineLaunchRoom() => new(0, 0f, 32f, new[] {
+            E(SoloRoomElementKind.Ceiling, "Ceiling", (16f, 7.5f), (32f, 1f)),
+            E(SoloRoomElementKind.Checkpoint, "Checkpoint_0", (2f, 0f), (0f, 0f)),
+            E(SoloRoomElementKind.Floor, "Floor_A", (16f, -.5f), (32f, 1f)),
+            E(SoloRoomElementKind.Door, "Door", (30f, .75f), (.6f, 1.5f)),
+            E(SoloRoomElementKind.GravityFlip, "Flip", (5f, 3f), (1f, 6f), settings: new SoloRoomTrapSettings(rearmOnExit: true, rendererEnabled: true)),
+            E(SoloRoomElementKind.Geyser, "Vent_Up", (20f, -.15f), (1f, .3f), settings: new SoloRoomTrapSettings(new GeyserSettings(),
+                new SoloRoomTrapSettings(repeatMode: TrapRepeatMode.Periodic, periodTicks: 150))),
+            E(SoloRoomElementKind.Geyser, "Vent_Down", (20f, 7.15f), (1f, .3f), settings: new SoloRoomTrapSettings(new GeyserSettings(GeyserDirection.Down),
+                new SoloRoomTrapSettings(repeatMode: TrapRepeatMode.Periodic, periodTicks: 150))),
+        }, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
+
         static SoloRoomElement LedgeSpikes(float x, float ledgeTop, float triggerX) =>
             E(SoloRoomElementKind.HiddenSpikes, "Ledge_Spikes", (x, ledgeTop + .15f), (1f, .3f), (triggerX, (ledgeTop + 7f) * .5f), (.5f, 7f - ledgeTop),
                 new SoloRoomTrapSettings(revealDelayTicks: 6));
