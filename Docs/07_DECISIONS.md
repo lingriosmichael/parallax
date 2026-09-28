@@ -2194,13 +2194,15 @@ level's element rule counts a betrayal that uses any of them.
   run on the room's clock and boarding them is the read. The second map is new input, not the first one twice: the flip
   starts in the air instead of on the ground (switch into the mirror, not out of it), the beat after it is a wait instead
   of a run of hops, the mover is a lift instead of a ferry, and the map ends on a walk-don't-stop, don't-jump corridor.
-  1142 ticks; Bridge 375 / Map_A 399 / Map_B 368; both rewinds exact. 12 killers, 10 in sequence; answers B 2, J 1, NJ 2,
+  1142 ticks; Bridge 363 / Map_A 411 / Map_B 368; both rewinds exact. 12 killers, 10 in sequence; answers B 2, J 1, NJ 2,
   NW 3, SS 2, W 3; the element in 11 betrayals. Chaos t21–t80, 5 in view of 7 (the volley). Longest stretch without a
   decision 111 ticks. Windows: 9 for the mid-air switch into Orb_B's mirror (8–11 only inside the precision section);
   every other timed step 27 or more. Moving floors: Mover_1 (a mover) and Mover_2 (a lift), both Carry. Every reveal is
-  on screen from its first change to the kill at 4:3, 16:9 and 20:9. The level's element rule names the spear and the
-  inverter (`Band2Element` case 19, as 18: a spear's stuck shaft stood on, or the inversion changing). **Decided**
-  (the working rule of 2026-09-28: within every band-2 rule, the verb and the size):
+  on screen from its first change to the kill at 4:3, 16:9 and 20:9, except the two movers, which run on the room clock
+  from t2 and t32 and are betrayals' reveals only by being read: Mover_1 (T9) on screen 160/179/196 of 633 lead ticks,
+  Mover_2 (T11) 367/472/502 of 1010 and (D2) 466/571/601 of 1109, at 4:3/16:9/20:9. The level's element rule names the
+  spear and the inverter (`Band2Element` case 19, as 18: a spear's stuck shaft stood on, or the inversion changing).
+  **Decided** (the working rule of 2026-09-28: within every band-2 rule, the verb and the size):
   1. The Rack is 1.1 u west of step 5's end, and its east face is thorned (`Thorns_R`, honest) from its foot to step 1:
      a running cat carries 2–3 u in a 1.5 u drop, so without them it ran off step 3 straight onto Landing A and past
      every sweeper. The steps are dropped from their ends, not run.
