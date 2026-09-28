@@ -114,8 +114,8 @@ namespace Parallax.Editor.Routes
             return new RoomRoutes(solution, betrayals.ToArray());
         }
 
-        // PAX-060 review: one element of the level's kind in the fixture room (11 a spear, 12 and 19 an inverter, 13 and 18 a
-        // geyser), named "Elem" so no betrayal counts it by killer or reveal.
+        // PAX-060 review: one element of the level's kind in the fixture room (11 a spear, 12 and 19 an inverter, 13, 18 and
+        // 20 a geyser), named "Elem" so no betrayal counts it by killer or reveal.
         public static SoloRoomDefinition ElementRoom(int level)
         {
             SoloRoomDefinition r = Room(2, false, 0);
@@ -158,7 +158,7 @@ namespace Parallax.Editor.Routes
                     record.Rendered[0] = true; record.RenderBounds[0] = new Rect(9.5f, 0f, 1f, 1.5f);
                     if (acts && level == 11) record.Ground = "Elem_Shaft";
                     if (acts && (level == 12 || level == 19)) record.Signature[2] = 1;
-                    if (acts && (level == 13 || level == 18)) { record.Grounded = false; record.Ground = null; record.Vy = 14f; }
+                    if (acts && (level == 13 || level == 18 || level == 20)) { record.Grounded = false; record.Ground = null; record.Vy = 14f; }
                     replay.Records.Add(record);
                 }
                 replays[b.Name] = replay;

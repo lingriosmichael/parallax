@@ -43,6 +43,12 @@ namespace Parallax.Editor.Setup
                 case 15: kind = "storm cloud"; isKind = e => e.Kind == SoloRoomElementKind.StormCloud; return true;
                 case 18: kind = "storm cloud, geyser or vine"; isKind = e => e.Kind is SoloRoomElementKind.StormCloud or SoloRoomElementKind.Geyser or SoloRoomElementKind.Vine; return true;
                 case 19: kind = "spear or inverter"; isKind = e => e.Kind == SoloRoomElementKind.Arrow && e.Settings.Arrow.Spear || e.Kind == SoloRoomElementKind.Inverter; return true;
+                // Level 20, the exam: every band-2 element.
+                case 20:
+                    kind = "spear, inverter, geyser, vine or storm cloud";
+                    isKind = e => e.Kind == SoloRoomElementKind.Arrow && e.Settings.Arrow.Spear || e.Kind is SoloRoomElementKind.Inverter or SoloRoomElementKind.Geyser
+                        or SoloRoomElementKind.Vine or SoloRoomElementKind.StormCloud;
+                    return true;
                 default: kind = null; isKind = null; return false;
             }
         }
@@ -235,7 +241,7 @@ namespace Parallax.Editor.Setup
             var names = new HashSet<string>(room.Elements.Where(isKind).Select(e => e.Name));
             foreach (Betrayal b in routes.Betrayals)
             {
-                bool direct = names.Contains(b.Killer) && b.Outcome == BetrayalOutcome.Dies || names.Contains(b.RevealedBy) || ((level == 12 || level == 19) && b.RevealedBy == R.CatInverted);
+                bool direct = names.Contains(b.Killer) && b.Outcome == BetrayalOutcome.Dies || names.Contains(b.RevealedBy) || ((level == 12 || level == 19 || level == 20) && b.RevealedBy == R.CatInverted);
                 if (direct || (replays.TryGetValue(b.Name, out ReplayResult replay) && ActsOnCat(level, names, routes.Solution, b.Route, replay, catSize)))
                     used.Add(b.Name);
             }
@@ -272,6 +278,14 @@ namespace Parallax.Editor.Setup
                     case 19:
                         if (t.Grounded && t.Ground != null && t.Ground.EndsWith("_Shaft", StringComparison.Ordinal) && names.Contains(t.Ground.Substring(0, t.Ground.Length - 6))) return true;
                         if (inverted >= 0 && t.Signature[inverted] != replay.Records[0].Signature[inverted]) return true;
+                        break;
+                    // Level 20: any of them (the cloud acts only by killing, which the killer shows).
+                    case 20:
+                        if (t.IsClimbing) return true;
+                        if (t.Grounded && t.Ground != null && t.Ground.EndsWith("_Shaft", StringComparison.Ordinal) && names.Contains(t.Ground.Substring(0, t.Ground.Length - 6))) return true;
+                        if (inverted >= 0 && t.Signature[inverted] != replay.Records[0].Signature[inverted]) return true;
+                        var pushed = new Rect(t.X - catSize.x * .5f, t.Y - catSize.y * .5f, catSize.x, catSize.y);
+                        if (Mathf.Abs(t.Vy) >= GeyserLaunchEvidence && kinds.Any(k => t.Rendered[k] && t.RenderBounds[k].Overlaps(pushed))) return true;
                         break;
                 }
             }

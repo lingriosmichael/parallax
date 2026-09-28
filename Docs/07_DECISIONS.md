@@ -2221,8 +2221,41 @@ level's element rule counts a betrayal that uses any of them.
   cat has been falling since t27; its lesson is the wait for Spear_1, in view from t21), T4 (Sweeper_4's tell at t158;
   the cat left step 3 at t152), T7 (P2 gives way under a cat that stops, t524) and T13 (Floor_C gives way under a cat
   that stops, t1120). Each is on screen from its first change to the kill (D-083).
+- **L020 The Machine** (the exam, every band-2 element; RIDE THE CHAIN REACTION): 32 × 24, start (16.2, 8) in the pen
+  between Post_P and Gate_1, door on the Loft (7.5, 23.25); a spiral that doubles back: west to the lever, back east
+  along the mid storey, up the chimney by the east wall, west along the Top over the start, up V_L to the Loft. The lever
+  (the cut at the storey's west end) sets Gate_1 rising, Arrow_1 flying east at standing height and Push_3 shoving east
+  under it into Post_P; past the gate Collapse_2 goes a step early; the chimney's mouth fires the volley (Spear_4a–4c,
+  30 ticks apart) that builds the stair; climbing V_5 snaps it, and the snap flips the controls (Inv_6) and wakes the
+  Cloud over the Top's east half; crossing the Spine's top drops Block_7a and Block_7b behind the cat; Shrink_8 narrows
+  over its well; on the Loft the door backs away into G_9's column (Retreat_10), and the next eruption carries the cat
+  into it. P8 ("The exam level … is exempt: it reuses earlier lessons on purpose, in a new order") exempts it. 1143
+  ticks; Out 470 / Back 487 / Last 186; both rewinds exact. 9 killers, 9 in sequence; answers B 1, BAIT 1, J 2, NW 3,
+  W 3; the element in 7 betrayals. Chaos t536–t595, 6 in view of 6 (G_9, V_5, Inv_6, Block_7a, Block_7b, Cloud). Longest
+  stretch without a decision 222 ticks (the vent wait, t974–t1143, is 169). Windows 21 or more. Moving floors: Push_3
+  (a push wall, Slip, crush partner Post_P), Gate_1 (a rising gate, Slip) and Shrink_8 (`ShrinkFrom.Both`, 180 ticks).
+  Every reveal is on screen from its first change to the kill at 4:3, 16:9 and 20:9, except Push_3 at 4:3 (81 of its
+  153 lead ticks, the last 81). The level's element rule names every band-2 element (`Band2Element` case 20: a stuck
+  shaft stood on, the inversion changing, a launch or a climb). **Decided** (the working rule of 2026-09-28):
+  1. The machine starts at a lever, not the step-off, and each stage has its own root in a cat trigger (the lever, the
+     gate's cut, the chimney's mouth, the vine, the Spine's top, the shrinker, the Loft): the design needs waits the cat
+     chooses (out the flip, under a strike, for the vent), and one root from the start would make every later beat a
+     fixed run from t0 that no wait fits. Each stage is still a chain the cat sets off and moves with.
+  2. G_9 runs on the room clock: a geyser is Periodic only (`GeyserTrap.cs:52`) and a Periodic trap can't take a chain
+     source (`TrapLayoutValidator.cs:17`), so ruling 6's other branch applies: Shrink_8 takes 180 ticks (≥ 175).
+  3. Length: the way east is shut (Gate_1) and the lever is at the storey's far west end, so the mid storey is run out
+     and back (the double back); the Loft and V_L are added above the Top for the finale. The first draft, as
+     sketched, measured about 613 ticks.
+  4. The volley is three spears and the Perch, not four spears; T4b (Spear_4b) is the ninth killer.
+  5. Dead ends: both recover (D1 G_9 on the way west, D2 Roof_N under the cloud); the sketch's Dies dead end (Spikes_D1 on
+     the low road) went when the low road and its hole were cut in the fourth draft, while clearing validator findings.
+  6. Top_W runs over Post_9, one piece under the vent: stepping from Top_W onto a separate Post_9 of the same height
+     gave the two replays in one session a Vx differing by 5e-7 at one tick (t1089), and the determinism check failed.
+- **PAX-094 items (L020):** two betrayals have no escape once their reveal has happened: T3 (Collapse_2 goes, t291, as
+  the running cat crosses its cut) and T4 (Spear_4a's tell, t368, as the cat takes off). Each is on screen from its first
+  change to the kill (D-083).
 
-Direction mix across 11–20: half B. Tests: `Band2RulesTests` (41), `Band2LevelTests`, `Band2RouteResultsTests`.
+Direction mix across 11–20: half B. Tests: `Band2RulesTests` (43), `Band2LevelTests`, `Band2RouteResultsTests`.
 
 ### D-095 · 2026-09-27 · Proposed (PAX-093 as built; rulings §7)
 
