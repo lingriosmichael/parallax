@@ -115,7 +115,7 @@ namespace Parallax.Editor.Routes
         }
 
         // PAX-060 review: one element of the level's kind in the fixture room (11 and 17 a spear, 12 and 19 an inverter, 13,
-        // 18 and 20 a geyser), named "Elem" so no betrayal counts it by killer or reveal.
+        // 18 and 20 a geyser, 16 a vine), named "Elem" so no betrayal counts it by killer or reveal.
         public static SoloRoomDefinition ElementRoom(int level)
         {
             SoloRoomDefinition r = Room(2, false, 0);
@@ -126,6 +126,7 @@ namespace Parallax.Editor.Routes
                     settings: new SoloRoomTrapSettings(ArrowLane.SpearLane(ArrowDirection.Right, 1f, 20f), new SoloRoomTrapSettings(delayTicks: 0))),
                 12 or 19 => new SoloRoomElement(SoloRoomElementKind.Inverter, "Elem", new Vector2(10f, 1.5f), new Vector2(.6f, 3f),
                     settings: new SoloRoomTrapSettings(new InverterSettings(), new SoloRoomTrapSettings(delayTicks: 0))),
+                16 => new SoloRoomElement(SoloRoomElementKind.Vine, "Elem", new Vector2(10f, 2f), new Vector2(.6f, 4f)),
                 _ => new SoloRoomElement(SoloRoomElementKind.Geyser, "Elem", new Vector2(10f, -.15f), new Vector2(1f, .3f),
                     settings: new SoloRoomTrapSettings(new GeyserSettings(), new SoloRoomTrapSettings(repeatMode: TrapRepeatMode.Periodic, periodTicks: 100))),
             });
@@ -158,6 +159,7 @@ namespace Parallax.Editor.Routes
                     record.Rendered[0] = true; record.RenderBounds[0] = new Rect(9.5f, 0f, 1f, 1.5f);
                     if (acts && (level == 11 || level == 17)) record.Ground = "Elem_Shaft";
                     if (acts && (level == 12 || level == 19)) record.Signature[2] = 1;
+                    if (acts && level == 16) record.IsClimbing = true;
                     if (acts && (level == 13 || level == 18 || level == 20)) { record.Grounded = false; record.Ground = null; record.Vy = 14f; }
                     replay.Records.Add(record);
                 }

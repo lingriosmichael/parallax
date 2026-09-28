@@ -137,11 +137,11 @@ namespace Parallax.Tests.EditMode
         // Level 18 (half B) names three elements, the storm cloud, the geyser and the vine; its fixture room's is a geyser.
         // Level 19 names two, the spear and the inverter; its fixture room's is an inverter. Level 20 (the exam) names every
         // band-2 element; its fixture room's is a geyser. Level 17 names the spear and any chained trap; its fixture room's
-        // is a spear.
-        [TestCase(11)] [TestCase(12)] [TestCase(13)] [TestCase(17)] [TestCase(18)] [TestCase(19)] [TestCase(20)]
+        // is a spear. Level 16 names the gravity flip and the vine; its fixture room's is a vine.
+        [TestCase(11)] [TestCase(12)] [TestCase(13)] [TestCase(16)] [TestCase(17)] [TestCase(18)] [TestCase(19)] [TestCase(20)]
         public void TheElementActingInTwoBetrayals_IsRejected(int level) => AssertMentions(Acting(level, 2, 3), "used in 2");
 
-        [TestCase(11)] [TestCase(12)] [TestCase(13)] [TestCase(17)] [TestCase(18)] [TestCase(19)] [TestCase(20)]
+        [TestCase(11)] [TestCase(12)] [TestCase(13)] [TestCase(16)] [TestCase(17)] [TestCase(18)] [TestCase(19)] [TestCase(20)]
         public void TheElementActingInThreeBetrayals_Passes(int level) => AssertNone(Acting(level, 3, 3));
     }
 }

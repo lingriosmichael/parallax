@@ -41,6 +41,8 @@ namespace Parallax.Editor.Setup
                 case 13: kind = "geyser"; isKind = e => e.Kind == SoloRoomElementKind.Geyser; return true;
                 case 14: kind = "vine"; isKind = e => e.Kind == SoloRoomElementKind.Vine; return true;
                 case 15: kind = "storm cloud"; isKind = e => e.Kind == SoloRoomElementKind.StormCloud; return true;
+                // Level 16 (flips and vines): a gravity flip or a vine.
+                case 16: kind = "gravity flip or vine"; isKind = e => e.Kind is SoloRoomElementKind.GravityFlip or SoloRoomElementKind.Vine; return true;
                 // Level 17 (spears and chains): a spear, or any trap a chain sets off.
                 case 17:
                     kind = "spear or chained trap";
@@ -266,6 +268,8 @@ namespace Parallax.Editor.Setup
                 TickRecord t = replay.Records[i];
                 switch (level)
                 {
+                    // Level 16: climbing (as 14), or the cat's gravity changing in the betrayal's own part.
+                    case 16: if (t.IsClimbing || t.GravityUp != replay.Records[i - 1].GravityUp) return true; break;
                     case 11: case 17: if (t.Grounded && t.Ground != null && t.Ground.EndsWith("_Shaft", StringComparison.Ordinal) && names.Contains(t.Ground.Substring(0, t.Ground.Length - 6))) return true; break;
                     case 12: if (inverted >= 0 && t.Signature[inverted] != replay.Records[0].Signature[inverted]) return true; break;
                     case 13:

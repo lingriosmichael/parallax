@@ -2294,6 +2294,46 @@ level's element rule counts a betrayal that uses any of them.
   7. The Door_Ledge floats (underside 8.7, over a standing cat) so the way back runs under it to the west end.
   8. Length: the volley starts 150 ticks after Arrow_5a (the nook wait ends in a timed step, window 51) and Arrow_8
      tells for 60 ticks (the hole jump after it is timed, window 15). The slide is not slowed.
+- **L016 Upside-Down Garden** (gravity flips and vines, TWO SURFACES): 32 × 20, the Bed (x 0–29, y 9–10), start on its
+  top (22, 10), door on the ceiling over the floor's west end (2.5, 18.25). A coil: east along the Bed's top, jump from
+  before Lip_2 into the gap; stand in the Dip while Arrow_3 crosses it at jump height; west along the floor; V_B's top
+  flip (ForceUp) onto the underside (V_A's lands the cat on Tile_6, which gives way onto Thorns_6); east upside down,
+  down V_7 and a leap under the hidden Flip_H7 across Recess_7, down V_8 and a leap across Recess_8; over Lip_2's
+  underside, which gives way, and up the gap to the ceiling; jump Spikes_C; Flip_S0 (Once) drops the cat onto the Bed's
+  top west of the Hedge and sets the storm off (Spikes_H on the Hedge, Spikes_S1 ahead for 60 ticks, Spikes_S4 under
+  the Bed, Block_S3 onto the landing, Spikes_S5 on the ceiling); Flip_S2 back up past Thorns_A; jump Spikes_S5; the
+  door. 1155 ticks; Bed 466 / Underside 318 / Sky 371; both gravity-up rewinds exact, gravity included (the compared
+  records carry it; ruled 2026-09-28). 11 killers, 9 in sequence; answers J 3, LW 2, NJ 1, NW 1, OL 1, SS 1, W 1; the
+  element (gravity flip or vine, `Band2Element` case 16: a climb, or the cat's gravity changing in the betrayal's own
+  part) in 3 betrayals. Chaos t928–t987, 5 of 5 in view (the storm). Longest stretch without a decision 209 ticks.
+  Windows 12 or more. No moving floor. Every reveal is on screen from its first change to the kill at 4:3, 16:9 and
+  20:9 (Spikes_C for 72 of its 75 lead ticks). **Decided** (the working rule of 2026-09-28):
+  1. The sketch's floor-to-underside flip beat (Flip_U1, Flip_D1, Thorns_F, Arrow_5, Tile_4: T4, T5) is cut: it put a
+     gravity-up cat on the underside's east end, from where it walks off into the gap and falls up to the ceiling,
+     skipping the underside; every way round a stub there is open to that cat too.
+  2. Crack_1 and the hidden Flip_H1 (T1) are cut: a cat thrown up by the flip drifts about 4.4 u while it falls up 8 u,
+     so no ceiling thorns stop it short of the Sky storey (a shortcut past two sections).
+  3. The Bed's holes are recesses in its underside (the top half solid, thorns or hidden spikes inside): a real hole
+     lets a gravity-up cat fall straight up to the ceiling, a shortcut to the door.
+  4. The Hedge (x 19.5–20, 3 tall) parts the start's stretch of the Bed's top from the storm's: Flip_S2 a step from the
+     start was a shortcut to the ceiling by the door. The storm is on the Bed's top west of it, with its own elements.
+  5. V_8 is a plain vine, and the underside's vines reach down to 1.5 u over the floor (the vine rule R5): a snap vine
+     within a jump of the floor could be snapped in the Bed section, and the underside would soft-lock. T8 is Recess_8,
+     too wide to jump, with hidden Spikes_8 in it (they come up once the cat walks the floor under it).
+  6. Stub_9, G_9 and Slide_9 (T9, the BAIT) are cut: the underside is left by walking onto Lip_2's underside, which
+     gives way under the cat and lets it fall up the gap. L016 has no BAIT.
+  7. T2's Spikes_2 are in the Dip's east end, where a cat that walks off the Bed's end lands (one that jumps from before
+     Lip_2 lands short of them); Arrow_3 crosses the Dip at jump height from Post_E, since the Dip is left only by a hop.
+  8. Both dead ends die (V_D, "straight up to the door", and west under the Bed, both onto Spikes_X): a plain vine or a
+     nook gives a Recovers route nothing that changes to reveal it.
+  9. Spikes_C (T13) hang on Lip_2's chain rather than a cut of their own (see (5)).
+- **Known limit (L016):** the coverage search can't climb a vine into the flip at its top (V_B, V_A), so from the
+  checkpoint it reaches neither the underside nor the ceiling; a trigger there is judged from the checkpoint's side. No
+  L016 trigger there depends on it: Spikes_C hang on Lip_2's chain (a collapsing floor's chain is covered by
+  construction) and the storm on Flip_S0's. For a PAX-095-style ticket: a climb into a flip.
+- **PAX-094 items (L016):** T2 (Lip_2 gives way under the walker, t45) and T6 (Tile_6 gives way under a cat that stays,
+  t433) have no escape once their reveal has happened; T3's is 2 ticks (Arrow_3's tell at t99, the hop at t101). Each is
+  on screen from its first change to the kill (D-083).
 - **PAX-094 items (L017):** T3 (Collapse_3 gives way under a cat that stops, t167) and D1 (Spikes_D1 show at t113,
   with the cat already over the Shelf in its jump) have no escape once their reveal has happened; T1's is 4 ticks (the
   tell at t31, the takeoff at t35). Each is on screen from its first change to the kill (D-083).
@@ -2301,7 +2341,7 @@ level's element rule counts a betrayal that uses any of them.
   the running cat crosses its cut) and T4 (Spear_4a's tell, t368, as the cat takes off). Each is on screen from its first
   change to the kill (D-083).
 
-Direction mix across 11–20: half B. Tests: `Band2RulesTests` (45), `Band2LevelTests`, `Band2RouteResultsTests`.
+Direction mix across 11–20: half B. Tests: `Band2RulesTests` (47), `Band2LevelTests`, `Band2RouteResultsTests`.
 
 ### D-095 · 2026-09-27 · Proposed (PAX-093 as built; rulings §7)
 
