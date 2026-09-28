@@ -31,7 +31,7 @@ namespace Parallax.Editor.Setup
 
         public static bool IsBand2(int level) => level >= 11 && level <= 20;
 
-        // D-093: each half-A level's new element. Half B names its elements when it is built.
+        // D-093: each half-A level's new element. Half B names its elements when it is built (a level's kind covers them all).
         public static bool Band2Element(int level, out string kind, out Func<SoloRoomElement, bool> isKind)
         {
             switch (level)
@@ -41,6 +41,7 @@ namespace Parallax.Editor.Setup
                 case 13: kind = "geyser"; isKind = e => e.Kind == SoloRoomElementKind.Geyser; return true;
                 case 14: kind = "vine"; isKind = e => e.Kind == SoloRoomElementKind.Vine; return true;
                 case 15: kind = "storm cloud"; isKind = e => e.Kind == SoloRoomElementKind.StormCloud; return true;
+                case 18: kind = "storm cloud, geyser or vine"; isKind = e => e.Kind is SoloRoomElementKind.StormCloud or SoloRoomElementKind.Geyser or SoloRoomElementKind.Vine; return true;
                 default: kind = null; isKind = null; return false;
             }
         }
@@ -260,6 +261,12 @@ namespace Parallax.Editor.Setup
                         if (Mathf.Abs(t.Vy) >= GeyserLaunchEvidence && kinds.Any(k => t.Rendered[k] && t.RenderBounds[k].Overlaps(cat))) return true;
                         break;
                     case 14: if (t.IsClimbing) return true; break;
+                    // Level 18: a launch (as 13) or a climb (as 14); the cloud acts only by killing, which the killer shows.
+                    case 18:
+                        if (t.IsClimbing) return true;
+                        var launched = new Rect(t.X - catSize.x * .5f, t.Y - catSize.y * .5f, catSize.x, catSize.y);
+                        if (Mathf.Abs(t.Vy) >= GeyserLaunchEvidence && kinds.Any(k => t.Rendered[k] && t.RenderBounds[k].Overlaps(launched))) return true;
+                        break;
                 }
             }
             return false;

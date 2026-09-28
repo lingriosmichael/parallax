@@ -158,7 +158,7 @@ namespace Parallax.Editor.Routes
                     record.Rendered[0] = true; record.RenderBounds[0] = new Rect(9.5f, 0f, 1f, 1.5f);
                     if (acts && level == 11) record.Ground = "Elem_Shaft";
                     if (acts && level == 12) record.Signature[2] = 1;
-                    if (acts && level == 13) { record.Grounded = false; record.Ground = null; record.Vy = 14f; }
+                    if (acts && (level == 13 || level == 18)) { record.Grounded = false; record.Ground = null; record.Vy = 14f; }
                     replay.Records.Add(record);
                 }
                 replays[b.Name] = replay;

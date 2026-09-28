@@ -111,19 +111,29 @@ namespace Parallax.Tests.EditMode
     {
         [SetUp] public void FreshScene() => FreshScratchScene();
 
-        [Test]
-        public void ValidateRoutes_EveryLevelLayoutsEntry_HasRoutesAndNoErrors()
+        static IDictionary Layouts() => (IDictionary)Type.GetType("Parallax.Editor.Levels.LevelLayouts, Parallax.Editor").GetField("ById").GetValue(null);
+
+        // Every LevelLayouts entry, one case each (a single case replaying all of them ran past NUnit's 180 s, PAX-092).
+        public static IEnumerable<TestCaseData> Levels() =>
+            Layouts().Keys.Cast<string>().OrderBy(id => id).Select(id => new TestCaseData(id).SetName($"ValidateRoutes_{id}_HasRoutesAndNoErrors"));
+
+        [TestCaseSource(nameof(Levels))]
+        [Timeout(600000)]
+        public void ValidateRoutes_Level_HasRoutesAndNoErrors(string id)
         {
             Type validator = Type.GetType("Parallax.Editor.Setup.LevelLayoutValidator, Parallax.Editor");
-            var layouts = (IDictionary)Type.GetType("Parallax.Editor.Levels.LevelLayouts, Parallax.Editor").GetField("ById").GetValue(null);
-            var errors = new List<string>();
-            foreach (DictionaryEntry entry in layouts)
-                errors.AddRange((List<string>)validator.GetMethod("ValidateRoutes", new[] { typeof(string), entry.Value.GetType() }).Invoke(null, new[] { entry.Key, entry.Value }));
-            // PAX-060 (§12 finding 2): L001-L010 are all there, and every listed level has a layout (no more, no fewer).
+            object layout = Layouts()[id];
+            CollectionAssert.IsEmpty((List<string>)validator.GetMethod("ValidateRoutes", new[] { typeof(string), layout.GetType() }).Invoke(null, new[] { id, layout }));
+        }
+
+        // PAX-060 (§12 finding 2): L001-L010 are all there, and every listed level has a layout (no more, no fewer).
+        [Test]
+        public void ValidateRoutes_TheLayoutsAreL001ToL010_AndEveryListedLevel()
+        {
+            IDictionary layouts = Layouts();
             for (int n = 1; n <= 10; n++) Assert.IsTrue(layouts.Contains($"L{n:000}"), $"L{n:000} has no layout");
             var levels = UnityEditor.AssetDatabase.LoadAssetAtPath<Parallax.Gameplay.Levels.LevelListConfig>("Assets/_Game/Data/LevelListConfig.asset");
             Assert.AreEqual(levels.Levels.Count, layouts.Count, "LevelLayouts entries vs LevelListConfig levels");
-            CollectionAssert.IsEmpty(errors);
         }
 
         [Test]

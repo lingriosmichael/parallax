@@ -25,11 +25,6 @@ namespace Parallax.Tests.EditMode
             "ValidateArrowTell", "ValidateArrowSpeed", "ValidateArrowLane", "ValidateArrowDoorClearance", "ValidateArrowCooldown", "ValidateArrowPeriodicSlack" };
         const string ConfigPath = "Assets/_Game/Data/LevelListConfig.asset";
 
-        IDisposable session;
-
-        [OneTimeSetUp] public void Open() => session = OpenSession();
-        [OneTimeTearDown] public void Close() => session?.Dispose();
-
         static LevelListConfig Config() => AssetDatabase.LoadAssetAtPath<LevelListConfig>(ConfigPath);
 
         // Every listed level from number 11 on; a later batch joins by being listed.
@@ -50,9 +45,13 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual(Math.Max(0, config.Levels.Count - 10), Band2Levels().Count());
         }
 
+        // Each level in its own route session (as Band2RouteResultsTests): sharing one across the levels overflowed the
+        // Editor's undo stack by the fourth (PAX-092), which failed that case. A larger level runs over NUnit's default 180 s.
         [TestCaseSource(nameof(Band2Levels))]
+        [Timeout(600000)]
         public void Level_MeetsEveryBand2Rule(string id, int level)
         {
+            using IDisposable session = OpenSession();
             List<string> errors = Check(session, id, level, out string report);
             TestContext.Out.WriteLine(report);
             Assert.IsEmpty(errors, string.Join("\n", errors) + "\n\n" + report);
@@ -69,9 +68,12 @@ namespace Parallax.Tests.EditMode
         static Vector2 CatSize() => Motor().ColliderSize;
 
         // One band-2 level, whether listed or not (the level number is given): every error, and the report.
-        public static List<string> Check(IDisposable session, string id, int level, out string report)
+        public static List<string> Check(IDisposable session, string id, int level, out string report) =>
+            Check(session, id, level, RouteValidatorTests.Room(id), RouteValidatorTests.Routes(id), out report);
+
+        // The same, for a layout and routes given directly (a level built before it's registered and listed).
+        public static List<string> Check(IDisposable session, string id, int level, object room, object routes, out string report)
         {
-            object room = RouteValidatorTests.Room(id), routes = RouteValidatorTests.Routes(id);
             Assert.NotNull(room, id + " has no layout"); Assert.NotNull(routes, id + " has no routes");
             var errors = new List<string>();
             foreach (string rule in LayoutRules) errors.AddRange(Rule(rule, id, room));

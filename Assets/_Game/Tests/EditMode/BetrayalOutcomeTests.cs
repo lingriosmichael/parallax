@@ -19,7 +19,7 @@ namespace Parallax.Tests.EditMode
 
         static object Fixture(string name, params object[] args) => Call(T("RouteFixtures"), name, args);
         static object Dies(string name, string killer, object route, string revealedBy) =>
-            Activator.CreateInstance(T("Betrayal"), name, killer, DeathCause.Hazard, route, revealedBy);
+            Activator.CreateInstance(T("Betrayal"), name, killer, DeathCause.Hazard, route, revealedBy, null);   // D-097: no escape
         static object Recovers(string name, string revealedBy, object route) => Call(T("Betrayal"), "Recovers", name, revealedBy, route);
 
         (object result, List<string> errors) Check(object room, object betrayal)

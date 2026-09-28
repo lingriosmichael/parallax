@@ -1679,6 +1679,8 @@ overlay through `CatVisualPresenter`.
   include it; that file was outside PAX-085's allowed list. `ValidateInverter`, which also does the inverter's frame
   containment, isn't part of `Validate()`, so a shipped level with an inverter needs its tests to call it until a
   follow-up wires it into `LevelLayoutValidator.cs`.
+  **Superseded in part (PAX-089 B):** an inverter can now be a chain source; `TrapLayoutValidator.IsTrap` lists it
+  (`TrapLayoutValidator.cs:39-40`). Noted 2026-09-28 (PAX-060 half B ruling 4).
 
 (7) **Routes (amends D-079 (3)).** A second extra element, `Cat.Inverted` (`R.CatInverted`), after `Cat.Gravity`. It is
 visible while any inverter's cue is on, so its first visible change is the fire tick. Its render box for the camera
@@ -1845,7 +1847,9 @@ hands them to the motor; only the LocalHuman cat climbs, and `Deactivate` ends a
 box) or on its own box without one, or Chain; Once; `DelayTicks`. When it fires, every segment renderer goes off (its
 visible reveal, D-080 (1)), it can't be grabbed, and it releases the LocalHuman cat in that room step; the cat falls from
 the next motor step. The room reset restores it. A snap vine can't be a chain source (`TrapLayoutValidator`'s trap list,
-outside the allowed list, as for geysers).
+outside the allowed list, as for geysers). **Superseded (PAX-089 B):** a snap vine (one with snap settings) can now be a
+chain source; `TrapLayoutValidator.IsTrap` lists vines, and a plain vine is rejected as a source because it never fires
+(`TrapLayoutValidator.cs:22-23, 39-40`). Noted 2026-09-28 (PAX-060 half B ruling 4).
 
 (5) **Routes (D-079 (1)).** `Hold(Up)`, `Hold(Down)` (the `Vertical` enum, a `Hold` overload), `ReleaseClimb()`,
 conditions `Climbing()` and `YAtLeast(y)`; `Release()` still clears Move only. `TickRecord` gains `Climb` and
@@ -1951,6 +1955,13 @@ same height); the door at x 26.
 moving Solids and stuck spears don't; placeholder art; no sound or VFX. `ValidateStormCloud` isn't part of `Validate()`,
 so a shipped level with a cloud needs its tests to call it. The room 10 solution never needs the Overhang; the cover is
 proven by a harness probe. Not device-tested.
+
+(11) **Clarification (PAX-060 L018, 2026-09-28).** The strike locks at the charge's start: the column is fixed at the
+cloud's x then, and strikes `TellTicks` (25) later. A cat that moves during the charge leaves the column (a running cat
+clears the 0.9 u it needs in about 8 ticks), and a cat climbing a vine can't be caught either in practice: the cloud
+follows at 0.08 u a tick, so it arrives over the vine only after the cat has climbed for as long as it took to get
+there, and a vine's feet clear the cloud's bottom long before the next lock. A level can't time a "climb between
+strikes" lesson on the cloud; only a cat that stays in the locked column is struck (L018's T8 became a wait instead).
 
 ### D-091 · 2026-09-26 · Accepted (Architect, 2026-09-27; PAX-090 as built, rulings §11–§12)
 
@@ -2140,6 +2151,37 @@ PAX-060's report names both.
   `Orb_A`'s trigger box for that reason.
 - A periodic hidden-spike strip shows on its fire tick; `RevealDelayTicks` delays only an overlap fire.
 - **L014 finding:** grabs onto vines ignored solids in between; fixed by D-096.
+- **Known limit: the coverage search ignores trap order** (ruled 2026-09-28, L018). It treats every side of a trigger it
+  can reach as an approach, even one a cat reaches only after that trigger has fired. L018's `Collapse_V` (chained from
+  Drop_3) was "reached from the west" through V_6 and Ground_W1, a side a cat reaches only after Drop_3 has set it off.
+  L018 roots the chain in `Spikes_V`, hidden spikes on the pit's floor whose floor-to-ceiling cut holds the crumble's
+  strip from both sides; Spikes_V stays as the pit's real killer. Not on PAX-095's list. `Lid_V` blocks a real skip
+  (without it a cat jumps the open pit: 3.6 u edge to edge against a 4.08 u flat jump).
+- **PAX-094 items (L018):** four betrayals have no escape once their reveal has happened, so an escape-backed reveal
+  rule would need a declared escape or a change for each: T4 (Fake_A gives way; the cloud's charge at t255 is the one
+  reveal with an escape, 15 ticks), T6a (SL_2 gives way under a cat standing wholly on it), T10 (Block_T, t730–t744) and
+  T12a (the crumbles under a cat that stops). Each is on screen from its first change to the kill (D-083).
+
+(4b) **Half B as built** (ruled 2026-09-28: built in the order L018, L019, L020, L017, PAX-095, L016, each measured unlisted
+as its own number and listed with the others once L016 and L017 exist). A half-B level names several elements; the
+level's element rule counts a betrayal that uses any of them.
+- **L018 Eye of the Storm** (storm cloud, geysers and vines, GET ABOVE): 32 × 26, start (30.5, 0), door top right on the
+  Summit (23.2, 20); a U: west under the cloud (bottom 3.2), G_1's launch above it and west across Sky A, Drop_3 back down
+  into the storm, V_6 up through the cloud's band, east along Sky B under G_D's downdraft, G_B's launch onto the Top, G_C's
+  onto the Crown, V_9 to the Summit. 1143 ticks; Storm 271 / Sky 402 / Top 470; both rewinds exact. 12 killers, 11 in
+  sequence; answers B 2, J 3, NW 3, OL 2, SS 1, W 3; the element in 9 betrayals. Chaos (the validator's best window)
+  t321–t380, 11 in view of 12 (Sky A giving way under the cat, Drop_3, Collapse_V, the geysers' beat); the Top's collapse
+  t831–t890, 8 in view of 10. Longest stretch without a decision 172 ticks. Every reveal is on screen from its first
+  change to the kill at 4:3, 16:9 and 20:9 (Block_T hangs in Lintel_T, low enough to be in view as it starts). Moving floor: Drop_3, a drop-and-return
+  (`SurfaceMotion.Slip`). Changes from the sketch: 32 × 26 kept, but Sky B, the Crown and the Summit replace the Nest (the
+  sketch measured about 900 ticks as drawn: every beat before G_C's eruption waited on a geyser's clock); T4 dies to the
+  cloud the fake drops it into (the concept's "straight into its charge"), not Pit_S; T8 is the wait for Collapse_V (a
+  climb through the band can't be timed: the cloud locks where the cat is when it charges, so a moving or climbing cat
+  always outruns the strike); Collapse_V's root is Spikes_V (hidden, on the pit's floor), whose floor-to-ceiling cut
+  holds the crumble's strip from both sides (surface coverage; the search ignores trap order, (5)), and its cut takes in the drop's
+  column, so the floor goes as the cat lands on Drop_3 (Collapse_V visible t361, the last stop before the pit ~t411);
+  Lid_V over the pit takes away the jump across it (a real skip). TL_2 gives way 18 ticks after a touch, so Spikes_7
+  are up 18 ticks before a running cat reaches them.
 
 Direction mix across 11–20: half B. Tests: `Band2RulesTests` (30), `Band2LevelTests`, `Band2RouteResultsTests`.
 

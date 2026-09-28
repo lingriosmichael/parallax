@@ -134,10 +134,11 @@ namespace Parallax.Tests.EditMode
             return Errors("ValidateBand2Element", "FIX", level, used);
         }
 
-        [TestCase(11)] [TestCase(12)] [TestCase(13)]
+        // Level 18 (half B) names three elements, the storm cloud, the geyser and the vine; its fixture room's is a geyser.
+        [TestCase(11)] [TestCase(12)] [TestCase(13)] [TestCase(18)]
         public void TheElementActingInTwoBetrayals_IsRejected(int level) => AssertMentions(Acting(level, 2, 3), "used in 2");
 
-        [TestCase(11)] [TestCase(12)] [TestCase(13)]
+        [TestCase(11)] [TestCase(12)] [TestCase(13)] [TestCase(18)]
         public void TheElementActingInThreeBetrayals_Passes(int level) => AssertNone(Acting(level, 3, 3));
     }
 }
