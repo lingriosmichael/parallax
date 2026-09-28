@@ -25,11 +25,25 @@ namespace Parallax.Tests.EditMode
         static object Room(string fixture, params object[] args) => Call(Fixtures, fixture, args);
         static object M(string name) => Enum.Parse(Motion, name);
 
-        static string[] Rule(string levelId, object room)
+        static string[] Rule(string levelId, object room) => Rule(levelId, room, Levels());
+
+        static string[] Rule(string levelId, object room, LevelListConfig levels)
         {
             MethodInfo m = Validator.GetMethod("ValidateMovingFloors", BindingFlags.Public | BindingFlags.Static);
             Assert.NotNull(m, "LevelLayoutValidator.ValidateMovingFloors not found.");
-            return ((IList)m.Invoke(null, new[] { levelId, room, (object)Levels() })).Cast<string>().ToArray();
+            return ((IList)m.Invoke(null, new[] { levelId, room, (object)levels })).Cast<string>().ToArray();
+        }
+
+        LevelListConfig list;
+        [TearDown] public void Cleanup() { if (list != null) UnityEngine.Object.DestroyImmediate(list); }
+
+        // M01..M14: level numbers 1-14 without depending on how many levels the real list holds yet.
+        LevelListConfig FourteenLevels()
+        {
+            list = UnityEngine.ScriptableObject.CreateInstance<LevelListConfig>();
+            LevelEntry[] entries = Enumerable.Range(1, 14).Select(i => new LevelEntry { Id = $"M{i:00}", SceneName = $"Level_M{i:00}", DisplayName = i.ToString() }).ToArray();
+            typeof(LevelListConfig).GetField("levels", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(list, entries);
+            return list;
         }
 
         static void AssertNone(string[] errors) => CollectionAssert.IsEmpty(errors, string.Join("\n", errors));
@@ -42,6 +56,13 @@ namespace Parallax.Tests.EditMode
         public void ASidewaysMover_DeclaringItsMotion_PassesInTrapLabRoom12(string motion) => AssertNone(Rule("TrapLab12", Room("SidewaysMover", M(motion))));
 
         [Test] public void ASidewaysMover_LeftLegacy_IsRejectedInTrapLabRoom12() => AssertMentions(Rule("TrapLab12", Room("SidewaysMover", M("Legacy"))), "SurfaceMotion");
+        [Test] public void ASidewaysMover_LeftLegacy_IsRejectedInLevel14_AndAllowedInLevel13()
+        {
+            LevelListConfig levels = FourteenLevels();
+            AssertMentions(Rule("M14", Room("SidewaysMover", M("Legacy")), levels), "SurfaceMotion");
+            AssertNone(Rule("M13", Room("SidewaysMover", M("Legacy")), levels));
+        }
+
         [Test] public void ASidewaysMover_LeftLegacy_IsAllowedElsewhereInTheLab() => AssertNone(Rule("TrapLab4", Room("SidewaysMover", M("Legacy"))));
 
         // ---------- Q4 ----------
@@ -53,6 +74,8 @@ namespace Parallax.Tests.EditMode
 
         [Test] public void AShrinker_ToNothingOver40Ticks_Passes() => AssertNone(Rule("TrapLab12", Room("ShrinkerSettings", 40, 0f)));
         [Test] public void AShrinker_WithNoShrinkSettings_IsRejected() => AssertMentions(Rule("TrapLab12", Room("ShrinkerSettings", 0, 0f)), "shrink settings");
+        [TestCase(0)] [TestCase(-3)]
+        public void AShrinker_ConfiguredWithUnderOneTick_IsRejected(int ticks) => AssertMentions(Rule("TrapLab12", Room("ShrinkerOverTicks", ticks)), "at least 1");
         [Test] public void AShrinker_WithANegativeMinimum_IsRejected() => AssertMentions(Rule("TrapLab12", Room("ShrinkerSettings", 40, -.5f)), "minimum width");
         [Test] public void AShrinker_ThatDoesntShrink_IsRejected() => AssertMentions(Rule("TrapLab12", Room("ShrinkerSettings", 40, 4f)), "minimum width");
 
@@ -61,6 +84,7 @@ namespace Parallax.Tests.EditMode
         [Test] public void APushIntoOpenSpace_Passes() => AssertNone(Rule("TrapLab12", Room("PushIntoOpenSpace")));
         [Test] public void APushIntoItsNamedPartner_Passes() => AssertNone(Rule("TrapLab12", Room("PushIntoAnvil")));
         [Test] public void APushPath_ThroughAnotherFixedSolid_IsRejected() => AssertMentions(Rule("TrapLab12", Room("PushPathBlocked")), "Post");
+        [Test] public void APushPartner_ThatIsntAFixedSolid_IsRejected() => AssertMentions(Rule("TrapLab12", Room("PushPartnerNotASolid")), "'Spikes' is not a fixed solid");
         [Test] public void APushPath_EndingShortOfItsNamedPartner_IsRejected() => AssertMentions(Rule("TrapLab12", Room("PushPartnerNotAtTheEnd")), "Far_Anvil");
 
         // ---------- D-056 (3) ----------

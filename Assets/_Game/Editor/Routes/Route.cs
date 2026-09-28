@@ -122,9 +122,13 @@ namespace Parallax.Editor.Routes
         public readonly DeathCause Cause;
         public readonly Route Route;
         public readonly BetrayalOutcome Outcome;
-        public Betrayal(string name, string killer, DeathCause cause, Route route, string revealedBy = null)
+        // PAX-060 (D-097): an optional declared escape. Escape(d) is a route that presses its way out d ticks after
+        // RevealedBy's first visible change (R.Revealed) and completes the level. With one declared, the camera tell rule
+        // checks the reveal against the last escape tick instead of the kill (LevelLayoutValidator.EscapeTell).
+        public readonly Func<int, Route> Escape;
+        public Betrayal(string name, string killer, DeathCause cause, Route route, string revealedBy = null, Func<int, Route> escape = null)
         {
-            Name = name; Killer = killer; Cause = cause; Route = route; RevealedBy = revealedBy ?? killer; Outcome = BetrayalOutcome.Dies;
+            Name = name; Killer = killer; Cause = cause; Route = route; RevealedBy = revealedBy ?? killer; Outcome = BetrayalOutcome.Dies; Escape = escape;
         }
 
         Betrayal(string name, string revealedBy, Route route)
@@ -183,6 +187,8 @@ namespace Parallax.Editor.Routes
         public static RouteCondition GravityUp() => new("GravityUp", v => v.Last.GravityUp);
         public static RouteCondition GravityDown() => new("GravityDown", v => !v.Last.GravityUp);
         public static RouteCondition Fired(string element) => new($"Fired({element})", v => v.Fired(element));
+        // PAX-060 (D-097): the element has visibly changed (its signature differs from the first tick's).
+        public static RouteCondition Revealed(string element) => new($"Revealed({element})", v => v.Result.FirstVisibleChange(element) >= 0);
         // Fired, away from its authored pose, and not moving since the tick before (a landed block, a stopped arrow).
         public static RouteCondition Stopped(string element) => new($"Stopped({element})", v => v.Stopped(element));
         // Its visible state changed since the tick before (a trap in motion, a renderer switching).

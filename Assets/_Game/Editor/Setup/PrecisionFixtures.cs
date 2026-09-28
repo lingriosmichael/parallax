@@ -97,6 +97,42 @@ namespace Parallax.Editor.Setup
             return new RoomRoutes(run, new Betrayal("ArrowX shoots a cat that runs on", "ArrowX", DeathCause.Hazard, new Route("run into ArrowX", Hold(Right), Until(Dead()))));
         }
 
+        // PAX-060 (D-097): a reveal that leaves the view before its last escape tick. A shaft 14 wide and 44 tall: the cat
+        // stops on Lip (the Top's last 1 u, x 5-6, y 40), which gives way 6 ticks after the touch; falling straight, it
+        // lands in Pit at y 0. The escape: hold Right and Down, catch V (x 6.6, y 3-24) under the Top, climb down onto Low
+        // and walk to the door. The cat can still catch V (or land on Low) long after the camera, following the fall, has
+        // left Lip behind at the top of the shaft.
+        public static SoloRoomDefinition EscapeTellRoom()
+        {
+            var elements = new[] {
+                E(SoloRoomElementKind.Wall, "Wall_L", -.5f, 22f, 1f, 46f),
+                E(SoloRoomElementKind.Wall, "Wall_R", 14.5f, 22f, 1f, 46f),
+                E(SoloRoomElementKind.Ceiling, "Ceiling", 7f, 44.5f, 14f, 1f),
+                E(SoloRoomElementKind.Checkpoint, "Checkpoint", 10f, 40f, 0f, 0f),
+                E(SoloRoomElementKind.Floor, "Top", 10f, 39.75f, 8f, .5f),
+                new SoloRoomElement(SoloRoomElementKind.CollapsingFloor, "Lip", new Vector2(5.5f, 39.75f), new Vector2(1f, .5f), settings: new SoloRoomTrapSettings(delayTicks: 6)),
+                E(SoloRoomElementKind.Vine, "V", 6.6f, 13.5f, .6f, 21f),
+                E(SoloRoomElementKind.Floor, "Low", 10.05f, 2.75f, 7.9f, .5f),
+                E(SoloRoomElementKind.PitBottom, "Pit_Floor", 3.05f, -.25f, 6.1f, .5f),
+                new SoloRoomElement(SoloRoomElementKind.Hazard, "Pit", new Vector2(3.05f, .15f), new Vector2(6.1f, .3f), hazardRole: SoloRoomHazardRole.OpeningBottom),
+                E(SoloRoomElementKind.Door, "Door", 13f, 3.75f, .6f, 1.5f),
+            };
+            return new SoloRoomDefinition(0, 0f, 14f, elements, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
+        }
+
+        public static Route EscapeTellEscape(int d)
+        {
+            var steps = new System.Collections.Generic.List<RouteStep> { Hold(Left), Until(XAtMost(5.6f)), Release(), Until(Revealed("Lip")) };
+            if (d > 0) steps.Add(For(d));
+            steps.AddRange(new[] { Hold(Right), Hold(Down), Until(new RouteCondition("on V or Low", v => v.Last.IsClimbing || v.Last.Grounded)), Release(),
+                Until(new RouteCondition("landed", v => v.Last.Grounded && !v.Last.IsClimbing)), ReleaseClimb(), Hold(Right), Until(RoomComplete()) });
+            return new Route($"catch V {d} ticks after Lip gives way", steps.ToArray());
+        }
+
+        public static RoomRoutes EscapeTellRoutes() => new(EscapeTellEscape(1),
+            new Betrayal("Lip drops a cat that stops on it into Pit", "Pit", DeathCause.Hazard,
+                new Route("stop on Lip", Hold(Left), Until(XAtMost(5.6f)), Release(), Until(Dead())), revealedBy: "Lip", escape: EscapeTellEscape));
+
         static SoloRoomElement E(SoloRoomElementKind kind, string name, float x, float y, float w, float h) => new(kind, name, new Vector2(x, y), new Vector2(w, h));
     }
 }

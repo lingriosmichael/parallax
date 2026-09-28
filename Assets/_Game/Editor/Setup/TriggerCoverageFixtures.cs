@@ -176,6 +176,39 @@ namespace Parallax.Editor.Setup
             E(SoloRoomElementKind.HiddenSpikes, "Low_Spikes", (8f, .15f), (1f, .3f), (12f, 1f), (.5f, 2f), new SoloRoomTrapSettings(revealDelayTicks: 6)),
         }, new[] { O(SoloRoomOpeningKind.Pit, 1.4f, 3.2f, "Slot_W", "Col", "Slot_Bottom", "Slot_Hazard") }, System.Array.Empty<RequiredJump>());
 
+        // PAX-060 (L014 finding): a grab through a slab. The cat starts on the upper slab (top 4, x 3-28); the hall under it
+        // (floor 0) is entered only through the open hole at x 28-30, from the east, so Low_Spikes (x 8) lie beyond their cut
+        // (x 12). Vine (x 6, y 0.05-1.9) hangs in the hall under the slab: no way down to it passes the slab, so it isn't a way
+        // into the hall from the west. With upperVine, Vine_Up (x 7.5) stands on the slab: a leap off it onto Vine is blocked too.
+        public static SoloRoomDefinition GrabThroughSlab(bool upperVine) => new(0, 0f, 32f, new[] {
+            E(SoloRoomElementKind.Ceiling, "Ceiling", (16f, 7.5f), (32f, 1f)),
+            E(SoloRoomElementKind.Checkpoint, "Checkpoint_0", (10f, 4f), (0f, 0f)),
+            E(SoloRoomElementKind.Wall, "Wall_W", (1.5f, 3f), (3f, 8f)),
+            E(SoloRoomElementKind.Floor, "Slab_A", (15.5f, 3f), (25f, 2f)),
+            E(SoloRoomElementKind.Floor, "Slab_C", (31f, 3f), (2f, 2f)),
+            E(SoloRoomElementKind.Floor, "Hall", (17.5f, -.5f), (29f, 1f)),
+            E(SoloRoomElementKind.Vine, "Vine", (6f, .975f), (LevelLayoutValidator.VineWidth, 1.85f)),
+            upperVine ? E(SoloRoomElementKind.Vine, "Vine_Up", (7.5f, 5.3f), (LevelLayoutValidator.VineWidth, 2.5f)) : E(SoloRoomElementKind.Floor, "Pad", (20f, 4.25f), (2f, .5f)),
+            E(SoloRoomElementKind.Door, "Door", (31f, 4.75f), (.6f, 1.5f)),
+            E(SoloRoomElementKind.HiddenSpikes, "Low_Spikes", (8f, .15f), (1f, .3f), (12f, 1f), (.5f, 2f), new SoloRoomTrapSettings(revealDelayTicks: 6)),
+        }, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
+
+        // PAX-060 (L014 finding): the same room with a trough in the slab (x 5-7, floor 3, walls the slab's faces up to 4) over
+        // Vine (x 5.2, reaching under Slab_W beside it): a cat standing in the trough can't pass the slab around it to reach Vine either.
+        public static SoloRoomDefinition GrabFromTrough() => new(0, 0f, 32f, new[] {
+            E(SoloRoomElementKind.Ceiling, "Ceiling", (16f, 7.5f), (32f, 1f)),
+            E(SoloRoomElementKind.Checkpoint, "Checkpoint_0", (10f, 4f), (0f, 0f)),
+            E(SoloRoomElementKind.Wall, "Wall_W", (1.5f, 3f), (3f, 8f)),
+            E(SoloRoomElementKind.Floor, "Slab_W", (4f, 3f), (2f, 2f)),
+            E(SoloRoomElementKind.Floor, "Trough", (6f, 2.5f), (2f, 1f)),
+            E(SoloRoomElementKind.Floor, "Slab_A", (17.5f, 3f), (21f, 2f)),
+            E(SoloRoomElementKind.Floor, "Slab_C", (31f, 3f), (2f, 2f)),
+            E(SoloRoomElementKind.Floor, "Hall", (17.5f, -.5f), (29f, 1f)),
+            E(SoloRoomElementKind.Vine, "Vine", (5.2f, .975f), (LevelLayoutValidator.VineWidth, 1.85f)),
+            E(SoloRoomElementKind.Door, "Door", (31f, 4.75f), (.6f, 1.5f)),
+            E(SoloRoomElementKind.HiddenSpikes, "Low_Spikes", (8f, .15f), (1f, .3f), (12f, 1f), (.5f, 2f), new SoloRoomTrapSettings(revealDelayTicks: 6)),
+        }, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
+
         static SoloRoomElement LedgeSpikes(float x, float ledgeTop, float triggerX) =>
             E(SoloRoomElementKind.HiddenSpikes, "Ledge_Spikes", (x, ledgeTop + .15f), (1f, .3f), (triggerX, (ledgeTop + 7f) * .5f), (.5f, 7f - ledgeTop),
                 new SoloRoomTrapSettings(revealDelayTicks: 6));

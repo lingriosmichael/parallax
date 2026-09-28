@@ -134,6 +134,47 @@ namespace Parallax.Tests.EditMode
             StringAssert.Contains(keep < 0 ? $"has {end - 1} ticks, short of the lead's end t{end}" : "recorded no ticks", e.Message);
         }
 
+        // PAX-060 (D-097): a betrayal with a declared escape is checked against its last escape tick, not its kill. In the
+        // fixture the escape still works long after the camera has followed the falling cat away from Lip: it fails.
+        [Test]
+        public void AnEscapeBackedReveal_ThatLeavesTheViewBeforeTheLastEscape_Fails()
+        {
+            var errors = new List<string>();
+            List<object> results = Tell("Fixture", Fixture("EscapeTellRoom"), Fixture("EscapeTellRoutes"), errors);
+            TestContext.Out.WriteLine(Table(results) + "\n" + string.Join("\n", errors));
+            Assert.AreEqual(3, results.Count);
+            Assert.IsTrue(results.All(r => (bool)F(r, "Escape") && !(bool)F(r, "Fit")), "escape-backed rows in follow mode\n" + Table(results));
+            Assert.AreEqual(3, errors.Count, "one failure per aspect\n" + Table(results));
+            foreach (object r in results)
+            {
+                Assert.Greater((int)F(r, "OnScreenLead"), 0, "Lip is on screen as it gives way: " + r);
+                Assert.Less((int)F(r, "OnScreenLead"), (int)F(r, "Required"), r.ToString());
+            }
+        }
+
+        // PAX-060 (D-097): L014's T1 (Lip_1 gives way at the cat's feet) with its escape declared: Lip_1 is on screen from
+        // the collapse through the last press that still catches V2 and finishes the level, at every aspect.
+        [Test]
+        public void L014_T1_WithItsEscapeDeclared_Passes()
+        {
+            object routes = RouteValidatorTests.Routes("L014");
+            object t1 = ((IList)F(routes, "Betrayals"))[0];
+            Assert.NotNull(F(t1, "Escape"), "T1 declares its escape");
+            Array justT1 = Array.CreateInstance(T("Betrayal"), 1);
+            justT1.SetValue(t1, 0);
+            object only = Activator.CreateInstance(T("RoomRoutes"), F(routes, "Solution"), justT1);
+            var errors = new List<string>();
+            List<object> results = Tell("L014", RouteValidatorTests.Room("L014"), only, errors);
+            TestContext.Out.WriteLine(Table(results));
+            Assert.AreEqual(3, results.Count);
+            CollectionAssert.IsEmpty(errors, string.Join("\n", errors));
+            foreach (object r in results)
+            {
+                Assert.IsTrue((bool)F(r, "Escape"), r.ToString());
+                Assert.GreaterOrEqual((int)F(r, "LastEscape") - (int)F(r, "Reveal") + 1, 12, "at least WindowTicks on screen by the last escape: " + r);
+            }
+        }
+
         [Test]
         public void AFitModeRoom_PassesTrivially()
         {

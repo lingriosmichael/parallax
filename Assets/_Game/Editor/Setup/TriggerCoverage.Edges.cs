@@ -90,12 +90,12 @@ namespace Parallax.Editor.Setup
         static bool Climbs(Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach, float width, Rect[] fixedSolids)
         {
             if (!a.Vine && !b.Vine) return false;
-            if (!a.Vine) return !a.Up && Grabs(a, b, trigger, low, ceiling, reach);
+            if (!a.Vine) return !a.Up && Grabs(a, b, trigger, low, ceiling, reach, fixedSolids, width);
             if (b.Up) return false;
             foreach (float h in LeapHeights(a, b, trigger, reach))
             {
                 var from = new Piece { XMin = a.XMin, XMax = a.XMax, Y = h };
-                if (b.Vine ? Grabs(from, b, trigger, low, ceiling, reach)
+                if (b.Vine ? Grabs(from, b, trigger, low, ceiling, reach, fixedSolids, width)
                     : Walks(from, b, trigger, low, ceiling, reach, width, fixedSolids) || Releases(from, b, trigger, reach, fixedSolids, width)) return true;
             }
             return false;
@@ -108,7 +108,10 @@ namespace Parallax.Editor.Setup
 
         // From surface (or vine height) a, the cat's collider reaches vine b's climbing range: its easiest paw height is the
         // lowest whose collider still overlaps the range, and the vine counts as a surface that wide.
-        static bool Grabs(Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach)
+        // PAX-060 (L014 finding): with fixedSolids given (a grab from a surface, or a leap from another vine), a grab that drops
+        // onto the vine is blocked as a walk or a drop is: by fixed solids that close off the drop between them (ClosedPit: a slab
+        // over the vine) or by a wall the drop's full height (Walled). Before, a cat on a floor slab could grab a vine under it.
+        static bool Grabs(Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach, Rect[] fixedSolids = null, float width = 0f)
         {
             float paws = b.P0 - reach.Height + 2f * Epsilon;
             if (a.Y >= paws && a.Y <= b.P1 + reach.Height - Epsilon) paws = a.Y;
@@ -116,7 +119,13 @@ namespace Parallax.Editor.Setup
             float limit = reach.Gap(paws - a.Y);
             if (limit < 0f || gap > limit + Epsilon) return false;
             (float x0, float x1) = Stretch(a, b);
-            return !Crosses(x0, x1, a, new Piece { XMin = b.XMin, XMax = b.XMax, Y = paws }, trigger, low, ceiling, reach);
+            var at = new Piece { XMin = b.XMin, XMax = b.XMax, Y = paws };
+            if (Crosses(x0, x1, a, at, trigger, low, ceiling, reach)) return false;
+            if (fixedSolids == null || paws >= a.Y - Epsilon) return true;
+            if (ClosedPit(x0, x1, a, at, reach, fixedSolids, width)) return false;
+            if (b.XMin >= a.XMax - Epsilon) return !Walled(a, at, a.XMax, 1, reach, fixedSolids);
+            if (b.XMax <= a.XMin + Epsilon) return !Walled(a, at, a.XMin, -1, reach, fixedSolids);
+            return true;
         }
 
         // Letting go at height a.Y: a fall, drifting at full speed, onto a lower surface b.
@@ -280,7 +289,9 @@ namespace Parallax.Editor.Setup
             float l0 = Mathf.Max(b.XMin, d0 - r), l1 = Mathf.Min(b.XMax, d1 + r);
             if (l1 < l0) return false;
             float from = Mathf.Max(0f, Mathf.Min(d0 - reach.HalfWidth, l0)), to = Mathf.Min(width, Mathf.Max(d1 + reach.HalfWidth, l1));
-            var layer = fixedSolids.Where(r2 => a.Up ? r2.yMin < b.Y - Epsilon && r2.yMin >= a.Y - Epsilon : r2.yMax > b.Y + Epsilon && r2.yMax <= a.Y + Epsilon)
+            // PAX-060 (L014 finding): every fixed solid that reaches into the drop's height band counts, not only those whose top
+            // lies in it: a floor block beside a trough rises above the trough's floor and still closes a drop off its end.
+            var layer = fixedSolids.Where(r2 => a.Up ? r2.yMin < b.Y - Epsilon && r2.yMax > a.Y + Epsilon : r2.yMax > b.Y + Epsilon && r2.yMin < a.Y - Epsilon)
                 .Where(r2 => r2.xMax > from && r2.xMin < to).OrderBy(r2 => r2.xMin);
             float covered = from;
             foreach (Rect r2 in layer)

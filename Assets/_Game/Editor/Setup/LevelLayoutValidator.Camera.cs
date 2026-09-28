@@ -22,6 +22,8 @@ namespace Parallax.Editor.Setup
     //   latest frame rendered at or before tick k. No frame delay is added: the lead counts simulation ticks (D-057);
     // - the on-screen lead is the end tick minus the first tick from which the element is visible at every tick up to
     //   the end. The worst of the 24 cases counts. A room in fit mode at an aspect passes trivially at that aspect.
+    // PAX-060 (D-097, opt-in): a betrayal that declares an escape (Betrayal.Escape) is checked against its last escape tick
+    // instead of the kill (EscapeTell); every other betrayal keeps the rule above unchanged.
     public static partial class LevelLayoutValidator
     {
         public const string LevelCameraConfigPath = "Assets/_Game/Data/LevelCameraConfig.asset";
@@ -38,10 +40,18 @@ namespace Parallax.Editor.Setup
             public int Reveal = -1, End = -1, Lead = -1;      // RouteValidator.Lead's ticks
             public int OnScreenLead = -1;                     // worst case; Lead when Fit
             public int WorstFps; public float WorstPhase, WorstStartDirection;
-            public bool Passed => OnScreenLead >= RevealLeadTicks;
-            public override string ToString() => Fit
-                ? $"{RevealedBy} @ {Aspect}: fit (lead {Lead})"
-                : $"{RevealedBy} @ {Aspect}: on screen {OnScreenLead} of lead {Lead} (reveal t{Reveal}, end t{End}; worst {WorstFps} fps, phase {WorstPhase}, start direction {WorstStartDirection})";
+            // D-097: an escape-backed row. Reveal and LastEscape come from the escape's own replay; Required is the span
+            // reveal..last escape (inclusive), which must be on screen throughout and at least RouteValidator.WindowTicks.
+            public bool Escape;
+            public int LastEscape = -1, Required = RevealLeadTicks;
+            public bool Passed => Escape ? OnScreenLead >= Required && Required >= RouteValidator.WindowTicks : OnScreenLead >= RevealLeadTicks;
+            public override string ToString() => Escape
+                ? Fit
+                    ? $"{RevealedBy} @ {Aspect}: fit, escape (reveal t{Reveal}, last escape t{LastEscape}, {Required} ticks)"
+                    : $"{RevealedBy} @ {Aspect}: escape, on screen {OnScreenLead} of {Required} (reveal t{Reveal}, last escape t{LastEscape}; worst {WorstFps} fps, phase {WorstPhase}, start direction {WorstStartDirection})"
+                : Fit
+                    ? $"{RevealedBy} @ {Aspect}: fit (lead {Lead})"
+                    : $"{RevealedBy} @ {Aspect}: on screen {OnScreenLead} of lead {Lead} (reveal t{Reveal}, end t{End}; worst {WorstFps} fps, phase {WorstPhase}, start direction {WorstStartDirection})";
         }
 
         public static List<string> ValidateCameraTell(string levelId, SoloRoomDefinition room, RoomRoutes routes)
@@ -67,6 +77,7 @@ namespace Parallax.Editor.Setup
                 // A betrayal that doesn't die or never reveals is the route rule's error (D-079); nothing to see here.
                 if (replay.Kill == null || lead.FirstVisibleTick < 0) continue;
                 int end = lead.FirstVisibleTick + lead.Lead;
+                if (betrayal.Escape != null) { EscapeTell(session, levelId, room, betrayal, lead.Lead, frameCentre, frameSize, camera, results, errors); continue; }
                 int element = replay.Elements.IndexOf(betrayal.RevealedBy);
                 for (int a = 0; a < CameraTellAspects.Length; a++)
                 {
@@ -79,6 +90,49 @@ namespace Parallax.Editor.Setup
                 }
             }
             return results;
+        }
+
+        // PAX-060 (D-097): the escape-backed reveal. Escape(d) presses its way out d ticks after the reveal; d runs 0, 1, 2, ...
+        // (up to the betrayal's own lead) while Escape(d) completes the level, and the last escape tick is the reveal plus the
+        // last such d. In that escape's replay (the same path as a cat that hasn't pressed yet, up to the press), the reveal
+        // must be on screen at every tick from the reveal through the last escape tick, a span of at least WindowTicks; the
+        // worst of the 24 camera cases counts, at every aspect.
+        static void EscapeTell(RouteSession session, string levelId, SoloRoomDefinition room, Betrayal betrayal, int maxDelay, Vector2 frameCentre, Vector2 frameSize,
+            LevelCameraConfig camera, List<CameraTellResult> results, List<string> errors)
+        {
+            ReplayResult last = null;
+            int reveal = -1, lastD = -1;
+            for (int d = 0; d <= maxDelay; d++)
+            {
+                ReplayResult replay = RouteHarness.Replay(session, room, betrayal.Escape(d), new ReplayOptions { ResolveCause = false });
+                int seen = replay.FirstVisibleChange(betrayal.RevealedBy);
+                if (!replay.Completed || seen < 0) break;
+                last = replay; reveal = seen; lastD = d;
+            }
+            if (last == null) { errors.Add($"{levelId}: betrayal '{betrayal.Name}': its declared escape doesn't complete the level even pressed at the reveal (D-097)."); return; }
+            int lastEscape = reveal + lastD, element = last.Elements.IndexOf(betrayal.RevealedBy);
+            for (int a = 0; a < CameraTellAspects.Length; a++)
+            {
+                var result = new CameraTellResult { Betrayal = betrayal.Name, RevealedBy = betrayal.RevealedBy, Aspect = CameraTellAspectNames[a], Escape = true,
+                    Reveal = reveal, LastEscape = lastEscape, End = lastEscape + 1, Required = lastD + 1 };
+                result.Fit = CameraMath.IsFitMode(frameSize, camera.MaxViewHeight, CameraTellAspects[a]);
+                if (result.Fit) result.OnScreenLead = result.Required;
+                else
+                {
+                    result.OnScreenLead = int.MaxValue;
+                    foreach (int fps in CameraTellFramesPerSecond)
+                    foreach (float phase in CameraTellPhases)
+                    foreach (float direction in CameraTellStartDirections)
+                    {
+                        int onScreen = OnScreen(last, element, reveal, result.End, frameCentre, frameSize, CameraTellAspects[a], camera, fps, phase, direction, true);
+                        if (onScreen >= result.OnScreenLead) continue;
+                        result.OnScreenLead = onScreen; result.WorstFps = fps; result.WorstPhase = phase; result.WorstStartDirection = direction;
+                    }
+                }
+                results.Add(result);
+                if (!result.Passed)
+                    errors.Add($"{levelId}: betrayal '{betrayal.Name}': {result} is not on screen from the reveal through the last escape tick, for at least {RouteValidator.WindowTicks} ticks (D-097 escape-backed reveal).");
+            }
         }
 
         static void WorstOnScreenLead(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect, LevelCameraConfig camera, CameraTellResult result)
@@ -99,7 +153,13 @@ namespace Parallax.Editor.Setup
         // the view of the latest frame rendered at or before that tick. No frame delay is added (display latency is a
         // Phase H device check).
         public static int OnScreenLead(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect,
-            LevelCameraConfig camera, int framesPerSecond, float phase, float startDirection)
+            LevelCameraConfig camera, int framesPerSecond, float phase, float startDirection) =>
+            OnScreen(replay, element, reveal, end, frameCentre, frameSize, aspect, camera, framesPerSecond, phase, startDirection, false);
+
+        // fromReveal false: D-083's on-screen lead (the run that reaches the end). True (D-097): the ticks the element stays
+        // on screen from the reveal, up to the end, stopping at the first tick it's off screen.
+        static int OnScreen(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect,
+            LevelCameraConfig camera, int framesPerSecond, float phase, float startDirection, bool fromReveal)
         {
             var p = new CameraMath.FollowParams(camera.MaxViewHeight, camera.LookAhead, camera.LookAheadFlipDistance, camera.DeadZoneHalfExtents, camera.SmoothTime, camera.MaxSpeed);
             List<TickRecord> records = replay.Records;
@@ -132,9 +192,11 @@ namespace Parallax.Editor.Setup
                 var half = new Vector2(viewHeight * .5f * aspect, viewHeight * .5f);
                 Rect view = Rect.MinMaxRect(state.Centre.x - half.x, state.Centre.y - half.y, state.Centre.x + half.x, state.Centre.y + half.y);
                 bool visible = ChangeBounds(records, element, k, out Rect changed) && changed.Overlaps(view);
+                if (fromReveal && !visible) return k - reveal;
                 if (!visible) runStart = -1;
                 else if (runStart < 0) runStart = k;
             }
+            if (fromReveal) return end - reveal;
             return runStart < 0 ? 0 : end - runStart;
         }
 

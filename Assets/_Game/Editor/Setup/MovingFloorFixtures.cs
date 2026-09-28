@@ -59,6 +59,26 @@ namespace Parallax.Editor.Setup
         public static RouteCase Pushed(bool partner) => new($"pushed {(partner ? "into Anvil" : "into open space")}",
             FloorRoom(new Vector2(6f, 0f), PushRoomElements(partner)), new Route("stand in front of the pusher", For(130)));
 
+        // D-091 rewind: two sections split by the gate at x 10 (checkpoint x 11). Walking right through the floor trigger at x 6
+        // sets off Shrink (x 12-16, top 4.25, out of reach; +10 ticks, from its right edge over 300 ticks), so it is mid-shrink at
+        // the gate. Mover (Carry, Periodic from tick 0: x 21-23 out to 27-29 over 60, hold 20, back over 60, every 200; top 3.25,
+        // out of reach) runs on the room clock. Neither is touched after the gate, so both depend only on room ticks. The
+        // reference walks through the gate and stands; RewindAfter dies `ticks` past the gate and stands after the rewind.
+        public static RouteCase RewindReference() => new("walk through the gate and stand", RewindRoom(), RewindSolution());
+        public static Route RewindAfter(int ticks) => Route.FromSection(RewindSolution(), "Two", ticks, "die past the gate, then stand", For(260));
+
+        static Route RewindSolution() => new("walk through the gate and stand", Hold(Right), Until(XAtLeast(10.6f)), Release(), For(600));
+
+        static SoloRoomDefinition RewindRoom() => FloorRoom(new Vector2(2f, 0f),
+            E(SoloRoomElementKind.ShrinkingFloor, "Shrink", (14f, 4f), (4f, .5f), (6f, .5f), (1f, 1f),
+                new SoloRoomTrapSettings(new ShrinkSettings(300, 0f, ShrinkFrom.Right), new SoloRoomTrapSettings(delayTicks: 10))),
+            E(SoloRoomElementKind.MovingTrap, "Mover", (22f, 3f), (2f, .5f), settings: Floor(SurfaceMotion.Carry, new SoloRoomTrapSettings(offset: new Vector2(6f, 0f),
+                moveTicks: 60, holdTicks: 20, returnTicks: 60, repeatMode: TrapRepeatMode.Periodic, periodTicks: 200, cooldownTicks: 150, movingKind: MovingTrapKind.Solid))))
+            .WithCheckpointSections(new[] {
+                CheckpointSection.Start("One", new Vector2(2f, 0f), new[] { "Shrink" }),
+                new CheckpointSection("Two", new Vector2(11f, 0f), new Rect(9.9f, -1f, .2f, 8f), new[] { "Mover" }),
+            });
+
         // ---------- validator rooms ----------
 
         // A sideways mover (Periodic) with this SurfaceMotion (Q1: Legacy is an error in levels 14+ and Trap Lab room 12).
@@ -82,6 +102,13 @@ namespace Parallax.Editor.Setup
 
         // A shrinker with these settings (unconfigured when shrinkTicks is 0).
         public static SoloRoomDefinition ShrinkerSettings(int shrinkTicks, float minWidth) => PitRoom(2f, Shrinker(ShrinkFrom.Both, shrinkTicks, minWidth));
+
+        // Q5: a shrinker whose settings are configured with this tick count (ShrinkerSettings leaves 0 unconfigured).
+        public static SoloRoomDefinition ShrinkerOverTicks(int shrinkTicks) => PitRoom(2f,
+            E(SoloRoomElementKind.ShrinkingFloor, "Shrink", (8f, -.25f), (4f, .5f), settings: new SoloRoomTrapSettings(new ShrinkSettings(shrinkTicks, 0f, ShrinkFrom.Both), new SoloRoomTrapSettings(delayTicks: 10))));
+
+        // Q6: the named partner, Spikes, stands at the path's end but is a hazard, not a fixed solid.
+        public static SoloRoomDefinition PushPartnerNotASolid() => FloorRoom(new Vector2(20f, 0f), Pusher("Spikes"), E(SoloRoomElementKind.Hazard, "Spikes", (12.5f, .25f), (1f, .5f)));
 
         // D-056 (3): Mover's swept path (x 6-24 at its top) runs into Block (x 15-16, y -1 to 1).
         public static SoloRoomDefinition MoverIntoAWall() => PitRoom(2f,

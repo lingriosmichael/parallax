@@ -94,6 +94,22 @@ namespace Parallax.Tests.EditMode
             AssertNotMentioned(TriggerCoverage(method.Invoke(null, null)), "Low_Spikes");
         }
 
+        // PAX-060 (L014 finding): before, the cat on the slab "grabbed" Vine under it, so the hall counted as reached from the
+        // west and Low_Spikes were "reached from both sides".
+        // The grab from the slab itself, and (upperVine) a leap onto it from a vine standing on the slab.
+        [TestCase(false)] [TestCase(true)]
+        public void AGrabOntoAVineUnderASlab_IsNotAWayIn_SoTheCutPasses(bool upperVine) =>
+            AssertNotMentioned(TriggerCoverage(Fixture("GrabThroughSlab", upperVine)), "Low_Spikes");
+
+        // A cat in a trough in the slab, right over the vine: the slab beside the trough rises above its floor and still closes the drop.
+        [Test]
+        public void AGrabFromATroughOntoAVineUnderTheSlab_IsNotAWayIn_SoTheCutPasses()
+        {
+            MethodInfo method = FixturesType.GetMethod("GrabFromTrough", BindingFlags.Public | BindingFlags.Static);
+            Assert.NotNull(method, "TriggerCoverageFixtures.GrabFromTrough not found.");
+            AssertNotMentioned(TriggerCoverage(method.Invoke(null, null)), "Low_Spikes");
+        }
+
         [Test]
         public void DropThroughAPitClosedByACollapsingFloor_IsAWayIn_SoTheCutIsRejectedFromBothSides() =>
             AssertMentioned(TriggerCoverage(Fixture("ClosedPitDrop", false)), "Low_Spikes", "reached from both sides");

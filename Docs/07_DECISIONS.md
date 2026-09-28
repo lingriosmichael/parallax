@@ -2077,6 +2077,47 @@ PAX-060's report names both.
   beat of the same rhythms); the sync the solution rides is t1216–t1275, 10 of 14 in view (the stack, its pads and G_D
   among them). 10 killers, 8 in sequence.
 - **L014, L015:** stopped (outcome (c)) and redrawn under the 1100 floor (§13 R4).
+- **L014 Root System** (vines, GO DOWN; built after PAX-093): 32 × 44, start (22, 40), door bottom right; Top → Lip_1 →
+  V1/V2 (Spear_V2 across V2) → Trunk (bait block, V_Up dead end, V3 and Spear_4) → Low walk (Spear_L over the Trough) →
+  the Knot (Shrink, V4 holds, V5 snaps) → the Canopy (C1–C6, 6 vines). 1133 ticks; Drop 278 / Trunk 606 / Canopy 249;
+  chaos t950–t1009, 5 of 5 in view (Block_7, C1, C2, Spikes_8, C3). 13 killers, 8 in sequence (Pit_1 > Spikes_V1 >
+  Spear_V2 > Block_T > Spear_4 > Spear_L > Pit_K > Block_7); answers B 1, BAIT 1, J 1, NJ 2, NW 3, OL 1, SS 1, W 1.
+  Changes from the sketch, ruled 2026-09-28: T6 (lip thorns) removed (the lip is reached from V4 before C1's column, so
+  no trigger can cover it); T7 reworked (a falling block pushes a climbing cat down its vine instead of crushing it: C2
+  snaps onto the Perch and Block_7 lands there); a 6th canopy vine, the exit at x 26; T2b [BAIT] and T4b [NJ] added as
+  decisions for the 1100 floor. Pit_1, Pit_1E and Pit_3 are honest pits. T1's reveal is Lip_1 (the Top's last 1 u, a
+  crumble, not KIT-10) giving way at the cat's feet; its escape (hold Down and Right, catch V2) is declared and checked
+  by D-097 (last escape t105, +32; `L014EscapeTests`). T3 (Pit_3) is no longer a declared betrayal; T4 (Spear_4) takes
+  its place in sequence. The Trunk's west edge is at x 14.5 and V2 at x 14.6, so the lip's straight drop can't land on
+  the Trunk; that cost 18 ticks, and T2c [W] (Spear_V2: launched from x 24 at y 32, trigger above the lane, 22-tick tell,
+  stuck at the west wall) brought the level back over 1100. Its lane crosses V1 and the Pit_1 column only while no cat
+  is there (the solution's cat is on V2 above the lane; T1 and T2 die before it gets there); coverage counts the stuck
+  shaft as a floor (PAX-091) and finds nothing new. The Knot's step onto V4 (the resume after stopping on Shrink) has a
+  51-tick window (d −25..+25, open both ways): not a precision move; V4 is caught by an ordinary airborne grab
+  (|Climb| ≥ 0.5 on overlap, D-089 (3), D-092).
+- **L015 Hunted** (storm cloud, KEEP MOVING; built after PAX-093): 64 × 14, start (2, 0), door bottom right; Open (the
+  gap, Arrow_3, Collapse_2 under Overhang_B) → Shelter (Fake_4, Mover_M ridden under the storm, the planted spear under
+  Roof_S and the Spear_B bridge) → Run (the cave-in, the dance, P1 under Roof_9, the finale). 1284 ticks; Open 281 /
+  Shelter 419 / Run 584; chaos t699–t758, 5 in view of 6 (Cloud, Block_1, Block_2, Block_3, D3). 10 killers, 8 in sequence
+  (Cloud > Arrow_3 > Pit_2 > Pit_S > Pit_9 > Arrow_9 > Spear_10 > Pit_M); answers B 2, J 1, LW 1, NJ 3, NW 3, OL 1, SS 1,
+  W 1. Changes from the sketch, ruled 2026-09-28:
+  - **The dance** (Option 1 with a gate): Block_3, the cave-in's last block, also knocks out D3, the last of three thin
+    platforms over Pit_9 (a crumble, D-055 (2) Rearm snap, `CollapsingFloorTrap.OnTimingRearmed`; not KIT-10), for 257
+    ticks. With no cover, the cloud locks over D1 at t874 (hop on to D2) and over D2 at t974 (D3 gone: hop back to D1);
+    D3 is back at t1004. Windows 40, 24, 32 in the precision section `Dance` (x 46.2–53.8; reach and slack within D-083).
+    Bait gaps `D2_P1` (P1 is 1.7 above D2, over the jump's 1.6) and `D1_P1` prove that with D3 gone P1 can't be reached;
+    T13 [NJ] shows it (the cat reaches P1's face and falls). T11 [NW] (stay on D2 through the lock) and T12 [B] (dodge it
+    forward) die; the cave-in is shorter (Block_1–3 within 3 u of the cut; Block_4 and Spikes_6 with T8 [J] removed).
+    Strike width 0.8 (`StormCloudMath.DefaultStrikeWidth`): every dance hop ends ≥ 0.9 u from the lock.
+  - **The finale** (the §12 "now stop"): Spear_10 replaces the sketched arrow. Floor_F1 (top 0.9) is the stopping ledge;
+    Spear_10 (36-tick tell) runs along Floor_F2 below it at shin height and sticks in Floor_F1's face; a cat that runs on
+    drops into its lane. Post_F and Curb_9 are gone, the finale is 1 u further east, P1 is 0.8 up (Roof_9 with it).
+  - **Arrow_9** fires once, from a cut on P1, with a 50-tick tell (it was periodic, and its first shot was off screen);
+    T9 stays a wait under Roof_9.
+  - Also: Arrow_3's trigger is floor to ceiling from x 10.6 (it cuts the band for Collapse_2); Fake_4's underside is 2.35;
+    Spear_B is 2.8 long; the bridge's timed step is the walk's start, not the jump.
+  - Reveals (the 2026-09-28 rule): every reveal is on screen from its first change to the kill at every aspect; T9's
+    (Arrow_9's tell, t1068) 15 ticks before its last escape (staying on P1, t1082), measured.
 
 (5) **Limits found (half A):**
 - The coverage search can't see geyser launches (§12 Q5): a hidden hazard in a storey that only a launch reaches is
@@ -2098,6 +2139,7 @@ PAX-060's report names both.
 - `ApproachSides` lets the cat drop off a surface's end through a closed pit below it. L012's `Spikes_D` sits inside
   `Orb_A`'s trigger box for that reason.
 - A periodic hidden-spike strip shows on its fire tick; `RevealDelayTicks` delays only an overlap fire.
+- **L014 finding:** grabs onto vines ignored solids in between; fixed by D-096.
 
 Direction mix across 11–20: half B. Tests: `Band2RulesTests` (30), `Band2LevelTests`, `Band2RouteResultsTests`.
 
@@ -2121,7 +2163,7 @@ named crush partner by the crush depth kills (D-055 (3)); `Crusher` and every Le
 floor* (`ShrinkingFloor`, appended) narrows its one collider and its sliced look together, from its left, right or both
 edges, over `ShrinkTicks` to `MinWidth`, as a pure function of the ticks since its fire; Rearm, reset and rewind restore it
 by the same formula. A PAX-093 `MovingTrap` honours its `DelayTicks` (a drop is harmless until it goes); a Legacy one keeps
-the 0 it always had, so `Crusher`'s and `SlidingSpikes`' unused 6 still do nothing. A Periodic `MovingTrap` runs without a
+the 0 it always had, so `Crusher`'s and `SlidingSpikes`' unused 6 still do nothing. **Known legacy inconsistency:** those two declare a `DelayTicks` they ignore; it stays unchanged so their pins hold. A Periodic `MovingTrap` runs without a
 trigger box (there were none before).
 (3) **Validators** (`ValidateMovingFloors`, in `ValidateKit`): in levels 14+ and Trap Lab room 12 a sideways Solid declares
 Carry or Slip; a repeating Solid's cooldown covers its motion; a shrinker's settings (ticks ≥ 1, 0 ≤ minimum < width); a push
@@ -2140,4 +2182,53 @@ shrink is a visible change (every other element's comparisons are unchanged). A 
 25, Shrink 56, Pusher 74; both rewinds exact.
 **Why:** Level Devil's core moves; the kit had moving Solids that carried a cat only upward and nothing that shrank.
 **Tests:** `MovingFloorMathTests`, `MovingFloorHarnessTests`, `MovingFloorValidatorTests`, `CoverageEdgesTests`
-(`MoverOnlyLedge`, `VerticalWallDrop`), `TrapLabRoom12Tests`.
+(`MoverOnlyLedge`, `VerticalWallDrop`), `TrapLabRoom12Tests`. Red-checked at acceptance (each broken once, seen failing, restored): `ASidewaysMover_LeftLegacy_IsRejectedInLevel14_AndAllowedInLevel13`, `AShrinker_ConfiguredWithUnderOneTick_IsRejected`, `APushPartner_ThatIsntAFixedSolid_IsRejected`.
+
+### D-096 · 2026-09-28 · Accepted (PAX-060 L014 finding)
+
+**Decision:** Trigger coverage (D-074, PAX-091's approach search): a grab obeys drop blocking, and a drop is closed by
+every fixed solid that reaches into its height band.
+(1) **Grabs.** A grab onto a vine that drops to it, from a surface or as a leap from another vine, is blocked as a walk or
+a drop is: by `ClosedPit` (fixed solids closing off the drop between them) or `Walled` (a wall the drop's full height).
+Before, the search let a cat on a floor slab grab a vine hanging under it (L014's canopy vines under the Low floor), and a
+cat on V3's foot grab C6 through Pit3_Floor.
+(2) **`ClosedPit`** counts every fixed solid that reaches into the drop's height band (below the departure, above the
+landing), not only those whose top lies in it. A floor block beside a trough rises above the trough's floor and still
+closes a drop off the trough's end (L014's Trough beside the Low floor). This applies to walks and drops as well as grabs.
+(3) **No change elsewhere:** trigger coverage, surface coverage, learned bypasses and `ValidateKit` for L001–L013 and Trap
+Lab rooms 0–12 were snapshotted before and after: all 0 errors both times. Only L014 changed (2 → 0), with C1's
+approved column trigger.
+**Why:** the search's grab and drop edges ignored solids a real cat can't pass, so L014's canopy was "reached from both
+sides" through the Low floor, and the workaround (widening C1's trigger) was ruled out.
+**Tests:** `CoverageEdgesTests.AGrabOntoAVineUnderASlab_IsNotAWayIn_SoTheCutPasses` (from the slab; from a vine standing
+on it) and `AGrabFromATroughOntoAVineUnderTheSlab_IsNotAWayIn_SoTheCutPasses`, each seen red before its part of the fix.
+
+### D-097 · 2026-09-28 · Accepted (PAX-060 L014 T1; PAX-094 pulled forward in part)
+
+**Decision:** an opt-in escape-backed camera tell check. A betrayal may declare its escape; its reveal is then checked
+against the last tick the escape still works, not against the kill. Betrayals without a declared escape keep D-083's
+check unchanged.
+(1) **The declaration.** `Betrayal(…, escape: d => Route)`: `Escape(d)` presses its way out `d` ticks after `RevealedBy`'s
+first visible change (`R.Revealed`) and completes the level.
+(2) **The last escape tick.** The validator replays `Escape(0)`, `Escape(1)`, … (at most the betrayal's own lead) while each
+completes the level; the last escape tick is the reveal plus the last such `d`. An escape that doesn't complete even
+pressed at the reveal is an error.
+(3) **The check.** In that last escape's replay (the same path as a cat that hasn't pressed yet, up to the press), the
+reveal is on screen at every tick from the reveal through the last escape tick, and that span is at least
+`RouteValidator.WindowTicks` (12, D-056 (1)). The worst of D-083's 24 camera cases counts, at 4:3, 16:9 and 20:9; fit mode
+passes the on-screen part trivially but still needs the 12. The table row reads "escape, on screen N of M (reveal t…, last
+escape t…)", N counting from the reveal to the first tick off screen.
+(4) **L014 T1** declares `L014Routes.EscapeLip` (stop on Lip_1, hold Right and Down, catch V2): Lip_1 gives way at t73,
+the last escape is t105 (+32), and Lip_1 is on screen 33 of 33 at every aspect. Under D-083 alone it read "on screen 0 of
+lead 53": the camera follows the 15 u fall and leaves Lip_1 4 ticks before the kill at t126.
+(5) **No change elsewhere:** `ValidateKit`, trigger and surface coverage, and the camera tell table for L001–L013 and Trap
+Lab rooms 0–12 were snapshotted before and after: identical (Trap Lab room 11's three D-083 errors for `Spear_1` are
+unchanged; room 11 isn't in `CameraTellTests`).
+(6) **Making it the default** (the reveal rule of 2026-09-28 for every hidden hazard) stays PAX-094. Note for PAX-094:
+Trap Lab room 11 has 3 existing D-083 errors (`Spear_1`, "on screen 0 of lead 8" at every aspect), not covered by
+`CameraTellTests`.
+**Why:** a reveal at the cat's feet followed by a long fall passes the reveal rule (on screen before the last tick its
+escape works, with time to do it) and fails D-083, which measures up to the kill.
+**Tests:** `CameraTellTests.AnEscapeBackedReveal_ThatLeavesTheViewBeforeTheLastEscape_Fails` (`PrecisionFixtures.EscapeTellRoom`:
+Lip on screen 50 of 103 ticks; seen red with the span check weakened to 12 ticks) and
+`L014_T1_WithItsEscapeDeclared_Passes` (seen red under D-083 before the check existed).
