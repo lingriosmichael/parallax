@@ -2182,8 +2182,47 @@ level's element rule counts a betrayal that uses any of them.
   column, so the floor goes as the cat lands on Drop_3 (Collapse_V visible t361, the last stop before the pit ~t411);
   Lid_V over the pit takes away the jump across it (a real skip). TL_2 gives way 18 ticks after a touch, so Spikes_7
   are up 18 ticks before a running cat reaches them.
+- **L019 Muscle Memory** (spears and the inverter, EXECUTE a memorised map): 64 × 16 (size (a), ruled 2026-09-28), start on
+  the Cliff (62, 13), door bottom left (1, 0.75); right to left and down, one precision section over the run (x 2–60). The
+  bridge (the approved rebuild): stepping to the cliff's edge sets the volley off, five spears from the Rack sticking in
+  the cliff's and the pillars' west faces, each shaft the next step, 1.5 lower; then four arrows (sweepers) chained from
+  the last spear. Map A: Orb_A (honest) flips the run as it starts; three hops mirrored (P2 gives way under a cat that
+  lingers); the flip ends in the jump to P4, so the held direction switches back mid-air; Mover_1 carries the cat to
+  Ledge_M. Map B: Orb_B (disguised) flips the cat in the jump off Ledge_M, so it switches into the mirror mid-air; it waits
+  out the flip on Q1; Mover_2, a lift, takes it down into the corridor under the Slab; Spear_9 crosses the corridor at
+  jump height and Floor_C gives way under a cat that stops. Every element is chained from a cat trigger; the two movers
+  run on the room's clock and boarding them is the read. The second map is new input, not the first one twice: the flip
+  starts in the air instead of on the ground (switch into the mirror, not out of it), the beat after it is a wait instead
+  of a run of hops, the mover is a lift instead of a ferry, and the map ends on a walk-don't-stop, don't-jump corridor.
+  1142 ticks; Bridge 375 / Map_A 399 / Map_B 368; both rewinds exact. 12 killers, 10 in sequence; answers B 2, J 1, NJ 2,
+  NW 3, SS 2, W 3; the element in 11 betrayals. Chaos t21–t80, 5 in view of 7 (the volley). Longest stretch without a
+  decision 111 ticks. Windows: 9 for the mid-air switch into Orb_B's mirror (8–11 only inside the precision section);
+  every other timed step 27 or more. Moving floors: Mover_1 (a mover) and Mover_2 (a lift), both Carry. Every reveal is
+  on screen from its first change to the kill at 4:3, 16:9 and 20:9. The level's element rule names the spear and the
+  inverter (`Band2Element` case 19, as 18: a spear's stuck shaft stood on, or the inversion changing). **Decided**
+  (the working rule of 2026-09-28: within every band-2 rule, the verb and the size):
+  1. The Rack is 1.1 u west of step 5's end, and its east face is thorned (`Thorns_R`, honest) from its foot to step 1:
+     a running cat carries 2–3 u in a 1.5 u drop, so without them it ran off step 3 straight onto Landing A and past
+     every sweeper. The steps are dropped from their ends, not run.
+  2. The sweepers are timed on the run as built: Sweeper_2 takes a cat that stops on step 2, Sweeper_4 one that steps
+     straight down from step 3, Sweeper_3 one that stands on step 3 (jump it), Sweeper_H crosses step 4 at jump height
+     while the cat waits there (the jump that saved it on step 3 kills it here).
+  3. Map B as built: no Q2; Block_E (honest thorns) under Q1; the lift's shaft; the corridor under the Slab (thorns on
+     top) with Spear_9 flying east from Stub_9 into Stub_E at jump height (it crossed the lift's path flying west).
+  4. Mover_2 runs every 200 from t30: the cat lands on Q1 as the lift leaves and waits a whole trip (the read). With the
+     lift on its old period the solution was about 1060 ticks.
+  5. P2's betrayal dies in the pit, not on hidden spikes: a spike strip under P2 alone would be a gap in the pit's
+     hazard, pointing at the trap (P10). Floor_C fills its well, with hidden `Spikes_C` on the well's floor and no
+     visible hazard under it (P10).
+  6. T1 (step off the cliff before Spear_1 has stuck) dies to Spear_4 in the volley, not in the pit.
+  7. Dead ends: D1 recovers (stay on Mover_1: it rides back to P4 and out again), D2 dies (turn back east once the lift
+     has left: its shaft).
+- **PAX-094 items (L019):** four betrayals have no escape once their reveal has happened: T1 (Spear_4 shows at t57; the
+  cat has been falling since t27; its lesson is the wait for Spear_1, in view from t21), T4 (Sweeper_4's tell at t158;
+  the cat left step 3 at t152), T7 (P2 gives way under a cat that stops, t524) and T13 (Floor_C gives way under a cat
+  that stops, t1120). Each is on screen from its first change to the kill (D-083).
 
-Direction mix across 11–20: half B. Tests: `Band2RulesTests` (30), `Band2LevelTests`, `Band2RouteResultsTests`.
+Direction mix across 11–20: half B. Tests: `Band2RulesTests` (41), `Band2LevelTests`, `Band2RouteResultsTests`.
 
 ### D-095 · 2026-09-27 · Proposed (PAX-093 as built; rulings §7)
 

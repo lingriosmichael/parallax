@@ -42,6 +42,7 @@ namespace Parallax.Editor.Setup
                 case 14: kind = "vine"; isKind = e => e.Kind == SoloRoomElementKind.Vine; return true;
                 case 15: kind = "storm cloud"; isKind = e => e.Kind == SoloRoomElementKind.StormCloud; return true;
                 case 18: kind = "storm cloud, geyser or vine"; isKind = e => e.Kind is SoloRoomElementKind.StormCloud or SoloRoomElementKind.Geyser or SoloRoomElementKind.Vine; return true;
+                case 19: kind = "spear or inverter"; isKind = e => e.Kind == SoloRoomElementKind.Arrow && e.Settings.Arrow.Spear || e.Kind == SoloRoomElementKind.Inverter; return true;
                 default: kind = null; isKind = null; return false;
             }
         }
@@ -234,7 +235,7 @@ namespace Parallax.Editor.Setup
             var names = new HashSet<string>(room.Elements.Where(isKind).Select(e => e.Name));
             foreach (Betrayal b in routes.Betrayals)
             {
-                bool direct = names.Contains(b.Killer) && b.Outcome == BetrayalOutcome.Dies || names.Contains(b.RevealedBy) || (level == 12 && b.RevealedBy == R.CatInverted);
+                bool direct = names.Contains(b.Killer) && b.Outcome == BetrayalOutcome.Dies || names.Contains(b.RevealedBy) || ((level == 12 || level == 19) && b.RevealedBy == R.CatInverted);
                 if (direct || (replays.TryGetValue(b.Name, out ReplayResult replay) && ActsOnCat(level, names, routes.Solution, b.Route, replay, catSize)))
                     used.Add(b.Name);
             }
@@ -266,6 +267,11 @@ namespace Parallax.Editor.Setup
                         if (t.IsClimbing) return true;
                         var launched = new Rect(t.X - catSize.x * .5f, t.Y - catSize.y * .5f, catSize.x, catSize.y);
                         if (Mathf.Abs(t.Vy) >= GeyserLaunchEvidence && kinds.Any(k => t.Rendered[k] && t.RenderBounds[k].Overlaps(launched))) return true;
+                        break;
+                    // Level 19: standing on a stuck shaft (as 11) or the inversion changing (as 12).
+                    case 19:
+                        if (t.Grounded && t.Ground != null && t.Ground.EndsWith("_Shaft", StringComparison.Ordinal) && names.Contains(t.Ground.Substring(0, t.Ground.Length - 6))) return true;
+                        if (inverted >= 0 && t.Signature[inverted] != replay.Records[0].Signature[inverted]) return true;
                         break;
                 }
             }
