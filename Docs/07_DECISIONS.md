@@ -2157,6 +2157,10 @@ PAX-060's report names both.
   L018 roots the chain in `Spikes_V`, hidden spikes on the pit's floor whose floor-to-ceiling cut holds the crumble's
   strip from both sides; Spikes_V stays as the pit's real killer. Not on PAX-095's list. `Lid_V` blocks a real skip
   (without it a cat jumps the open pit: 3.6 u edge to edge against a 4.08 u flat jump).
+  L017's `Spikes_5e` are the same limit (ruled 2026-09-28): chained into the far end's rearrangement they were "before"
+  their root's trigger, and a cut at the stair's top was "seen from" the checkpoint's side, since the upper storey is
+  reached only across that cut. They fire on their own cut one step off the stair (x 26.3–26.5), so the strip east of
+  it is the approach, and Block_6 hangs on them (a chained block within 3 u of its root's cut is exempt).
 - **PAX-094 items (L018):** four betrayals have no escape once their reveal has happened, so an escape-backed reveal
   rule would need a declared escape or a change for each: T4 (Fake_A gives way; the cloud's charge at t255 is the one
   reveal with an escape, 15 ticks), T6a (SL_2 gives way under a cat standing wholly on it), T10 (Block_T, t730–t744) and
@@ -2253,11 +2257,51 @@ level's element rule counts a betrayal that uses any of them.
      the low road) went when the low road and its hole were cut in the fourth draft, while clearing validator findings.
   6. Top_W runs over Post_9, one piece under the vent: stepping from Top_W onto a separate Post_9 of the same height
      gave the two replays in one session a Vx differing by 5e-7 at one tick (t1089), and the determinism check failed.
+- **L017 Déjà Vu** (spears and chains, PLAN THE WAY BACK; the approved variant, "the way out builds the way back, in
+  plain view"): 32 × 16, two storeys (lower floor 0, upper floor 8, 0.7 thick), start (2, 0), door on the floating
+  Door_Ledge above the start (6.25, 10.55). Out along the lower storey: the start's cut fires Spear_D into the
+  Door_Ledge's west face (its shaft, top 9.45, is the only step up to the ledge, 1.8 above the upper floor); Crack_1
+  (0.6 u, narrower than the cat) invites a hop into Spear_1's lane at jump height; Block_2, flush in the upper floor,
+  drops onto the path 10 ticks after its cut and sets off Collapse_U beside it 2 ticks later, which leaves the hole for
+  the way back (ruled 2026-09-28: the builder never cuts a flush block out of its host, so a falling block can't leave
+  a hole itself; `CollapsingFloorTrap.cs:26–30` keeps a Once collapse open until the room resets, and a rewind restores
+  it from `IsTimingEffectActive`); Collapse_3 gives way under a cat that stops; Slide_4 (Carry) carries a cat that
+  stands still over Pit_4. Far end: the far cut fires Arrow_5a along the shaft's floor at shin height into the Sill
+  (BAIT: step back over the Sill into the nook), and 150 ticks later the volley V1–V5, 12 apart, builds the stair,
+  alternating Face_R and the Spine. Back along the upper storey: a step off the stair brings up Spikes_5e (they stay;
+  jump them) and drops Block_6 where the cat stepped off; hop Post_8; Arrow_8 comes out of it at jump height over a
+  standing cat (let it pass, then jump the hole); under the Door_Ledge to Post_W, up Spear_D's shaft, onto the ledge.
+  1152 ticks; Out 305 / Far 514 / Back 333; both rewinds exact. 9 killers, 7 in sequence; answers BAIT 1, J 1, NJ 1,
+  NW 2, SS 1, W 2; the element (spear or chained trap, `Band2Element` case 17, as 11: a stuck shaft stood on) in 4
+  betrayals. Chaos t523–t582, 5 of 5 in view (the volley). Longest stretch without a decision 219 ticks (the nook
+  wait, ending in the timed step out of it, window 51). Windows 12 or more. Moving floor: Slide_4, a slide-away that
+  comes home (Carry, Rearm). Every reveal is on screen from its first change to the kill at 4:3, 16:9 and 20:9
+  (Block_6 for 20 of its 21 lead ticks). **Decided** (the working rule of 2026-09-28):
+  1. The volley is five spears, not three (the stair has to climb the whole 8 u storey at 1.45 a step), starting on
+     Face_R so no step hangs over the Sill; every launcher sits in a post inside the room (Face_R, Post_W, Post_8),
+     since a launcher may not lie outside the room's frame.
+  2. The nook is behind the Sill (x 28.6–29, a cat's width clear of the Spine, so it is hopped under open air): an
+     arrow's lane must end at a solid face, and the Sill is Arrow_5a's.
+  3. T6 is Block_6 on the upper floor where the cat steps off the stair (NW), not a near spear setting off a block (OL);
+     Spikes_5e and Block_6 fire at the stair's top (see (5)).
+  4. The sketch's T9 (Fake_9 over Spikes_9) is dropped: a fake step beside the ledge can't clear the trap-floor
+     headroom rule over the upper floor. 9 killers without it.
+  5. Dead ends: D1 dies on the Shelf over the start, reached from Spear_1's shaft (hidden spikes); D2 recovers (stay on
+     Slide_4: it rides home, is set off again and carries the cat out). The nook is the BAIT's answer, so it's in the
+     solution, not a dead end.
+  6. Slide_4 comes home (Rearm) instead of staying as the stair's first step, so a cat that drops through the hole to the
+     lower storey can go round again (no soft-lock).
+  7. The Door_Ledge floats (underside 8.7, over a standing cat) so the way back runs under it to the west end.
+  8. Length: the volley starts 150 ticks after Arrow_5a (the nook wait ends in a timed step, window 51) and Arrow_8
+     tells for 60 ticks (the hole jump after it is timed, window 15). The slide is not slowed.
+- **PAX-094 items (L017):** T3 (Collapse_3 gives way under a cat that stops, t167) and D1 (Spikes_D1 show at t113,
+  with the cat already over the Shelf in its jump) have no escape once their reveal has happened; T1's is 4 ticks (the
+  tell at t31, the takeoff at t35). Each is on screen from its first change to the kill (D-083).
 - **PAX-094 items (L020):** two betrayals have no escape once their reveal has happened: T3 (Collapse_2 goes, t291, as
   the running cat crosses its cut) and T4 (Spear_4a's tell, t368, as the cat takes off). Each is on screen from its first
   change to the kill (D-083).
 
-Direction mix across 11–20: half B. Tests: `Band2RulesTests` (43), `Band2LevelTests`, `Band2RouteResultsTests`.
+Direction mix across 11–20: half B. Tests: `Band2RulesTests` (45), `Band2LevelTests`, `Band2RouteResultsTests`.
 
 ### D-095 · 2026-09-27 · Proposed (PAX-093 as built; rulings §7)
 

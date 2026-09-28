@@ -41,6 +41,11 @@ namespace Parallax.Editor.Setup
                 case 13: kind = "geyser"; isKind = e => e.Kind == SoloRoomElementKind.Geyser; return true;
                 case 14: kind = "vine"; isKind = e => e.Kind == SoloRoomElementKind.Vine; return true;
                 case 15: kind = "storm cloud"; isKind = e => e.Kind == SoloRoomElementKind.StormCloud; return true;
+                // Level 17 (spears and chains): a spear, or any trap a chain sets off.
+                case 17:
+                    kind = "spear or chained trap";
+                    isKind = e => e.Kind == SoloRoomElementKind.Arrow && e.Settings.Arrow.Spear || e.Settings.IsConfigured && e.Settings.TriggerSource == TrapTriggerSource.Chain;
+                    return true;
                 case 18: kind = "storm cloud, geyser or vine"; isKind = e => e.Kind is SoloRoomElementKind.StormCloud or SoloRoomElementKind.Geyser or SoloRoomElementKind.Vine; return true;
                 case 19: kind = "spear or inverter"; isKind = e => e.Kind == SoloRoomElementKind.Arrow && e.Settings.Arrow.Spear || e.Kind == SoloRoomElementKind.Inverter; return true;
                 // Level 20, the exam: every band-2 element.
@@ -261,7 +266,7 @@ namespace Parallax.Editor.Setup
                 TickRecord t = replay.Records[i];
                 switch (level)
                 {
-                    case 11: if (t.Grounded && t.Ground != null && t.Ground.EndsWith("_Shaft", StringComparison.Ordinal) && names.Contains(t.Ground.Substring(0, t.Ground.Length - 6))) return true; break;
+                    case 11: case 17: if (t.Grounded && t.Ground != null && t.Ground.EndsWith("_Shaft", StringComparison.Ordinal) && names.Contains(t.Ground.Substring(0, t.Ground.Length - 6))) return true; break;
                     case 12: if (inverted >= 0 && t.Signature[inverted] != replay.Records[0].Signature[inverted]) return true; break;
                     case 13:
                         var cat = new Rect(t.X - catSize.x * .5f, t.Y - catSize.y * .5f, catSize.x, catSize.y);

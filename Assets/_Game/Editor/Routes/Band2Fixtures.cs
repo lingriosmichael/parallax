@@ -114,15 +114,15 @@ namespace Parallax.Editor.Routes
             return new RoomRoutes(solution, betrayals.ToArray());
         }
 
-        // PAX-060 review: one element of the level's kind in the fixture room (11 a spear, 12 and 19 an inverter, 13, 18 and
-        // 20 a geyser), named "Elem" so no betrayal counts it by killer or reveal.
+        // PAX-060 review: one element of the level's kind in the fixture room (11 and 17 a spear, 12 and 19 an inverter, 13,
+        // 18 and 20 a geyser), named "Elem" so no betrayal counts it by killer or reveal.
         public static SoloRoomDefinition ElementRoom(int level)
         {
             SoloRoomDefinition r = Room(2, false, 0);
             var elements = r.Elements.ToList();
             elements.Add(level switch
             {
-                11 => new SoloRoomElement(SoloRoomElementKind.Arrow, "Elem", new Vector2(10f, 1f), new Vector2(.5f, .4f),
+                11 or 17 => new SoloRoomElement(SoloRoomElementKind.Arrow, "Elem", new Vector2(10f, 1f), new Vector2(.5f, .4f),
                     settings: new SoloRoomTrapSettings(ArrowLane.SpearLane(ArrowDirection.Right, 1f, 20f), new SoloRoomTrapSettings(delayTicks: 0))),
                 12 or 19 => new SoloRoomElement(SoloRoomElementKind.Inverter, "Elem", new Vector2(10f, 1.5f), new Vector2(.6f, 3f),
                     settings: new SoloRoomTrapSettings(new InverterSettings(), new SoloRoomTrapSettings(delayTicks: 0))),
@@ -156,7 +156,7 @@ namespace Parallax.Editor.Routes
                     bool acts = b.Name.StartsWith("A") && t == 5;
                     var record = new TickRecord { Tick = t, X = 10f, Y = .3f, Grounded = true, Ground = "Floor", FireTick = new int[3], Signature = new int[3], Rendered = new bool[3], RenderBounds = new Rect[3] };
                     record.Rendered[0] = true; record.RenderBounds[0] = new Rect(9.5f, 0f, 1f, 1.5f);
-                    if (acts && level == 11) record.Ground = "Elem_Shaft";
+                    if (acts && (level == 11 || level == 17)) record.Ground = "Elem_Shaft";
                     if (acts && (level == 12 || level == 19)) record.Signature[2] = 1;
                     if (acts && (level == 13 || level == 18 || level == 20)) { record.Grounded = false; record.Ground = null; record.Vy = 14f; }
                     replay.Records.Add(record);

@@ -62,7 +62,7 @@ namespace Parallax.Editor.Levels
         };
 
         // Top, the chaos and the Crown: run over the crumbles, jump Spikes_7 onto Plinth_C; ride G_C, steering right onto the
-        // Crown; climb V_9 to the Summit; west along it, over the hole Block_7 left, into the door.
+        // Crown; climb V_9 to the Summit; west along it (over where Block_7 was: the Summit stays whole) into the door.
         static RouteStep[] Crown() => new[] {
             Until(XAtLeast(24.2f)), Jump(), Until(XAtLeast(27.8f)), Release(), Until(GroundedOn("Plinth_C")),
             Until(YAtLeast(12.5f)), Hold(Right), Until(GroundedOn("Crown")), Until(XAtLeast(31f)), Release(), Hold(Up), Until(On("V_9", 31.4f)),

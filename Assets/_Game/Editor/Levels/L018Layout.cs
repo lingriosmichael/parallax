@@ -136,7 +136,8 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"TL_4",(22.75f,TopY - .25f),(1.3f,.5f),settings:new SoloRoomTrapSettings(delayTicks:15)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_7",(26.05f,TopY + .15f),(1.5f,.3f),
                 settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"TL_2")));
-            // Block_7, flush in the Summit's underside, drops onto Top_E where a cat would stop, and leaves its hole in the Summit.
+            // Block_7, flush in the Summit's underside, drops onto Top_E where a cat would stop. The Summit stays whole: the
+            // builder never cuts a flush block out of its host, so the gap it leaves is only drawn (PAX-060, L017's ruling).
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_7",(24.4f,SummitY - .2f),(1.2f,.4f),
                 settings:new SoloRoomTrapSettings(delayTicks:8,unitsPerTick:.36f,travelDistance:SummitY - .4f - TopY,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_7")));
             elements.Add(E(SoloRoomElementKind.Geyser,"G_C",(28f,TopY + .65f),(1f,.3f),settings:Geyser(150, 980)));
