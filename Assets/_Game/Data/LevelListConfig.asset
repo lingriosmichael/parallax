@@ -58,3 +58,18 @@ MonoBehaviour:
   - Id: L015
     SceneName: Level_015
     DisplayName: Level 15
+  - Id: L016
+    SceneName: Level_016
+    DisplayName: Level 16
+  - Id: L017
+    SceneName: Level_017
+    DisplayName: Level 17
+  - Id: L018
+    SceneName: Level_018
+    DisplayName: Level 18
+  - Id: L019
+    SceneName: Level_019
+    DisplayName: Level 19
+  - Id: L020
+    SceneName: Level_020
+    DisplayName: Level 20
