@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "14_door_enter",
+  "name": "Enter door",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat walks to the right, slows, and happily trots into a doorway: it turns slightly away from the viewer and its body and tail disappear into darkness on the right edge, tail tip last.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_ba07841b-3318-4e13-a498-85300c6da9b7"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun1kso400042gfs3kh8u6hr",
+        "meta": {
+          "id": "cmun1kso400042gfs3kh8u6hr",
+          "kind": "custom",
+          "name": "Enter door",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun1js5s0004wq7uo431s17f",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T19:00:52.132Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:01:02Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun1kso400042gfs3kh8u6hr",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:10:44Z"
+    }
+  ],
+  "verdict": "good: walks out past the right edge, tail last",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 9-24 at 12 fps"
+}

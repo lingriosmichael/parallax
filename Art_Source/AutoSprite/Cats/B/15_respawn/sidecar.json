@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "15_respawn",
+  "name": "Respawn",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat stands exactly as in the image, same pose and long curled tail in every frame. It starts glowing cool silver-cyan and slightly see-through; the glow fades out quickly and the cat becomes solid, then it gives one quick shake of its fur and stands ready. The pose, tail and size never change. Nothing under the feet. Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_2acedcf5-f7de-46ac-988c-750d49666497"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun1m9hg000662s7ohatglzg",
+        "meta": {
+          "id": "cmun1m9hg000662s7ohatglzg",
+          "kind": "custom",
+          "name": "Respawn",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun1l1tu0004f9b9e6in8iiq",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T19:02:00.580Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:02:08Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun1m9hg000662s7ohatglzg",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:11:00Z"
+    }
+  ],
+  "verdict": "good: cyan glow fades to a solid white cat, pose and tail kept, small tail swish",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 2-13 every other frame (6) + hold, ~0.5 s"
+}

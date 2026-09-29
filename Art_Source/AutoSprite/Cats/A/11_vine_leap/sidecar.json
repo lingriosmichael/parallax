@@ -1,0 +1,52 @@
+{
+  "cat": "A",
+  "clip": "11_vine_leap",
+  "name": "Vine leap",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat, clinging vertically to a thick vine on the left, pushes off with its back legs and leaps away to the right: the body swings from vertical to horizontal, front legs reach forward, tail streams back. The vine stays on the left edge.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_53558e71-fd65-4d02-ae67-af41e15a0512"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumy13c3000e7c5qbu4e59ql",
+        "meta": {
+          "id": "cmumy13c3000e7c5qbu4e59ql",
+          "kind": "custom",
+          "name": "Vine leap",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumxzv5w001escsmztckulqz",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:21:33.988Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:21:39Z"
+  },
+  "credits": 5,
+  "verdict": "usable: clear push-off into a stretched leap; starts head-down on the vine, not in the 10 head-up pose; vine baked in until frame 15",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 10-20 at 16 fps (~0.7 s)",
+  "redoWithBetterBase": "redo from a head-up clinging base painting so it chains from 10"
+}

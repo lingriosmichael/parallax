@@ -1,0 +1,51 @@
+{
+  "cat": "A",
+  "clip": "07_land",
+  "name": "Land",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat lands from a jump: front paws touch down first, the body compresses into a soft crouch as the back paws land, then it rises back to a normal standing pose facing right. Tail swings down then up. The cat stays in place.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_2e04f562-9e89-461f-926f-255f94732326"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumxvilg00074xt8y18mhfro",
+        "meta": {
+          "id": "cmumxvilg00074xt8y18mhfro",
+          "kind": "custom",
+          "name": "Land",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumxuin50014zommniqml34x",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:17:13.829Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:17:21Z"
+  },
+  "credits": 5,
+  "verdict": "usable: AutoSprite starts every clip from the standing base pose, so no touchdown from the air; frames 8-19 are a good crouch-and-recover squash",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 8-19, every other frame (6 frames) at 20 fps = 0.3 s"
+}

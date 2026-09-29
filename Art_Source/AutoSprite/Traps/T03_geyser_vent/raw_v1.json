@@ -1,0 +1,13 @@
+{
+  "asset": "T03",
+  "name": "PAX-A13 T03 geyser_vent",
+  "endpoint": "POST /assets",
+  "quality": "ultra",
+  "usePromptTemplate": false,
+  "background": "M",
+  "prompt": "Stone floor vent: low carved sandstone ring, flat top, dark round mouth with faint warm glow, wet moss at the lip. 4x wider than tall. Hand-painted 2D game sprite, strict side view. Golden backlight, gold rim light, warm brown shade, no black. No cyan, no text. On flat magenta #FF00FF.",
+  "assetId": "cmumi070v000eb693o4t65pqx",
+  "creditsReserved": 1,
+  "creditsUsed": null,
+  "created": "2026-09-29T09:52:59Z"
+}

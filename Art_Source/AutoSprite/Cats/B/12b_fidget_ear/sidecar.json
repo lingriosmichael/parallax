@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "12b_fidget_ear",
+  "name": "Fidget ear twitch",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat stands still on all four paws facing right; one ear twitches quickly twice and the head turns a little toward the viewer then back. Paws and body stay planted.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_0d69d5a9-fa96-46c5-87e0-3557f60e8d1e"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun19sov000bwknbmqwhzi8j",
+        "meta": {
+          "id": "cmun19sov000bwknbmqwhzi8j",
+          "kind": "custom",
+          "name": "Fidget ear twitch",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun18rwb000apjofp8467vjd",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:52:18.944Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:52:25Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun19sov000bwknbmqwhzi8j",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:08:36Z"
+    }
+  ],
+  "verdict": "good: ears twitch, head turns to the viewer and back; outline slightly dark",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 5-20 at 12 fps"
+}

@@ -1,0 +1,16 @@
+{
+  "cat": "A",
+  "endpoint": "POST /characters (upload, free)",
+  "image": "_base/catA_side_cutout.png",
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "created": "2026-09-29T17:05:39Z",
+  "response": {
+    "id": "cmumxgmgx0001grljze4ko7qt",
+    "name": "PARALLAX Cat A",
+    "isHumanoid": false,
+    "characterDescription": "A slender short-haired dark brown cat with amber eyes and a long curling tail, hand-painted, strict side view facing right. A real four-legged cat, not a person.",
+    "baseImageUrl": "https://a91037593e6b852513235b7d3b6851f0.r2.cloudflarestorage.com/spritesheet/users/cmu583oj0000a11yl1rld7hqp/characters/temp-1790701538471/1790701538471_a90c71b4-e811-4794-9d1e-bd643eeb4d46_catA_side_cutout.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=b6a72bbe69e373154c354b282bb21b5a%2F20260929%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260929T170539Z&X-Amz-Expires=86400&X-Amz-Signature=b5c6a95bbc5d2719ae3e1a497b716017ef0c28018ed0ffe7e4637dc420544e11&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject",
+    "thumbnailUrl": "https://a91037593e6b852513235b7d3b6851f0.r2.cloudflarestorage.com/spritesheet/users/cmu583oj0000a11yl1rld7hqp/characters/temp-1790701538471/thumbnails/1790701538471_6575fd32-45a9-445e-bb86-5fb7740d9aa7.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=b6a72bbe69e373154c354b282bb21b5a%2F20260929%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260929T170539Z&X-Amz-Expires=86400&X-Amz-Signature=ee037a5560de0bc8df51278fb4c3cbb111813d96de9b9a733ac614774d101f21&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject",
+    "createdAt": "2026-09-29T17:05:39.008Z"
+  }
+}

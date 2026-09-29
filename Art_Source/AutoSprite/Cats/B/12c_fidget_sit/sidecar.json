@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "12c_fidget_sit",
+  "name": "Sit down",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat, standing on all four paws facing right, gets bored and sits down on its haunches in profile: back legs fold, front legs stay straight, tail wraps around the front paws. Ends seated, still, in side view.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_d2d14be7-3362-4c14-a133-455df749b53f"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun1b6j4000q68vdwxkbib52",
+        "meta": {
+          "id": "cmun1b6j4000q68vdwxkbib52",
+          "kind": "custom",
+          "name": "Sit down",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun19yu0000a1ajfha8obn3a",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:53:23.536Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:53:29Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun1b6j4000q68vdwxkbib52",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:08:52Z"
+    }
+  ],
+  "verdict": "good: stands, sits in profile, tail wrapped",
+  "chosen": {
+    "sheet": "recut_25f_256_bgdefault.png",
+    "atlas": "recut_25f_256_bgdefault_atlas.json"
+  },
+  "suggest": "frames 5-15, then hold frame 24"
+}

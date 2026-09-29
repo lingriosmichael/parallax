@@ -17,10 +17,16 @@ namespace Parallax.Gameplay.Rooms
         public readonly int Tick;
         public readonly int TrapsReset;
         public readonly int AnchorsReset;
+        /// <summary>PAX-A13 (§11 R5): what killed, when the kill source named itself (a trap or hazard); null otherwise.
+        /// Read-only information for presentation (death effects, and later PAX-V06/PAX-064).</summary>
+        public readonly UnityEngine.Object Killer;
 
         public DeathInfo(ObserverId observer, DeathCause cause, int room, int tick, int trapsReset, int anchorsReset)
+            : this(observer, cause, room, tick, trapsReset, anchorsReset, null) { }
+
+        public DeathInfo(ObserverId observer, DeathCause cause, int room, int tick, int trapsReset, int anchorsReset, UnityEngine.Object killer)
         {
-            Observer = observer; Cause = cause; Room = room; Tick = tick; TrapsReset = trapsReset; AnchorsReset = anchorsReset;
+            Observer = observer; Cause = cause; Room = room; Tick = tick; TrapsReset = trapsReset; AnchorsReset = anchorsReset; Killer = killer;
         }
     }
 
@@ -43,12 +49,18 @@ namespace Parallax.Gameplay.Rooms
         int pendingRoom;
         DeathCause pendingCause;
         int pendingTick;
+        UnityEngine.Object pendingKiller;
 
         public RoomResetRegistry ResetRegistry => resetRegistry;
         public bool IsRoomLive(int roomId) => rooms != null && rooms.IsLive(roomId);
         public event Action<DeathInfo> Died;
 
         public bool IsHolding => hold != null && hold.IsHolding;
+        // PAX-A13 (§11 R5): the held death, read-only, for its impact effect while the room is frozen (D-058).
+        public int HoldTick => IsHolding ? pendingTick : -1;
+        public DeathCause HoldCause => IsHolding ? pendingCause : default;
+        public UnityEngine.Object HoldKiller => IsHolding ? pendingKiller : null;
+        public ObserverContext HoldObserver => IsHolding ? pendingObserver : null;
         public int DeathsIn(int roomId) => deathCounter.DeathsIn(roomId);
 
         public bool WasKilledThisTick(ObserverId observer, int tick) =>
@@ -62,7 +74,10 @@ namespace Parallax.Gameplay.Rooms
             hold = new DeathHold(holdTicks);
         }
 
-        public void Kill(ObserverId observerId, DeathCause cause)
+        public void Kill(ObserverId observerId, DeathCause cause) => Kill(observerId, cause, null);
+
+        /// <summary>PAX-A13: as Kill, naming the killer (read-only information: nothing about the death changes).</summary>
+        public void Kill(ObserverId observerId, DeathCause cause, UnityEngine.Object killer)
         {
             // PAX-049 (D-061): once the level is complete, no further death is recorded, held,
             // or raised. `rooms` is null in Sandbox_Realities (frozen co-op), which keeps its
@@ -99,6 +114,7 @@ namespace Parallax.Gameplay.Rooms
             pendingRoom = room;
             pendingCause = cause;
             pendingTick = tick;
+            pendingKiller = killer;
 
             if (hold.Begin() == DeathHoldPhase.ResetNow)
             {
@@ -153,7 +169,8 @@ namespace Parallax.Gameplay.Rooms
                 }
             }
 
-            Died?.Invoke(new DeathInfo(pendingObserver.Id, pendingCause, pendingRoom, pendingTick, result.TrapsReset, anchorsSent));
+            Died?.Invoke(new DeathInfo(pendingObserver.Id, pendingCause, pendingRoom, pendingTick, result.TrapsReset, anchorsSent, pendingKiller));
+            pendingKiller = null;   // PAX-A13: only the held death names a killer
         }
 
         // True once RespawnAt is called. Like today's checkpoints.Respawn, it can't see CatRespawn's same-frame guard (a

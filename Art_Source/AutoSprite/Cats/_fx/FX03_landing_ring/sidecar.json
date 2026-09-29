@@ -1,0 +1,17 @@
+{
+  "id": "FX03_landing_ring",
+  "kind": "static",
+  "ticket": "PAX-V06",
+  "v1": {
+    "prompt": "Sheet of 4 separate flat ground dust clouds seen from the side, spaced apart: a low puff spreading out left and right, growing wider and fading. Hand-painted 2D game effect, strict side view. Warm gold and cream, soft edges. No cyan, no text. On pure black #000000.",
+    "endpoint": "POST /assets",
+    "quality": "ultra",
+    "usePromptTemplate": false,
+    "assetId": "cmun3ghpm0010sx1pky232nck",
+    "credits": 1,
+    "created": "2026-09-29T19:53:31Z"
+  },
+  "verdict": "usable: 4 flat ground clouds, but they barely change between steps; scale/fade in code, or use one",
+  "suggest": "1-4 frames plus code scale and fade",
+  "note": "on pure black: use additive blending or luminance-to-alpha when importing"
+}

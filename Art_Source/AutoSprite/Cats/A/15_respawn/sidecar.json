@@ -1,0 +1,87 @@
+{
+  "cat": "A",
+  "clip": "15_respawn",
+  "name": "Respawn",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat appears in place: it starts as a soft warm golden glow shaped like the cat, the glow fades as the cat becomes solid, it lands lightly on all four paws facing right, shakes its fur once and stands ready.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_b25d9b84-5bc0-44a4-b4ee-6225551374f8"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumygj1c001qw66qe8bbzcb1",
+        "meta": {
+          "id": "cmumygj1c001qw66qe8bbzcb1",
+          "kind": "custom",
+          "name": "Respawn",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumyeytv000mj974cenv0wjo",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:33:34.177Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:33:44Z"
+  },
+  "credits": 10,
+  "v2": {
+    "prompt": "The cat stands exactly as in the image, same pose and long curled tail in every frame. It starts glowing warm gold and slightly see-through; the glow fades out quickly and the cat becomes solid, then it gives one quick shake of its fur and stands ready. The pose, tail and size never change. Nothing under the feet. Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_f89a6032-3058-4687-8193-dfd03f356a0d"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v2.png",
+        "atlas": "raw_v2_atlas.json",
+        "gif": "preview_v2.gif",
+        "spritesheetId": "cmumysskc0001hc6xf11h7zku",
+        "meta": {
+          "id": "cmumysskc0001hc6xf11h7zku",
+          "kind": "custom",
+          "name": "Respawn",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumyrjq400088oezqn70m5k4",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:43:06.396Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:43:12Z"
+  },
+  "verdict": "good (v2): golden glow fades, tail and pose kept, one fur shake (16-19). v1 failed: tail vanished, pose turned stiff and dog-like, grey smudge under the feet",
+  "chosen": {
+    "sheet": "raw_v2.png",
+    "atlas": "raw_v2_atlas.json"
+  },
+  "suggest": "frames 4-19 every other frame (8 frames) at 16 fps = 0.5 s, fits the 0.75 s death-to-control budget with the hold"
+}

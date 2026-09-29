@@ -1,0 +1,13 @@
+{
+  "asset": "T02",
+  "name": "PAX-A13 T02 arrow",
+  "endpoint": "POST /assets",
+  "quality": "ultra",
+  "usePromptTemplate": false,
+  "background": "M",
+  "prompt": "One thin arrow pointing right: bronze leaf-shaped head, dark wood shaft, rust-red fletching. Very long and thin, 12x longer than tall. Hand-painted 2D game sprite, strict side view. Golden backlight, gold rim light, warm brown shade, no black. No cyan, no text. On flat magenta #FF00FF.",
+  "assetId": "cmumhzta80002jv94wmnmkmld",
+  "creditsReserved": 1,
+  "creditsUsed": null,
+  "created": "2026-09-29T09:52:41Z"
+}

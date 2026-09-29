@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "13d_death_splash",
+  "name": "Death splash",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "Cartoon comedy: a big splash of clear water drops on the cat from above. Its fur goes flat and dripping, it looks miserable and much skinnier, ears flat sideways, eyes half-closed and grumpy, face still in side view. It stays standing and gives one small shiver. Clear water with cool silver highlights; no pool, nothing covers the cat. Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_1c3bec96-bb73-4842-aaed-ba73d4e37efa"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun1gltj000qq6ebau07yx80",
+        "meta": {
+          "id": "cmun1gltj000qq6ebau07yx80",
+          "kind": "custom",
+          "name": "Death splash",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun1fk6m000cg9w6y8twu297",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:57:36.631Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:57:44Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun1gltj000qq6ebau07yx80",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:09:55Z"
+    }
+  ],
+  "verdict": "good with the default re-cut: drenched, grumpy, dripping; cool blue suits Reality B; tail leaves the left edge",
+  "chosen": {
+    "sheet": "recut_25f_256_bgdefault.png",
+    "atlas": "recut_25f_256_bgdefault_atlas.json"
+  },
+  "suggest": "frames 4-16 at 16 fps (~0.8 s)"
+}

@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "13c_death_zapped",
+  "name": "Death zapped",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "Cartoon comedy, no blood: the cat is zapped by lightning: it goes rigid with every hair standing on end, frizzy and puffed, flickering bright, then ends frazzled and slightly sooty, standing stiff with a stunned face and a little smoke. The cat stays centred.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_08db8506-e4b9-4d66-976a-6d563afbcbd3"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun1fh8c0005g9w679e2dz2e",
+        "meta": {
+          "id": "cmun1fh8c0005g9w679e2dz2e",
+          "kind": "custom",
+          "name": "Death zapped",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun1ebhs000g141w68pf0d9h",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:56:44.028Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:56:46Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun1fh8c0005g9w679e2dz2e",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:09:40Z"
+    }
+  ],
+  "verdict": "usable with the default re-cut: flash, frizz, soot, smoke; raw ultra kept big grey background blobs; later frames turn heavy-outlined comic",
+  "chosen": {
+    "sheet": "recut_25f_256_bgdefault.png",
+    "atlas": "recut_25f_256_bgdefault_atlas.json"
+  },
+  "suggest": "frames 4-15 at 16 fps"
+}

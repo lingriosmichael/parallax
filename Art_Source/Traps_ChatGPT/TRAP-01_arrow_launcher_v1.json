@@ -1,0 +1,16 @@
+{
+  "asset": "TRAP-01",
+  "file": "TRAP-01_arrow_launcher_v1.png",
+  "source": "ChatGPT (developer, manual)",
+  "ticket": "PAX-A13, rulings §11 R3 fallback",
+  "prompt_doc": "Docs/Art/Traps/A13_ChatGPT_trap_bodies.md",
+  "prompt": "Asset TRAP-01: arrow trap launcher. Square 1:1. Background type T: transparent background, PNG with alpha.\nOne square block of the same weathered grey-beige sandstone masonry as the stone fill, strictly side view, filling most of the image, centred.\nA narrow dark horizontal slot is cut into its right edge at mid height, with a worn bronze rim; a bronze arrowhead glints just inside the slot, pointing right.\nFlat, straight top and bottom edges and a straight left edge. Small moss in the joints. Gold rim light on the top edge, warm brown shade.\nNo perspective: we see only the block's front face, and the slot as a notch in its right edge.",
+  "style_header": "the environment prompts doc's style header (Sep 29, 2026), pasted before the prompt",
+  "attachments": [
+    "Docs/Art/Reference/styleframe_A_v1.png",
+    "DesignImages/14_environment-breakdown.png",
+    "ENV-10a stone fill if accepted (per the doc)"
+  ],
+  "saved": "2026-09-29T10:22:02Z",
+  "sha256": "517033ae68c089cc253a699ec7108d6f52d133d8b53023f2672a6b0324639779"
+}

@@ -1,0 +1,13 @@
+{
+  "asset": "T01",
+  "name": "PAX-A13 T01 arrow_launcher",
+  "endpoint": "POST /assets",
+  "quality": "ultra",
+  "usePromptTemplate": false,
+  "background": "M",
+  "prompt": "Carved sandstone arrow slot: square block face, dark mouth, bronze rim, bronze arrowhead just inside. Ancient temple trap, weathered. Hand-painted 2D game sprite, strict side view. Golden backlight, gold rim light, warm brown shade, no black. No cyan, no text. On flat magenta #FF00FF.",
+  "assetId": "cmumhz3xt000qtpf9sukvo2qy",
+  "creditsReserved": 1,
+  "creditsUsed": null,
+  "created": "2026-09-29T09:52:08Z"
+}

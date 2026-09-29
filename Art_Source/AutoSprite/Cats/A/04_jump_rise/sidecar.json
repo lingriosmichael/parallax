@@ -1,0 +1,87 @@
+{
+  "cat": "A",
+  "clip": "04_jump_rise",
+  "name": "Jump rise",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat crouches for a moment, then springs up and forward off the ground: back legs extend fully, front legs tuck up to the chest, body angled upward, tail straight back. Ends in the air still rising. The cat stays near the centre of the frame.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_6fb4160f-d144-4d86-b864-7dc574e4d2b1"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumxru7t0001fagahoroi6hg",
+        "meta": {
+          "id": "cmumxru7t0001fagahoroi6hg",
+          "kind": "custom",
+          "name": "Jump rise",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumxqqad000l13my838fajsh",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:14:22.264Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:14:24Z"
+  },
+  "credits": 10,
+  "v2": {
+    "prompt": "The cat leaps forward and upward like a cat jumping onto a high wall. It pushes off hard with its back legs and the whole body leaves the ground, flying diagonally up to the right: body stretched long and tilted nose-up, front paws tucked under the chin, back legs stretched straight out behind, tail streaming back. From the middle of the clip on, all four paws are in the air. The cat never stands on its hind legs. Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_e14ad996-9cab-4d51-a916-7fb8ce17722b"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v2.png",
+        "atlas": "raw_v2_atlas.json",
+        "gif": "preview_v2.gif",
+        "spritesheetId": "cmumyo87q0003c8pkeoxaysvf",
+        "meta": {
+          "id": "cmumyo87q0003c8pkeoxaysvf",
+          "kind": "custom",
+          "name": "Jump rise",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumym2m3001a10e62r1802oz",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:39:33.398Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:39:38Z"
+  },
+  "verdict": "good (v2): crouch, push-off, stretched airborne rise; v1 failed (cat reared up on hind legs, never left the ground, clipped)",
+  "chosen": {
+    "sheet": "raw_v2.png",
+    "atlas": "raw_v2_atlas.json"
+  },
+  "suggest": "frames 8-24 of v2, one-shot, ~12 frames at 20 fps (~0.3 s, half the 33-tick airtime); v1 frames 7-12 also usable as a crouch"
+}

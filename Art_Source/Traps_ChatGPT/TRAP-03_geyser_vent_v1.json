@@ -1,0 +1,16 @@
+{
+  "asset": "TRAP-03",
+  "file": "TRAP-03_geyser_vent_v1.png",
+  "source": "ChatGPT (developer, manual)",
+  "ticket": "PAX-A13, rulings §11 R3 fallback",
+  "prompt_doc": "Docs/Art/Traps/A13_ChatGPT_trap_bodies.md",
+  "prompt": "Asset TRAP-03: geyser vent. Landscape 3:2. Background type T: transparent background, PNG with alpha.\nA stone floor vent seen strictly from the side, centred, about 4 times wider than tall: a low carved sandstone lip set flush into the ground, made of the same weathered stone as the stone fill.\nIts top is one straight, level line; the vent's mouth is a narrow dark opening in the middle of that top line, with a faint warm glow deep inside. We never see the top surface or a hole from above.\nWet moss and a few water stains around the mouth. Gold rim light on the top edge, warm brown shade below.",
+  "style_header": "the environment prompts doc's style header (Sep 29, 2026), pasted before the prompt",
+  "attachments": [
+    "Docs/Art/Reference/styleframe_A_v1.png",
+    "DesignImages/14_environment-breakdown.png",
+    "ENV-10a stone fill if accepted (per the doc)"
+  ],
+  "saved": "2026-09-29T10:27:09Z",
+  "sha256": "ab4be9c072c0ee7970fd163fe10b322e48b9a7c81e2fd77a1ff7cb7820aa6c30"
+}

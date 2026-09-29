@@ -31,7 +31,7 @@ namespace Parallax.Gameplay.Rooms
             body.MovePosition(start + dir * travel);
             if (travel >= travelDistance) return;
             Bounds bounds = box.bounds; bounds.Expand(-.04f);
-            if (IsLocalHumanOverlapping(bounds, observers, filter, results, out _)) Death.Kill(Reality.Id, DeathCause.Hazard);
+            if (IsLocalHumanOverlapping(bounds, observers, filter, results, out _)) Death.Kill(Reality.Id, DeathCause.Hazard, this);
         }
         protected override void OnReset() { countdown.Reset(); body.position = start; }
         protected override void OnTimingRearmed() { body.position = start; }

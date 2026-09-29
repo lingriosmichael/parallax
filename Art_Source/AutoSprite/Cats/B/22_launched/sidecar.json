@@ -1,0 +1,52 @@
+{
+  "cat": "B",
+  "clip": "22_launched",
+  "name": "Launched",
+  "kind": "custom",
+  "loop": true,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat is blasted straight upward by a rush from below: body stretched vertical, head up, ears pinned back, legs tucked tight to the body, eyes squeezed shut, fur and tail streaming downward from the speed. Only the cat is shown, no water. It holds this pose with a small tremble. Seamless loop.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_248b58d3-9e1c-466f-bb7c-b7cc704610bb"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun3ct0p0005mnn5zw3emcze",
+        "meta": {
+          "id": "cmun3ct0p0005mnn5zw3emcze",
+          "kind": "custom",
+          "name": "Launched",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun3b2is0004fou6sq9oev14",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T19:50:38.569Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:50:48Z"
+  },
+  "credits": 5,
+  "verdict": "usable: same upright, human-like issue as A's; ears back, eyes shut",
+  "suggest": "frames 8-24 loop",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "ticket": "PAX-A08 extras"
+}

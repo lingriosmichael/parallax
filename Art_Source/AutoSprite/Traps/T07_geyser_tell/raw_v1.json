@@ -1,0 +1,17 @@
+{
+  "asset": "T07",
+  "endpoint": "POST /characters/{id}/spritesheets",
+  "videoTier": "turbo",
+  "kind": "custom",
+  "characterId": "cmumji8r8000ofa4uqpoirqov",
+  "prompt": "The vent starts to stir: water wells up and bubbles in the mouth, small droplets pop, thin wisps of warm steam rise a little and fade. Gentle, building slightly. Static camera: no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The base shape never moves or changes size; only the described motion happens.",
+  "frameCount": 25,
+  "frameSize": 512,
+  "removeBg": "ultra",
+  "spritesheetId": "cmumjk3ip0014fa4uurnq5pad",
+  "jobs": [
+    "wf_89eba201-472b-4a56-bc80-35b6b81f19ea"
+  ],
+  "creditsReserved": 5,
+  "created": "2026-09-29T10:36:38Z"
+}

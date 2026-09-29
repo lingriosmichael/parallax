@@ -1,0 +1,61 @@
+{
+  "cat": "A",
+  "clip": "01_idle",
+  "name": "Idle",
+  "kind": "custom",
+  "loop": true,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat stands still on all four paws, facing right, breathing slowly: the chest and belly rise and fall gently, the tail sways a little, one slow blink. Paws stay planted. Seamless loop: the last frame matches the first.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_34def311-0401-4489-ac10-0798a7e6f403"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumxhow3001410sv6nldfv3j",
+        "meta": {
+          "id": "cmumxhow3001410sv6nldfv3j",
+          "kind": "custom",
+          "name": "Idle",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumxgraj000410sv8djkuk6t",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:06:28.803Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:06:32Z"
+  },
+  "credits": 5,
+  "verdict": "good: steady in-place breathing loop, matches the painting",
+  "suggest": "20 frames (recut f22-41) at 16 fps = 1.25 s, closing IoU 0.96; or raw 25 frames at 12 fps",
+  "recuts": [
+    {
+      "from": "cmumxhow3001410sv6nldfv3j",
+      "frameCount": 64,
+      "frameSize": 256,
+      "sheet": "recut_64f_256.png",
+      "credits": 0,
+      "created": "2026-09-29T17:40:32Z"
+    }
+  ],
+  "chosen": {
+    "sheet": "recut_64f_256.png",
+    "atlas": "recut_64f_256_atlas.json"
+  }
+}

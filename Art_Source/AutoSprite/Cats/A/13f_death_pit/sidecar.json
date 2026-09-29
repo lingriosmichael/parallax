@@ -1,0 +1,51 @@
+{
+  "cat": "A",
+  "clip": "13f_death_pit",
+  "name": "Death pit fall",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "Cartoon comedy: the cat looks down in surprise, legs scramble in the air, then it falls straight down, flailing, with a shocked face, getting slightly smaller as it drops. Keep the cat's size until it drops.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_de823b95-19cb-4da8-b0fc-a4eee9dfe6d8"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumyd7ca0028q62yecvbnbqe",
+        "meta": {
+          "id": "cmumyd7ca0028q62yecvbnbqe",
+          "kind": "custom",
+          "name": "Death pit fall",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumyc8ob000zbakqerwpudga",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:30:59.050Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:31:08Z"
+  },
+  "credits": 5,
+  "verdict": "usable: nose-down plunge with a shocked open mouth; the cat is drawn smaller than other clips from frame 0 (scale to match); reads more as a dive than a scramble",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 2-14 at 16 fps (~0.8 s), scaled up to match"
+}

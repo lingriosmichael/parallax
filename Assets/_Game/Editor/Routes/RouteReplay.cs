@@ -30,6 +30,9 @@ namespace Parallax.Editor.Routes
         // and the room reset), before the cause is resolved. 0 = stop at the kill tick, as before. The cause is
         // still resolved afterwards: RoomDeath reports it at the reset, which these ticks may already have passed.
         public int RecordAfterDeathTicks;
+        // PAX-A13 (§11 R5): called after every tick the harness steps (recorded or not, including the death hold and a
+        // Rewind's hold), with that tick. Observation only: null (the default) and any callback replay identically.
+        public System.Action<int> AfterTick;
     }
 
     // PAX-075 (D-079): replays a route through the real game code, one tick at a time, in the session's
@@ -80,7 +83,7 @@ namespace Parallax.Editor.Routes
             {
                 if (k > maxTicks) { result.Failure = $"tick cap {maxTicks} reached"; result.AliveAtCap = true; break; }
                 if (!runner.Next(view, k, out CatCommand command)) break;
-                if (runner.TakeRewind()) { k = ForceRewind(rig, result, k); continue; }
+                if (runner.TakeRewind()) { k = ForceRewind(rig, result, k, options.AfterTick); continue; }
                 rig.Input.Queue(rig.ToCatFrame(command));
 
                 ObserverSetFixedUpdate.Invoke(rig.Observers, null);
@@ -93,6 +96,7 @@ namespace Parallax.Editor.Routes
                     throw new InvalidOperationException("RouteHarness: Physics2D.Simulate did not run in EditMode with simulationMode = Script (PAX-075 R1 stop).");
                 TickRecord record = rig.Snapshot(k, command);
                 result.Records.Add(record);
+                options.AfterTick?.Invoke(k);
 
                 if (result.Kill != null)
                 {
@@ -102,8 +106,9 @@ namespace Parallax.Editor.Routes
                         ObserverSetFixedUpdate.Invoke(rig.Observers, null);
                         Physics2D.Simulate(Time.fixedDeltaTime);
                         result.Records.Add(rig.Snapshot(k + after, default));
+                        options.AfterTick?.Invoke(k + after);
                     }
-                    if (options.ResolveCause) ResolveCause(rig, result.Kill);
+                    if (options.ResolveCause) ResolveCause(rig, result.Kill, k + options.RecordAfterDeathTicks, options.AfterTick);
                     break;
                 }
                 if (route.Goal.Test(view)) { result.Completed = true; break; }
@@ -115,7 +120,7 @@ namespace Parallax.Editor.Routes
         // step), then the death hold stepped with no input and recorded, until RoomDeath's reset (the rewind) reports it.
         // Returns that tick; the route's next step starts on the one after. CatRespawn's same-frame guard allows one of
         // these per rig (§11 Q4).
-        static int ForceRewind(Rig rig, ReplayResult result, int k)
+        static int ForceRewind(Rig rig, ReplayResult result, int k, System.Action<int> afterTick)
         {
             rig.DeathReported = false;
             rig.Death.Kill(ObserverId.A, DeathCause.Hazard);
@@ -127,6 +132,7 @@ namespace Parallax.Editor.Routes
                 if (rig.Observers.Tick != t) throw new InvalidOperationException($"RouteHarness: ObserverSet.Tick is {rig.Observers.Tick} at harness tick {t}.");
                 Physics2D.Simulate(Time.fixedDeltaTime);
                 result.Records.Add(rig.Snapshot(t, default));
+                afterTick?.Invoke(t);
                 if (!rig.DeathReported) continue;
                 rig.DeathReported = false;
                 return t;
@@ -135,13 +141,14 @@ namespace Parallax.Editor.Routes
         }
 
         // The death hold keeps the room frozen; RoomDeath reports the cause when it resets (D-058).
-        static void ResolveCause(Rig rig, KillInfo kill)
+        static void ResolveCause(Rig rig, KillInfo kill, int lastTick, System.Action<int> afterTick)
         {
             for (int i = 0; i < 120 && !rig.DeathReported; i++)
             {
                 rig.Input.Queue(default);
                 ObserverSetFixedUpdate.Invoke(rig.Observers, null);
                 Physics2D.Simulate(Time.fixedDeltaTime);
+                afterTick?.Invoke(lastTick + 1 + i);
             }
             if (!rig.DeathReported) return;
             kill.CauseKnown = true;

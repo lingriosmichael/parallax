@@ -1,0 +1,61 @@
+{
+  "cat": "A",
+  "clip": "02_run",
+  "name": "Run",
+  "kind": "custom",
+  "loop": true,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat stays centred in the frame, moving in place like on a treadmill; the ground does not move. The cat runs fast to the right in a full feline gallop: back legs push, body stretches long, front legs reach far forward, then the body gathers with all paws under it. Ears forward, tail streams back level. Repeating even stride, seamless loop.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_5a2c17d8-dcb0-4b69-89aa-8f80fb106c08"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumxj5nz000r7i2x6w3ohyss",
+        "meta": {
+          "id": "cmumxj5nz000r7i2x6w3ohyss",
+          "kind": "custom",
+          "name": "Run",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumxhsw40006auuuz2ek6r7k",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:07:37.200Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:07:47Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmumxj5nz000r7i2x6w3ohyss",
+      "frameCount": 64,
+      "frameSize": 256,
+      "sheet": "recut_64f_256.png",
+      "credits": 0,
+      "created": "2026-09-29T17:08:56Z"
+    }
+  ],
+  "verdict": "good: in-place gallop, no clipping",
+  "suggest": "10 frames (recut f45-54) at ~32 fps = 0.31 s (~16 ticks) at 6 u/s; paw slide ~24 px/frame -> stride ~1.9 u at 128 PPU (rough, +-25%); scale playback by |vx|/6",
+  "chosen": {
+    "sheet": "recut_64f_256.png",
+    "atlas": "recut_64f_256_atlas.json"
+  }
+}

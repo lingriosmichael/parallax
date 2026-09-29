@@ -1,0 +1,52 @@
+{
+  "cat": "B",
+  "clip": "18_turn",
+  "name": "Turn",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat, standing facing right, quickly turns around on the spot to face left: a fast pivot on its paws, the body swings round, the tail sweeps over. Ends standing in strict side view facing left. Quick and snappy. The cat stays centred.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_0608a7a9-3f0d-404a-9634-abaebd8e3fd2"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun37hdo002f6tcs11h4jv42",
+        "meta": {
+          "id": "cmun37hdo002f6tcs11h4jv42",
+          "kind": "custom",
+          "name": "Turn",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun36dc3001813yx7jcb4pw7",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T19:46:30.204Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:46:34Z"
+  },
+  "credits": 5,
+  "verdict": "good: same pivot through a back view to face left",
+  "suggest": "A08 wants 3: frames ~12, 14, 16",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "ticket": "PAX-A08 extras"
+}

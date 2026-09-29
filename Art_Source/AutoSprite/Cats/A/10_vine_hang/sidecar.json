@@ -1,0 +1,61 @@
+{
+  "cat": "A",
+  "clip": "10_vine_hang",
+  "name": "Vine hang",
+  "kind": "custom",
+  "loop": true,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat clings to a thick vertical vine, seen from the side: body vertical, head up, all four paws gripping, holding still; only small breathing, an ear twitch and a slow tail sway. The cat stays centred. Seamless loop.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_7389205d-6902-4228-8df5-bb2230e9ba1b"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumxznhd000fscsm0z1ykz75",
+        "meta": {
+          "id": "cmumxznhd000fscsm0z1ykz75",
+          "kind": "custom",
+          "name": "Vine hang",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumxy4hf002hw3qscn7hidll",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:20:26.785Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:20:35Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmumxznhd000fscsm0z1ykz75",
+      "frameCount": 64,
+      "frameSize": 256,
+      "sheet": "recut_64f_256.png",
+      "credits": 0,
+      "created": "2026-09-29T17:42:11Z"
+    }
+  ],
+  "verdict": "good: still cling with tail sway; same vine as 08 (baked in)",
+  "chosen": {
+    "sheet": "recut_64f_256.png",
+    "atlas": "recut_64f_256_atlas.json"
+  },
+  "suggest": "41 frames (recut f14-54, closing IoU 0.99) at 12 fps = 3.4 s; key out the vine"
+}

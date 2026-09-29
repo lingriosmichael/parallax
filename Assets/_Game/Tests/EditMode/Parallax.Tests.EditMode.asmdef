@@ -6,6 +6,7 @@
     "UnityEditor.TestRunner",
     "Parallax.Core",
     "Parallax.Gameplay",
+        "Parallax.Presentation",
     "Parallax.DebugTools"
   ],
   "includePlatforms": [

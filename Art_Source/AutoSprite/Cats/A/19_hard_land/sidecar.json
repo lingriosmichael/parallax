@@ -1,0 +1,52 @@
+{
+  "cat": "A",
+  "clip": "19_hard_land",
+  "name": "Hard land",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat drops from high above and lands hard: the front paws hit, the legs buckle and the body squashes low almost to its belly, ears flatten, tail slaps down; then it pushes back up to standing facing right and gives a small shake. The cat stays centred.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_505234a9-ca11-4f85-a895-730c8a05152d"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun2z6d900063xlng6bqf0xh",
+        "meta": {
+          "id": "cmun2z6d900063xlng6bqf0xh",
+          "kind": "custom",
+          "name": "Hard land",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmun2wwsh000mbp0tdvhz9g9x",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T19:40:02.685Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:40:12Z"
+  },
+  "credits": 5,
+  "verdict": "good: drops in (5-6), touchdown (7), deep squash (8-14), stands; gives A the in-air touchdown its 07 lacked",
+  "suggest": "frames 6-14 (squash) at 20 fps; A08 hard land = 4, e.g. 7, 9, 11, 13",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "ticket": "PAX-A08 extras"
+}

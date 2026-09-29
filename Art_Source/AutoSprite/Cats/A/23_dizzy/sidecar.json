@@ -1,0 +1,52 @@
+{
+  "cat": "A",
+  "clip": "23_dizzy",
+  "name": "Dizzy",
+  "kind": "custom",
+  "loop": true,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat stands facing right, dizzy and wobbly: the head sways in slow small circles, eyes are spirals, legs a little unsteady, tail droops; three small stars circle above its head. Paws stay in place. Seamless loop: the last frame matches the first.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_0cbe3820-090f-4d91-b27a-6b6fa12aa6a7"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun352a3001qhumz2jn8i5wg",
+        "meta": {
+          "id": "cmun352a3001qhumz2jn8i5wg",
+          "kind": "custom",
+          "name": "Dizzy",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmun33t5500061fi6abuf541o",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T19:44:37.323Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:44:41Z"
+  },
+  "credits": 5,
+  "verdict": "weak: spiral eyes and circling stars read, but the style went flat and cartoony (no rim light), grey smear under the stars, tail clips left. A08 marks dizzy optional; the ring cue may be enough",
+  "suggest": "frames 5-24 loop if used",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "ticket": "PAX-A08 extras"
+}

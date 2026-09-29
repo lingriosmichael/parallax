@@ -1,0 +1,13 @@
+{
+  "asset": "T04",
+  "name": "PAX-A13 T04 geyser_column",
+  "endpoint": "POST /assets",
+  "quality": "ultra",
+  "usePromptTemplate": false,
+  "background": "B",
+  "prompt": "Vertical jet of rushing water, straight, centred, fills the full height, seamless top to bottom: white-gold foam streaks, backlit spray, soft sides. Hand-painted 2D game effect, strict side view. Warm gold and cream, soft edges. No cyan, no text. On pure black #000000.",
+  "assetId": "cmumi0ie4000214bydn7wu81o",
+  "creditsReserved": 1,
+  "creditsUsed": null,
+  "created": "2026-09-29T09:53:13Z"
+}

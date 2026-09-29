@@ -1,0 +1,71 @@
+{
+  "cat": "B",
+  "clip": "03_walk",
+  "name": "Walk",
+  "kind": "custom",
+  "loop": true,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat stays centred in the frame, moving in place like on a treadmill; the ground does not move. The cat walks calmly to the right with a relaxed four-beat cat walk, head level, tail raised in a soft curve. Repeating even stride, seamless loop.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_690ea7ce-7d4e-473b-b3df-e8222dd43798"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun0w9iq000ci1p3ps46u9em",
+        "meta": {
+          "id": "cmun0w9iq000ci1p3ps46u9em",
+          "kind": "custom",
+          "name": "Walk",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun0v1sr000v1l6ahiivu15x",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:41:47.570Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:41:53Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun0w9iq000ci1p3ps46u9em",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:06:29Z"
+    },
+    {
+      "from": "cmun0w9iq000ci1p3ps46u9em",
+      "frameCount": 64,
+      "frameSize": 256,
+      "removeBg": "ultra",
+      "sheet": "recut_64f_256.png",
+      "credits": 0,
+      "created": "2026-09-29T19:16:46Z"
+    }
+  ],
+  "verdict": "good: in-place walk; cat drawn a little smaller than in idle (scale to match)",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "26 frames (recut_64f_256 f5-30, full stride) at 16 fps = 1.6 s"
+}

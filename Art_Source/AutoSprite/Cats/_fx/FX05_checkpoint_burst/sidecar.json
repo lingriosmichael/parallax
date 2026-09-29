@@ -1,0 +1,17 @@
+{
+  "id": "FX05_checkpoint_burst",
+  "kind": "static",
+  "ticket": "PAX-V06",
+  "v1": {
+    "prompt": "Sheet of 4 separate bursts of warm golden light, spaced apart: a small bright spark, a round flare with soft rays, a ring of sparks and tiny leaves flying out, fading sparkles. Hand-painted 2D game effect, strict side view. Warm gold and cream, soft edges. No cyan, no text. On pure black #000000.",
+    "endpoint": "POST /assets",
+    "quality": "ultra",
+    "usePromptTemplate": false,
+    "assetId": "cmun3h3q60018sx1pjab6yclg",
+    "credits": 1,
+    "created": "2026-09-29T19:53:59Z"
+  },
+  "verdict": "good: spark, flare, leaf ring, fading sparkles, exactly the brief; the leaves suit Reality A",
+  "suggest": "4 frames, ~12 fps one-shot",
+  "note": "on pure black: use additive blending or luminance-to-alpha when importing"
+}

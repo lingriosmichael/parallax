@@ -1,0 +1,52 @@
+{
+  "cat": "A",
+  "clip": "20_death_generic",
+  "name": "Death frightened",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "Cartoon comedy, no blood: the cat gets a huge fright. Its fur puffs out all over, the back arches high, the tail bristles straight up, ears flat, eyes wide, legs stiff and splayed. It jumps a little, lands in that frightened arched pose and holds it, trembling. The cat stays centred.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_e2b0f249-6523-4b27-aa40-05f8dd2c35f8"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun312zv000i119tihscva9w",
+        "meta": {
+          "id": "cmun312zv000i119tihscva9w",
+          "kind": "custom",
+          "name": "Death frightened",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmun2zeig00083bprs12l5rxc",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T19:41:31.627Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:41:34Z"
+  },
+  "credits": 5,
+  "verdict": "good: lands on the sheet's FRIGHTENED pose (arched, bristled, wide eyes) and holds it",
+  "suggest": "frames 9-24; A08 death = 6 ending held: 9,10,11,12,14 then hold 16",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "ticket": "PAX-A08 extras"
+}

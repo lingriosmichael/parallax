@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "13f_death_pit",
+  "name": "Death pit fall",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "Cartoon comedy: the cat looks down in surprise, legs scramble in the air, then it falls straight down, flailing, with a shocked face, getting slightly smaller as it drops. Keep the cat's size until it drops.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_887500dd-d7ae-48b7-ac24-ccf3f706d368"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun1jkqd000upgz7fivqiv0p",
+        "meta": {
+          "id": "cmun1jkqd000upgz7fivqiv0p",
+          "kind": "custom",
+          "name": "Death pit fall",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun1i701000437zmjkkx9rh3",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:59:55.190Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:00:03Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun1jkqd000upgz7fivqiv0p",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:10:28Z"
+    }
+  ],
+  "verdict": "usable: looking-down scramble while dropping, keeps its size; reads more as a crouched drop than a fall",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 3-14 at 16 fps"
+}

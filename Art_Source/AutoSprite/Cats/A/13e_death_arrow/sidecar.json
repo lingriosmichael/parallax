@@ -1,0 +1,87 @@
+{
+  "cat": "A",
+  "clip": "13e_death_arrow",
+  "name": "Death arrow",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "Cartoon comedy, no blood, no wound: a thin arrow flies in from the right and knocks the cat over backwards; the cat topples onto its back with legs in the air, stiff, eyes as dizzy swirls. The arrow is not stuck in the cat. The cat stays near the centre.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_5a683388-4119-4443-af68-9ee14ec5afb0"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumyc24x000j94bn4frohpta",
+        "meta": {
+          "id": "cmumyc24x000j94bn4frohpta",
+          "kind": "custom",
+          "name": "Death arrow",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumyav2b000cgvzo3dbgdso8",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:30:05.649Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:30:12Z"
+  },
+  "credits": 10,
+  "v2": {
+    "prompt": "Cartoon comedy, no blood, no red, no arrow or weapon in the picture: the cat jumps in fright as if something whizzed past its nose, then topples over backwards stiff as a board and lands on its back with all four legs straight up in the air, eyes as dizzy swirls, tongue out a little. The cat stays near the centre. Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_59a8d505-9e8e-4e91-b9e0-36f1129ac5ec"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v2.png",
+        "atlas": "raw_v2_atlas.json",
+        "gif": "preview_v2.gif",
+        "spritesheetId": "cmumyren400018oezp5dt8scp",
+        "meta": {
+          "id": "cmumyren400018oezp5dt8scp",
+          "kind": "custom",
+          "name": "Death arrow",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumyqbvr0002o59pr6k6mju5",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:42:01.696Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:42:06Z"
+  },
+  "verdict": "good (v2): fright jump with tongue out, topples onto its back, legs up, dizzy; small grey streak in frames 10-11. v1 failed: red blood at the shoulder and the arrow stuck in the cat",
+  "chosen": {
+    "sheet": "raw_v2.png",
+    "atlas": "raw_v2_atlas.json"
+  },
+  "suggest": "frames 9-17 at 16 fps (~0.56 s)"
+}

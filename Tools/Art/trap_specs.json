@@ -1,0 +1,182 @@
+{
+  "_doc": "PAX-A13 trap kit AutoSprite specs (rulings §11 R3). The prompt sent is object + the style block for its background (static) or motion + the animation block. Ceilings are per-line credits including one retry; the tool refuses past a line's ceiling or 20 per asset. 2026-09-29: T07's first result added a human figure and blue water (AutoSprite's side-scroller pipeline assumes a character), so every animation prompt now ends with animation_negative and bases are uploaded with base_description.",
+  "style": {
+    "M": "Hand-painted 2D game sprite, strict side view. Golden backlight, gold rim light, warm brown shade, no black. No cyan, no text. On flat magenta #FF00FF.",
+    "B": "Hand-painted 2D game effect, strict side view. Warm gold and cream, soft edges. No cyan, no text. On pure black #000000.",
+    "animation": "Static camera: no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The base shape never moves or changes size; only the described motion happens.",
+    "animation_negative": "Only the object in the image and this effect: no person, character, creature or figure. Water and light are warm gold and cream, never blue."
+  },
+  "assets": {
+    "T01": {
+      "name": "arrow_launcher",
+      "kind": "static",
+      "background": "M",
+      "object": "Carved sandstone arrow slot: square block face, dark mouth, bronze rim, bronze arrowhead just inside. Ancient temple trap, weathered.",
+      "ceiling": 2,
+      "gate": true
+    },
+    "T02": {
+      "name": "arrow",
+      "kind": "static",
+      "background": "M",
+      "object": "One thin arrow pointing right: bronze leaf-shaped head, dark wood shaft, rust-red fletching. Very long and thin, 12x longer than tall.",
+      "ceiling": 2,
+      "gate": true
+    },
+    "T03": {
+      "name": "geyser_vent",
+      "kind": "static",
+      "background": "M",
+      "object": "Stone floor vent: low carved sandstone ring, flat top, dark round mouth with faint warm glow, wet moss at the lip. 4x wider than tall.",
+      "ceiling": 2,
+      "gate": true
+    },
+    "T04": {
+      "name": "geyser_column",
+      "kind": "static",
+      "background": "B",
+      "object": "Vertical jet of rushing water, straight, centred, fills the full height, seamless top to bottom: white-gold foam streaks, backlit spray, soft sides.",
+      "ceiling": 2,
+      "gate": true
+    },
+    "T05": {
+      "name": "debris_sheet",
+      "kind": "static",
+      "background": "M",
+      "object": "Sheet of 8 separate small pieces, spaced apart: 4 broken sandstone chunks, 2 grit clusters, 2 wood splinters. Weathered, sunlit edges.",
+      "ceiling": 2,
+      "gate": true
+    },
+    "T06": {
+      "name": "softfx_sheet",
+      "kind": "static",
+      "background": "B",
+      "object": "Sheet of 6 separate pieces, spaced apart: 3 soft round puffs of warm sandy dust, 3 small splashes of water droplets. Soft, no hard edges.",
+      "ceiling": 2,
+      "gate": true
+    },
+    "T07": {
+      "name": "geyser_tell",
+      "kind": "animation",
+      "base": "T03",
+      "motion": "The vent starts to stir: water wells up and bubbles in the mouth, small droplets pop, thin wisps of warm steam rise a little and fade. Gentle, building slightly.",
+      "ceiling": 10,
+      "frame_count": 25,
+      "frame_size": 512,
+      "gate": true
+    },
+    "T08": {
+      "name": "geyser_burst",
+      "kind": "animation",
+      "base": "T03",
+      "motion": "A powerful jet of water bursts straight up out of the vent's mouth and keeps gushing: foam and spray fly outward at the base and fall back. The jet leaves the top of the frame.",
+      "ceiling": 10,
+      "frame_count": 25,
+      "frame_size": 512,
+      "gate": true
+    },
+    "T09": {
+      "name": "spike_strip",
+      "kind": "static",
+      "background": "M",
+      "object": "Row of sharp bronze spikes, worn and rust-stained, on a dark stone socket strip, seamless left to right. Clearly dangerous. 6x wider than tall.",
+      "ceiling": 2,
+      "gate": false
+    },
+    "T12": {
+      "name": "block_crack",
+      "kind": "static",
+      "background": "M",
+      "object": "Overlay of thin jagged dark-brown hairline cracks spreading from the centre, nothing else, crisp. Square.",
+      "ceiling": 2,
+      "gate": false
+    },
+    "T13": {
+      "name": "spear",
+      "kind": "static",
+      "background": "M",
+      "object": "One heavy spear pointing right: broad bronze head, thick dark wooden shaft, leather wrap near the head. Long and thin, 10x longer than tall.",
+      "ceiling": 2,
+      "gate": false
+    },
+    "T14": {
+      "name": "glyph_ring",
+      "kind": "static",
+      "background": "B",
+      "object": "Ancient circular glyph ring of warm gold light: thin carved runic arc segments, soft glow, hollow centre. Square, centred.",
+      "ceiling": 2,
+      "gate": false
+    },
+    "T15": {
+      "name": "inverter_orb",
+      "kind": "static",
+      "background": "B",
+      "object": "Glowing orb of warm gold light with a slow swirl inside and a soft halo, floating. Square, centred.",
+      "ceiling": 2,
+      "gate": false
+    },
+    "T16": {
+      "name": "cue_icon",
+      "kind": "static",
+      "background": "B",
+      "object": "Simple glyph of two curved arrows chasing each other in a circle, warm gold light, bold readable shape. Square, centred.",
+      "ceiling": 2,
+      "gate": false
+    },
+    "T17": {
+      "name": "storm_cloud",
+      "kind": "static",
+      "background": "M",
+      "object": "One heavy storm cloud, puffy golden-lit top, dark warm-grey belly, flat-ish bottom, soft edges. 2.5x wider than tall.",
+      "ceiling": 2,
+      "gate": false
+    },
+    "T18": {
+      "name": "scorch",
+      "kind": "static",
+      "background": "M",
+      "object": "Flat scorch mark decal: dark warm-brown burnt streaks radiating from a centre, a few embers. Wide and low, 3x wider than tall.",
+      "ceiling": 2,
+      "gate": false
+    },
+    "T19": {
+      "name": "leaves_sparks",
+      "kind": "static",
+      "background": "M",
+      "object": "Sheet of 8 separate small pieces, spaced apart: 4 green-gold leaves, 4 small bright gold sparks. Crisp.",
+      "ceiling": 2,
+      "gate": false
+    },
+    "T20": {
+      "name": "orb_flare",
+      "kind": "animation",
+      "base": "T15",
+      "motion": "The orb flares: its glow swells brightly with a quick pulse of light rings expanding outward, then settles back to its calm glow.",
+      "ceiling": 10,
+      "frame_count": 25,
+      "frame_size": 512,
+      "gate": false
+    },
+    "T21": {
+      "name": "cloud_charge",
+      "kind": "animation",
+      "base": "T17",
+      "motion": "The cloud darkens and churns: its belly roils, flickers of warm white light pulse inside it, and a gathering glow builds under it.",
+      "ceiling": 10,
+      "frame_count": 25,
+      "frame_size": 512,
+      "gate": false
+    },
+    "T22": {
+      "name": "vine_snap",
+      "kind": "animation",
+      "base": "ENV-18 segment",
+      "motion": "The vine frays in the middle: fibres split and unravel, then it snaps in two; both ends whip apart and a few leaves fall away.",
+      "ceiling": 10,
+      "frame_count": 25,
+      "frame_size": 512,
+      "gate": false
+    }
+  },
+  "base_description": "An inanimate carved sandstone floor vent set into the ground. It is an object, not a character: no person or creature."
+}

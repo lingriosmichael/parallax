@@ -1,0 +1,107 @@
+{
+  "cat": "B",
+  "clip": "08_vine_climb_up",
+  "name": "Vine climb up",
+  "kind": "custom",
+  "loop": true,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat climbs straight up a thick vertical vine, seen from the side: body vertical, head up, front paws reach up and grip in turn, back legs push. The cat stays centred in the frame while climbing in place; the vine is a green vertical rope right in front of the cat's belly. Seamless loop.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_edf9b468-7834-453b-bd47-884f5fde6150"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun13q1j00056m4xa1j509tl",
+        "meta": {
+          "id": "cmun13q1j00056m4xa1j509tl",
+          "kind": "custom",
+          "name": "Vine climb up",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun12lg70008v1ay5wfy6gsn",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:47:35.575Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:47:45Z"
+  },
+  "credits": 10,
+  "v2": {
+    "prompt": "The cat climbs up a thick vertical vine in strict side profile, facing right, left side to the viewer, as in the image; the thin dark collar marking keeps its small shape. Body vertical, head up, front paws reach up and grip in turn, back legs push. It climbs in place, centred; the vine is a green rope in front of its belly. Seamless loop. Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_32daed3e-8475-4931-a114-cd41377e2061"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v2.png",
+        "atlas": "raw_v2_atlas.json",
+        "gif": "preview_v2.gif",
+        "spritesheetId": "cmun208qr0005zrre5vq0vwbe",
+        "meta": {
+          "id": "cmun208qr0005zrre5vq0vwbe",
+          "kind": "custom",
+          "name": "Vine climb up",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun1zaxc0002rlss1ii3mo8i",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T19:12:52.803Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:13:04Z"
+  },
+  "recuts": [
+    {
+      "from": "cmun208qr0005zrre5vq0vwbe",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:13:43Z"
+    },
+    {
+      "from": "cmun208qr0005zrre5vq0vwbe",
+      "frameCount": 64,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_64f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:15:07Z"
+    }
+  ],
+  "verdict": "usable (v2, default re-cut): climbs in place, marking reads as a back stripe; v1 failed: seen from the back, marking grew into a big diamond pattern, grey shadow patch",
+  "chosen": {
+    "sheet": "recut_25f_256_bgdefault.png",
+    "atlas": "recut_25f_256_bgdefault_atlas.json"
+  },
+  "suggest": "19 frames (v2 recut_64f_256_bgdefault f14-32, IoU 0.90) at 14 fps; vine baked in"
+}

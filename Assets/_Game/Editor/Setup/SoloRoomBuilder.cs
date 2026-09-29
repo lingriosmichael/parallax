@@ -165,7 +165,15 @@ namespace Parallax.Editor.Setup
             changes.Add("wired " + target.name + "." + field);
         }
 
-        public static void BuildRoom(Transform parent, RealityRoot root, SoloRoomDefinition room, CheckpointManager checkpoints, RoomManager rooms, RoomDeath death, ObserverSet observers, CatMotorConfig config, List<string> changes)
+        public static void BuildRoom(Transform parent, RealityRoot root, SoloRoomDefinition room, CheckpointManager checkpoints, RoomManager rooms, RoomDeath death, ObserverSet observers, CatMotorConfig config, List<string> changes) =>
+            BuildRoomCore(parent, root, room, checkpoints, rooms, death, observers, config, changes, buildArt: true);
+
+        // PAX-A13 (§11 R5): the grey-box only, no trap art (the invariance tests compare both builds). A separate name, not an
+        // overload: tests find BuildRoom by name.
+        public static void BuildRoomWithoutArt(Transform parent, RealityRoot root, SoloRoomDefinition room, CheckpointManager checkpoints, RoomManager rooms, RoomDeath death, ObserverSet observers, CatMotorConfig config, List<string> changes) =>
+            BuildRoomCore(parent, root, room, checkpoints, rooms, death, observers, config, changes, buildArt: false);
+
+        static void BuildRoomCore(Transform parent, RealityRoot root, SoloRoomDefinition room, CheckpointManager checkpoints, RoomManager rooms, RoomDeath death, ObserverSet observers, CatMotorConfig config, List<string> changes, bool buildArt)
         {
             if (!TrapLayoutValidator.TryValidate(room, out string error)) { Debug.LogError("SoloRoomBuilder: " + error); return; }
             Transform roomRoot = SetupUtility.EnsureChild(parent, $"Room_{room.Id + 1}", root.gameObject.layer, changes);
@@ -174,6 +182,7 @@ namespace Parallax.Editor.Setup
             BuildGeometry(roomRoot, root, "Wall_Left", room.Origin + new Vector2(-.5f, 2f), new Vector2(1f, 12f), changes);
             BuildGeometry(roomRoot, root, "Wall_Right", room.Origin + new Vector2(room.Width + .5f, 2f), new Vector2(1f, 12f), changes);
             BuildCheckpointSections(roomRoot, root, room, rooms, config, changes);
+            if (buildArt) Parallax.Editor.Art.TrapArtSetup.BuildArt(roomRoot, root, room, rooms, changes);
         }
 
         // PAX-090 (D-091): each section's marker (not for section 0), and the room's RoomSectionEntry list on the RoomManager,

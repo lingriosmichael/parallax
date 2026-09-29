@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "13a_death_spiked",
+  "name": "Death spiked",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "Cartoon comedy, no blood, no wounds: the cat jumps straight up in shock as if it sat on a pin, fur puffed out, legs stiff and spread, eyes wide, then drops and flops over sideways, dazed, with its tongue out. The cat stays near the centre.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_6b1d1625-150d-4dba-a735-6eccb1af1618"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun1cwwf00011zz67uv9ygtb",
+        "meta": {
+          "id": "cmun1cwwf00011zz67uv9ygtb",
+          "kind": "custom",
+          "name": "Death spiked",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun1bbuv0004yj5noy22lg1y",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:54:44.367Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:54:53Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun1cwwf00011zz67uv9ygtb",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:09:08Z"
+    }
+  ],
+  "verdict": "good: crouch, shocked jump with wide eyes, flop with tongue out, no empty frames; style turns a bit cartoony",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 12-22 at 16 fps (~0.7 s)"
+}

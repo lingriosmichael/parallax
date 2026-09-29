@@ -1,0 +1,1149 @@
+{
+  "entries": [
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-03_geyser_vent_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-03_geyser_vent.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-04_spike_strip_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-04_spike_strip.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-04_spike_strip",
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_head_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_head.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-05_spear",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_shaft_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_shaft.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-05_spear",
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-06_inverter_orb_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-06_inverter_orb.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-06_inverter_orb",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-07_cue_mark_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-07_cue_mark.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-07_inverter_cue",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-07_cue_ring_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-07_cue_ring.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-07_inverter_cue",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-08_glyph_ring_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-08_glyph_ring.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-08_glyph_ring",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-09_storm_cloud_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-09_storm_cloud.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-09_storm_cloud",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-10_scorch_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-10_scorch.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-10_scorch",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-11_block_crack_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-11_block_crack.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-11_block_crack",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-12_geyser_steam",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-12_geyser_steam",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-12_geyser_steam",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-13_leaves",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-13_leaves",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-13_leaves",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-13_leaves",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_4_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_4.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-13_leaves",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_5_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_5.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "TRAP-13_leaves",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/bolt_segment_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/bolt_segment.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/dust_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/dust_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/dust_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/dust_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/dust_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/dust_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/flash_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/flash.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_00_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_00.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_01_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_01.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_02_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_02.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_03_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_03.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_04_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_04.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_05_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_05.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_06_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_06.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_07_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_07.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/glint_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/glint.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/mote_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/mote.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/ring_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/ring.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/spray_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/spray_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/spray_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/spray_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/spray_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/spray_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "tiled": false
+    }
+  ],
+  "flags": [],
+  "ppu": 128,
+  "sprites": {
+    "Bodies/TRAP-01_arrow_launcher": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher_n.png",
+      "palette": {
+        "black": 0.0077,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        64,
+        64
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/TRAP-01_arrow_launcher_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/TRAP-02_arrow": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        102,
+        17
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/TRAP-02_arrow_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/TRAP-03_geyser_vent": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-03_geyser_vent_n.png",
+      "palette": {
+        "black": 0.0028,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-03_geyser_vent.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        128,
+        38
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/TRAP-03_geyser_vent_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/TRAP-04_spike_strip": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-04_spike_strip_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-04_spike_strip.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-04_spike_strip",
+      "size_px": [
+        128,
+        45
+      ],
+      "sources": [],
+      "tiled": true
+    },
+    "Bodies/TRAP-05_spear_head": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_head_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_head.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-05_spear",
+      "size_px": [
+        96,
+        44
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Bodies/TRAP-05_spear_shaft": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_shaft_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_shaft.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-05_spear",
+      "size_px": [
+        128,
+        44
+      ],
+      "sources": [],
+      "tiled": true
+    },
+    "Bodies/TRAP-06_inverter_orb": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-06_inverter_orb_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-06_inverter_orb.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-06_inverter_orb",
+      "size_px": [
+        77,
+        77
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Bodies/TRAP-07_cue_mark": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-07_cue_mark_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-07_cue_mark.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-07_inverter_cue",
+      "size_px": [
+        90,
+        26
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Bodies/TRAP-07_cue_ring": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-07_cue_ring_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-07_cue_ring.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-07_inverter_cue",
+      "size_px": [
+        192,
+        141
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Bodies/TRAP-08_glyph_ring": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-08_glyph_ring_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-08_glyph_ring.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-08_glyph_ring",
+      "size_px": [
+        128,
+        128
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Bodies/TRAP-09_storm_cloud": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-09_storm_cloud_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-09_storm_cloud.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-09_storm_cloud",
+      "size_px": [
+        256,
+        102
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/TRAP-10_scorch": {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-10_scorch_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-10_scorch.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-10_scorch",
+      "size_px": [
+        154,
+        45
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/TRAP-11_block_crack": {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-11_block_crack_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-11_block_crack.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-11_block_crack",
+      "size_px": [
+        128,
+        128
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/TRAP-12_steam_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-12_geyser_steam",
+      "size_px": [
+        64,
+        128
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/TRAP-12_steam_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-12_geyser_steam",
+      "size_px": [
+        64,
+        128
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/TRAP-12_steam_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-12_steam_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-12_geyser_steam",
+      "size_px": [
+        64,
+        128
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/TRAP-13_leaf_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-13_leaves",
+      "size_px": [
+        24,
+        24
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/TRAP-13_leaf_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-13_leaves",
+      "size_px": [
+        24,
+        24
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/TRAP-13_leaf_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-13_leaves",
+      "size_px": [
+        24,
+        24
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/TRAP-13_leaf_3": {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_3_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_3.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-13_leaves",
+      "size_px": [
+        24,
+        24
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/TRAP-13_leaf_4": {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_4_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_4.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-13_leaves",
+      "size_px": [
+        24,
+        24
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/TRAP-13_leaf_5": {
+      "normal": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_5_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/TRAP-13_leaf_5.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "TRAP-13_leaves",
+      "size_px": [
+        24,
+        24
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/bolt_segment": {
+      "normal": "Assets/_Game/Art/Traps/Effects/bolt_segment_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/bolt_segment.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        16,
+        64
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/dust_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/dust_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/dust_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        64,
+        33
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T06_softfx_sheet/raw_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/dust_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/dust_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/dust_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        64,
+        30
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T06_softfx_sheet/raw_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/dust_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/dust_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/dust_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        64,
+        35
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T06_softfx_sheet/raw_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/flash": {
+      "normal": "Assets/_Game/Art/Traps/Effects/flash_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/flash.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        128,
+        128
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/geyser_column_00": {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_00_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_00.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        128,
+        214
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T04_geyser_column/raw_v1.png"
+      ],
+      "tiled": true
+    },
+    "Effects/geyser_column_01": {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_01_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_01.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        128,
+        214
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T04_geyser_column/raw_v1.png"
+      ],
+      "tiled": true
+    },
+    "Effects/geyser_column_02": {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_02_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_02.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        128,
+        214
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T04_geyser_column/raw_v1.png"
+      ],
+      "tiled": true
+    },
+    "Effects/geyser_column_03": {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_03_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_03.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        128,
+        214
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T04_geyser_column/raw_v1.png"
+      ],
+      "tiled": true
+    },
+    "Effects/geyser_column_04": {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_04_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_04.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        128,
+        214
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T04_geyser_column/raw_v1.png"
+      ],
+      "tiled": true
+    },
+    "Effects/geyser_column_05": {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_05_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_05.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        128,
+        214
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T04_geyser_column/raw_v1.png"
+      ],
+      "tiled": true
+    },
+    "Effects/geyser_column_06": {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_06_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_06.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        128,
+        214
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T04_geyser_column/raw_v1.png"
+      ],
+      "tiled": true
+    },
+    "Effects/geyser_column_07": {
+      "normal": "Assets/_Game/Art/Traps/Effects/geyser_column_07_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/geyser_column_07.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        128,
+        214
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T04_geyser_column/raw_v1.png"
+      ],
+      "tiled": true
+    },
+    "Effects/glint": {
+      "normal": "Assets/_Game/Art/Traps/Effects/glint_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/glint.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        32,
+        32
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/mote": {
+      "normal": "Assets/_Game/Art/Traps/Effects/mote_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/mote.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        16,
+        16
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/ring": {
+      "normal": "Assets/_Game/Art/Traps/Effects/ring_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/ring.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        128,
+        128
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/spray_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/spray_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/spray_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        51,
+        28
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T06_softfx_sheet/raw_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/spray_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/spray_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/spray_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        51,
+        26
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T06_softfx_sheet/raw_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/spray_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/spray_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/spray_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "size_px": [
+        51,
+        22
+      ],
+      "sources": [
+        "Art_Source/AutoSprite/Traps/T06_softfx_sheet/raw_v1.png"
+      ],
+      "tiled": false
+    }
+  }
+}

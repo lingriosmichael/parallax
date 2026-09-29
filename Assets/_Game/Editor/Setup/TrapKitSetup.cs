@@ -134,6 +134,7 @@ namespace Parallax.Editor.Setup
                     case float number when !Mathf.Approximately(property.floatValue, number): property.floatValue = number; changed = true; break;
                     case bool boolean when property.boolValue != boolean: property.boolValue = boolean; changed = true; break;
                     case Vector2 vector when property.vector2Value != vector: property.vector2Value = vector; changed = true; break;
+                    case string text when property.propertyType == SerializedPropertyType.String && property.stringValue != text: property.stringValue = text; changed = true; break;   // PAX-A13
                 }
             }
             if (!changed) return;

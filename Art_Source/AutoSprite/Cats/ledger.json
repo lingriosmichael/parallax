@@ -1,0 +1,1284 @@
+{
+  "budget": 400,
+  "spent": 350,
+  "balanceBefore": 1498,
+  "balanceBeforeAt": "2026-09-29",
+  "clips": {
+    "A/01_idle": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:05:44Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_34def311-0401-4489-ac10-0798a7e6f403"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_34def311-0401-4489-ac10-0798a7e6f403"
+      ]
+    },
+    "A/02_run": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:06:32Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_5a2c17d8-dcb0-4b69-89aa-8f80fb106c08"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_5a2c17d8-dcb0-4b69-89aa-8f80fb106c08"
+      ]
+    },
+    "A/03_walk": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:12:20Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_083e914b-98e8-4b2d-9301-56798f7d5102"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_083e914b-98e8-4b2d-9301-56798f7d5102"
+      ]
+    },
+    "A/04_jump_rise": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:13:29Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_6fb4160f-d144-4d86-b864-7dc574e4d2b1"
+          ],
+          "creditsUsed": 5
+        },
+        {
+          "at": "2026-09-29T17:37:50Z",
+          "note": "generate v2 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_e14ad996-9cab-4d51-a916-7fb8ce17722b"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 10,
+      "jobs": [
+        "wf_6fb4160f-d144-4d86-b864-7dc574e4d2b1",
+        "wf_e14ad996-9cab-4d51-a916-7fb8ce17722b"
+      ]
+    },
+    "A/05_jump_apex": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:14:25Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_c5003e15-6f33-4adf-883c-bb8f3c07e363"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_c5003e15-6f33-4adf-883c-bb8f3c07e363"
+      ]
+    },
+    "A/06_jump_fall": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:15:38Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_98a1efa5-99c9-4253-b033-b4d7f729fa14"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_98a1efa5-99c9-4253-b033-b4d7f729fa14"
+      ]
+    },
+    "A/07_land": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:16:26Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_2e04f562-9e89-461f-926f-255f94732326"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_2e04f562-9e89-461f-926f-255f94732326"
+      ]
+    },
+    "A/08_vine_climb_up": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:17:22Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_dd7ff392-884d-4894-9b9f-93a2ae58742b"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_dd7ff392-884d-4894-9b9f-93a2ae58742b"
+      ]
+    },
+    "A/09_vine_climb_down": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:18:19Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_d71cc2dc-caef-44fb-a737-43ec0be15e3d"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_d71cc2dc-caef-44fb-a737-43ec0be15e3d"
+      ]
+    },
+    "A/10_vine_hang": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:19:14Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_7389205d-6902-4228-8df5-bb2230e9ba1b"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_7389205d-6902-4228-8df5-bb2230e9ba1b"
+      ]
+    },
+    "A/11_vine_leap": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:20:36Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_53558e71-fd65-4d02-ae67-af41e15a0512"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_53558e71-fd65-4d02-ae67-af41e15a0512"
+      ]
+    },
+    "A/12a_fidget_tail": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:21:40Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_9f6ea31b-2fa5-4b29-83a5-fc2957ab6458"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_9f6ea31b-2fa5-4b29-83a5-fc2957ab6458"
+      ]
+    },
+    "A/12b_fidget_ear": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:23:01Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_77c4c999-611a-42ba-b49d-b5323f4ce87e"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_77c4c999-611a-42ba-b49d-b5323f4ce87e"
+      ]
+    },
+    "A/12c_fidget_sit": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:24:00Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_edbc21b4-1c39-4b64-ac85-cb4d2bbc34f6"
+          ],
+          "creditsUsed": 5,
+          "note2": "polling hit a network reset; fetched free with cats.py resume"
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_edbc21b4-1c39-4b64-ac85-cb4d2bbc34f6"
+      ]
+    },
+    "A/13a_death_spiked": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:25:06Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_126bbabd-e61a-4fcd-a9be-90412dc9856d"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_126bbabd-e61a-4fcd-a9be-90412dc9856d"
+      ]
+    },
+    "A/13b_death_crushed": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:26:02Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_17ada1fc-4fcc-463c-beac-5b7ddd12312d"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_17ada1fc-4fcc-463c-beac-5b7ddd12312d"
+      ]
+    },
+    "A/13c_death_zapped": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:27:07Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_b45776ab-9f7f-4a43-821a-b4dd20f8d6d4"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_b45776ab-9f7f-4a43-821a-b4dd20f8d6d4"
+      ]
+    },
+    "A/13d_death_splash": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:28:11Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_5660b53c-9864-403d-a6e8-3af8cbe3bdc1"
+          ],
+          "creditsUsed": 5
+        },
+        {
+          "at": "2026-09-29T17:39:40Z",
+          "note": "generate v2 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_a0deb58a-8c08-4cf8-b624-28aea33f8f51"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 10,
+      "jobs": [
+        "wf_5660b53c-9864-403d-a6e8-3af8cbe3bdc1",
+        "wf_a0deb58a-8c08-4cf8-b624-28aea33f8f51"
+      ]
+    },
+    "A/13e_death_arrow": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:29:09Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_5a683388-4119-4443-af68-9ee14ec5afb0"
+          ],
+          "creditsUsed": 5
+        },
+        {
+          "at": "2026-09-29T17:41:09Z",
+          "note": "generate v2 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_59a8d505-9e8e-4e91-b9e0-36f1129ac5ec"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 10,
+      "jobs": [
+        "wf_5a683388-4119-4443-af68-9ee14ec5afb0",
+        "wf_59a8d505-9e8e-4e91-b9e0-36f1129ac5ec"
+      ]
+    },
+    "A/13f_death_pit": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:30:13Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_de823b95-19cb-4da8-b0fc-a4eee9dfe6d8"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_de823b95-19cb-4da8-b0fc-a4eee9dfe6d8"
+      ]
+    },
+    "A/14_door_enter": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:31:09Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_4bec0b89-a21a-4462-b888-109a64098291"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_4bec0b89-a21a-4462-b888-109a64098291"
+      ]
+    },
+    "A/15_respawn": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:32:20Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_b25d9b84-5bc0-44a4-b4ee-6225551374f8"
+          ],
+          "creditsUsed": 5
+        },
+        {
+          "at": "2026-09-29T17:42:07Z",
+          "note": "generate v2 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_f89a6032-3058-4687-8193-dfd03f356a0d"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 10,
+      "jobs": [
+        "wf_b25d9b84-5bc0-44a4-b4ee-6225551374f8",
+        "wf_f89a6032-3058-4687-8193-dfd03f356a0d"
+      ]
+    },
+    "A/16a_menu_idle": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:33:45Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_ae8604c3-717b-488f-8df1-416fe57dfbb1"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_ae8604c3-717b-488f-8df1-416fe57dfbb1"
+      ]
+    },
+    "A/16b_celebrate": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:35:08Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_482ddf6a-5211-4264-90a0-d444e243a97a"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_482ddf6a-5211-4264-90a0-d444e243a97a"
+      ]
+    },
+    "A/16c_fed_up": {
+      "calls": [
+        {
+          "at": "2026-09-29T17:36:16Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_68cd6a90-dbf9-4ee7-8bee-fbc833938f0e"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_68cd6a90-dbf9-4ee7-8bee-fbc833938f0e"
+      ]
+    },
+    "B/01_idle": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:38:43Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_6aaa0729-1bad-4e0c-8485-a06d627a81da"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_6aaa0729-1bad-4e0c-8485-a06d627a81da"
+      ]
+    },
+    "B/02_run": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:39:46Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_ad40034d-2273-44ae-a6b6-3dce2c485cea"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_ad40034d-2273-44ae-a6b6-3dce2c485cea"
+      ]
+    },
+    "B/03_walk": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:40:50Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_690ea7ce-7d4e-473b-b3df-e8222dd43798"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_690ea7ce-7d4e-473b-b3df-e8222dd43798"
+      ]
+    },
+    "B/04_jump_rise": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:41:54Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_5ffe5375-5574-4e17-a68c-83780240224e"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_5ffe5375-5574-4e17-a68c-83780240224e"
+      ]
+    },
+    "B/05_jump_apex": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:43:08Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_6541b97b-d973-47f7-859b-26924ebb846d"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_6541b97b-d973-47f7-859b-26924ebb846d"
+      ]
+    },
+    "B/06_jump_fall": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:44:31Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_96713b22-58e8-4dd0-84cc-c102a262cb64"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_96713b22-58e8-4dd0-84cc-c102a262cb64"
+      ]
+    },
+    "B/07_land": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:45:27Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_aed86f56-4659-4a40-90a5-bb92dc753640"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_aed86f56-4659-4a40-90a5-bb92dc753640"
+      ]
+    },
+    "B/08_vine_climb_up": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:46:42Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_edf9b468-7834-453b-bd47-884f5fde6150"
+          ],
+          "creditsUsed": 5
+        },
+        {
+          "at": "2026-09-29T19:12:08Z",
+          "note": "generate v2 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_32daed3e-8475-4931-a114-cd41377e2061"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 10,
+      "jobs": [
+        "wf_edf9b468-7834-453b-bd47-884f5fde6150",
+        "wf_32daed3e-8475-4931-a114-cd41377e2061"
+      ]
+    },
+    "B/09_vine_climb_down": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:47:46Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_552db51e-d717-4670-b4e0-aa55a7b237e4"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_552db51e-d717-4670-b4e0-aa55a7b237e4"
+      ]
+    },
+    "B/10_vine_hang": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:48:32Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_8356d6ce-e666-42c4-a87a-57d6c209ce60"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_8356d6ce-e666-42c4-a87a-57d6c209ce60"
+      ]
+    },
+    "B/11_vine_leap": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:49:28Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_aab38a9a-6545-44f1-b11e-cf41d335545f"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_aab38a9a-6545-44f1-b11e-cf41d335545f"
+      ]
+    },
+    "B/12a_fidget_tail": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:50:41Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_f0d9f9fe-f6e5-4a0e-aabf-1c79547802f8"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_f0d9f9fe-f6e5-4a0e-aabf-1c79547802f8"
+      ]
+    },
+    "B/12b_fidget_ear": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:51:30Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_0d69d5a9-fa96-46c5-87e0-3557f60e8d1e"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_0d69d5a9-fa96-46c5-87e0-3557f60e8d1e"
+      ]
+    },
+    "B/12c_fidget_sit": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:52:26Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_d2d14be7-3362-4c14-a133-455df749b53f"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_d2d14be7-3362-4c14-a133-455df749b53f"
+      ]
+    },
+    "B/13a_death_spiked": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:53:29Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_6b1d1625-150d-4dba-a735-6eccb1af1618"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_6b1d1625-150d-4dba-a735-6eccb1af1618"
+      ]
+    },
+    "B/13b_death_crushed": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:54:53Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_9380c0e5-f9d6-46a7-9425-2ae18d3a752a"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_9380c0e5-f9d6-46a7-9425-2ae18d3a752a"
+      ]
+    },
+    "B/13c_death_zapped": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:55:49Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_08db8506-e4b9-4d66-976a-6d563afbcbd3"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_08db8506-e4b9-4d66-976a-6d563afbcbd3"
+      ]
+    },
+    "B/13d_death_splash": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:56:47Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_1c3bec96-bb73-4842-aaed-ba73d4e37efa"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_1c3bec96-bb73-4842-aaed-ba73d4e37efa"
+      ]
+    },
+    "B/13e_death_arrow": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:57:44Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_cf2a654d-12ef-4a04-ae72-cae8b925c02d"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_cf2a654d-12ef-4a04-ae72-cae8b925c02d"
+      ]
+    },
+    "B/13f_death_pit": {
+      "calls": [
+        {
+          "at": "2026-09-29T18:58:50Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_887500dd-d7ae-48b7-ac24-ccf3f706d368"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_887500dd-d7ae-48b7-ac24-ccf3f706d368"
+      ]
+    },
+    "B/14_door_enter": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:00:04Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_ba07841b-3318-4e13-a498-85300c6da9b7"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_ba07841b-3318-4e13-a498-85300c6da9b7"
+      ]
+    },
+    "B/15_respawn": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:01:03Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_2acedcf5-f7de-46ac-988c-750d49666497"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_2acedcf5-f7de-46ac-988c-750d49666497"
+      ]
+    },
+    "B/16a_menu_idle": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:02:08Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_abdc5986-0237-47db-93bb-2c6bed910220"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_abdc5986-0237-47db-93bb-2c6bed910220"
+      ]
+    },
+    "B/16b_celebrate": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:03:37Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_d534650e-458b-4e10-88d7-982339eba49b"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_d534650e-458b-4e10-88d7-982339eba49b"
+      ]
+    },
+    "B/16c_fed_up": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:04:32Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_00c01f36-24de-4dcd-bc07-e340ff5ac660"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_00c01f36-24de-4dcd-bc07-e340ff5ac660"
+      ]
+    },
+    "A/17_look_around": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:35:33Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_cded53bc-49a8-4554-b193-30d74669cc97"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_cded53bc-49a8-4554-b193-30d74669cc97"
+      ]
+    },
+    "A/18_turn": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:36:46Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_95ffb45a-686b-4936-ba63-c12b42ae53f2"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_95ffb45a-686b-4936-ba63-c12b42ae53f2"
+      ]
+    },
+    "A/19_hard_land": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:38:16Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_505234a9-ca11-4f85-a895-730c8a05152d"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_505234a9-ca11-4f85-a895-730c8a05152d"
+      ]
+    },
+    "A/20_death_generic": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:40:12Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_e2b0f249-6523-4b27-aa40-05f8dd2c35f8"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_e2b0f249-6523-4b27-aa40-05f8dd2c35f8"
+      ]
+    },
+    "A/21_gravity_twist": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:41:35Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_ebdd50a9-177e-42cb-a19c-32d62972f4c8"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_ebdd50a9-177e-42cb-a19c-32d62972f4c8"
+      ]
+    },
+    "A/22_launched": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:42:42Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_1928e61e-48ae-4df1-b0cf-468fc5b5bee3"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_1928e61e-48ae-4df1-b0cf-468fc5b5bee3"
+      ]
+    },
+    "A/23_dizzy": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:43:38Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_0cbe3820-090f-4d91-b27a-6b6fa12aa6a7"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_0cbe3820-090f-4d91-b27a-6b6fa12aa6a7"
+      ]
+    },
+    "B/17_look_around": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:44:42Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_31d8f89f-1d53-43d4-ad1e-086202619c3e"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_31d8f89f-1d53-43d4-ad1e-086202619c3e"
+      ]
+    },
+    "B/18_turn": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:45:37Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_0608a7a9-3f0d-404a-9634-abaebd8e3fd2"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_0608a7a9-3f0d-404a-9634-abaebd8e3fd2"
+      ]
+    },
+    "B/19_hard_land": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:46:34Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_cd024f67-b65b-451e-837e-654f246148c8"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_cd024f67-b65b-451e-837e-654f246148c8"
+      ]
+    },
+    "B/20_death_generic": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:47:21Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_eb63a4b7-5aaa-49b9-98fb-b7703eb8397a"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_eb63a4b7-5aaa-49b9-98fb-b7703eb8397a"
+      ]
+    },
+    "B/21_gravity_twist": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:48:20Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_9b1b232f-2921-4663-aa13-0dc378be36a3"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_9b1b232f-2921-4663-aa13-0dc378be36a3"
+      ]
+    },
+    "B/22_launched": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:49:16Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_248b58d3-9e1c-466f-bb7c-b7cc704610bb"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_248b58d3-9e1c-466f-bb7c-b7cc704610bb"
+      ]
+    },
+    "B/23_dizzy": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:50:51Z",
+          "note": "generate v1 (turbo)",
+          "credits": 5,
+          "status": "received",
+          "jobs": [
+            "wf_aa3c4a94-bd8f-456b-9a67-eec1058d3bab"
+          ],
+          "creditsUsed": 5
+        }
+      ],
+      "credits": 5,
+      "jobs": [
+        "wf_aa3c4a94-bd8f-456b-9a67-eec1058d3bab"
+      ]
+    },
+    "FX/FX01_dust_puffs": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:52:42Z",
+          "note": "static v1 (ultra)",
+          "credits": 1,
+          "status": "received",
+          "assetId": "cmun3frsh0003c7u4abvxakc0"
+        }
+      ],
+      "credits": 1,
+      "jobs": []
+    },
+    "FX/FX02_skid_dust": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:52:58Z",
+          "note": "static v1 (ultra)",
+          "credits": 1,
+          "status": "received",
+          "assetId": "cmun3g3pj000etyu8wnkw32vd"
+        }
+      ],
+      "credits": 1,
+      "jobs": []
+    },
+    "FX/FX03_landing_ring": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:53:13Z",
+          "note": "static v1 (ultra)",
+          "credits": 1,
+          "status": "received",
+          "assetId": "cmun3ghpm0010sx1pky232nck"
+        }
+      ],
+      "credits": 1,
+      "jobs": []
+    },
+    "FX/FX04_wall_dust": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:53:31Z",
+          "note": "static v1 (ultra)",
+          "credits": 1,
+          "status": "received",
+          "assetId": "cmun3gsll000jc7u4bpltgn7r"
+        }
+      ],
+      "credits": 1,
+      "jobs": []
+    },
+    "FX/FX05_checkpoint_burst": {
+      "calls": [
+        {
+          "at": "2026-09-29T19:53:45Z",
+          "note": "static v1 (ultra)",
+          "credits": 1,
+          "status": "received",
+          "assetId": "cmun3h3q60018sx1pjab6yclg"
+        }
+      ],
+      "credits": 1,
+      "jobs": []
+    }
+  },
+  "balanceAfter": 1148,
+  "balanceAfterAt": "2026-09-29",
+  "budgetNote": "raised 300 -> 400 on 2026-09-29 for the PAX-A08 extras (both cats) and PAX-V06 effect sheets, developer said \"Do it\""
+}

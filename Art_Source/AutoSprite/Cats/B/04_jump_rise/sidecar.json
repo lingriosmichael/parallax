@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "04_jump_rise",
+  "name": "Jump rise",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat leaps forward and upward like a cat jumping onto a high wall. It pushes off hard with its back legs and the whole body leaves the ground, flying diagonally up to the right: body stretched long and tilted nose-up, front paws tucked under the chin, back legs stretched straight out behind, tail streaming back. From the middle of the clip on, all four paws are in the air. The cat never stands on its hind legs. Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_5ffe5375-5574-4e17-a68c-83780240224e"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun0xr68000210j7bqg806u0",
+        "meta": {
+          "id": "cmun0xr68000210j7bqg806u0",
+          "kind": "custom",
+          "name": "Jump rise",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun0wf2m000cd6p4ois678xf",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:42:57.105Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:43:07Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun0xr68000210j7bqg806u0",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:06:43Z"
+    }
+  ],
+  "verdict": "good: crouch, push-off, airborne stretch (used A's retry prompt); tail touches the left edge in 10-11",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 8-24, ~12 frames at 20 fps"
+}

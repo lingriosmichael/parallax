@@ -1,0 +1,12 @@
+[
+  {
+    "operation": "animation",
+    "estimate": 5,
+    "status": "received",
+    "characterId": "cmumjm1y4000ecjfd36jf06zd",
+    "creditsUsed": 5,
+    "jobs": [
+      "wf_608acef9-900d-4d6f-9d27-0c374669f9bd"
+    ]
+  }
+]

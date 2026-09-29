@@ -1,0 +1,98 @@
+{
+  "cat": "A",
+  "clip": "13d_death_splash",
+  "name": "Death splash",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "Cartoon comedy: the cat falls into water and pops back up soaked, fur flattened and dripping, looking miserable and much skinnier, ears drooping. No water surface at the end, just the soaked cat. The cat stays centred.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_5660b53c-9864-403d-a6e8-3af8cbe3bdc1"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumyar0i000q11wuoaheokr7",
+        "meta": {
+          "id": "cmumyar0i000q11wuoaheokr7",
+          "kind": "custom",
+          "name": "Death splash",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumy9mr2000rqhywrttvq0ks",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:29:04.579Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:29:08Z"
+  },
+  "credits": 10,
+  "v2": {
+    "prompt": "Cartoon comedy: a big splash of clear water drops on the cat from above. Its fur goes flat and dripping, it looks miserable and much skinnier, ears flat sideways, eyes half-closed and grumpy, face still in side view. It stays standing and gives one small shiver. The water is clear with warm gold highlights; no blue, no pool, nothing covers the cat. Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_a0deb58a-8c08-4cf8-b624-28aea33f8f51"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v2.png",
+        "atlas": "raw_v2_atlas.json",
+        "gif": "preview_v2.gif",
+        "spritesheetId": "cmumyq6qn0009cd0mmcwywen7",
+        "meta": {
+          "id": "cmumyq6qn0009cd0mmcwywen7",
+          "kind": "custom",
+          "name": "Death splash",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumyoe22000devnngp9nvij2",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:41:04.799Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:41:08Z"
+  },
+  "recuts": [
+    {
+      "from": "cmumyq6qn0009cd0mmcwywen7",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_v2_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T17:45:40Z"
+    }
+  ],
+  "verdict": "usable (v2 re-cut with removeBg=default): a bucket of water dumps on the cat, soaked and dripping, funny. Water and drip patches are light blue despite the prompt: needs a warm hue shift in post for Reality A. v1 failed (fragments, blue cat, head hanging); v2 with ultra bg removal punched holes",
+  "chosen": {
+    "sheet": "recut_v2_bgdefault.png",
+    "atlas": "recut_v2_bgdefault_atlas.json"
+  },
+  "suggest": "frames 5-16 at 16 fps (~0.75 s)"
+}

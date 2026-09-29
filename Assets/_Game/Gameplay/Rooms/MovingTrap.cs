@@ -58,12 +58,12 @@ namespace Parallax.Gameplay.Rooms
             if (kind == MovingTrapKind.Hazard)
             {
                 Bounds nextPose = new(position + box.offset, box.size);
-                if (IsLocalHumanOverlapping(nextPose, observers, filter, results, out _)) { Death.Kill(Reality.Id, DeathCause.Hazard); return; }
+                if (IsLocalHumanOverlapping(nextPose, observers, filter, results, out _)) { Death.Kill(Reality.Id, DeathCause.Hazard, this); return; }
                 body.MovePosition(position);
                 return;
             }
             float depth = crushDepth > 0f ? crushDepth : crushConfig.DefaultCrushDepth;
-            if (TryGetLocalHumanColliderBounds(observers, out Bounds catBounds) && TrapMotion.Crushes(catBounds, pose, depth)) { Death.Kill(Reality.Id, DeathCause.Hazard); return; }
+            if (TryGetLocalHumanColliderBounds(observers, out Bounds catBounds) && TrapMotion.Crushes(catBounds, pose, depth)) { Death.Kill(Reality.Id, DeathCause.Hazard, this); return; }
             if (pushes && Push(position, pose, depth)) return;
             Displacement = position - body.position;
             body.MovePosition(position);
@@ -86,7 +86,7 @@ namespace Parallax.Gameplay.Rooms
             observers.Get(Reality.Id).Cat.ApplyPush(new Vector2(shift, 0f));
             cat.center += new Vector3(shift, 0f, 0f);
             if (crushPartner == null || !TrapMotion.Crushes(cat, crushPartner.bounds, depth)) return false;
-            Death.Kill(Reality.Id, DeathCause.Hazard);
+            Death.Kill(Reality.Id, DeathCause.Hazard, this);
             return true;
         }
 

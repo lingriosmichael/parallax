@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "05_jump_apex",
+  "name": "Jump apex",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat hangs in mid-air at the top of a jump, body level and stretched, front legs reaching forward, back legs trailing, tail out straight for balance. A tiny float, almost still, then the front paws start to reach down. No ground under the cat; it stays centred.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_6541b97b-d973-47f7-859b-26924ebb846d"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun0zm1u00048aga1v2prmcl",
+        "meta": {
+          "id": "cmun0zm1u00048aga1v2prmcl",
+          "kind": "custom",
+          "name": "Jump apex",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun0y059000riaxe00exvb8v",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:44:23.778Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:44:31Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun0zm1u00048aga1v2prmcl",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T18:45:06Z"
+    }
+  ],
+  "verdict": "good with the removeBg=default re-cut: raw ultra kept a grey wedge between tail and hind legs",
+  "chosen": {
+    "sheet": "recut_25f_256_bgdefault.png",
+    "atlas": "recut_25f_256_bgdefault_atlas.json"
+  },
+  "suggest": "frames 10-24 hold/ping-pong at 12 fps; 0-9 also work as a rise"
+}

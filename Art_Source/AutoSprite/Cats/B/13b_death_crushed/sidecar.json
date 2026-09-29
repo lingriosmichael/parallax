@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "13b_death_crushed",
+  "name": "Death crushed",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "Cartoon comedy, no blood: the cat is squashed flat from above like a pancake, body flattened wide and thin against the ground, eyes squeezed shut, tail sticking up and wobbling. Stays flat. The cat stays centred.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_9380c0e5-f9d6-46a7-9425-2ae18d3a752a"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun1e7wl0009141wtoyi7stu",
+        "meta": {
+          "id": "cmun1e7wl0009141wtoyi7stu",
+          "kind": "custom",
+          "name": "Death crushed",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun1d4gs0004tnr15ph60efe",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:55:45.285Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:55:48Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun1e7wl0009141wtoyi7stu",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:09:25Z"
+    }
+  ],
+  "verdict": "usable: pancake-flat with a wobbling tail, fits the frame; grey patches between the legs in the standing frames",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 9-19 at 16 fps"
+}

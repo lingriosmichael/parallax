@@ -1,0 +1,51 @@
+{
+  "cat": "A",
+  "clip": "05_jump_apex",
+  "name": "Jump apex",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat hangs in mid-air at the top of a jump, body level and stretched, front legs reaching forward, back legs trailing, tail out straight for balance. A tiny float, almost still, then the front paws start to reach down. No ground under the cat; it stays centred.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_c5003e15-6f33-4adf-883c-bb8f3c07e363"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumxt9eg00045h4nmq45qeuj",
+        "meta": {
+          "id": "cmumxt9eg00045h4nmq45qeuj",
+          "kind": "custom",
+          "name": "Jump apex",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumxrxay0014135czby9udvb",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:15:28.601Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:15:37Z"
+  },
+  "credits": 5,
+  "verdict": "good: level stretched hang; frames 0-9 are also a clean push-off",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 10-24 hold/ping-pong at 12 fps around the apex (~8 ticks); frames 0-9 as an alternative rise"
+}

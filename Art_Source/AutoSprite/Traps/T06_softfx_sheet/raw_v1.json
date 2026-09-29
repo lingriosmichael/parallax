@@ -1,0 +1,13 @@
+{
+  "asset": "T06",
+  "name": "PAX-A13 T06 softfx_sheet",
+  "endpoint": "POST /assets",
+  "quality": "ultra",
+  "usePromptTemplate": false,
+  "background": "B",
+  "prompt": "Sheet of 6 separate pieces, spaced apart: 3 soft round puffs of warm sandy dust, 3 small splashes of water droplets. Soft, no hard edges. Hand-painted 2D game effect, strict side view. Warm gold and cream, soft edges. No cyan, no text. On pure black #000000.",
+  "assetId": "cmumi19kp000o14byfys8k1u5",
+  "creditsReserved": 1,
+  "creditsUsed": null,
+  "created": "2026-09-29T09:53:49Z"
+}

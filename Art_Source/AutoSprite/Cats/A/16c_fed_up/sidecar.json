@@ -1,0 +1,51 @@
+{
+  "cat": "A",
+  "clip": "16c_fed_up",
+  "name": "Fed up",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat is fed up: it flattens its ears, gives a long flat unimpressed stare at the viewer, huffs, and flops down lying on its belly with its chin on its paws, tail thumping the ground in annoyance.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_68cd6a90-dbf9-4ee7-8bee-fbc833938f0e"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumykwvv000j9du8u8bowz2v",
+        "meta": {
+          "id": "cmumykwvv000j9du8u8bowz2v",
+          "kind": "custom",
+          "name": "Fed up",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumyk16u0004p6rkl52hd2rx",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:36:58.747Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:37:04Z"
+  },
+  "credits": 5,
+  "verdict": "good: ears flatten, a glare, flops belly-down with chin on paws; tail slightly clipped in frames 16-18",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 8-22 at 12 fps, then hold the last frame"
+}

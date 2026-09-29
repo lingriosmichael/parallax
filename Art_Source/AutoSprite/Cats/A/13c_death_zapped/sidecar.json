@@ -1,0 +1,51 @@
+{
+  "cat": "A",
+  "clip": "13c_death_zapped",
+  "name": "Death zapped",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "Cartoon comedy, no blood: the cat is zapped by lightning: it goes rigid with every hair standing on end, frizzy and puffed, flickering bright, then ends frazzled and slightly sooty, standing stiff with a stunned face and a little smoke. The cat stays centred.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_b45776ab-9f7f-4a43-821a-b4dd20f8d6d4"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumy9i0y001nm5lpw66u2bez",
+        "meta": {
+          "id": "cmumy9i0y001nm5lpw66u2bez",
+          "kind": "custom",
+          "name": "Death zapped",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumy89i800082m51cf97bgsi",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:28:06.275Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:28:11Z"
+  },
+  "credits": 5,
+  "verdict": "good: bright flicker, frizzed fur, smoke wisp; faint grey smudge by the rump (smoke or bg leftover)",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 5-15 at 16 fps (~0.7 s)"
+}

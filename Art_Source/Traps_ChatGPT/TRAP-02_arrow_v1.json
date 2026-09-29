@@ -1,0 +1,16 @@
+{
+  "asset": "TRAP-02",
+  "file": "TRAP-02_arrow_v1.png",
+  "source": "ChatGPT (developer, manual)",
+  "ticket": "PAX-A13, rulings §11 R3 fallback",
+  "prompt_doc": "Docs/Art/Traps/A13_ChatGPT_trap_bodies.md",
+  "prompt": "Asset TRAP-02: arrow. Landscape 3:2. Background type T: transparent background, PNG with alpha.\nOne arrow, strictly side view, pointing right, centred, spanning about two thirds of the image width.\nBold, readable proportions for a small phone screen: the whole arrow is about 6 times longer than it is tall at the fletching.\nA broad leaf-shaped bronze head, a dark wooden shaft, rust-red feather fletching at the back.\nGold rim light along its top edge. Transparency all around.",
+  "style_header": "the environment prompts doc's style header (Sep 29, 2026), pasted before the prompt",
+  "attachments": [
+    "Docs/Art/Reference/styleframe_A_v1.png",
+    "DesignImages/14_environment-breakdown.png",
+    "ENV-10a stone fill if accepted (per the doc)"
+  ],
+  "saved": "2026-09-29T10:22:07Z",
+  "sha256": "3f8ec1ac3483272d72fad8ea2d0b5f75a8d1837c83eb501633e2954e87dcd7b0"
+}

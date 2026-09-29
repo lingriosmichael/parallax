@@ -1,0 +1,52 @@
+{
+  "cat": "B",
+  "clip": "21_gravity_twist",
+  "name": "Gravity twist",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat is in mid-air, no ground. It twists its body like a falling cat righting itself: the front half rolls first, then the back half follows, legs tuck in then reach out again, tail swings round for balance. It ends in the same side-view pose it started in. The cat stays centred.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_9b1b232f-2921-4663-aa13-0dc378be36a3"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun3au1700041428faakwszy",
+        "meta": {
+          "id": "cmun3au1700041428faakwszy",
+          "kind": "custom",
+          "name": "Gravity twist",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun39uxi0004mdy5t25zo87m",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T19:49:06.571Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:49:16Z"
+  },
+  "credits": 5,
+  "verdict": "usable: full somersault like A's, smaller in the frame; curled frames are hard to read small",
+  "suggest": "frames 9-14",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "ticket": "PAX-A08 extras"
+}

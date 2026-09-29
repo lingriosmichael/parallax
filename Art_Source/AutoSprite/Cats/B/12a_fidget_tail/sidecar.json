@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "12a_fidget_tail",
+  "name": "Fidget tail flick",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat stands still on all four paws facing right; only the tail moves: a quick annoyed flick of the tail tip, twice, then it settles back. Paws and body stay planted.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_f0d9f9fe-f6e5-4a0e-aabf-1c79547802f8"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun18o3r0001pjof2qzadkpr",
+        "meta": {
+          "id": "cmun18o3r0001pjof2qzadkpr",
+          "kind": "custom",
+          "name": "Fidget tail flick",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun17qha0005lmp59zwbgo8l",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:51:26.342Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:51:30Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun18o3r0001pjof2qzadkpr",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:08:21Z"
+    }
+  ],
+  "verdict": "usable: flick reads; tail leaves the left edge in frame 9",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 5-18 at 12 fps"
+}

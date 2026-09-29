@@ -82,7 +82,7 @@ namespace Parallax.Gameplay.Rooms
                 OffsetX = StormCloudMath.Follow(OffsetX, CatBox(body, collider).center.x - transform.position.x, followSpeed, rangeMin, rangeMax);
             ApplyVisuals();
             if (Phase == StormCloudPhase.Strike && TryGetCat(out body, out collider) && StrikeHits(body, collider))
-                Death.Kill(Reality.Id, DeathCause.Hazard);
+                Death.Kill(Reality.Id, DeathCause.Hazard, this);
         }
 
         /// <summary>This tick's kill test (ruling C): true only while striking, when the cat's body box strictly overlaps the

@@ -1,0 +1,17 @@
+{
+  "id": "FX04_wall_dust",
+  "kind": "static",
+  "ticket": "PAX-V06",
+  "v1": {
+    "prompt": "Sheet of 4 separate vertical dust plumes, spaced apart, trailing downward as if brushed off a wall, from small to large. Soft and wispy. Hand-painted 2D game effect, strict side view. Warm gold and cream, soft edges. No cyan, no text. On pure black #000000.",
+    "endpoint": "POST /assets",
+    "quality": "ultra",
+    "usePromptTemplate": false,
+    "assetId": "cmun3gsll000jc7u4bpltgn7r",
+    "credits": 1,
+    "created": "2026-09-29T19:53:45Z"
+  },
+  "verdict": "good: 4 vertical plumes growing; wall-contact dust",
+  "suggest": "4 frames, ~16 fps",
+  "note": "on pure black: use additive blending or luminance-to-alpha when importing"
+}

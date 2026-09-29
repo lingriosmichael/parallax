@@ -1,0 +1,17 @@
+{
+  "asset": "T08",
+  "endpoint": "POST /characters/{id}/spritesheets",
+  "videoTier": "turbo",
+  "kind": "custom",
+  "characterId": "cmumjm1y4000ecjfd36jf06zd",
+  "prompt": "A powerful jet of water bursts straight up out of the vent's mouth and keeps gushing: foam and spray fly outward at the base and fall back. The jet leaves the top of the frame. Static camera: no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The base shape never moves or changes size; only the described motion happens. Only the object in the image and this effect: no person, character, creature or figure. Water and light are warm gold and cream, never blue.",
+  "frameCount": 25,
+  "frameSize": 512,
+  "removeBg": "ultra",
+  "spritesheetId": "cmumjna6a0001s0e7340h25am",
+  "jobs": [
+    "wf_608acef9-900d-4d6f-9d27-0c374669f9bd"
+  ],
+  "creditsReserved": 5,
+  "created": "2026-09-29T10:39:05Z"
+}

@@ -1,0 +1,61 @@
+{
+  "cat": "A",
+  "clip": "06_jump_fall",
+  "name": "Jump fall",
+  "kind": "custom",
+  "loop": true,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat falls through the air, body tilted slightly nose-down, front legs stretched down and forward ready to land, back legs trailing, fur and tail fluttering upward from the fall. No ground; the cat stays centred. Seamless loop.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_98a1efa5-99c9-4253-b033-b4d7f729fa14"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumxufol000cci2igwjdbsxf",
+        "meta": {
+          "id": "cmumxufol000cci2igwjdbsxf",
+          "kind": "custom",
+          "name": "Jump fall",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumxti2e001asyrjxq5yfout",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:16:23.397Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:16:26Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmumxufol000cci2igwjdbsxf",
+      "frameCount": 64,
+      "frameSize": 256,
+      "sheet": "recut_64f_256.png",
+      "credits": 0,
+      "created": "2026-09-29T17:42:50Z"
+    }
+  ],
+  "verdict": "good: nose-down fall, front paws reaching, tail up; tilts steadily steeper rather than cycling",
+  "chosen": {
+    "sheet": "recut_64f_256.png",
+    "atlas": "recut_64f_256_atlas.json"
+  },
+  "suggest": "play 0-24 once then ping-pong the last ~10 frames at 12 fps while falling"
+}

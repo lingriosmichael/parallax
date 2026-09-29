@@ -1,0 +1,51 @@
+{
+  "cat": "A",
+  "clip": "13b_death_crushed",
+  "name": "Death crushed",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "Cartoon comedy, no blood: the cat is squashed flat from above like a pancake, body flattened wide and thin against the ground, eyes squeezed shut, tail sticking up and wobbling. Stays flat. The cat stays centred.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_17ada1fc-4fcc-463c-beac-5b7ddd12312d"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumy85mi0007suib7aoode34",
+        "meta": {
+          "id": "cmumy85mi0007suib7aoode34",
+          "kind": "custom",
+          "name": "Death crushed",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumy6v6600148hqec3u8iiml",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:27:03.546Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:27:07Z"
+  },
+  "credits": 5,
+  "verdict": "usable: funny pancake-flat with a wobbling tail; flattened body runs past both frame edges from frame 11",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 9-19 at 16 fps (~0.7 s)"
+}

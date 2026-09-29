@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36a3e111aef0347de85778a12f5a456a, type: 3}
+  m_Name: TrapArtConfig
+  m_EditorClassIdentifier: Parallax.Presentation::Parallax.Presentation.TrapArtConfig
+  TrapMaterial: {fileID: 2100000, guid: d33e48b97506e44eab01d90e2ba969f6, type: 2}
+  WorldTileMaterial: {fileID: 2100000, guid: fe808065fbb8544adb3f93f4f78e77d7, type: 2}
+  ArrowLauncher: {fileID: 21300000, guid: f06d3b64227ea45f2ace3fc15f6cc4d2, type: 3}
+  Arrow: {fileID: 21300000, guid: 8c2f8ff53bf6d47e8ad1881b7ce1a457, type: 3}
+  Glint: {fileID: 21300000, guid: 79b0dad7c07ea4014ac9850c7c1de6e5, type: 3}
+  GeyserVent: {fileID: 21300000, guid: 1da620d043a10450a85733cf63500d01, type: 3}
+  GeyserColumnFrames:
+  - {fileID: 21300000, guid: e0f353c96def843069bf96c153a8e035, type: 3}
+  - {fileID: 21300000, guid: 2c395e02221e44b31857d313aab60fe2, type: 3}
+  - {fileID: 21300000, guid: e91758b924df6463a87e61df22c48c8b, type: 3}
+  - {fileID: 21300000, guid: 6e5a1a935475f47769c033dca7be2a2c, type: 3}
+  - {fileID: 21300000, guid: 518951ac97c1846679b79c20639a4866, type: 3}
+  - {fileID: 21300000, guid: 402b2de00c61e46408cb8672db206285, type: 3}
+  - {fileID: 21300000, guid: ea5fbc56290724c668921b80c0c0fc1e, type: 3}
+  - {fileID: 21300000, guid: eecc1919c7af84748ba057289c626e3b, type: 3}
+  Dust:
+  - {fileID: 21300000, guid: 6da4d17c4b58e4ee0b112edd2084e4fe, type: 3}
+  - {fileID: 21300000, guid: a6d1d7b98d7d94886a4ec81130b28db6, type: 3}
+  - {fileID: 21300000, guid: 17f540961ace245719379fdf3758c898, type: 3}
+  Spray:
+  - {fileID: 21300000, guid: 67fce0c21f58f46da985878a57912dd5, type: 3}
+  - {fileID: 21300000, guid: cd79aaa7124184d419890e6e1ae3b89a, type: 3}
+  - {fileID: 21300000, guid: bf00a89b9f5f2451688485f1e6e6926d, type: 3}
+  SpikeStrip: {fileID: 21300000, guid: aead46466f2534388b05c74caf03d728, type: 3}
+  SpearHead: {fileID: 21300000, guid: 99a680e10aa63493aae444d348194794, type: 3}
+  SpearShaft: {fileID: 21300000, guid: 22293b67a94414e77897a89a40f76b2e, type: 3}
+  InverterOrb: {fileID: 21300000, guid: 4c9d52b0e5d1b47bb827185dc1649ca9, type: 3}
+  CueRing: {fileID: 21300000, guid: c155917c503c54e3eb2a4ca761c23284, type: 3}
+  CueMark: {fileID: 21300000, guid: 361566c6dd13f4aa4a0812c5a87026af, type: 3}
+  GlyphRing: {fileID: 21300000, guid: 0ac73c3360bf543a9b3dec91ef3efb14, type: 3}
+  StormCloud: {fileID: 21300000, guid: d69dcc5049f254e77940bb61f08abf9b, type: 3}
+  Scorch: {fileID: 21300000, guid: e781efde7dc714f5eb1337d8b3668e6f, type: 3}
+  BlockCrack: {fileID: 21300000, guid: c172a67fddf954820adb906a2b6830c9, type: 3}
+  Steam:
+  - {fileID: 21300000, guid: ab885458d851245fda2d4ee8d3dc5289, type: 3}
+  - {fileID: 21300000, guid: 2bd76ab1baa984fdf93fb6d82da52621, type: 3}
+  - {fileID: 21300000, guid: 169036309d2d94ca197164c9e7d41db5, type: 3}
+  Leaves:
+  - {fileID: 21300000, guid: 2d29b2361680e4040bf304558b8fbfb5, type: 3}
+  - {fileID: 21300000, guid: e8e4a6b1b7e6a4b7e9f294b2c6998315, type: 3}
+  - {fileID: 21300000, guid: 3f0eb0a85853d406c99c816955332238, type: 3}
+  - {fileID: 21300000, guid: fa4d38f44cecd4509ad2b7077732b834, type: 3}
+  - {fileID: 21300000, guid: d057e4e8caf724146b037a00b9747b46, type: 3}
+  - {fileID: 21300000, guid: 878a62e17a1964c598313fa22d7de3b1, type: 3}
+  BoltSegment: {fileID: 21300000, guid: 58184e33e00b2446691a28f2465a351b, type: 3}
+  Flash: {fileID: 21300000, guid: 8cd6b88e883b14f788c1853d42b408f5, type: 3}
+  Ring: {fileID: 21300000, guid: b1adc11c646c74c2cb323eba244fa8a3, type: 3}
+  Mote: {fileID: 21300000, guid: 6af5180fdb2e14dd3a19797e13d0621c, type: 3}
+  Placeholders:
+  - TRAP-04_spike_strip
+  - TRAP-05_spear_head
+  - TRAP-05_spear_shaft
+  - TRAP-06_inverter_orb
+  - TRAP-07_cue_mark
+  - TRAP-07_cue_ring
+  - TRAP-08_glyph_ring
+  - TRAP-09_storm_cloud
+  - TRAP-10_scorch
+  - TRAP-11_block_crack
+  - TRAP-12_steam_0
+  - TRAP-12_steam_1
+  - TRAP-12_steam_2
+  - TRAP-13_leaf_0
+  - TRAP-13_leaf_1
+  - TRAP-13_leaf_2
+  - TRAP-13_leaf_3
+  - TRAP-13_leaf_4
+  - TRAP-13_leaf_5
+  KitVersion: 2
+  ShardRows: 2
+  DustPerFloor: 4
+  ImpactPuffs: 2
+  TellDrops: 3
+  BurstPuffs: 4
+  SprayPuffs: 8
+  SteamWisps: 3
+  GritPuffs: 4
+  SolidDust: 4
+  FlipMotes: 4
+  BoltSegments: 9
+  VineLeaves: 6
+  DoorDust: 4
+  DeathPuffs: 8

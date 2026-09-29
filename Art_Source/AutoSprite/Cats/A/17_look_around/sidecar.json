@@ -1,0 +1,52 @@
+{
+  "cat": "A",
+  "clip": "17_look_around",
+  "name": "Look around",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "The cat stands still on all four paws facing right and looks around with curiosity: the head tilts up, turns toward the viewer with ears forward, tilts to one side, then turns back to the start pose. Paws stay planted; only the head, ears and tail move.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_cded53bc-49a8-4554-b193-30d74669cc97"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun2uu99000153bxc5odo4we",
+        "meta": {
+          "id": "cmun2uu99000153bxc5odo4we",
+          "kind": "custom",
+          "name": "Look around",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmun2tfj6001jbhx9t7lnmma7",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T19:36:40.364Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:36:46Z"
+  },
+  "credits": 5,
+  "verdict": "good: looks up, turns to the viewer ears forward (the CURIOUS pose), back to base",
+  "suggest": "frames 5-24 at 12 fps; A08 wants 8, take every other frame of 6-21",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "ticket": "PAX-A08 extras"
+}

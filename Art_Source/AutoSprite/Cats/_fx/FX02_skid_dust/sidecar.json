@@ -1,0 +1,17 @@
+{
+  "id": "FX02_skid_dust",
+  "kind": "static",
+  "ticket": "PAX-V06",
+  "v1": {
+    "prompt": "Sheet of 4 separate low dust streaks kicked back along the ground, spaced apart, from a short small streak to a long wide one. Soft and wispy. Hand-painted 2D game effect, strict side view. Warm gold and cream, soft edges. No cyan, no text. On pure black #000000.",
+    "endpoint": "POST /assets",
+    "quality": "ultra",
+    "usePromptTemplate": false,
+    "assetId": "cmun3g3pj000etyu8wnkw32vd",
+    "credits": 1,
+    "created": "2026-09-29T19:53:13Z"
+  },
+  "verdict": "good: 4 streaks growing; they trail to the right, mirror in code for the other direction",
+  "suggest": "4 frames, ~20 fps",
+  "note": "on pure black: use additive blending or luminance-to-alpha when importing"
+}

@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "11_vine_leap",
+  "name": "Vine leap",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat, clinging vertically to a thick vine on the left, pushes off with its back legs and leaps away to the right: the body swings from vertical to horizontal, front legs reach forward, tail streams back. The vine stays on the left edge.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_aab38a9a-6545-44f1-b11e-cf41d335545f"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun17jyu0005ijvmhhlb5802",
+        "meta": {
+          "id": "cmun17jyu0005ijvmhhlb5802",
+          "kind": "custom",
+          "name": "Vine leap",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun165cf000k9rwgghj1nx0b",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:50:34.327Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:50:41Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun17jyu0005ijvmhhlb5802",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:08:05Z"
+    }
+  ],
+  "verdict": "usable: head-down on a leafy vine, push-off, stretched leap; vine baked in until ~19",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 10-20 at 16 fps"
+}

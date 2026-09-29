@@ -55,7 +55,7 @@ namespace Parallax.Gameplay.Rooms
             arrow.transform.localPosition = LocalPose(s);
             arrow.enabled = true;
             launcher.color = honestColor;
-            if (TryGetKillBox(out Bounds pose) && IsLocalHumanOverlapping(pose, observers, filter, results, out _)) { Death.Kill(Reality.Id, DeathCause.Hazard); return; }
+            if (TryGetKillBox(out Bounds pose) && IsLocalHumanOverlapping(pose, observers, filter, results, out _)) { Death.Kill(Reality.Id, DeathCause.Hazard, this); return; }
             if (spear && s >= ArrowMath.StuckCheckTick(tellTicks, flightTicks) && !shaft.enabled) shaft.enabled = true;
         }
 

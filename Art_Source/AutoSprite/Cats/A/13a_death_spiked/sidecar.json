@@ -1,0 +1,51 @@
+{
+  "cat": "A",
+  "clip": "13a_death_spiked",
+  "name": "Death spiked",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmumxgmgx0001grljze4ko7qt",
+  "v1": {
+    "prompt": "Cartoon comedy, no blood, no wounds: the cat jumps straight up in shock as if it sat on a pin, fur puffed out, legs stiff and spread, eyes wide, then drops and flops over sideways, dazed, with its tongue out. The cat stays near the centre.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_126bbabd-e61a-4fcd-a9be-90412dc9856d"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmumy6mim0008fosh6zo17w37",
+        "meta": {
+          "id": "cmumy6mim0008fosh6zo17w37",
+          "kind": "custom",
+          "name": "Death spiked",
+          "characterId": "cmumxgmgx0001grljze4ko7qt",
+          "sourceVideoId": "cmumy5nm5000deud3oac1er74",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T17:25:52.126Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T17:26:01Z"
+  },
+  "credits": 5,
+  "verdict": "usable: funny shocked rear-up (wide eyes) then a flop with tongue out; 9 idle frames first, frame 12 is an odd back view, frames 15-16 are empty, style drifts cartoony",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 13,14,17-24 (10 frames) at 16 fps = 0.63 s (fits HoldTicks 30)"
+}

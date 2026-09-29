@@ -1,0 +1,13 @@
+{
+  "asset": "T05",
+  "name": "PAX-A13 T05 debris_sheet",
+  "endpoint": "POST /assets",
+  "quality": "ultra",
+  "usePromptTemplate": false,
+  "background": "M",
+  "prompt": "Sheet of 8 separate small pieces, spaced apart: 4 broken sandstone chunks, 2 grit clusters, 2 wood splinters. Weathered, sunlit edges. Hand-painted 2D game sprite, strict side view. Golden backlight, gold rim light, warm brown shade, no black. No cyan, no text. On flat magenta #FF00FF.",
+  "assetId": "cmumi0vzm000914byidl0f5hf",
+  "creditsReserved": 1,
+  "creditsUsed": null,
+  "created": "2026-09-29T09:53:31Z"
+}

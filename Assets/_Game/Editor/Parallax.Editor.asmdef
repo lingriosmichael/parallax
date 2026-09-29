@@ -4,6 +4,7 @@
   "references": [
     "Parallax.Core",
     "Parallax.Gameplay",
+        "Parallax.Presentation",
     "Parallax.App",
     "Parallax.DebugTools",
     "Unity.RenderPipelines.Universal.Runtime",

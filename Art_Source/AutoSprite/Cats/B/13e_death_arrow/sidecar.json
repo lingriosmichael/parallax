@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "13e_death_arrow",
+  "name": "Death arrow",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "Cartoon comedy, no blood, no red, no arrow or weapon in the picture: the cat jumps in fright as if something whizzed past its nose, then topples over backwards stiff as a board and lands on its back with all four legs straight up in the air, eyes as dizzy swirls, tongue out a little. The cat stays near the centre. Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_cf2a654d-12ef-4a04-ae72-cae8b925c02d"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun1i1oj0005akmx6eskde0p",
+        "meta": {
+          "id": "cmun1i1oj0005akmx6eskde0p",
+          "kind": "custom",
+          "name": "Death arrow",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun1gstf0004aeoo2bb55kph",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T18:58:43.843Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T18:58:49Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun1i1oj0005akmx6eskde0p",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:10:10Z"
+    }
+  ],
+  "verdict": "good: fright jump with dizzy swirl eyes, topples on its back legs up (used A's retry prompt); small dark streak 8-10, frame 14 smeared",
+  "chosen": {
+    "sheet": "raw_v1.png",
+    "atlas": "raw_v1_atlas.json"
+  },
+  "suggest": "frames 7-13, 15-19 at 16 fps (~0.75 s)"
+}

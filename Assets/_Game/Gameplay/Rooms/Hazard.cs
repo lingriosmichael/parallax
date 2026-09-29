@@ -59,7 +59,7 @@ namespace Parallax.Gameplay.Rooms
             for (int i = 0; i < count; i++)
             {
                 if (results[i] != catCollider) continue;
-                roomDeath.Kill(observer.Id, DeathCause.Hazard);
+                roomDeath.Kill(observer.Id, DeathCause.Hazard, this);
                 return;
             }
         }

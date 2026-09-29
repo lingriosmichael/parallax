@@ -1,0 +1,62 @@
+{
+  "cat": "B",
+  "clip": "16c_fed_up",
+  "name": "Fed up",
+  "kind": "custom",
+  "loop": false,
+  "characterId": "cmun0s5070005gtkenjnhc62i",
+  "v1": {
+    "prompt": "The cat is fed up: it flattens its ears, gives a long flat unimpressed stare at the viewer, huffs, and flops down lying on its belly with its chin on its paws, tail thumping the ground in annoyance.  Static camera, no zoom, pan or tilt; strict side view. Keep the exact painting style, colours, light and outline of the image. The cat stays the same size in every frame.",
+    "tier": "turbo",
+    "frameCount": 25,
+    "frameSize": 256,
+    "removeBg": "ultra",
+    "jobs": [
+      "wf_00c01f36-24de-4dcd-bc07-e340ff5ac660"
+    ],
+    "credits": 5,
+    "sheets": [
+      {
+        "sheet": "raw_v1.png",
+        "atlas": "raw_v1_atlas.json",
+        "gif": "preview_v1.gif",
+        "spritesheetId": "cmun1qh0w000ebo2du6ky6rl1",
+        "meta": {
+          "id": "cmun1qh0w000ebo2du6ky6rl1",
+          "kind": "custom",
+          "name": "Fed up",
+          "characterId": "cmun0s5070005gtkenjnhc62i",
+          "sourceVideoId": "cmun1pjdp0008xfrteope17yg",
+          "status": "succeeded",
+          "frameWidth": 256,
+          "frameHeight": 256,
+          "frameCount": 25,
+          "columns": 5,
+          "loopStart": null,
+          "loopEnd": null,
+          "speedMultiplier": 1,
+          "createdAt": "2026-09-29T19:05:16.976Z"
+        }
+      }
+    ],
+    "created": "2026-09-29T19:05:19Z"
+  },
+  "credits": 5,
+  "recuts": [
+    {
+      "from": "cmun1qh0w000ebo2du6ky6rl1",
+      "frameCount": 25,
+      "frameSize": 256,
+      "removeBg": "default",
+      "sheet": "recut_25f_256_bgdefault.png",
+      "credits": 0,
+      "created": "2026-09-29T19:11:46Z"
+    }
+  ],
+  "verdict": "good: lies down with a grumpy half-closed stare; tail clipped at the left in the lying frames",
+  "chosen": {
+    "sheet": "recut_25f_256_bgdefault.png",
+    "atlas": "recut_25f_256_bgdefault_atlas.json"
+  },
+  "suggest": "frames 8-20 at 12 fps, then hold"
+}

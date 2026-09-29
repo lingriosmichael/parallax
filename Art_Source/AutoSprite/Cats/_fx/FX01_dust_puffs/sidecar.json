@@ -1,0 +1,17 @@
+{
+  "id": "FX01_dust_puffs",
+  "kind": "static",
+  "ticket": "PAX-V06",
+  "v1": {
+    "prompt": "Sheet of 6 separate soft dust puffs in one row, spaced apart: from a tiny puff growing to a big round cloud, then thinning into wisps. Seen from the side. Hand-painted 2D game effect, strict side view. Warm gold and cream, soft edges. No cyan, no text. On pure black #000000.",
+    "endpoint": "POST /assets",
+    "quality": "ultra",
+    "usePromptTemplate": false,
+    "assetId": "cmun3frsh0003c7u4abvxakc0",
+    "credits": 1,
+    "created": "2026-09-29T19:52:57Z"
+  },
+  "verdict": "good: a clean 6-step lifecycle, tiny puff to big cloud to wisps; run puffs and landing puff (scale up for hard landings)",
+  "suggest": "6 frames, left to right, ~20 fps one-shot",
+  "note": "on pure black: use additive blending or luminance-to-alpha when importing"
+}
