@@ -1,14 +1,15 @@
 # PAX-A08 · The cat comes alive: register and import the Cat A animation set
 
-**Status:** **Approved 2026-09-29** (revised text, reviewed by the developer). Starts once PAX-A13 is committed. It
-replaces the earlier A08 text. The clips already exist (generated 2026-09-29, see
-`Art_Source/AutoSprite/Cats/HANDOVER.md`), so this ticket no longer generates anything: it registers, imports and
-reports. PAX-A11 stays absorbed (climb). The seamless vine (old item 15) moves to its own ticket after PAX-A13 (approved),
-because it lives in `TrapKitSetup`.
-**Order:** PAX-A13 commits first, then this ticket (Stage 0, then Stage 1), then PAX-V07.
+**Status:** **Approved 2026-09-29** (revised text, reviewed by the developer); decisions re-confirmed 2026-09-30.
+PAX-A13 is committed (2026-09-30), so this ticket can start. It replaces the earlier A08 text. The clips already exist
+(generated 2026-09-29, see `Art_Source/AutoSprite/Cats/HANDOVER.md`), so this ticket no longer generates anything: it
+registers, imports and reports. PAX-A11 stays absorbed (climb). The seamless vine (old item 15) is **not** in A08: it
+gets its own ticket after PAX-V07 and PAX-V07b. It is no longer blocked, since A13 is committed.
+**Order:** this ticket's Stage 0 (offline) → Stage 1 (import) → the developer's review → PAX-V07 → PAX-V07b → the
+seamless vine. One ticket at a time.
 **Phase 1 size:** Lite.
 **Depends on:**
-- PAX-A13 committed (`trap_process.normal_map`, a clean `Tools/Art/`).
+- PAX-A13, committed 2026-09-30 (`trap_process.normal_map`, a clean `Tools/Art/`).
 - `CatSpriteImporter` and `CatVisualSetup`.
 - PAX-V03's memory budget.
 
@@ -64,13 +65,16 @@ manifest; the counts below are the targets. **Loops** use a frame count that div
 | `CatA_Climb.png` | 08_vine_climb_up, 25-frame loop f24–48 of the 56-frame re-cut, vine keyed out | 5 | yes | Climb (reversed for down) |
 | `CatA_Hang.png` | 10_vine_hang, vine keyed out | 1 | – | Hang |
 | `CatA_Leap.png` | 11_vine_leap f10–20, vine keyed out | 3 | no | Leap |
-| `CatA_Door.png` | 16b_celebrate (A08's CELEBRATING pose) | 8 | no | Door |
+| `CatA_Door.png` | 16b_celebrate (A08's CELEBRATING pose) | 8 | no | Door (level complete) |
+| `CatA_DoorEnter.png` | 14_door_enter, frames 9–24 at an even stride | 8 | no | **imported, not wired** (V07 leaves it unwired) |
 
-About 141 frames in all. The clips below are in `Art_Source` but have no slot here:
+About 149 frames in all. The clips below are in `Art_Source` but have no slot here:
 - **Parked:** 16a menu idle (PAX-A09), 16c fed up (PAX-V07b), 23 dizzy, 22 launched (redo first).
 - **Unmapped:** 13d splash, until a water hazard exists.
-- **Unwired:** 12a tail flick (its tail clips the cell edge), 14 door enter, 09 climb down (Climb plays reversed
-  instead). Adding any of them later is a slot change in this table.
+- **Not imported:** 12a tail flick (its tail clips the cell edge; it stays unwired), 09 climb down (Climb plays reversed
+  instead). Adding either later is a slot change in this table.
+- 14 door enter **is** imported (`CatA_DoorEnter`) but not wired; its walk-out past the cell's right edge is clipped and
+  reported like any slot.
 
 ## 3. Stage 0: registration (offline, no Unity)
 
@@ -120,6 +124,8 @@ For each slot, `CatA_<Slot>_n.png` is made with `trap_process.normal_map`, using
 
 ### 3.5 Manifest and review sheet
 
+- **A02 first.** Stage 0 adds the Cat A slot table (slot file, source clip and frames, loop, PPU, pivot, `torsoPx`) to
+  `Docs/Art/A02_asset_manifest.md`. Stage 1 doesn't import until those slots are there.
 - **Manifest** (`_import/manifest.json`). For each slot:
   - source clip, sheet and frame indices;
   - loop stride, `loopCloseIoU`;
@@ -173,8 +179,8 @@ wired by PAX-V07.
 
 ## 5. Phase 1 (Lite): questions
 
-1. May `cat_register.py` import `trap_process.normal_map` directly, or should it be moved to a shared module? The file
-   is PAX-A13's until it commits.
+1. May `cat_register.py` import `trap_process.normal_map` directly, or should it be moved to a shared module? PAX-A13 is
+   committed, so the file is stable; the decision is to use the trap method either way.
 2. Is the torso definition in §3.1 right (chest to rump, no head, no tail)?
 3. Does any EditMode test pin the current PPU or pivot values, which will change? `CatColliderConfigTests` and the
    visual-seat tests are the candidates.
@@ -202,8 +208,11 @@ wired by PAX-V07.
 - `Assets/_Game/Tests/EditMode/CatSheetImportTests.cs` (new): every sheet has the manifest's PPU, pivot, cell size and
   compression, and a normal map.
 - `Cat_Player.prefab`, changed only by running `PARALLAX/Setup/Cat Visual`.
-- `CLAUDE.md`: the scope line's D-044 reference only, updated to "no lives, unlimited retries, per-room death count
-  (D-044)". This goes in the A08 commit, per the developer.
+- `CLAUDE.md`: both D-044 references, in the A08 commit, per the developer (2026-09-30):
+  - the scope line, updated to "no lives, unlimited retries, per-room death count (D-044)";
+  - the Rooms section's "Whether/how it's shown, persisted, or turned into lives is still D-044 (undecided)", updated to
+    say D-044 settled no lives and unlimited retries, and that the count's UI and persistence come with the ticket that
+    shows it.
 - This ticket file (results section).
 
 ## 8. Out of scope
@@ -229,7 +238,7 @@ wired by PAX-V07.
 - `refresh_unity`, `validate_script` and `read_console` are clean.
 - The developer approves `review.png`, including the ceiling, crusher and flipped panels, and the slowest-speed climb
   preview.
-- The CLAUDE.md D-044 line is updated in the same commit.
+- Both CLAUDE.md D-044 lines are updated in the same commit.
 
 **YOU (Editor):**
 - Play Trap Lab rooms 0–3 and L001.

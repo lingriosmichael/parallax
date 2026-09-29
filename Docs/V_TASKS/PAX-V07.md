@@ -1,11 +1,11 @@
 # PAX-V07 · Wire the cat animation set
 
 **Status:** **Approved 2026-09-29** (revised text, reviewed by the developer). It replaces the earlier V07 text.
-**Order:** after PAX-A13 is committed and PAX-A08 is accepted.
+**Order:** after PAX-A08 is accepted (PAX-A13 is committed, 2026-09-30). Then PAX-V07b, then the seamless vine.
 **Phase 1 size:** Lite.
 **Depends on:**
 - PAX-A08: the Cat A slot sheets are imported.
-- PAX-A13: `DeathInfo.Killer` and `RoomDeath.HoldKiller`, needed for Part B only.
+- PAX-A13 (committed 2026-09-30): `DeathInfo.Killer` and `RoomDeath.HoldKiller`.
 
 **Decisions:**
 - D-036: pure `CatAnimStateMachine`, no Animator.
@@ -27,9 +27,15 @@
 - Idle fidgets cycle look around → ear twitch → sit down. Sit down is last and any input cancels it. Tail flick is not
   wired.
 - A death kind is declared on the trap component or prefab, with an optional per-object override. Level builders never
-  set it per placed object.
+  set it per placed object, **except `Hazard`** (ruled 2026-09-30, Phase 1 question 6): builders are the only place a
+  `Hazard` is created, so the builder that adds one sets its kind (spikes → Spiked, pit floors → Pit).
 - The geyser is not a death kind: it is air, and it gets an entry only if it can kill on its own. Splash stays unmapped
   until a water hazard exists.
+- Door / level complete plays celebrate (`CatA_Door`). The door-enter clip (`CatA_DoorEnter`) is imported by A08 but not
+  wired.
+- PAX-A13 is committed, so the old Part A and Part B are merged: the trap death-kind tags and their table entries ship in
+  this ticket.
+- Menu idle → PAX-A09. Dizzy is parked. Fed up → PAX-V07b.
 
 ## 1. What changes for the player
 
@@ -101,7 +107,8 @@ The parity test in §6 checks this.
 - **`IDeathKindSource`** (a new Core interface): `CatDeathKind DeathKind { get; }`.
 - **Resolving a kind:**
   - if the killer (`RoomDeath.HoldKiller`) implements `IDeathKindSource`, use its kind;
-  - otherwise a Fall or OutOfBounds cause is Pit;
+  - otherwise a Fall or OutOfBounds cause is Pit (a pit floor is a `Hazard` whose declared kind is Pit, so it resolves
+    through the first rule);
   - otherwise Default.
 
   The presenter only checks for the interface, never for a trap class.
@@ -111,19 +118,17 @@ The parity test in §6 checks this.
   `RoomSafetyConfig.HoldTicks` × the tick length from `TickTime`. That is 0.6 s at the default 30 ticks. A test checks
   every table entry.
 
-**Part A** (this ticket's first commit, no trap files):
-- The enum, the interface, the table, the resolution rule.
-- The Default and Pit entries.
-
-**Part B** (the same ticket, after Part A is green; PAX-A13 must be committed):
+**In this ticket** (Parts A and B merged, since PAX-A13 is committed):
+- The enum, the interface, the table, the resolution rule, and the Default and Pit entries.
 - **Where a kind is declared:** on the trap component or its prefab, never by the level builders on each placed object.
   - **`RoomTrap`** implements `IDeathKindSource`.
     - Its `DeathKind` returns the per-object override when one is set (a serialized `overrideDeathKind` flag plus
       `deathKindOverride`, off by default).
     - Otherwise it returns the component's declared kind: `protected virtual CatDeathKind DeclaredDeathKind =>
       CatDeathKind.Default`.
-  - **`Hazard`** implements `IDeathKindSource` with a serialized `CatDeathKind` whose value lives on the hazard
-    **prefab**, so placed instances inherit it. A per-object prefab override is allowed but not used by the builders.
+  - **`Hazard`** implements `IDeathKindSource` with a serialized `CatDeathKind`. Hazards have no prefab; the builders
+    create them in code, so the builder that adds a hazard sets its kind: the spike builder sets Spiked, the pit-floor
+    builder sets Pit (Phase 1 question 6).
 - **Declared kinds:**
 
   | Trap | Kind |
@@ -132,11 +137,12 @@ The parity test in §6 checks this.
   | `FallingBlockTrap` | Crushed |
   | `StormCloudTrap` | Zapped |
   | `ArrowTrap`, including its spear variant | Arrow |
-  | Moving walls, falling ceilings | Crushed, declared by those traps when they're added (no code for them now) |
+  | `MovingTrap`, Solid kind (push walls, crushers, lifts, drop-and-return and falling ceilings) | Crushed |
+  | `MovingTrap`, Hazard kind (sliding spikes, sweeps) | Spiked |
   | `GeyserTrap` | none (it is air, not water; it gets a kind only if it can kill on its own) |
   | Splash | nothing is mapped until a water hazard exists |
 
-- The table gains the Spiked, Crushed, Zapped and Arrow entries.
+- The table has the Spiked, Crushed, Zapped and Arrow entries as well as Default and Pit.
 
 ## 5. Code
 
@@ -187,11 +193,11 @@ The parity test in §6 checks this.
   - The Respawn clip is ≤ 0.2 s.
 - **`ClimbPoseTests`:** rewritten for the new placement without rotation. The test count must not drop; report the
   total against the baseline.
-- **Part B:**
+- **Death-kind tags:**
   - Each tagged trap reports its declared kind.
   - A per-object override wins over the declared kind.
   - `GeyserTrap` and an untagged `Hazard` report Default.
-  - A hazard prefab's kind reaches its placed instances.
+  - A built spike hazard reports Spiked and a built pit floor reports Pit.
 
 ## 7. Phase 1 (Lite): questions
 
@@ -203,10 +209,16 @@ The parity test in §6 checks this.
 4. Which existing tests pin the Climb pose or the presenter's fields, so they change with it?
 5. Can the presenter read the observer's current control sample (move and jump) through `ObserverContext.Driver`
    without touching input code? This is needed for "any input cancels the fidget".
+6. **Hazards have no prefab** (checked 2026-09-30): the builders add `Hazard` in code (`HazardSetup.cs`,
+   `TrapKitSetup.Classic.cs`), and static spikes and pit floors are the same component. A pit floor kills with cause
+   `Hazard`, not `Fall`. How do spikes resolve to Spiked and pit floors to Pit without the builders setting a kind on each
+   placed object? This question comes before any code.
+   **Answer (developer, 2026-09-30):** builders declare the kind in code, since they're the only place `Hazard` is
+   created. When a builder adds a `Hazard`, it sets that hazard's `CatDeathKind`: the spike builder sets Spiked, the
+   pit-floor builder sets Pit. Pit therefore comes from the hazard's kind, not from a Fall cause. It doesn't affect A08.
 
 ## 8. Allowed files
 
-**Part A:**
 - `Assets/_Game/Core/Presentation/CatAnimState.cs`, `CatAnimStateMachine.cs`, `CatAnimInput.cs` (new).
 - `Assets/_Game/Core/Rooms/CatDeathKind.cs` (new), `IDeathKindSource.cs` (new).
 - `Assets/_Game/Gameplay/Presentation/CatVisualPresenter.cs`, `CatVisualConfig.cs`, `CatClipSet.cs` (new),
@@ -217,18 +229,18 @@ The parity test in §6 checks this.
 - Tests: `CatAnimStateMachineTests.cs`, `ClimbPoseTests.cs`, `CatVisualOnlyParityTests.cs` (new),
   `CatDeathClipTableTests.cs` (new).
 
-**Part B:**
 - `Assets/_Game/Gameplay/Rooms/RoomTrap.cs`, `HiddenSpikesTrap.cs`, `FallingBlockTrap.cs`, `StormCloudTrap.cs`,
-  `ArrowTrap.cs`, `Hazard.cs`.
-- The hazard prefab(s) that carry a kind, changed by a setup menu only.
+  `ArrowTrap.cs`, `MovingTrap.cs`, `Hazard.cs`.
+- The builders that create a `Hazard` (`HazardSetup.cs`, `TrapKitSetup.Classic.cs` and any other that adds one): they set
+  its kind only.
 - A tests file for the tags.
 
 ## 9. Out of scope
 
 - The collider, motor (including `CatMotor2D`), routes, levels and tick timing.
 - Launched, Dizzy, menu idle, and FedUp (PAX-V07b).
-- The tail-flick fidget, the Splash kind, and any geyser kind.
-- Setting death kinds per placed object in level builders.
+- The tail-flick fidget, the door-enter clip, the Splash kind, and any geyser kind.
+- Setting death kinds per placed object in level builders, except `Hazard` (question 6).
 - Cat B clips.
 - The seamless vine.
 - Audio and haptics.
@@ -249,8 +261,7 @@ The parity test in §6 checks this.
 **YOU (Editor):**
 - Play Trap Lab rooms 0–11 and L011–L020 in the Device Simulator.
 - Every state reads at phone scale in both gravities, with no frame pops between clips.
-- Deaths read within the hold, and each tagged trap shows its own death (Part B). A geyser death shows the frightened
-  pose.
+- Deaths read within the hold, and each tagged trap shows its own death. A geyser death shows the frightened pose.
 - Standing still plays look around, then ear twitch, then sit down. Touching the stick while seated ends the sit at once.
 - Turning, landing and respawning never feel delayed.
 
