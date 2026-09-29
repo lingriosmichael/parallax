@@ -2358,6 +2358,18 @@ pinned in `Band2RouteResultsTests`; L016 accepted pending the developer's play.
 
 Direction mix across 11–20: half B. Tests: `Band2RulesTests` (47), `Band2LevelTests`, `Band2RouteResultsTests`.
 
+### D-094 · 2026-09-29 · Accepted (PAX-A13 rulings §11, R6)
+**Decision:** Visual production starts. The target for Reality A is `Docs/Art/LOOK_AND_FEEL.md`, with
+`Docs/Art/Reference/styleframe_A_v1.png` and `DesignImages/14_environment-breakdown.png` as the references: the in-game
+frame should read like the styleframe on a phone. This supersedes D-015's "evokes the key art rather than reproducing its
+painterly depth" and lifts CLAUDE.md's "no final art" for Reality A (Reality B stays as it is, D-047). The performance
+budget (draw calls, lights, particles, texture memory, fps on the Pixel 8a) is set by PAX-V03; until it lands, each art
+ticket works to interim numbers its rulings set.
+**Why:** PARALLAX is a paid game (D-068); the developer's bar is that it looks spot on, with a real 2.5D feel, finished
+trap animations and a cat that feels alive.
+**Consequence:** Phase E tickets (PAX-V03, A12, A08, A13, V06, A09, A10) build to LOOK_AND_FEEL. Art never moves a
+collider, tick, route pin or validator result (D-052; LOOK_AND_FEEL §3).
+
 ### D-095 · 2026-09-27 · Proposed (PAX-093 as built; rulings §7)
 
 **Decision:** KIT-10, floors that move (PAX-093).
@@ -2476,3 +2488,40 @@ half-B stop 1). **Tests:** `CoverageEdgesTests`: `DangerBeyondItsTrigger…`/`Da
 `CeilingVineSlab` (ceiling → vine → underside) and `CeilingStartVineSlab` (a gravity-up start), and the launch edge on
 hand-made pieces (`ACatOnAVineInsideAnUpVentsColumn_IsLaunched`, `…OutsideTheColumn_IsNotLaunched`,
 `AGravityUpCatOnAVineInsideADownVentsColumn_IsLaunched`); all but the control were seen red before the change.
+
+### D-099 · 2026-09-29 · Proposed (PAX-A13 as built; rulings §11 R1–R6, §12 R7–R10)
+
+**Decision:** The trap presentation contract.
+(1) **Presentation reads, never writes.** Trap art lives in `Parallax.Presentation`, on a separate `Room_N/Art` root
+beside the grey-box, never under an element. Every presenter is a pure function of trap state and ticks (fire tick,
+phase, `RoomLifeTick`, the death hold), reapplied every frame; its randomness is `TrapArtMath.Seed(name, fire tick)`, never
+`Time.time` or `Random`. The grey-box renderers stay as they are, and the route harness still reads them; the art only
+sets their `forceRenderingOff`, at runtime, in `Awake`. The art adds no collider and moves no tick, route pin or
+validator result (D-052, D-094). The kill's source is read through `RoomDeath.HoldKiller`/`HoldCause`/`HoldTick`
+(`DeathInfo.Killer`), which only report it.
+(2) **Visibility parity (R4).** The art never shows more, earlier, or elsewhere than the grey-box. A body is drawn exactly
+when its grey-box is, inside its grey-box's bounds (1 px at 128 PPU); each effect belongs to a named group whose rule
+says when it may show (the tell only in the tell window, a shard only after the reveal, a death effect only during the
+hold, and only the effect of what killed the cat). The windows are read from trap state (a block's landing from its travel,
+a mover's dust from its grey-box moving), with each effect's length in `TrapArtMath`. `TrapArtParityTests` replays every
+declared route of L001–L020 and Trap Lab rooms 3–12 (rooms 0–2 have no routes) with that check on every tick.
+(3) **A disguise is its host's skin (P10, R8).** Before its reveal, a disguised trap (collapsing floor, fake platform,
+falling block, moving and KIT-10 floors, push wall, shrinker, a disguised launcher) draws exactly its host's look,
+recorded at build time (`HostSkin`) and checked by `ValidateTrapSkins`. A world-tiled host (`Sprite-Lit-WorldTile`)
+samples its tile in world space; a disguise and each of its shards sample at the pose where the reveal finds them and
+keep it, so the reveal frame is pixel-identical to the frame before (`TrapArtRevealFrameTests`), except effects that
+start that tick. A crumbling disguise on a patterned host (Tiled, or Sliced with a border) must be world-tiled, since
+its shards would otherwise each tile from their own corner; `ValidateTrapSkins` rejects one that isn't.
+(4) **Bodies and effects (R7).** Solid bodies are ChatGPT stills post-processed by `Tools/Art/trap_process.py`
+(deterministic, 128 PPU, generated normal maps; `trap_kit.json` lists the placeholders), imported by
+`PARALLAX/Art/Import Trap Kit` into one atlas. All motion is code. AutoSprite is used only for effect stills on black
+(1 credit each, 16 spent of the 40 planned / 80 ceiling); its animation pipeline is not used for props (it inserts a
+character). **AutoSprite is kept for the cat's animations (PAX-A08), not props.** A code-drawn body marked PLACEHOLDER
+stands in until its ChatGPT still is saved; swapping it changes no test.
+(5) **Interim budget (R6, until PAX-V03).** One trap atlas of at most 2048², at most 150 effect sprites drawn at once
+(peak measured: 87, L013), no new 2D lights; flipped sprites use `Sprite-Lit-Flip` so their normal maps shade correctly.
+**Why:** PAX-A13 dresses every trap without letting presentation change what the game does or tell the player more than
+the grey-box did; the troll room still betrays exactly as validated.
+**Tests:** `TrapArtBuildTests` (colliders and harness renderers identical with and without the art; every trap and bare
+hazard has art; `ValidateTrapSkins`), `TrapArtParityTests`, `TrapArtRevealFrameTests`, `TrapArtBudgetTests`,
+`TrapArtMathTests`.
