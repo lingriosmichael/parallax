@@ -2168,7 +2168,9 @@ PAX-060's report names both.
 
 (4b) **Half B as built** (ruled 2026-09-28: built in the order L018, L019, L020, L017, PAX-095, L016, each measured unlisted
 as its own number and listed with the others once L016 and L017 exist). A half-B level names several elements; the
-level's element rule counts a betrayal that uses any of them.
+level's element rule counts a betrayal that uses any of them. **Listed 2026-09-29:** L016–L020 registered in
+`LevelLayouts`/`LevelRoutes`, added to `LevelListConfig` by New Level…, every level scene rebuilt, and their route results
+pinned in `Band2RouteResultsTests`; L016 accepted pending the developer's play.
 - **L018 Eye of the Storm** (storm cloud, geysers and vines, GET ABOVE): 32 × 26, start (30.5, 0), door top right on the
   Summit (23.2, 20); a U: west under the cloud (bottom 3.2), G_1's launch above it and west across Sky A, Drop_3 back down
   into the storm, V_6 up through the cloud's band, east along Sky B under G_D's downdraft, G_B's launch onto the Top, G_C's
@@ -2451,6 +2453,11 @@ climb, D-089 (3)); a Down vent launches a gravity-up node. Before, `Launches` re
 otherwise, as before, on the highest top at or below it.
 (4) **No change elsewhere:** the approach sides of every trigger, and every coverage error, of L001–L015 and Trap Lab
 rooms 0–12 are identical before and after (snapshotted; L017–L020 too). Everything here only adds reach.
+(5) **Known limit (found building L016, ruled 2026-09-29):** the search doesn't follow a cat climbing a vine into a
+gravity flip at its top (the flip releases it, D-089 (3), and it falls to the flip's gravity). A flip is reached only
+from a surface within a jump of it, so a flip at a vine's top is out of reach, and whatever lies past it (L016's
+underside and ceiling, reached through V_B's flip) is judged from the checkpoint's side. No L016 trigger depends on it:
+Spikes_C hang on Lip_2's chain and the storm on Flip_S0's. A future edge: a climb into a flip.
 **Why:** L016 (two surfaces) moves between a slab's faces by flips and vines; the search couldn't follow it (D-093
 half-B stop 1). **Tests:** `CoverageEdgesTests`: `DangerBeyondItsTrigger…`/`DangerBeforeItsTrigger…` with
 `CeilingVineSlab` (ceiling → vine → underside) and `CeilingStartVineSlab` (a gravity-up start), and the launch edge on
