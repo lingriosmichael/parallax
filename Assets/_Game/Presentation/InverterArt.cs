@@ -9,6 +9,9 @@ namespace Parallax.Presentation
     /// zone; a disguised one has no orb (§11 R4). While the controls are swapped, its cue shows on the cat: a ring behind it and
     /// a mark over it (TRAP-07), drawn exactly where and when the grey-box cue is, the 30-tick blink included. On the fire tick
     /// the orb flares.</summary>
+    // PAX-096: after InverterTrap (default order), which moves the grey-box cue onto the cat in its own LateUpdate; the
+    // art mirrors that cue, so it must see this frame's position, not the last one.
+    [DefaultExecutionOrder(100)]
     public sealed class InverterArt : TrapArt
     {
         [SerializeField] InverterTrap trap;

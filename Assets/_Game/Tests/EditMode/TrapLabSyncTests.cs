@@ -81,6 +81,22 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual(id, parent.Find("Room_1").gameObject.GetInstanceID(), "a matching room is not rebuilt");
         }
 
+        // PAX-096: a rebuilt room goes back to its place in the layout order. Seen red before: the rebuild appended it, so
+        // after the final trap bodies Sandbox_TrapLab read Room_4 Room_1 Room_2 Room_3 Room_5 ...
+        [Test]
+        public void ARebuiltRoom_KeepsItsPlaceInTheLayoutOrder_AndASecondRunChangesNothing()
+        {
+            IList rooms = (IList)Type.GetType("Parallax.Editor.Setup.TrapLabLayout, Parallax.Editor").GetField("Rooms").GetValue(null);
+            object[] firstThree = { rooms[0], rooms[1], rooms[2] };
+            Sync(firstThree);
+            Transform first = parent.Find("Room_1").GetChild(0);
+            first.localPosition += new Vector3(1f, 0f, 0f);   // Room_1 now differs from its layout, so the next run rebuilds it
+            List<string> changes = Sync(firstThree);
+            Assert.IsTrue(changes.Any(c => c.StartsWith("rebuilt Room_1")), string.Join("\n", changes));
+            CollectionAssert.AreEqual(new[] { "Room_1", "Room_2", "Room_3" }, parent.Cast<Transform>().Select(t => t.name).ToArray(), "child order after a rebuild");
+            CollectionAssert.IsEmpty(Sync(firstThree), "a second run changes nothing");
+        }
+
         // A fresh build of every Trap Lab room compares equal to itself, so the menu never rebuilds a room for nothing.
         [Test]
         public void EveryTrapLabRoom_BuiltFresh_MatchesItsLayout()

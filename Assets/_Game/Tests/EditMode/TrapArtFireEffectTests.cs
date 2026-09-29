@@ -110,6 +110,16 @@ namespace Parallax.Tests.EditMode
             return (errors, blinkTicks);
         }
 
+        // PAX-096: InverterTrap moves its grey-box cue onto the cat in LateUpdate and InverterArt mirrors it in LateUpdate;
+        // the art must run after the trap, or it draws the cue where the cat was a frame ago. Seen red: both were order 0.
+        [Test]
+        public void InverterArt_RunsAfterInverterTrap_SoTheCueNeverLagsTheCat()
+        {
+            static int Order(Type t) => t.GetCustomAttribute<DefaultExecutionOrder>()?.order ?? 0;
+            Assert.Greater(Order(typeof(InverterArt)), Order(typeof(InverterTrap)),
+                $"InverterArt's execution order ({Order(typeof(InverterArt))}) must be later than InverterTrap's ({Order(typeof(InverterTrap))})");
+        }
+
         [Test]
         public void ValidateTrapSkins_RejectsACrumblingDisguiseOnAPatternedHostThatIsntWorldTiled()
         {

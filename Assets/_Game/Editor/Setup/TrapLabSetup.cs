@@ -41,7 +41,8 @@ namespace Parallax.Editor.Setup
         // PAX-076: builds each missing room, and rebuilds each existing room that differs from a fresh build of its
         // layout (every object path, transform, component and serialized field). Nothing outside a room references
         // objects inside it (the builder only wires room objects to the managers), so a rebuild leaves no stale
-        // reference. A room that matches is left untouched, so a second run changes nothing.
+        // reference. A room that matches is left untouched, so a second run changes nothing. Rooms end in layout order
+        // (PAX-096).
         public static void SyncRooms(Transform parent, RealityRoot root, IReadOnlyList<SoloRoomDefinition> layoutRooms, CheckpointManager checkpoints, RoomManager rooms, RoomDeath death, ObserverSet observers, CatMotorConfig config, List<string> changes)
         {
             foreach (SoloRoomDefinition room in layoutRooms)
@@ -56,6 +57,15 @@ namespace Parallax.Editor.Setup
                     changes.Add($"rebuilt {name} ({differences.Count} differences from the layout, first: {differences[0]})");
                 }
                 SoloRoomsSetup.BuildRoom(parent, root, room, checkpoints, rooms, death, observers, config, changes);
+            }
+            // PAX-096: a (re)built room is appended to the parent; put every room back in layout order so a rebuild never
+            // reorders the scene. Only a room out of place counts as a change, so a second run still changes nothing.
+            for (int i = 0; i < layoutRooms.Count; i++)
+            {
+                Transform t = parent.Find($"Room_{layoutRooms[i].Id + 1}");
+                if (t == null || t.GetSiblingIndex() == i) continue;
+                t.SetSiblingIndex(i);
+                changes.Add($"moved {t.name} to position {i + 1} (layout order)");
             }
         }
 
