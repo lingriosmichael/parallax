@@ -60,26 +60,7 @@ MonoBehaviour:
   Flash: {fileID: 21300000, guid: 8cd6b88e883b14f788c1853d42b408f5, type: 3}
   Ring: {fileID: 21300000, guid: b1adc11c646c74c2cb323eba244fa8a3, type: 3}
   Mote: {fileID: 21300000, guid: 6af5180fdb2e14dd3a19797e13d0621c, type: 3}
-  Placeholders:
-  - TRAP-04_spike_strip
-  - TRAP-05_spear_head
-  - TRAP-05_spear_shaft
-  - TRAP-06_inverter_orb
-  - TRAP-07_cue_mark
-  - TRAP-07_cue_ring
-  - TRAP-08_glyph_ring
-  - TRAP-09_storm_cloud
-  - TRAP-10_scorch
-  - TRAP-11_block_crack
-  - TRAP-12_steam_0
-  - TRAP-12_steam_1
-  - TRAP-12_steam_2
-  - TRAP-13_leaf_0
-  - TRAP-13_leaf_1
-  - TRAP-13_leaf_2
-  - TRAP-13_leaf_3
-  - TRAP-13_leaf_4
-  - TRAP-13_leaf_5
+  Placeholders: []
   KitVersion: 2
   ShardRows: 2
   DustPerFloor: 4

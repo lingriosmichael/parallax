@@ -1,0 +1,17 @@
+{
+  "asset": "TRAP-07",
+  "file": "TRAP-07_inverter_cue_v1.png",
+  "source": "ChatGPT (developer, manual; Chat T2)",
+  "ticket": "PAX-A13, rulings §12 R7/R10 (Batch 2)",
+  "prompt_doc": "Docs/Art/Traps/A13_ChatGPT_trap_bodies.md",
+  "prompt": "Asset TRAP-07: inverter cue, two pieces. Square 1:1. Background type B: pure black background, #000000.\nTwo separate pieces, one above the other, spaced apart:\n1. Top: a thin, soft, warm-gold elliptical ring of light, twice as wide as tall, open in the middle, like a halo seen from the side.\n2. Bottom: a small bold glyph of two curved arrows chasing each other left and right, warm gold, 3 times wider than tall.\nEverything fades to pure black. No cyan, no text.",
+  "style_header": "the environment prompts doc's style header, pasted before the prompt (Batch 2 routine)",
+  "attachments": [
+    "Docs/Art/Reference/styleframe_A_v1.png",
+    "DesignImages/14_environment-breakdown.png",
+    "ENV-10a stone fill (per the doc)"
+  ],
+  "saved": "2026-09-29T21:26:13Z",
+  "original_name": "TRAP-07.png",
+  "sha256": "e1609b347838c8e2806c1afff840aaf8db1a9b4dd0b963f479c6eb1007e9e69c"
+}

@@ -1,0 +1,17 @@
+{
+  "asset": "TRAP-04",
+  "file": "TRAP-04_spike_strip_v1.png",
+  "source": "ChatGPT (developer, manual; Chat T2)",
+  "ticket": "PAX-A13, rulings §12 R7/R10 (Batch 2)",
+  "prompt_doc": "Docs/Art/Traps/A13_ChatGPT_trap_bodies.md",
+  "prompt": "Asset TRAP-04: spike strip. Landscape 3:2. Background type T: transparent background, PNG with alpha.\nA horizontal strip of sharp ancient bronze spikes, pointing straight up, seamless left to right: the left and right edges continue into each other.\nThe spikes are worn and rust-stained bronze, set in a low dark stone socket strip along the bottom. Clearly dangerous: sharp tips, no rounded shapes.\nThe strip is about 3 times wider than tall and fills the full width. Gold rim light on the tips, warm brown shade at the base. Transparency above.",
+  "style_header": "the environment prompts doc's style header, pasted before the prompt (Batch 2 routine)",
+  "attachments": [
+    "Docs/Art/Reference/styleframe_A_v1.png",
+    "DesignImages/14_environment-breakdown.png",
+    "ENV-10a stone fill (per the doc)"
+  ],
+  "saved": "2026-09-29T20:21:47Z",
+  "original_name": "TRAP-04.png",
+  "sha256": "0dba37f7cf424d924ba62a0cbabf7d192cc95bd13463fbe76b83de9e015f8c05"
+}

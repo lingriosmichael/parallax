@@ -1,0 +1,17 @@
+{
+  "asset": "TRAP-09",
+  "file": "TRAP-09_storm_cloud_v1.png",
+  "source": "ChatGPT (developer, manual; Chat T2)",
+  "ticket": "PAX-A13, rulings §12 R7/R10 (Batch 2)",
+  "prompt_doc": "Docs/Art/Traps/A13_ChatGPT_trap_bodies.md",
+  "prompt": "Asset TRAP-09: heavy cloud. Landscape 3:2. Background type T: transparent background, PNG with alpha.\nOne single cloud, centred, about 2.5 times wider than tall: puffy golden-lit top like the sky clouds in the reference, and a noticeably darker, heavier warm-grey belly underneath with a flat-ish bottom.\nSoft edges, but a clear silhouette. No lightning, no rain. Transparency around it.",
+  "style_header": "the environment prompts doc's style header, pasted before the prompt (Batch 2 routine)",
+  "attachments": [
+    "Docs/Art/Reference/styleframe_A_v1.png",
+    "DesignImages/14_environment-breakdown.png",
+    "ENV-10a stone fill (per the doc)"
+  ],
+  "saved": "2026-09-29T20:21:47Z",
+  "original_name": "TRAP-09.png",
+  "sha256": "a4c424083aab7c6bf5daf14914d1297d1254f3713bab7080c47a1054fa7dde4e"
+}

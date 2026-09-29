@@ -1,6 +1,6 @@
 # PAX-A13 · Trap art kit and trap animation (absorbs PAX-V05)
 
-**Status:** Phase 1 ruled 2026-09-29; style gate ruled 2026-09-29 (§12); full kit in progress
+**Status:** Done 2026-09-30. Phase 1 ruled 2026-09-29; style gate ruled 2026-09-29 (§12); final bodies TRAP-04 to 13 in; handover §13; follow-up PAX-096
 
 **Folder:** `Docs/A_TASKS/` · **Phase:** E, look & feel · **Author:** the Architect · **Implementer:** Claude Code
 **Depends on:** PAX-V03 (look slice, performance budget) and the environment art: still images the developer generates in ChatGPT and adds to the repo. See §8.1 for what happens if either isn't in yet.
@@ -242,3 +242,50 @@ Added 2026-09-29 (review round 1 Blocker, ruled by the developer; kept): `Editor
 - Only stop early for: a change that would move a tick, collider or route pin; a test that can't pass without breaking a rule in §3; or anything that would spend credits past the approved total. Everything else: decide, note the decision in the handover, and keep going.
 - The handover lists: every row and whether its body is final or PLACEHOLDER; credits spent per line and the balance; the full-suite total before and after the developer's rebuild; the reveals hardest to keep pixel-identical; what to watch in the Trap Lab and which levels; and exactly which PARALLAX/Setup menus the developer runs and saves afterwards.
 - Don't commit.
+
+## 13 · Handover (Done, 2026-09-30)
+
+**Bodies: all final, no PLACEHOLDER left.** TRAP-01 to 03 and TRAP-04 to 13 are ChatGPT stills (Chat T1 and T2), each in
+`Art_Source/Traps_ChatGPT/` with a sidecar naming its prompt. T04 to T08 are AutoSprite effects. Bolt, flash, pulse
+ring and motes are code effects (R7). `trap_process.py --check` reproduces all 82 PNGs identically.
+- Processing fixes for Batch 2: the spear is cut at the gaps between its pieces (an equal-thirds cut put part of the
+  head's collar into the shaft); the shaft is cropped to its straight middle (its rounded ends made the pole look like
+  separate logs); the spike strip is cropped to whole spike periods (no doubled spike at the repeat).
+- TRAP-07: the ring (about 4:1) and the mark (about 1.6:1) are wider or narrower than the prompt's 2:1 and 3:1; `Fit`
+  keeps them inside the grey-box's cue boxes (ring about 1.5 x 0.39 u, mark 0.30 x 0.20 u).
+
+**Two notes for play (the developer judges):**
+- **TRAP-09, the storm cloud, may read too dark while asleep.** R2 wants it to pass for a sky cloud. If it gives the trap
+  away, regenerate with "only a slightly darker belly, mostly golden-lit, like a normal sky cloud".
+- **TRAP-05, the spear: ChatGPT drew the head pointing left** although the prompt says right; processing mirrors it. On
+  any regeneration, add "the blade's tip on the right side of the image" to the prompt.
+
+**Credits:** 16 spent of 40 planned (80 ceiling): T01 to T06 1 each, T07 and T08 5 each. No paid call since; balance 1,498
+at the last `GET /account`. `trap_kit.py animate --execute` refuses (R7).
+
+**Tests:** full suite in batch mode on the clone with the final bodies: 1,480 total, 1,478 passed, the 2
+`SavedSceneSyncTests` failing only because the saved scenes held the placeholders' sprite sizes. After the developer's
+Rebuild All Levels and Trap Lab setup, the scene-reading fixtures in the Editor all pass: `SavedSceneSyncTests` 2/2,
+`LevelSceneTests` 10/10, `LevelSceneTimingTests` and `LevelSceneTriggerTests` 2/2, `SceneLeakTests` 5/5. TrapArt tests
+with TRAP-07 in: 146/146. No test changed for the final bodies.
+
+**Scene changes from the rebuild:** 432 `SpriteRenderer.m_Size` values across the 20 levels and the Trap Lab, nothing
+added, removed or moved; plus the Trap Lab's room order (Room_4 first), accepted and explained in PAX-096.
+
+**Not verified:**
+- **Trap Flip Light Check** (flipped sprites under a point light): the developer checks it in the Scene view with
+  PARALLAX → Art → Trap Flip Light Check. Off-screen renders don't draw 2D point lights.
+- L020's draw calls at its chaos moment (R6): needs Play mode, Game view → Stats. The live-effect peak is 87 (L013),
+  under the 150 cap.
+- Anything on a device (Phase H).
+
+**Known limits:**
+- The contact sheet shows the inverter's cue at the orb rather than on the cat: the route harness never calls
+  `LateUpdate`, where `InverterTrap` moves it. In play it follows the cat.
+- The storm scorch lasts only as long as the strike.
+- L011's background covers only part of the view (environment work).
+
+**Open follow-up: PAX-096** (`Docs/0_TASKS/PAX-096.md`, Draft):
+1. `[DefaultExecutionOrder]` on `InverterArt`, so the cue never lags the cat by a frame.
+2. The Trap Lab setup (PAX-045) sets each room's sibling index explicitly, so rebuilds give a stable child order.
+   Checked: running the setup twice gives the same order; the reorder comes from rebuilt rooms being recreated at the end.

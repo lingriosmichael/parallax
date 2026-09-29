@@ -1,0 +1,17 @@
+{
+  "asset": "TRAP-06",
+  "file": "TRAP-06_inverter_orb_v1.png",
+  "source": "ChatGPT (developer, manual; Chat T2)",
+  "ticket": "PAX-A13, rulings §12 R7/R10 (Batch 2)",
+  "prompt_doc": "Docs/Art/Traps/A13_ChatGPT_trap_bodies.md",
+  "prompt": "Asset TRAP-06: inverter orb. Square 1:1. Background type B: pure black background, #000000.\nOne floating orb of warm golden light, centred, about half the image width: a bright gold core with a slow swirl of two interlocking curls inside it, and a soft warm halo fading to pure black.\nNo cyan, no blue. No frame, no pedestal.",
+  "style_header": "the environment prompts doc's style header, pasted before the prompt (Batch 2 routine)",
+  "attachments": [
+    "Docs/Art/Reference/styleframe_A_v1.png",
+    "DesignImages/14_environment-breakdown.png",
+    "ENV-10a stone fill (per the doc)"
+  ],
+  "saved": "2026-09-29T20:21:47Z",
+  "original_name": "TRAP-06.png",
+  "sha256": "10f09830baedea2c5aaf78ef1cdeb078578ae5c71ffb1fbb05a5894aaaf9008e"
+}

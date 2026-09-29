@@ -1,0 +1,17 @@
+{
+  "asset": "TRAP-13",
+  "file": "TRAP-13_leaves_v1.png",
+  "source": "ChatGPT (developer, manual; Chat T2)",
+  "ticket": "PAX-A13, rulings §12 R7/R10 (Batch 2)",
+  "prompt_doc": "Docs/Art/Traps/A13_ChatGPT_trap_bodies.md",
+  "prompt": "Asset TRAP-13: leaves. Square 1:1. Background type T: transparent background, PNG with alpha.\nSix separate small leaves in a 3 x 2 grid, spaced apart, none touching: broad green-gold vine leaves at different angles, like those on the climbable vine. Gold rim light on the edges. Transparency around each.",
+  "style_header": "the environment prompts doc's style header, pasted before the prompt (Batch 2 routine)",
+  "attachments": [
+    "Docs/Art/Reference/styleframe_A_v1.png",
+    "DesignImages/14_environment-breakdown.png",
+    "ENV-10a stone fill (per the doc)"
+  ],
+  "saved": "2026-09-29T20:21:47Z",
+  "original_name": "TRAP-13.png",
+  "sha256": "2f4eefc85a64488862573644f5797d217810ba7f28ef044679e6c27d2aa03b4e"
+}

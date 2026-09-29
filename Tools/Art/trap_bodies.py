@@ -219,6 +219,43 @@ def bodies(emit, load_rgba, luminance_alpha, clean_alpha, trim, fit, resize, gri
         p = chatgpt / f"{name}_v1.png"
         return p if p.exists() else None
 
+    def pieces(a, count, threshold=0.03):
+        """The `count` widest pieces of a row of separate pieces, left to right, split where a whole column is empty (an
+        equal-width cut would slice a piece that runs past its third, as the spear head's collar does)."""
+        filled = (a[..., 3] > threshold).any(axis=0)
+        runs, start = [], None
+        for x, f in enumerate(list(filled) + [False]):
+            if f and start is None: start = x
+            elif not f and start is not None: runs.append((start, x)); start = None
+        runs = sorted(sorted(runs, key=lambda r: r[1] - r[0], reverse=True)[:count])
+        if len(runs) < count: raise ValueError(f"expected {count} separate pieces, found {len(runs)}")
+        return [trim(a[:, x0:x1]) for x0, x1 in runs]
+
+    def whole_periods(a, threshold=0.5):
+        """A spike strip cropped to whole spike periods (tip spacing measured from the art), cut halfway between tips, so
+        it repeats without a doubled or missing spike at the seam."""
+        opaque = a[..., 3] > threshold
+        h, w = opaque.shape
+        top = np.where(opaque.any(axis=0), opaque.argmax(axis=0), h)
+        tips = [x for x in range(2, w - 2) if top[x] < h * 0.35 and top[x] <= top[x - 2:x + 3].min()]
+        merged = []
+        for x in tips:
+            if merged and x - merged[-1][-1] <= 3: merged[-1].append(x)
+            else: merged.append([x])
+        centres = [sum(g) / len(g) for g in merged]
+        if len(centres) < 3: raise ValueError("couldn't find the spike tips")
+        period = float(np.median(np.diff(centres)))
+        x0 = centres[0] + period / 2
+        n = int((centres[-1] - x0) // period)
+        return a[:, int(round(x0)):int(round(x0 + n * period))]
+
+    def straight_run(a, fraction=0.97, inset=2, threshold=0.5):
+        """A shaft cropped to its full-thickness middle (rounded or capped ends removed), so it repeats as one pole."""
+        height = (a[..., 3] > threshold).sum(axis=0)
+        typical = np.median(height[height > 0])   # the wood's thickness; a wrap band may stand proud of it
+        full = np.nonzero(height >= fraction * typical)[0]
+        return a[:, full[0] + inset:full[-1] + 1 - inset]
+
     def tile_height(a, height_px):
         h, w = a.shape[:2]
         return resize(a, max(1, round(w * height_px / h)), height_px)
@@ -238,9 +275,9 @@ def bodies(emit, load_rgba, luminance_alpha, clean_alpha, trim, fit, resize, gri
             else:
                 emit(name, out, tiled=tiled, normal=normal, placeholder=key)
 
-    body("TRAP-04_spike_strip", "Bodies/TRAP-04_spike_strip", lambda s: tile_height(clean_alpha(trim(load_rgba(s))), 45), ph_spike_strip, tiled=True)
-    body("TRAP-05_spear", "Bodies/TRAP-05_spear_head", lambda s: fit(clean_alpha(trim(grid(clean_alpha(load_rgba(s)), 3, 1, 0)[0])), 0.75, 0.34), ph_spear_head)
-    body("TRAP-05_spear", "Bodies/TRAP-05_spear_shaft", lambda s: tile_height(clean_alpha(trim(grid(clean_alpha(load_rgba(s)), 3, 1, 1)[0])), 44), ph_spear_shaft, tiled=True)
+    body("TRAP-04_spike_strip", "Bodies/TRAP-04_spike_strip", lambda s: tile_height(whole_periods(clean_alpha(trim(load_rgba(s)))), 45), ph_spike_strip, tiled=True)
+    body("TRAP-05_spear", "Bodies/TRAP-05_spear_head", lambda s: fit(clean_alpha(np.ascontiguousarray(pieces(clean_alpha(load_rgba(s)), 3)[0][:, ::-1])), 0.75, 0.34), ph_spear_head)   # the v1 image points left; the kit faces right
+    body("TRAP-05_spear", "Bodies/TRAP-05_spear_shaft", lambda s: tile_height(straight_run(clean_alpha(pieces(clean_alpha(load_rgba(s)), 3)[1])), 44), ph_spear_shaft, tiled=True)
     body("TRAP-06_inverter_orb", "Bodies/TRAP-06_inverter_orb", lambda s: fit(trim(luminance_alpha(load_rgba(s))), 0.6, 0.6), ph_orb)
     body("TRAP-07_inverter_cue", "Bodies/TRAP-07_cue_ring", lambda s: fit(trim(grid(luminance_alpha(load_rgba(s)), 1, 2, 0)[0]), 1.5, 1.1), ph_cue_ring, normal=False)
     body("TRAP-07_inverter_cue", "Bodies/TRAP-07_cue_mark", lambda s: fit(trim(grid(luminance_alpha(load_rgba(s)), 1, 2, 0)[1]), 0.7, 0.2), ph_cue_mark, normal=False)

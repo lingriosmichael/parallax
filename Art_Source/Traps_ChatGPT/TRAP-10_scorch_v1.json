@@ -1,0 +1,17 @@
+{
+  "asset": "TRAP-10",
+  "file": "TRAP-10_scorch_v1.png",
+  "source": "ChatGPT (developer, manual; Chat T2)",
+  "ticket": "PAX-A13, rulings §12 R7/R10 (Batch 2)",
+  "prompt_doc": "Docs/Art/Traps/A13_ChatGPT_trap_bodies.md",
+  "prompt": "Asset TRAP-10: scorch mark. Landscape 3:2. Background type T: transparent background, PNG with alpha.\nA flat scorch mark as seen from the side, lying on an invisible straight level line: dark warm-brown burnt streaks spreading sideways from a centre, a few tiny glowing embers. 4 times wider than tall. Never pure black. Transparency around it.",
+  "style_header": "the environment prompts doc's style header, pasted before the prompt (Batch 2 routine)",
+  "attachments": [
+    "Docs/Art/Reference/styleframe_A_v1.png",
+    "DesignImages/14_environment-breakdown.png",
+    "ENV-10a stone fill (per the doc)"
+  ],
+  "saved": "2026-09-29T20:21:47Z",
+  "original_name": "TRAP-10.png",
+  "sha256": "3d18457bf391b5e7d176818bde163229e279373d7ef4643ddfa3df26a0a9dba0"
+}

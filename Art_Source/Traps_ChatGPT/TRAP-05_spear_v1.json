@@ -1,0 +1,17 @@
+{
+  "asset": "TRAP-05",
+  "file": "TRAP-05_spear_v1.png",
+  "source": "ChatGPT (developer, manual; Chat T2)",
+  "ticket": "PAX-A13, rulings §12 R7/R10 (Batch 2)",
+  "prompt_doc": "Docs/Art/Traps/A13_ChatGPT_trap_bodies.md",
+  "prompt": "Asset TRAP-05: spear, three pieces. Landscape 3:2. Background type T: transparent background, PNG with alpha.\nThree separate pieces in a row, spaced apart, none touching, all the same thickness, strictly side view, pointing right:\n1. The spearhead: a broad, heavy bronze blade with a short socket, pointing right.\n2. A straight middle section of thick dark wooden shaft, seamless left to right, with a leather wrap band.\n3. The butt end of the shaft, with a small bronze cap.\nSturdy enough to stand on. Gold rim light along the top edge, warm brown shade underneath. Transparency around each.",
+  "style_header": "the environment prompts doc's style header, pasted before the prompt (Batch 2 routine)",
+  "attachments": [
+    "Docs/Art/Reference/styleframe_A_v1.png",
+    "DesignImages/14_environment-breakdown.png",
+    "ENV-10a stone fill (per the doc)"
+  ],
+  "saved": "2026-09-29T20:21:47Z",
+  "original_name": "TRAP-05.png",
+  "sha256": "8927699bbf5e8382bd7b610cb748ce6672ec4cccc608b0c9d32676a46d0032e3"
+}

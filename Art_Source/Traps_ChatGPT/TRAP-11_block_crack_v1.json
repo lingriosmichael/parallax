@@ -1,0 +1,17 @@
+{
+  "asset": "TRAP-11",
+  "file": "TRAP-11_block_crack_v1.png",
+  "source": "ChatGPT (developer, manual; Chat T2)",
+  "ticket": "PAX-A13, rulings §12 R7/R10 (Batch 2)",
+  "prompt_doc": "Docs/Art/Traps/A13_ChatGPT_trap_bodies.md",
+  "prompt": "Asset TRAP-11: crack overlay. Square 1:1. Background type T: transparent background, PNG with alpha.\nOnly thin jagged hairline cracks, dark warm brown, spreading from the centre towards the edges like breaking stone, with a few tiny chips of grit. Nothing else: no stone, no background. Crisp lines. Transparency everywhere else.",
+  "style_header": "the environment prompts doc's style header, pasted before the prompt (Batch 2 routine)",
+  "attachments": [
+    "Docs/Art/Reference/styleframe_A_v1.png",
+    "DesignImages/14_environment-breakdown.png",
+    "ENV-10a stone fill (per the doc)"
+  ],
+  "saved": "2026-09-29T20:21:47Z",
+  "original_name": "TRAP-11.png",
+  "sha256": "a0636703e99e7747657df59ff69206078f5b70aaa73b56df99c2f6d4139d825b"
+}
