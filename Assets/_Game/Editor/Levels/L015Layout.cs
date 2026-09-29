@@ -15,7 +15,7 @@ namespace Parallax.Editor.Levels
     //  - Open (section 0): jump the gap. Landing sets off Arrow_3 (disguised, shin height, from Post_C): jump it. The floor
     //    ahead (Collapse_2) gives way as the cat lands: shelter under Overhang_B and wait out a strike until it comes back.
     //    Dead end D1: back to the start alcove under Start_Roof.
-    //  - Shelter (section 1): Fake_4 looks like cover and isn't; Overhang_4, at the mover pit's lip, is. Wait under it for
+    //  - Shelter (section 1): past Roof_4 to Overhang_4, at the mover pit's lip. Wait under it for
     //    Mover_M (Carry, 0.1 u a tick, faster than the cloud) to dock, ride it standing, step off onto Floor_D. Then the spear
     //    pit: walking on sets off Spear_P, which sticks in Floor_D's face as the one floor under Roof_S; standing on it sets
     //    off Spear_B (90 ticks later) as the bridge; wait under the roof through a strike, then jump onto the bridge.
@@ -60,9 +60,11 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Hazard,"Pit_S",(37f,-2.85f),(6f,.3f),hazardRole:Pit),
                 E(SoloRoomElementKind.PitBottom,"Pit9_Floor",(52.1f,-3.25f),(11.8f,.5f)),
                 E(SoloRoomElementKind.Hazard,"Pit_9",(52.1f,-2.85f),(11.8f,.3f),hazardRole:Pit),
-                // Cover (fixed roofs): the start alcove, Overhang_B, Overhang_4, Roof_S, Roof_9.
+                // Cover (fixed roofs): the start alcove, Overhang_B, Roof_4, Overhang_4, Roof_S, Roof_9. Every roof under the
+                // cloud is real: a strike through a roof reads as a bug, not a trap (the developer's play, D-093 (4c)).
                 E(SoloRoomElementKind.Ceiling,"Start_Roof",(.9f,CoverY),(1.8f,CoverH)),
                 E(SoloRoomElementKind.Ceiling,"Overhang_B",(10.7f,CoverY),(2.2f,CoverH)),
+                E(SoloRoomElementKind.Ceiling,"Roof_4",(20.5f,CoverY),(2f,CoverH)),
                 E(SoloRoomElementKind.Ceiling,"Overhang_4",(24.25f,CoverY),(1.5f,CoverH)),
                 E(SoloRoomElementKind.Ceiling,"Roof_S",(34.4f,CoverY),(1.6f,CoverH)),
                 // Roof_9 covers P1 (top 0.8), so it sits 0.8 higher than the others.
@@ -93,8 +95,6 @@ namespace Parallax.Editor.Levels
                 settings:new SoloRoomTrapSettings(delayTicks:1,triggerSource:TrapTriggerSource.Chain,chainSource:"Arrow_3",repeatMode:TrapRepeatMode.Rearm,cooldownTicks:150)));
 
             // Shelter.
-            // Fake_4 gives way on a touch, so its underside (2.35) sits above a standing jump's reach (2.16) plus 0.15.
-            elements.Add(E(SoloRoomElementKind.FakePlatform,"Fake_4",(20.5f,2.6f),(2f,CoverH)));
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Mover_M",(26.05f,-.25f),(2f,.5f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
                 new SoloRoomTrapSettings(offset:new Vector2(2.9f,0f),moveTicks:29,holdTicks:40,returnTicks:29,repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:0,cooldownTicks:98,movingKind:MovingTrapKind.Solid))));
             elements.Add(Spear("Spear_P", 40.25f, -.2f, ArrowDirection.Left, 34f, 1f, (32f, 4.5f), (.5f, 9f), new SoloRoomTrapSettings(delayTicks:0)));
@@ -120,7 +120,7 @@ namespace Parallax.Editor.Levels
 
             var sections = new[] {
                 CheckpointSection.Start("Open", new Vector2(2f, 0f), new[] { "Cloud", "Arrow_3", "Collapse_2" }),
-                new CheckpointSection("Shelter", new Vector2(18.5f, 0f), new Rect(17.9f, 0f, .2f, 9f), new[] { "Fake_4", "Mover_M", "Spear_P", "Spear_B" }),
+                new CheckpointSection("Shelter", new Vector2(18.5f, 0f), new Rect(17.9f, 0f, .2f, 9f), new[] { "Mover_M", "Spear_P", "Spear_B" }),
                 new CheckpointSection("Run", new Vector2(41.2f, 0f), new Rect(40.6f, 0f, .2f, 9f), new[] { "Block_1", "Block_2", "Block_3", "D3", "Arrow_9", "Spear_10" }),
             };
             // D-083: the dance is a precision section (Floor_E's end to P1). Its bait gaps: with D3 gone, neither D2 (1.7 below

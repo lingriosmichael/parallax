@@ -83,8 +83,6 @@ namespace Parallax.Editor.Levels
 
             return new RoomRoutes(solution,
                 // Storm.
-                new Betrayal("T1 [NW]: a cat that shelters under Fake_1 is struck through it", "Cloud", DeathCause.Hazard,
-                    B("the fake cover", Roof, 1, Until(XAtMost(28.1f)), Release(), Until(Dead())), revealedBy: "Cloud"),
                 new Betrayal("T2 [J]: a cat that walks on from the curb meets Arrow_2", "Arrow_2", DeathCause.Hazard,
                     B("walk on", Roof, 6, Hold(Left), Until(Dead()))),
                 new Betrayal("T3 [W]: a cat that waits on G_1's vent instead of under Roof_2 is struck", "Cloud", DeathCause.Hazard,

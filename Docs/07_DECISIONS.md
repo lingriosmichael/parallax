@@ -2130,6 +2130,19 @@ PAX-060's report names both.
   - Reveals (the 2026-09-28 rule): every reveal is on screen from its first change to the kill at every aspect; T9's
     (Arrow_9's tell, t1068) 15 ticks before its last escape (staying on P1, t1082), measured.
 
+(4c) **Real cover only (the developer's play, 2026-09-29).** A strike drawn through a roof reads as a bug, not a trap:
+the fake roofs under a cloud never gave way (they sat above a jump's reach), so the bolt simply passed through them. Every
+roof under a cloud is now real. D-090 (4) is unchanged (fake platforms still don't stop a strike); no level puts one
+where it would look like cover.
+- **L015:** Fake_4 is now Roof_4, a fixed roof (x 19.5–21.5, y 2.3–2.8, like the other covers); T4 [LW] (shelter under
+  Fake_4) is removed. Answers B 2, J 1, NJ 3, NW 3, OL 1, SS 1, W 1; the element in 5 betrayals. Nothing else moved:
+  1284 ticks, the same sections, windows, chaos and 10 killers (8 in sequence).
+- **L018:** Fake_1 is now Roof_1, a fixed roof (x 27.2–28.8, y 2.3–2.8); T1 [NW] (shelter under Fake_1) is removed.
+  Answers B 2, J 3, NW 2, OL 2, SS 1, W 3; the element in 8 betrayals. The launch jump's window is 31 ticks (was 29;
+  measured, cause not traced); nothing else moved: 1143 ticks, the same sections, chaos and
+  12 killers (11 in sequence). Fake_A (Sky A, above the cloud) stays: it's a landing, not a roof.
+- **L020:** the cloud (x 20–30, bottom 22.1) has no fake roof under it; unchanged. L014, L016, L017 and L019 have no cloud.
+
 (5) **Limits found (half A):**
 - The coverage search can't see geyser launches (§12 Q5): a hidden hazard in a storey that only a launch reaches is
   judged from the checkpoint's side. L013's `Spikes_D2` now takes its whole ledge's storey as its trigger (§13 R3), the

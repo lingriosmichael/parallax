@@ -12,7 +12,7 @@ namespace Parallax.Editor.Levels
     // (StormCloudMath.Hits). 32 x 22, start bottom right, door top right, a U: west along the ground under the cloud,
     // a launch above it and west across Sky A, back down into the storm on the drop, a vine up through the cloud's band,
     // east along Sky B under the downdraft, a launch onto the Top, and a last launch onto the Crown with the door.
-    //  - Storm (section 0): the cloud wakes a step after the start. Fake_1 looks like cover and isn't. Arrow_2 comes
+    //  - Storm (section 0): the cloud wakes a step after the start; Roof_1 is the first cover on the way. Arrow_2 comes
     //    along the ground from the Plinth: jump it. Roof_2 is real cover; wait under it through a strike, then step onto
     //    G_1's vent in its tell and ride the eruption above the cloud, steering hard left past Fake_A onto SL_1.
     //  - Sky (section 1): Spear_S crosses Sky A at shin height from Wall_L: jump it. SL_2 and SL_3 give way under a cat
@@ -57,8 +57,10 @@ namespace Parallax.Editor.Levels
                 // The Plinth (top 0.8) holds G_1's vent and Arrow_2's launcher; Curb_1 ends Arrow_2's lane.
                 E(SoloRoomElementKind.Floor,"Plinth",(20.75f,.4f),(1.5f,.8f)),
                 E(SoloRoomElementKind.Wall,"Curb_1",(26f,.3f),(.4f,.6f)),
-                // Cover (fixed roofs): Start_Roof over the start, Roof_2 by the vent, Roof_5 by the drop.
+                // Cover (fixed roofs): Start_Roof over the start, Roof_1 a step on, Roof_2 by the vent, Roof_5 by the drop. Every
+                // roof under the cloud is real: a strike through a roof reads as a bug, not a trap (the developer's play, D-093 (4c)).
                 E(SoloRoomElementKind.Ceiling,"Start_Roof",(31.3f,CoverY),(1.4f,CoverH)),
+                E(SoloRoomElementKind.Ceiling,"Roof_1",(28f,CoverY),(1.6f,CoverH)),
                 E(SoloRoomElementKind.Ceiling,"Roof_2",(22.7f,CoverY),(1.4f,CoverH)),
                 E(SoloRoomElementKind.Ceiling,"Roof_5",(7.35f,CoverY),(.9f,CoverH)),
                 // Sky A (tops 4.6): SL_1, the landing (SL_2, SL_3 and Drop_3 are traps); Post_W, Spear_S's host on Wall_L.
@@ -91,8 +93,6 @@ namespace Parallax.Editor.Levels
             // Storm. The cloud wakes at the cut x 29.4-29.8, one step from the start; its centre ranges over x 1-30.9.
             elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(30.5f,CloudY),(2f,.8f),(29.6f,5f),(.4f,10f),
                 new SoloRoomTrapSettings(new StormCloudSettings(1f, 30.9f), new SoloRoomTrapSettings(delayTicks:0))));
-            // Fake_1 gives way on a touch, so its underside (2.35) sits above a standing jump's reach (2.16) plus 0.15.
-            elements.Add(E(SoloRoomElementKind.FakePlatform,"Fake_1",(28f,2.6f),(1.6f,CoverH)));
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_2",(21.25f,.28f),(.5f,.4f),(25.2f,5f),(.4f,10f),
                 new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,.28f,25.8f,unitsPerTick:.36f,tellTicks:40,disguised:true),new SoloRoomTrapSettings(delayTicks:0))));
             elements.Add(E(SoloRoomElementKind.Geyser,"G_1",(20.75f,.65f),(1f,.3f),settings:Geyser(150, 230)));
@@ -143,7 +143,7 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Geyser,"G_C",(28f,TopY + .65f),(1f,.3f),settings:Geyser(150, 980)));
 
             var sections = new[] {
-                CheckpointSection.Start("Storm", new Vector2(30.5f, 0f), new[] { "Cloud", "Fake_1", "Arrow_2", "G_1", "Fake_A" }),
+                CheckpointSection.Start("Storm", new Vector2(30.5f, 0f), new[] { "Cloud", "Arrow_2", "G_1", "Fake_A" }),
                 new CheckpointSection("Sky", new Vector2(16f, SkyTop), new Rect(16.4f, SkyTop, .2f, 2.3f), new[] { "Spear_S", "SL_2", "Spikes_4", "SL_3", "Spikes_3", "Drop_3", "Spikes_V", "Collapse_V", "V_6" }),
                 new CheckpointSection("Top", new Vector2(4.7f, SkyBTop), new Rect(5.4f, SkyBTop, .2f, 2.3f),
                     new[] { "Block_T", "G_D", "Arrow_B", "G_B", "TL_2", "TL_3", "TL_4", "Spikes_7", "Block_7", "G_C", "V_9" }),

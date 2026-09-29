@@ -28,7 +28,7 @@ namespace Parallax.Editor.Levels
             Until(Home("Collapse_2")), Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(15.9f)), Jump(), Until(GroundedOn("Floor_C")),
         };
 
-        // Shelter: past Fake_4 to Overhang_4; wait for Mover_M at home, ride it standing, step off onto Floor_D. Walk on to set
+        // Shelter: past Roof_4 to Overhang_4; wait for Mover_M at home, ride it standing, step off onto Floor_D. Walk on to set
         // off Spear_P, stand on it under Roof_S (setting off Spear_B), wait for the bridge, jump onto it and up onto Floor_E.
         static RouteStep[] Shelter() => new[] {
             Until(XAtLeast(24.2f)), Release(), Until(Still()),
@@ -100,8 +100,6 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(Grounded)", "walk on", Hold(Right), Until(Dead())), revealedBy: "Collapse_2"),
                 new Betrayal("T3 [J]: a cat that stays down under the overhang is struck by Arrow_3", "Arrow_3", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Still)", "stay down", Until(Dead()))),
-                new Betrayal("T4 [LW]: a cat that shelters under Fake_4 is struck through it", "Cloud", DeathCause.Hazard,
-                    FromShelter("the fake overhang", Until(XAtLeast(20.3f)), Release(), Until(Dead())), revealedBy: "Cloud"),
                 new Betrayal("T4b [NJ]: a cat that jumps the mover's pit falls into it", "Pit_M", DeathCause.Hazard,
                     FromShelter("jump the pit", Until(XAtLeast(24.2f)), Release(), Until(Still()), Until(Home("Mover_M")), Hold(Right), Until(XAtLeast(24.6f)), Jump(), Until(Dead())),
                     revealedBy: "Mover_M"),
