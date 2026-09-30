@@ -25,7 +25,7 @@ namespace Parallax.Editor.Art
     /// Tools/Art/cat_capture_sheet.py. Nothing is saved to a scene or asset; the open scenes are restored.
     /// Batch: -executeMethod Parallax.Editor.Art.CatCapture.Run -captureOut &lt;dir&gt; [-captureFilter &lt;regex&gt;]
     /// [-captureNoImages] [-captureSheets]. See HARNESS.md.</summary>
-    public static class CatCapture
+    public static partial class CatCapture
     {
         public const float FrameRate = 60f;             // the phone's display rate the frames emulate
         public const float RenderPixelsPerUnit = 160f;  // twice phone scale (80 px/u), so details show
@@ -33,7 +33,7 @@ namespace Parallax.Editor.Art
         const int DeathSheetAfter = 44;                 // a death sheet runs this many frames on: the whole 0.6 s hold and the respawn
         const int WalkOffJumpLookback = 3;              // frames: leaving the ground this soon after a jump is a takeoff, not a walk-off
         const float CameraFrameMarginUnits = 0.12f;     // the cat's drawn pixels are kept at least this far inside the window
-        const int SheetBefore = 8, SheetAfter = 24, SheetMaxPerKind = 3;   // a transition sheet's frames, and how many of each kind
+        const int SheetBefore = 8, SheetAfter = 24, SheetMaxPerKind = 8;   // a transition sheet's frames, and how many of each kind
         const float InterpolationTeleportUnits = 1f;  // a tick move this long (a respawn) shows the new pose at once
         const float CameraSmoothTime = 0.1f;            // seconds; the follow is a critically damped spring
         const float CameraSnapUnits = 2f;               // a jump this far (a respawn) snaps the view
@@ -100,6 +100,7 @@ namespace Parallax.Editor.Art
             readonly List<CaptureStep> steps; int index, inStep;
             public Runner(List<CaptureStep> steps) => this.steps = steps;
             public string Label => index < steps.Count ? steps[index].Label : "end";
+            public bool Setup => index < steps.Count && steps[index].Setup;
             public bool Next(CatCaptureRig rig, out CatCommand command)
             {
                 while (index < steps.Count)
@@ -137,6 +138,7 @@ namespace Parallax.Editor.Art
 
             session.Clear();
             CatCaptureRig rig = CatCaptureRig.Build(scenario.Room(session), scenario.StartX);
+            CaptureSpeeds speeds = Speeds(rig);
             var shots = images ? new TrapShots.Rig() : null;
             var grid = new CatCaptureGrid(rig, RenderPixelsPerUnit);
             string[] aboveCat = DrawnAboveCat(rig);   // at the start; replaced by the first death-hold frame's list
@@ -238,11 +240,15 @@ namespace Parallax.Editor.Art
                 // A motor flag flipping on the respawn frames (stale for one tick after RespawnAt) is not a takeoff or a landing.
                 .Where(tr => !((tr.Kind == "takeoff" || tr.Kind == "landing") && rows.Skip(Mathf.Max(0, tr.Frame - 3)).Take(4).Any(r => r.Holding)))
                 .OrderBy(tr => tr.Frame).ToArray();
+            // PAX-V07 item 1: every ground change (Idle / Walk / Run / Turn, a turn, a scripted start or stop) also gets a
+            // paw strip.
+            foreach (CaptureTransition tr in transitions)
+                if (tr.Kind == "turn" || tr.Kind.StartsWith("step: ") || (GroundState(tr.From) && GroundState(tr.To))) tr.Strip = true;
             File.WriteAllText(Path.Combine(dir, "transitions.json"), "[" + string.Join(",\n", transitions.Select(tr =>
                 $"{{\"kind\":\"{tr.Kind}\",\"from\":\"{tr.From}\",\"to\":\"{tr.To}\",\"frame\":{tr.Frame},\"start\":{tr.Start},\"end\":{tr.End},\"strip\":{(tr.Strip ? "true" : "false")}}}")) + "]\n");
             File.WriteAllText(Path.Combine(dir, "scenario.json"),
                 $"{{\"name\":\"{scenario.Name}\",\"description\":\"{scenario.Description}\",\"gravity\":\"{(scenario.Name.EndsWith("_up") ? "up" : "down")}\",\"frame_rate\":{FrameRate},\"render_ppu\":{RenderPixelsPerUnit},\"phone_ppu\":{CaptureThresholds.PhonePixelsPerUnit},\"view_units\":[{ViewWidthUnits},{ViewHeightUnits}],\"images\":{(images ? "true" : "false")},\"drawn_above_cat\":[{string.Join(",", aboveCat.Select(a => "\"" + a + "\""))}],\"grid\":{{\"step\":{CatCaptureGrid.GridStep},\"tick\":{CatCaptureGrid.TickStep}}}}}\n");
-            CatCaptureReport.Result result = CatCaptureReport.Evaluate(scenario.Name, rows, died, completed, scenario.ExpectDeath, parity);
+            CatCaptureReport.Result result = CatCaptureReport.Evaluate(scenario.Name, rows, died, completed, scenario.ExpectDeath, parity, speeds);
             File.WriteAllText(Path.Combine(dir, "checks.json"), result.Json + "\n");
             return result;
         }
@@ -252,7 +258,7 @@ namespace Parallax.Editor.Art
             Vector2 v = rig.Body.linearVelocity;
             return new FrameRow
             {
-                Frame = n, Time = t, Tick = rig.Tick, Step = runner.Label,
+                Frame = n, Time = t, Tick = rig.Tick, Step = runner.Label, Setup = runner.Setup,
                 State = rig.Presenter.State, Clip = rig.Presenter.ClipName, ClipFrame = rig.Presenter.FrameIndex, Facing = rig.Presenter.Facing,
                 Sprite = rig.BodyRenderer.sprite != null ? rig.BodyRenderer.sprite.name : "",
                 Grounded = rig.Cat.IsGrounded, Climbing = rig.Cat.IsClimbing, Jumped = rig.Cat.JumpedThisStep, Frozen = rig.Cat.IsFrozen,
@@ -326,6 +332,8 @@ namespace Parallax.Editor.Art
               .Append(",\"cat_box\":").Append(r.M.HasSprite ? $"[{F(r.M.BoxMin.x)},{F(r.M.BoxMin.y)},{F(r.M.BoxMax.x)},{F(r.M.BoxMax.y)}]" : "null")
               .Append(",\"surface\":\"").Append(r.M.Surface).Append('"')
               .Append(",\"contact_px\":").Append(r.M.ContactAlong.Length)
+              .Append(",\"contacts\":[").Append(string.Join(",", CatCaptureMath.ClusterRanges(r.M.ContactAlong, CaptureThresholds.ClusterGapSpritePx / Mathf.Max(1f, r.M.Ppu))
+                  .Select(c => $"[{F(c.x)},{F(c.y)}]"))).Append(']')
               .Append(",\"pop_phone_px\":").Append(r.PopPhonePx >= 0f ? F(r.PopPhonePx) : "null")
               .Append(",\"box_pop_phone_px\":").Append(r.BoxPopPhonePx >= 0f ? F(r.BoxPopPhonePx) : "null")
               .Append(",\"image\":").Append(r.Image != null ? "\"" + r.Image + "\"" : "null").Append('}');

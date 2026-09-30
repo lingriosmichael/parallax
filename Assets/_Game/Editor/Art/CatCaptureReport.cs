@@ -18,8 +18,20 @@ namespace Parallax.Editor.Art
         {
             new StateRule("air-state-while-grounded", "Rise or Fall shown while the motor has been grounded for more than one frame",
                 c => !c.Excluded && c.Air(c.Row.State) && c.Row.Grounded && c.GroundedFrames > 1),
-            new StateRule("ground-state-while-airborne", "Idle or Walk shown while the motor has been airborne (not climbing) for more than one frame",
-                c => !c.Excluded && (c.Row.State == CatAnimState.Idle || c.Row.State == CatAnimState.Walk) && !c.Row.Grounded && !c.Row.Climbing && c.AirborneFrames > 1),
+            new StateRule("ground-state-while-airborne", "Idle, Walk or Run shown while the motor has been airborne (not climbing) for more than one frame",
+                c => !c.Excluded && (c.Row.State == CatAnimState.Idle || c.Row.State == CatAnimState.Walk || c.Row.State == CatAnimState.Run) && !c.Row.Grounded && !c.Row.Climbing && c.AirborneFrames > 1),
+            // PAX-V07 item 1: the ground rows.
+            new StateRule("turn-off-ground", "Turn shown on a frame the motor isn't grounded (no Turn in the air)",
+                c => !c.Excluded && c.Row.State == CatAnimState.Turn && (!c.Row.Grounded || c.Row.Climbing)),
+            new StateRule("run-below-exit", "Run shown on the ground below runExitFraction x MaxSpeed (the drawn speed) for more than 2 frames",
+                c => !c.Excluded && c.RunSlowFrames > CaptureSpeeds.LagFrames),
+            new StateRule("walk-above-run", "Walk shown on the ground at or above runFraction x MaxSpeed (the drawn speed) for more than 2 frames",
+                c => !c.Excluded && c.WalkFastFrames > CaptureSpeeds.LagFrames),
+            new StateRule("one-frame-state", "a state shown for exactly one frame between two frames of other states (a flicker)",
+                c => !c.Excluded && c.Prev != null && c.Next != null && !c.Next.Holding && !c.Next.Frozen
+                     && c.Row.State != c.Prev.State && c.Row.State != c.Next.State),
+            new StateRule("facing-late", "on the ground, moving against the facing above walkEnter for longer than the Turn clip plus the lag",
+                c => !c.Excluded && c.Speeds != null && c.AgainstFacingFrames > Mathf.CeilToInt(c.Speeds.TurnSeconds * CatCapture.FrameRate) + CaptureSpeeds.LagFrames),
             new StateRule("climb-without-climbing", "Climb shown while the motor isn't climbing",
                 c => c.Row.State == CatAnimState.Climb && !c.Row.Climbing),
             new StateRule("land-late", "Land not shown by the frame after touchdown (after at least 3 airborne frames)",
@@ -29,10 +41,14 @@ namespace Parallax.Editor.Art
 
         public sealed class Result { public string Json; public string Line; public bool Pass; }
 
-        public static Result Evaluate(string scenario, List<FrameRow> rows, bool died, bool completed, bool expectDeath, string parity)
+        public static Result Evaluate(string scenario, List<FrameRow> rows, bool died, bool completed, bool expectDeath, string parity, CaptureSpeeds speeds = null)
         {
+            // PAX-V07 item 1: frames of a scenario's setup steps (getting into place) are rendered but not checked.
+            List<FrameRow> all = rows;
+            int setupFrames = rows.Count(r => r.Setup);
+            rows = rows.Where(r => !r.Setup).ToList();
             var j = new Json();
-            j.Open().Str("scenario", scenario).Num("frames", rows.Count).Num("ticks", rows.Count > 0 ? rows[^1].Tick : 0)
+            j.Open().Str("scenario", scenario).Num("setup_frames_unchecked", setupFrames).Num("frames", rows.Count).Num("ticks", rows.Count > 0 ? rows[^1].Tick : 0)
                 .Bool("died", died).Bool("expectDeath", expectDeath).Bool("completed", completed);
             bool pass = true;
             var line = new StringBuilder(scenario);
@@ -70,17 +86,24 @@ namespace Parallax.Editor.Art
             line.Append($" | gap max {gapMax:F1}sp mean {gapMean:F1}");
 
             // --- foot slide ---
-            List<(int plant, int lift, float drift)> plants = FootSlide(rows);
+            // A frame can only change on a 60 fps frame, so at a sprite change a paw that is exactly on its print in
+            // continuous time shows up to one frame's travel (speed / 60) off it; a slide keeps growing past that. The
+            // allowance per plant is 3 phone px plus that quantum at the plant's top speed (HARNESS.md).
+            var plants = FootSlide(rows);
+            float Quantum(float speed) => speed / CatCapture.FrameRate * CaptureThresholds.PhonePixelsPerUnit;
+            float Allowed((int plant, int lift, float drift, string sprites, float speed) p) => CaptureThresholds.FootSlidePhonePx + Quantum(p.speed);
             float slideMax = plants.Count > 0 ? plants.Max(p => p.drift) : 0f, slideMean = plants.Count > 0 ? plants.Average(p => p.drift) : 0f;
-            int slideOver = plants.Count(p => p.drift > CaptureThresholds.FootSlidePhonePx);
+            int slideOver = plants.Count(p => p.drift > Allowed(p));
+            int strictOver = plants.Count(p => p.drift > CaptureThresholds.FootSlidePhonePx);
             bool slidePass = slideOver == 0;
             pass &= slidePass;
-            j.Key("foot_slide").Open().Num("threshold_phone_px", CaptureThresholds.FootSlidePhonePx).Num("planted_paws", plants.Count)
-                .Num("max_phone_px", slideMax).Num("mean_phone_px", slideMean).Num("paws_over", slideOver)
-                .Raw("worst", "[" + string.Join(",", plants.OrderByDescending(p => p.drift).Take(10).Select(p =>
-                    $"{{\"plant_frame\":{p.plant},\"lift_frame\":{p.lift},\"drift_phone_px\":{F(p.drift)}}}")) + "]")
+            j.Key("foot_slide").Open().Num("threshold_phone_px", CaptureThresholds.FootSlidePhonePx)
+                .Str("allowance", "threshold + one 60 fps frame of travel at the plant's top speed").Num("planted_paws", plants.Count)
+                .Num("max_phone_px", slideMax).Num("mean_phone_px", slideMean).Num("paws_over", slideOver).Num("paws_over_3pp_without_allowance", strictOver)
+                .Raw("worst", "[" + string.Join(",", plants.OrderByDescending(p => p.drift - Allowed(p)).Take(10).Select(p =>
+                    $"{{\"plant_frame\":{p.plant},\"lift_frame\":{p.lift},\"drift_phone_px\":{F(p.drift)},\"allowed_phone_px\":{F(Allowed(p))},\"top_speed\":{F(p.speed)},\"sprites\":\"{p.sprites}\"}}")) + "]")
                 .Bool("pass", slidePass).Close();
-            line.Append($" | slide max {slideMax:F1}pp mean {slideMean:F1} ({slideOver} over)");
+            line.Append($" | slide max {slideMax:F1}pp mean {slideMean:F1} ({slideOver} over allowance, {strictOver} over 3pp)");
 
             // --- pose pop ---
             var changes = rows.Where(r => r.PopPhonePx >= 0f).ToList();
@@ -89,7 +112,7 @@ namespace Parallax.Editor.Art
             bool popPass = pops.Count == 0;
             pass &= popPass;
             string PopList(IEnumerable<FrameRow> list) => "[" + string.Join(",", list.Take(20).Select(r =>
-                $"{{\"frame\":{r.Frame},\"sprite\":\"{r.Sprite}\",\"from\":\"{Prev(rows, r)?.Sprite}\",\"centroid_phone_px\":{F(r.PopPhonePx)},\"box_phone_px\":{F(r.BoxPopPhonePx)}}}")) + "]";
+                $"{{\"frame\":{r.Frame},\"sprite\":\"{r.Sprite}\",\"from\":\"{Prev(all, r)?.Sprite}\",\"centroid_phone_px\":{F(r.PopPhonePx)},\"box_phone_px\":{F(r.BoxPopPhonePx)}}}")) + "]";
             j.Key("pose_pop").Open().Num("threshold_phone_px", CaptureThresholds.PosePopPhonePx).Num("box_threshold_phone_px", CaptureThresholds.PoseBoxPhonePx)
                 .Num("sprite_changes", changes.Count).Num("centroid_max_phone_px", changes.Count > 0 ? changes.Max(r => r.PopPhonePx) : 0f)
                 .Num("box_max_phone_px", changes.Count > 0 ? changes.Max(r => r.BoxPopPhonePx) : 0f)
@@ -98,7 +121,7 @@ namespace Parallax.Editor.Art
             line.Append($" | pop max {(changes.Count > 0 ? changes.Max(r => r.PopPhonePx) : 0f):F1}pp ({pops.Count} over)");
 
             // --- state vs motor ---
-            var broken = StateRules(rows);
+            var broken = StateRules(rows, speeds);
             bool rulesPass = broken.All(b => b.Value.Count == 0);
             pass &= rulesPass;
             j.Key("state_vs_motor").Open().Raw("rules", "[" + string.Join(",", Rules.Select(rule =>
@@ -125,14 +148,15 @@ namespace Parallax.Editor.Art
 
         static float Max(IEnumerable<FrameRow> rows, Func<FrameRow, float> f) { float m = 0f; bool any = false; foreach (FrameRow r in rows) { m = any ? Mathf.Max(m, f(r)) : f(r); any = true; } return m; }
 
-        static Dictionary<string, List<int>> StateRules(List<FrameRow> rows)
+        static Dictionary<string, List<int>> StateRules(List<FrameRow> rows, CaptureSpeeds speeds)
         {
             var broken = Rules.ToDictionary(r => r.Name, _ => new List<int>());
-            var c = new StateContext();
+            var c = new StateContext { Speeds = speeds };
             for (int i = 0; i < rows.Count; i++)
             {
                 FrameRow r = rows[i];
                 c.Prev = i > 0 ? rows[i - 1] : null;
+                c.Next = i + 1 < rows.Count ? rows[i + 1] : null;
                 c.Row = r;
                 // A death hold (frozen) or a respawn (a teleport) starts the counts again: the motor's flags are stale there.
                 bool teleport = c.Prev != null && (r.Root - c.Prev.Root).magnitude >= 1f;
@@ -143,51 +167,56 @@ namespace Parallax.Editor.Art
                     c.GroundedFrames++; c.AirborneFrames = 0;
                 }
                 else { c.AirborneFrames++; c.GroundedFrames = 0; }
+                // Run and Walk are judged against the speed drawn on screen (the interpolated root, what the presenter and
+                // the viewer see; it trails the body by up to a tick), the facing against the body's.
+                float drawn = c.Prev != null ? Mathf.Abs(r.Root.x - c.Prev.Root.x) * CatCapture.FrameRate : Mathf.Abs(r.VAlong);
+                float speed = Mathf.Abs(r.VAlong);
+                bool ground = r.Grounded && !r.Climbing;
+                c.RunSlowFrames = speeds != null && ground && r.State == CatAnimState.Run && drawn < speeds.RunExit ? c.RunSlowFrames + 1 : 0;
+                c.WalkFastFrames = speeds != null && ground && r.State == CatAnimState.Walk && drawn >= speeds.RunEnter ? c.WalkFastFrames + 1 : 0;
+                c.AgainstFacingFrames = speeds != null && ground && speed > speeds.WalkEnter && (r.VAlong > 0f ? 1 : -1) != r.Facing ? c.AgainstFacingFrames + 1 : 0;
                 foreach (StateRule rule in Rules) if (rule.Broken(c)) broken[rule.Name].Add(r.Frame);
             }
             return broken;
         }
 
         // Planted paws: at each sprite change during ground locomotion, the contact pixels' clusters are matched to the
-        // paws planted at the previous sample; a paw's drift is how far it moved (world, along the surface) from its first
-        // sample to its last. Any frame off the ground (or not moving) ends every plant.
-        static List<(int plant, int lift, float drift)> FootSlide(List<FrameRow> rows)
+        // paws planted at the previous sample (CatCaptureMath.MatchPlanted: the same ground pixels, overlapping); a paw's
+        // drift is how far it moved (world, along the surface) from its first sample to its last. Any frame off the ground
+        // (or not moving) ends every plant. `sprites` names the first and last sprite of the plant.
+        static List<(int plant, int lift, float drift, string sprites, float speed)> FootSlide(List<FrameRow> rows)
         {
-            var done = new List<(int, int, float)>();
-            var active = new List<(float plantAlong, float lastAlong, int plantFrame, int lastFrame, int samples, float drift)>();
-            void EndAll()
+            var done = new List<(int, int, float, string, float)>();
+            var active = new List<(float plantAlong, Vector3 last, int plantFrame, int lastFrame, int samples, float drift, string plantSprite, string lastSprite)>();
+            float MaxSpeed(int from, int to) { float m = 0f; foreach (FrameRow row in rows) if (row.Frame >= from && row.Frame <= to) m = Mathf.Max(m, Mathf.Abs(row.VAlong)); return m; }
+            void End((float plantAlong, Vector3 last, int plantFrame, int lastFrame, int samples, float drift, string plantSprite, string lastSprite) p)
             {
-                foreach (var p in active) if (p.samples >= 2) done.Add((p.plantFrame, p.lastFrame, p.drift * CaptureThresholds.PhonePixelsPerUnit));
-                active.Clear();
+                if (p.samples >= 2) done.Add((p.plantFrame, p.lastFrame, p.drift * CaptureThresholds.PhonePixelsPerUnit, p.plantSprite + ".." + p.lastSprite, MaxSpeed(p.plantFrame, p.lastFrame)));
             }
             for (int i = 0; i < rows.Count; i++)
             {
                 FrameRow r = rows[i];
                 bool loco = r.Grounded && !r.Holding && !r.Frozen && !r.Climbing && r.M.SurfaceFound
-                    && (r.State == CatAnimState.Walk || Mathf.Abs(r.VAlong) > 0.1f);
-                if (!loco) { EndAll(); continue; }
+                    && (r.State == CatAnimState.Walk || r.State == CatAnimState.Run || Mathf.Abs(r.VAlong) > 0.1f);
+                if (!loco) { foreach (var p in active) End(p); active.Clear(); continue; }
                 bool change = i == 0 || rows[i - 1].Sprite != r.Sprite || active.Count == 0;
                 if (!change) continue;
-                Vector2[] clusters = CatCaptureMath.Clusters(r.M.ContactAlong, CaptureThresholds.ClusterGapSpritePx / r.M.Ppu);
-                var next = new List<(float, float, int, int, int, float)>();
+                Vector3[] clusters = CatCaptureMath.ClusterRanges(r.M.ContactAlong, CaptureThresholds.ClusterGapSpritePx / r.M.Ppu);
+                int[] match = CatCaptureMath.MatchPlanted(active.Select(p => p.last).ToArray(), clusters);
+                var next = new List<(float, Vector3, int, int, int, float, string, string)>();
                 var used = new bool[clusters.Length];
-                foreach (var p in active)
+                for (int a = 0; a < active.Count; a++)
                 {
-                    int best = -1; float bestD = CaptureThresholds.PawMatchUnits;
-                    for (int k = 0; k < clusters.Length; k++)
-                    {
-                        float d = Mathf.Abs(clusters[k].x - p.lastAlong);
-                        if (!used[k] && d <= bestD) { best = k; bestD = d; }
-                    }
-                    if (best < 0) { if (p.samples >= 2) done.Add((p.plantFrame, p.lastFrame, p.drift * CaptureThresholds.PhonePixelsPerUnit)); continue; }
-                    used[best] = true;
-                    float along = clusters[best].x;
-                    next.Add((p.plantAlong, along, p.plantFrame, r.Frame, p.samples + 1, Mathf.Max(p.drift, Mathf.Abs(along - p.plantAlong))));
+                    var p = active[a];
+                    if (match[a] < 0) { End(p); continue; }
+                    used[match[a]] = true;
+                    Vector3 c = clusters[match[a]];
+                    next.Add((p.plantAlong, c, p.plantFrame, r.Frame, p.samples + 1, Mathf.Max(p.drift, Mathf.Abs(c.z - p.plantAlong)), p.plantSprite, r.Sprite));
                 }
-                for (int k = 0; k < clusters.Length; k++) if (!used[k]) next.Add((clusters[k].x, clusters[k].x, r.Frame, r.Frame, 1, 0f));
+                for (int k = 0; k < clusters.Length; k++) if (!used[k]) next.Add((clusters[k].z, clusters[k], r.Frame, r.Frame, 1, 0f, r.Sprite, r.Sprite));
                 active = next;
             }
-            EndAll();
+            foreach (var p in active) End(p);
             return done;
         }
 

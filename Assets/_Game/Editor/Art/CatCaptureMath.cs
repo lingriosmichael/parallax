@@ -79,6 +79,45 @@ namespace Parallax.Editor.Art
             return result.ToArray();
         }
 
+        /// <summary>Like <see cref="Clusters"/>, with each cluster's extent: (first position, last position, mean).</summary>
+        public static Vector3[] ClusterRanges(float[] sortedAlong, float gap)
+        {
+            var result = new List<Vector3>();
+            if (sortedAlong == null || sortedAlong.Length == 0) return result.ToArray();
+            int start = 0;
+            float sum = sortedAlong[0];
+            for (int i = 1; i <= sortedAlong.Length; i++)
+            {
+                if (i < sortedAlong.Length && sortedAlong[i] - sortedAlong[i - 1] <= gap) { sum += sortedAlong[i]; continue; }
+                result.Add(new Vector3(sortedAlong[start], sortedAlong[i - 1], sum / (i - start)));
+                if (i < sortedAlong.Length) { start = i; sum = sortedAlong[i]; }
+            }
+            return result.ToArray();
+        }
+
+        /// <summary>PAX-V07 item 1: which new contact cluster continues each planted paw. A planted paw is the same paw only
+        /// where its contact pixels still overlap the ground it covered at the previous sample (ranges are (min, max, mean)
+        /// along the surface); among overlapping clusters the nearest centre wins, one to one. -1 = the paw lifted. A paw
+        /// planting just ahead of one lifting (a cat's hind paw landing by its fore paw) is a new plant, not a slide.</summary>
+        public static int[] MatchPlanted(Vector3[] previous, Vector3[] next)
+        {
+            var match = new int[previous.Length];
+            var used = new bool[next.Length];
+            for (int p = 0; p < previous.Length; p++)
+            {
+                match[p] = -1;
+                float best = float.PositiveInfinity;
+                for (int k = 0; k < next.Length; k++)
+                {
+                    if (used[k] || next[k].x > previous[p].y || next[k].y < previous[p].x) continue;
+                    float d = Mathf.Abs(next[k].z - previous[p].z);
+                    if (d < best) { best = d; match[p] = k; }
+                }
+                if (match[p] >= 0) used[match[p]] = true;
+            }
+            return match;
+        }
+
         /// <summary>The contact sheets' cuts: one per presenter state change and per takeoff / landing (by the motor's
         /// grounded flag), each `before` frames before to `after` frames after, clamped to the capture, in frame order
         /// (at one frame, the takeoff or landing first). At most `maxPerKind` of each kind, the earliest.</summary>

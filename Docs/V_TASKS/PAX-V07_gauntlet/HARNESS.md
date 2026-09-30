@@ -12,6 +12,7 @@ it saves no scene or asset, and the open scenes are restored afterwards.
 | `Assets/_Game/Editor/Art/CatCaptureScenarios.cs` | The scenario list and the step kinds. |
 | `Assets/_Game/Editor/Art/CatCaptureChecks.cs` | Thresholds (`CaptureThresholds`), the sprite-alpha cache, the per-frame measurement, the state-rule types. |
 | `Assets/_Game/Editor/Art/CatCaptureReport.cs` | The checks over a scenario's frames (`checks.json`), including the state-vs-motor rule table. |
+| `Assets/_Game/Editor/Art/CatCaptureParity.cs` | (item 1) `CatCapture.VisualOnlyParity` for `CatVisualOnlyParityTests`, and the presenter thresholds the state rules read. |
 | `Assets/_Game/Editor/Art/CatCaptureGrid.cs` | Capture-only overlays drawn onto each rendered frame: the world grid and surface ticks, and the death-hold silhouette. |
 | `Assets/_Game/Editor/Art/CatCaptureMath.cs` | Pure math (tick schedule, interpolation, pixel projection, depth, clusters, transition selection). |
 | `Tools/Art/cat_capture_sheet.py` | The contact sheets (Python 3 + Pillow). |
@@ -100,13 +101,14 @@ The open scene must be saved first (the capture restores it from disk).
     <scenario>__tNN_fFFFFF_<kinds>.png       a transition: 8 frames before to 24 after (a death: to 44 after, the whole
                                              hold and the respawn), 160 px/u, the change framed in red; transitions on
                                              the same frame share one sheet, named for all of them
-    <scenario>__strip_fFFFFF_<kind>.png      takeoff / landing / walk-off: 10 before to 8 after, a 1.6 × 2.0 u crop at
+    <scenario>__strip_fFFFFF_<kind>.png      takeoff / landing / walk-off, and (item 1) every ground change (Idle / Walk /
+                                             Run / Turn, a turn, a Cut step): 10 before to 8 after, a 2.2 × 2.0 u crop at
                                              320 px/u (4x phone) that follows the paws: the floor line at 80 % down
                                              (gravity up: 20 %) while the paws are near it, else the paws kept within
                                              70–90 % (up: 10–30 %), so no frame is empty
 ```
 
-Transition kinds: every presenter state change (`From-to-To`, at most 3 of each kind per scenario), `takeoff` /
+Transition kinds: every presenter state change (`From-to-To`, at most 8 of each kind per scenario since item 1), `takeoff` /
 `landing` (the motor's grounded flag; not on the frames around a respawn), `turn` (the facing flips on the ground),
 `walk-off` (leaving the ground with no jump in the last 3 frames), `death` (a hold starts), `respawn` (the hold ends),
 and `step: <label>` for scenario steps marked `Cut` (walk → run, run → stop).
@@ -120,7 +122,8 @@ title states its scale in px/u and relative to the phone (80 px/u).
 `holding` (`RoomDeath.IsHolding`), `gravity`, `v_along` (surface speed, cat-right positive), `v_gravity` (along gravity,
 positive = falling), `root` (interpolated, world), `cam`, `paw` (the Visual's pivot = the paw row, world), `paw_img`
 (the same in image pixels, from the top-left), `depth_sprite_px`, `cat_box` (the body sprite's drawn pixels, world box: min x, min y, max x, max y), `surface` (the solid under the deepest column),
-`contact_px` (contact pixel count), `pop_phone_px`, `box_pop_phone_px` (null unless the sprite changed), `image`.
+`contact_px` (contact pixel count), `contacts` (item 1: each contact cluster's [first, last] position along the surface,
+world units), `pop_phone_px`, `box_pop_phone_px` (null unless the sprite changed), `image`.
 
 ## The checks and their thresholds
 
@@ -132,9 +135,9 @@ rendered image. A pixel is drawn at alpha ≥ 0.5. "sp" = sprite px (1 / PPU = 1
 |---|---|---|---|
 | **paws_in_floor** | Every drawn pixel projected to the world. Per pixel column, a ray along gravity from the collider centre's height (the reality's physics mask, no triggers, not the cat; a ray that starts inside a solid is ignored) finds the surface under that column; depth = how far the pixel is past it along gravity. Frames checked: grounded, or airborne within 3 ticks of a grounded tick (takeoff / landing); not during a death hold or climbing. | max depth ≤ **2 sp** | yes |
 | **float_gap** | On grounded frames: how far the lowest drawn pixel is above the surface. The frame of a takeoff shows a large gap (the motor's grounded flag is from the start of that tick). | 2 sp (frames over are listed) | reported only |
-| **foot_slide** | At each sprite change during ground locomotion (grounded, and Walk or moving), contact pixels (within 2 sp of the surface) are clustered (a gap > 3 sp splits paws); each cluster is matched to a planted paw from the previous sample within 0.25 u. A paw's drift is its largest distance along the surface from where it planted, until it lifts (unmatched) or locomotion ends. Paws seen at ≥ 2 samples. A paw that slides more than 0.25 u between two sprite changes counts as a lift and a new plant, so very large slides are under-reported. | drift ≤ **3 pp** per paw | yes |
+| **foot_slide** | At each sprite change during ground locomotion (grounded, and Walk, Run or moving), contact pixels (within 2 sp of the surface) are clustered (a gap > 3 sp splits paws). **Item 1:** a cluster continues a planted paw only where its contact pixels still overlap the ground that paw covered at the previous sample (`CatCaptureMath.MatchPlanted`); item 0 matched any cluster within 0.25 u, which chained a cat's hind paw landing just ahead of its lifting fore paw (direct register) into one "paw" and reported the gap between them as a slide. A paw's drift is its largest distance along the surface from where it planted, until it lifts or locomotion ends; paws seen at ≥ 2 samples. A slide of more than a paw's width (~12 sp) in one sample counts as a lift and a new plant. **Item 1:** a sprite can only change on a 60 fps frame, so a paw exactly on its print in continuous time shows up to one frame's travel (speed / 60) off it at the sample; the allowance is 3 pp plus that at the plant's top speed (`allowed_phone_px` per paw; `paws_over_3pp_without_allowance` is reported beside it). | drift ≤ **3 pp + speed/60** per paw | yes |
 | **pose_pop** | At every sprite change (not in a hold, not a respawn): the silhouette centroid's move minus the root's move. The bounding box's largest edge move minus the root's move is reported beside it. | centroid ≤ **3 pp**; box 6 pp (reported) | centroid only |
-| **state_vs_motor** | A rule table (`CatCaptureReport.Rules`), evaluated per frame; frames in a death hold are skipped and a hold or a respawn resets the counts. Rows today: `air-state-while-grounded` (Rise/Fall while grounded > 1 frame), `ground-state-while-airborne` (Idle/Walk while airborne, not climbing, > 1 frame), `climb-without-climbing`, `land-late` (after ≥ 3 airborne frames, Land not shown by the frame after touchdown). | 0 frames | yes |
+| **state_vs_motor** | A rule table (`CatCaptureReport.Rules`), evaluated per frame; frames in a death hold are skipped and a hold or a respawn resets the counts. Rows today: `air-state-while-grounded` (Rise/Fall while grounded > 1 frame), `ground-state-while-airborne` (Idle/Walk/Run while airborne, not climbing, > 1 frame), `climb-without-climbing`, `land-late` (after ≥ 3 airborne frames, Land not shown by the frame after touchdown); item 1: `turn-off-ground` (Turn on any frame not grounded), `run-below-exit` / `walk-above-run` (Run below runExitFraction × MaxSpeed, Walk at or above runFraction × MaxSpeed, judged on the drawn (interpolated) speed, > 2 frames), `facing-late` (moving against the facing above walkEnter, grounded, longer than the Turn clip + 2 frames); item 1 round 2: `one-frame-state` (any state shown for exactly one frame between frames of other states: a flicker). Frames of a step marked `Setup` (item 1: the gravity-up scenarios' flip and fall to the ceiling) are rendered but left out of every check (`setup_frames_unchecked`). | 0 frames | yes |
 | **hold_timing** | Placeholder for item 6 (a death clip's held frame is shown by the end of the hold). | — | no |
 | **capture_parity** | Ticks with frames vs ticks alone: body position and velocity per tick. | identical | yes |
 | expected death | The scenario's `ExpectDeath` matches whether `RoomDeath.IsHolding` was ever seen. | — | yes |
@@ -150,6 +153,13 @@ the sheet constants at the top of cat_capture_sheet.py.
 | `traplab3_walk_up` | Trap Lab room 3, cat at x 1.5 | `GravityReceiver.Flip()` at the start, the fall to the ceiling, then the same script (screen-relative). Room 3 because room 0's ceiling has three falling blocks hanging 0.5 u below it (they stop a cat walking on the ceiling) and rooms 1 and 2 have a ceiling hazard / a block; room 3's ceiling is clear from x 0 to the Backboard (15.0). |
 | `L001_solution_down` | L001 | L001's solution (`L001Routes`) replayed first by `RouteHarness.Replay`; its per-tick commands (Move, Jump, Climb) from the replay's records are played tick for tick, then 0.3 s of nothing. |
 | `traplab2_pit_down` | Trap Lab room 2, cat at x 19 (past RearmBlock's trigger) | stand 0.5 s, slow walk onto RearmCollapse until x ≥ 23.6, stand: the floor collapses, the fall into the pit, the death on its hazard, the hold, the respawn; 1 s after. Expected to die. |
+
+Item 1 added the ground scenarios, each in both gravities (`_down`: Trap Lab room 0, or room 1 for the wall; `_up`: Trap Lab
+room 3's ceiling, after a `Setup` flip and fall): `ground_idle` (stand 3 s), `ground_slow` (analog 0.3 right, stop, analog 0.5
+left, stop), `ground_ramp` (analog ramps 0→1→0 right, then left), `ground_digital` (digital start and stop, right then left),
+`ground_turns` (turn at walk speed, at run speed, a quick double turn), `ground_wall` (run into room 1's FixedPillar / room 3's
+Backboard and keep pushing, release, walk away, walk back into it), and `parity_ground` (jumps and reversals pressed during Turn,
+Walk, Run and Idle; for `CatVisualOnlyParityTests`, not the critic). New step kind: `Ramp(from, to, seconds, label)`.
 
 ## Adding a scenario
 

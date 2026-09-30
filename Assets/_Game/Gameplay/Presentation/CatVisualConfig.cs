@@ -1,3 +1,4 @@
+using Parallax.Gameplay.Player;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Presentation
@@ -5,9 +6,6 @@ namespace Parallax.Gameplay.Presentation
     [CreateAssetMenu(menuName = "PARALLAX/Cat Visual Config")]
     public sealed class CatVisualConfig : ScriptableObject
     {
-        [Tooltip("Pixel width/height of one sprite sheet cell, as exported.")]
-        [SerializeField] int cellSize = 256;
-
         [Tooltip("Lowest allowed Walk clip fps, regardless of speed.")]
         [SerializeField] float minFps = 2f;
 
@@ -47,13 +45,27 @@ namespace Parallax.Gameplay.Presentation
         [Tooltip("Fine-tune offset, in world units, added to Visual's computed ground-contact Y position.")]
         [SerializeField] float groundOffset = 0f;
 
+        [Tooltip("PAX-V07: the motor config whose MaxSpeed the run thresholds are fractions of (set by the setup menu).")]
+        [SerializeField] CatMotorConfig motorConfig;
+
+        [Tooltip("PAX-V07: Walk becomes Run at this fraction of the motor's MaxSpeed (set by the setup menu, from the art's strides).")]
+        [SerializeField, Range(0f, 1f)] float runFraction = 1f;
+
+        [Tooltip("PAX-V07: Run goes back to Walk below this fraction of the motor's MaxSpeed (hysteresis; set by the setup menu).")]
+        [SerializeField, Range(0f, 1f)] float runExitFraction = 1f;
+
+        [Tooltip("PAX-V07: braking faster than this (u/s², a digital stop or reversal) holds the gait on screen until the cat stops or turns (set by the setup menu).")]
+        [SerializeField] float snapAcceleration = 20f;
+
+        [Tooltip("PAX-V07: the fewest presentation frames Idle, Walk or Run shows before another ground state replaces it (no single-frame flicker; set by the setup menu).")]
+        [SerializeField, Min(1)] int minStateFrames = 1;
+
         [Tooltip("Unlit outline colour for Reality A.")]
         [SerializeField] Color outlineColorA = new Color(1f, 0.75f, 0.3f, 1f);
 
         [Tooltip("Unlit outline colour for Reality B.")]
         [SerializeField] Color outlineColorB = new Color(0.35f, 0.85f, 1f, 1f);
 
-        public int CellSize => cellSize;
         public float MinFps => minFps;
         public float MaxFps => maxFps;
         public float ReferenceSpeed => referenceSpeed;
@@ -68,6 +80,17 @@ namespace Parallax.Gameplay.Presentation
         public float EchoAlpha => echoAlpha;
         public float OutlineWidth => outlineWidth;
         public float GroundOffset => groundOffset;
+        public CatMotorConfig MotorConfig => motorConfig;
+        public float RunFraction => runFraction;
+        public float RunExitFraction => runExitFraction;
+        public float SnapAcceleration => snapAcceleration;
+        public int MinStateFrames => minStateFrames;
+        /// <summary>The motor's release deceleration, u/s² (0 without a motor config): how far a braking cat still travels.</summary>
+        public float BrakeDeceleration => motorConfig != null ? motorConfig.Deceleration : 0f;
+        /// <summary>Surface speed, u/s, at which Walk becomes Run (infinite without a motor config: Run never shows).</summary>
+        public float RunEnterSpeed => motorConfig != null ? runFraction * motorConfig.MaxSpeed : float.PositiveInfinity;
+        /// <summary>Surface speed, u/s, below which Run goes back to Walk.</summary>
+        public float RunExitSpeed => motorConfig != null ? Mathf.Min(runExitFraction, runFraction) * motorConfig.MaxSpeed : float.PositiveInfinity;
         public Color OutlineColorA => outlineColorA;
         public Color OutlineColorB => outlineColorB;
     }

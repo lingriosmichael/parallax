@@ -113,6 +113,29 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual(2.00f, clusters[2].x, 1e-5f); Assert.AreEqual(1f, clusters[2].y);
         }
 
+        [Test]
+        public void ClusterRanges_GiveEachClustersExtentAndMean()
+        {
+            float[] along = { 1.00f, 1.01f, 1.02f, 1.30f, 1.31f, 2.00f };
+            var ranges = (Vector3[])Call("ClusterRanges", along, 0.05f);
+            Assert.AreEqual(3, ranges.Length);
+            Assert.AreEqual(new Vector3(1.00f, 1.02f, 1.01f).ToString("F4"), ranges[0].ToString("F4"));
+            Assert.AreEqual(new Vector3(1.30f, 1.31f, 1.305f).ToString("F4"), ranges[1].ToString("F4"));
+            Assert.AreEqual(new Vector3(2f, 2f, 2f).ToString("F4"), ranges[2].ToString("F4"));
+        }
+
+        // PAX-V07 item 1: a planted paw continues only where its contact pixels still overlap its ground; a paw planting just
+        // ahead of one lifting (direct register) is a new plant, and a slide smaller than the paw's width is still tracked.
+        [Test]
+        public void MatchPlanted_OverlapContinuesAPaw_ANeighbourDoesNot()
+        {
+            Vector3[] previous = { new(0.00f, 0.08f, 0.04f), new(0.40f, 0.44f, 0.42f) };
+            Vector3[] next = { new(0.03f, 0.11f, 0.07f), new(0.47f, 0.55f, 0.51f) };   // the first slid 0.03, the second is a new paw
+            var match = (int[])Call("MatchPlanted", previous, next);
+            Assert.AreEqual(0, match[0], "a paw that slid less than its width is still the same paw (its drift is measured)");
+            Assert.AreEqual(-1, match[1], "a cluster that no longer overlaps is a lift and a new plant");
+        }
+
         // ---------- the contact sheets' transitions ----------
 
         [Test]
@@ -240,28 +263,87 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual("Idle", presenter.ClipName);
             Assert.AreEqual(0, presenter.FrameIndex);
             StringAssert.StartsWith("CatA_Idle_", body.sprite.name);
-            // At 6 u/s (the reference speed) Walk plays at its authored 10 fps: 0.22 s of 1/60 s frames is on its third frame.
+            // PAX-V07 item 1: 1.2 u/s is a walk; the Walk frames advance with the distance walked.
             Sprite first = null;
-            for (int i = 0; i < 14; i++)
+            for (int i = 0; i < 20; i++)
             {
-                root.position += new Vector3(0.1f, 0f, 0f);
+                root.position += new Vector3(0.02f, 0f, 0f);
                 presenter.Present(1f / 60f);
                 if (i == 0) first = body.sprite;
             }
+            Assert.AreEqual(CatAnimState.Walk, presenter.State);
             Assert.AreEqual("Walk", presenter.ClipName);
-            Assert.AreEqual(2, presenter.FrameIndex);
+            StringAssert.StartsWith("CatA_Walk_", body.sprite.name);
             Assert.AreNotEqual(first, body.sprite, "the sprite advanced");
         }
 
         [Test]
-        public void Present_MovingOnTheGround_ShowsWalk_AndFacesTheMotion()
+        public void Present_WalkKeepsItsPhase_WhenTheSpeedChanges()
+        {
+            CatVisualPresenter presenter = BuildCat(out CatMotor2D motor);
+            SetGrounded(motor, true);
+            Transform root = motor.transform;
+            presenter.Present(1f / 60f);
+            float[] steps = { 0.02f, 0.02f, 0.03f, 0.01f, 0.03f, 0.005f, 0.02f, 0.03f, 0.015f, 0.028f, 0.02f, 0.01f, 0.03f, 0.025f, 0.02f, 0.03f, 0.02f, 0.03f };
+            int last = -1;
+            foreach (float step in steps)
+            {
+                root.position += new Vector3(step, 0f, 0f);   // 0.3 to 1.8 u/s (below Run): each frame moves less than the shortest stride
+                presenter.Present(1f / 60f);
+                if (presenter.State != CatAnimState.Walk) continue;
+                if (last >= 0)
+                {
+                    int advance = (presenter.FrameIndex - last + 11) % 11;
+                    Assert.LessOrEqual(advance, 1, $"the Walk frame jumped {last} -> {presenter.FrameIndex} when the speed changed");
+                }
+                last = presenter.FrameIndex;
+            }
+            Assert.GreaterOrEqual(last, 0, "Walk was shown");
+        }
+
+        [Test]
+        public void BrakingDistance_SumsTheTicksLeft()
+        {
+            Func<float> saved = TickTime.SecondsPerTickSource;
+            TickTime.SecondsPerTickSource = () => 0.02f;
+            try
+            {
+                // 80 u/s² takes 1.6 u/s a tick: 4.4 -> 2.8 -> 1.2 -> 0, so (2.8 + 1.2) x 0.02 u are still to come.
+                Assert.AreEqual(0.08f, CatVisualPresenter.BrakingDistance(4.4f, 80f), 1e-5f);
+                Assert.AreEqual(0f, CatVisualPresenter.BrakingDistance(0f, 80f), 1e-6f);
+                Assert.AreEqual(0f, CatVisualPresenter.BrakingDistance(1.2f, 80f), 1e-6f);
+            }
+            finally
+            {
+                TickTime.SecondsPerTickSource = saved;
+            }
+        }
+
+        [Test]
+        public void Present_FullSpeed_ShowsRun()
+        {
+            CatVisualPresenter presenter = BuildCat(out CatMotor2D motor);
+            SetGrounded(motor, true);
+            Transform root = motor.transform;
+            presenter.Present(1f / 60f);
+            for (int i = 0; i < 10; i++) { root.position += new Vector3(0.1f, 0f, 0f); presenter.Present(1f / 60f); }   // 6 u/s
+            Assert.AreEqual(CatAnimState.Run, presenter.State);
+            Assert.AreEqual("Run", presenter.ClipName);
+        }
+
+        [Test]
+        public void Present_MovingOnTheGround_TurnsThenWalks_AndFacesTheMotion()
         {
             CatVisualPresenter presenter = BuildCat(out CatMotor2D motor);
             SetGrounded(motor, true);
             SpriteRenderer body = presenter.GetComponent<SpriteRenderer>();
             Transform root = motor.transform;
             presenter.Present(1f / 60f);
-            for (int i = 0; i < 10; i++) { root.position += new Vector3(-0.1f, 0f, 0f); presenter.Present(1f / 60f); }   // 6 u/s left
+            root.position += new Vector3(-0.02f, 0f, 0f);
+            presenter.Present(1f / 60f);
+            Assert.AreEqual(CatAnimState.Turn, presenter.State, "a reversal on the ground plays Turn");
+            Assert.AreEqual(1, presenter.Facing, "the facing flips at the end of Turn");
+            for (int i = 0; i < 20; i++) { root.position += new Vector3(-0.02f, 0f, 0f); presenter.Present(1f / 60f); }   // 1.2 u/s left
             Assert.AreEqual(CatAnimState.Walk, presenter.State);
             Assert.AreEqual("Walk", presenter.ClipName);
             StringAssert.StartsWith("CatA_Walk_", body.sprite.name);

@@ -29,7 +29,7 @@ SHEET_COLUMNS = 6
 PHONE_SCALE = 0.5           # 160 px/u captures -> 80 px/u (a phone)
 STRIP_BEFORE, STRIP_AFTER = 10, 8
 STRIP_COLUMNS = 6
-STRIP_WINDOW_U = (1.6, 2.0)  # the paw crop, in units: width, height
+STRIP_WINDOW_U = (2.2, 2.0)  # the paw crop, in units: width, height (wide enough for the Rise pose's tail)
 STRIP_FLOOR_AT = 0.8         # the floor line sits this far down the crop when the paws are near it (gravity up: this far up)
 STRIP_PAW_BAND = (0.7, 0.9)   # the paws are always kept within this band of the crop's height (gravity up: mirrored)
 STRIP_ZOOM = 2              # 160 px/u -> 320 px/u
@@ -78,12 +78,32 @@ def tile(scenario_dir, row, scale, marked=False, crop=None):
     return out
 
 
+def wrap(text, width_px, f):
+    """Greedy word wrap to `width_px` (so no header is cut off)."""
+    lines, line = [], ""
+    for word in text.split(" "):
+        trial = (line + " " + word).strip()
+        if line and f.getlength(trial) > width_px:
+            lines.append(line)
+            line = word
+        else:
+            line = trial
+    if line:
+        lines.append(line)
+    return lines
+
+
 def grid(tiles, columns, title):
     w, h = tiles[0].width, tiles[0].height
     rows = (len(tiles) + columns - 1) // columns
-    title_h = 40
-    sheet = Image.new("RGB", (columns * (w + GAP) + GAP, rows * (h + GAP) + GAP + title_h), BACK)
-    ImageDraw.Draw(sheet).text((GAP, 8), title, fill=TEXT, font=font(24))
+    width = columns * (w + GAP) + GAP
+    f = font(24)
+    lines = wrap(title, width - 2 * GAP, f)
+    title_h = 12 + 30 * len(lines)
+    sheet = Image.new("RGB", (width, rows * (h + GAP) + GAP + title_h), BACK)
+    d = ImageDraw.Draw(sheet)
+    for i, line in enumerate(lines):
+        d.text((GAP, 6 + 30 * i), line, fill=TEXT, font=f)
     for i, t in enumerate(tiles):
         sheet.paste(t, (GAP + (i % columns) * (w + GAP), title_h + GAP + (i // columns) * (h + GAP)))
     return sheet
@@ -127,7 +147,8 @@ def sheets_for(scenario_dir):
     holds = any(r.get("holding") for r in rows)
     note = ("; on death-hold frames a cyan outline marks the cat's silhouette (a capture overlay: "
             + (f"the game draws {len(meta.get('drawn_above_cat', []))} room sprites above the cat)" if meta.get("drawn_above_cat") else "nothing is drawn above the cat)")) if holds else ""
-    grid_note = f"; world grid 1 u, surface ticks every {meta.get('grid', {}).get('tick', 0.25)} u (capture only)"
+    grid_note = (f"; world grid 1 u, surface ticks every {meta.get('grid', {}).get('tick', 0.25)} u (capture only)"
+                 "; the orange rim round the cat is the game's own outline shader; the framing is the capture tool's crop following the cat, not the level camera")
     for scale, cols, per, suffix0, scale_text in ((1, OVERVIEW_COLUMNS, OVERVIEW_MAX_TILES, "", "160 px/u (2x phone)"),
                                                   (PHONE_SCALE, PHONE_COLUMNS, PHONE_MAX_TILES, "_phone", "80 px/u (phone scale)")):
         parts = [picks[i:i + per] for i in range(0, len(picks), per)]

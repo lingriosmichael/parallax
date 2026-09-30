@@ -22,7 +22,7 @@ namespace Parallax.Editor.Art
         public const float FloatGapSpritePx = 2f;       // grounded frames: the lowest drawn pixel within this of the surface
         public const float ContactBandSpritePx = 2f;    // contact pixels: within this of the surface
         public const float ClusterGapSpritePx = 3f;     // contact pixels further apart than this are separate paws
-        public const float PawMatchUnits = 0.25f;       // a paw cluster within this of one at the previous sample is the same paw
+        public const float PawMatchUnits = 0.25f;       // (item 0; unused since item 1: a planted paw is matched by overlapping contact pixels, CatCaptureMath.MatchPlanted)
         public const float FootSlidePhonePx = 3f;       // a planted paw drifts at most this from plant to lift
         public const float PosePopPhonePx = 3f;         // centroid jump at a sprite change, beyond the root's motion
         public const float PoseBoxPhonePx = 6f;         // bounding-box edge jump (reported, not pass/fail)
@@ -148,10 +148,18 @@ namespace Parallax.Editor.Art
         }
     }
 
+    /// <summary>PAX-V07 item 1: the presenter's thresholds the state rules compare the motor against (u/s, s), read from
+    /// CatA_VisualConfig and the Turn clip.</summary>
+    sealed class CaptureSpeeds
+    {
+        public float WalkEnter, RunEnter, RunExit, TurnSeconds;
+        public const int LagFrames = 2;   // interpolation shows the body up to one tick (1.2 frames) late: this many frames of lag are allowed
+    }
+
     /// <summary>What a frame looked like, for the checks and the per-frame record.</summary>
     sealed class FrameRow
     {
-        public int Frame, Tick; public double Time; public string Step;
+        public int Frame, Tick; public double Time; public string Step; public bool Setup;
         public CatAnimState State; public string Clip, Sprite; public int ClipFrame, Facing;
         public bool Grounded, Climbing, Jumped, Frozen, Holding, GravityDown;
         public float VAlong, VGravity; public Vector2 Root, ColliderCentre, Cam, Paw, PawImg;
@@ -169,9 +177,14 @@ namespace Parallax.Editor.Art
 
     sealed class StateContext
     {
-        public FrameRow Row, Prev;
+        public FrameRow Row, Prev, Next;
         public int GroundedFrames, AirborneFrames, LastAirRun;   // consecutive frames so far (this one included); the air run before the last touchdown
+        // PAX-V07 item 1: consecutive frames (this one included) where Run shows below the run exit speed, Walk above the
+        // run speed, or the cat moves against its facing above walkEnter.
+        public int RunSlowFrames, WalkFastFrames, AgainstFacingFrames;
+        public CaptureSpeeds Speeds;
         public bool Air(CatAnimState s) => s == CatAnimState.Rise || s == CatAnimState.Fall;
+        public bool GroundLocomotion(CatAnimState s) => s == CatAnimState.Idle || s == CatAnimState.Walk || s == CatAnimState.Run || s == CatAnimState.Turn;
         public bool Excluded => Row.Holding || Row.Frozen;
     }
 }

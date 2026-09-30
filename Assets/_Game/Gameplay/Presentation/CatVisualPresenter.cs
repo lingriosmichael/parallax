@@ -6,24 +6,6 @@ using UnityEngine;
 
 namespace Parallax.Gameplay.Presentation
 {
-    [System.Serializable]
-    public sealed class CatAnimationClip
-    {
-        [SerializeField] Sprite[] frames = new Sprite[0];
-        [SerializeField] float fps;
-        [SerializeField] bool loop;
-
-        public CatAnimationClip(float fps, bool loop)
-        {
-            this.fps = fps;
-            this.loop = loop;
-        }
-
-        public Sprite[] Frames => frames;
-        public float Fps => fps;
-        public bool Loop => loop;
-    }
-
     // Purely cosmetic: reads its own transform's motion and the local GravityReceiver,
     // never writes to anything outside Visual, never networked, never read by gameplay.
     [DisallowMultipleComponent]
@@ -32,17 +14,15 @@ namespace Parallax.Gameplay.Presentation
         [SerializeField] CatVisualConfig config;
         [SerializeField] SpriteRenderer bodyRenderer;
         [SerializeField] SpriteRenderer outlineRenderer;
-        [SerializeField] CatAnimationClip idleClip = new CatAnimationClip(7f, true);
-        [SerializeField] CatAnimationClip walkClip = new CatAnimationClip(10f, true);
-        [SerializeField] CatAnimationClip riseClip = new CatAnimationClip(12f, false);
-        [SerializeField] CatAnimationClip fallClip = new CatAnimationClip(12f, false);
-        [SerializeField] CatAnimationClip landClip = new CatAnimationClip(12f, false);
+        [Tooltip("PAX-V07: the clip table, one clip per wired A08 slot (written by PARALLAX/Setup/Cat Visual).")]
+        [SerializeField] CatClipSet clips = new CatClipSet();
         [SerializeField] CatMotor2D motor;
         [SerializeField] ObserverContext observer;
 
         GravityReceiver gravity;
         RealityRoot reality;
         Transform motionRoot;
+        Rigidbody2D body;
         CatAnimStateMachine stateMachine;
 
         bool initialized;
@@ -53,7 +33,11 @@ namespace Parallax.Gameplay.Presentation
         bool climbPosed;
         Vector2 lastWorldPosition;
         Vector2 smoothedVelocity;
-        float clipClock;
+        // The clip on screen and where it is: `phase` is in frames for a clip played by time, in units travelled for one
+        // played by distance (CatClip.ByDistance). It is kept while the speed changes, so a loop never restarts.
+        CatClip current;
+        float phase;
+        int shownFacing = 1;
         int missingClipWarnings;
 
         void Awake()
@@ -70,6 +54,7 @@ namespace Parallax.Gameplay.Presentation
             gravity = motor.GetComponent<GravityReceiver>();
             reality = motor.GetComponentInParent<RealityRoot>();
             motionRoot = motor.transform;
+            body = motor.GetComponent<Rigidbody2D>();
             restLocalPosition = transform.localPosition;
             restLocalRotation = transform.localRotation;
             foreach (Collider2D c in motor.GetComponents<Collider2D>()) if (!c.isTrigger) { bodyCollider = c; break; }
@@ -83,12 +68,20 @@ namespace Parallax.Gameplay.Presentation
                 return;
             }
 
-            stateMachine = new CatAnimStateMachine(
+            CatClip turn = clips.ForState(CatAnimState.Turn);
+            stateMachine = new CatAnimStateMachine(new CatAnimSettings(
                 config.RiseExit,
                 config.FallEnter,
                 config.WalkEnter,
                 config.WalkExit,
-                config.LandDuration);
+                config.LandDuration,
+                config.RunEnterSpeed,
+                config.RunExitSpeed,
+                turn != null ? turn.Duration : 0f,
+                config.FlipHysteresis,
+                config.SnapAcceleration,
+                config.MinStateFrames));
+            shownFacing = Facing;
 
             if (outlineRenderer != null)
             {
@@ -153,7 +146,7 @@ namespace Parallax.Gameplay.Presentation
             {
                 smoothedVelocity = Vector2.zero;
                 stateMachine.Reset();
-                clipClock = 0f;
+                current = null;
             }
             else
             {
@@ -166,26 +159,26 @@ namespace Parallax.Gameplay.Presentation
             Vector2 down = gravity.Direction;
             float rawAlong = GravityFrame.Along(measuredVelocity, down);
             float rawVelocityAlongGravity = Vector2.Dot(measuredVelocity, down);
-            float smoothedAlong = GravityFrame.Along(smoothedVelocity, down);
+            float travelled = teleported ? 0f : Mathf.Abs(GravityFrame.Along(delta, down));
 
-            if (!teleported) UpdateFacing(smoothedAlong);
-
-            CatAnimState previous = stateMachine.State;
             CatAnimState next = teleported
                 ? stateMachine.State
-                : stateMachine.Step(motor.IsClimbing, motor.IsGrounded, rawAlong, rawVelocityAlongGravity, dt);
-            if (next != previous) clipClock = 0f;
+                : stateMachine.Step(new CatAnimInput(motor.IsGrounded, motor.IsClimbing, rawAlong, rawVelocityAlongGravity, dt,
+                    motor.JumpedThisStep, down.y > 0f ? 1f : -1f));
+            ApplyFacing(stateMachine.Facing);
 
             UpdateEchoAlpha();
             ApplyClimbPose(next == CatAnimState.Climb, down);
-            // PAX-087 (D-089): until the art ticket's climb sheet, Climb shows the Walk frames while the cat moves on the
-            // vine (at the vertical speed) and the Idle frame while it hangs still, turned by the climb pose.
+            // PAX-087 (D-089): until the climbing item wires the climb sheet, Climb shows the Walk frames while the cat moves
+            // on the vine (at the vertical speed) and the Idle frame while it hangs still, turned by the climb pose.
             if (next == CatAnimState.Climb)
             {
                 bool moving = Mathf.Abs(rawVelocityAlongGravity) > config.WalkEnter;
-                UpdateSprite(moving ? CatAnimState.Walk : CatAnimState.Idle, rawVelocityAlongGravity, dt);
+                CatAnimState shown = moving ? CatAnimState.Walk : CatAnimState.Idle;
+                UpdateSprite(shown, clips.ForState(shown), moving ? Mathf.Abs(rawVelocityAlongGravity) : 0f, 0f, dt, byDistance: false);
             }
-            else UpdateSprite(next, rawAlong, dt);
+            else UpdateSprite(next, clips.ForState(next), Mathf.Abs(rawAlong), travelled, dt, byDistance: true);
+            shownFacing = Facing;
         }
 
         /// <summary>PAX-087 (D-089): the climb pose. Turns the visual by the returned angle so the head points screen-up
@@ -222,15 +215,12 @@ namespace Parallax.Gameplay.Presentation
             climbPosed = true;
         }
 
-        void UpdateFacing(float along)
+        // D-034: the presenter owns Visual's facing; the state machine decides it (a ground reversal flips at Turn's end).
+        void ApplyFacing(int facing)
         {
-            bool currentFacingRight = transform.localScale.x >= 0f;
-            bool shouldFlip = Mathf.Abs(along) > config.FlipHysteresis
-                && (along > 0f) != currentFacingRight;
-            if (!shouldFlip) return;
-
+            if (facing == Facing) return;
             Vector3 scale = transform.localScale;
-            scale.x = Mathf.Abs(scale.x) * (along > 0f ? 1f : -1f);
+            scale.x = Mathf.Abs(scale.x) * (facing > 0 ? 1f : -1f);
             transform.localScale = scale;
         }
 
@@ -256,24 +246,41 @@ namespace Parallax.Gameplay.Presentation
             }
         }
 
-        void UpdateSprite(CatAnimState state, float rawAlong, float dt)
+        // One frame of `clip`. Entering a clip picks its first frame: a loop starts on the frame whose pose is closest to the
+        // one on screen (no pose pop, e.g. Walk from Idle's stance, Run from Walk); a one-shot starts at 0. A clip with
+        // strides is played by distance (`travelled`, units along the surface): each frame lasts its own stride, so a
+        // planted paw stays put at any speed. Otherwise by time: at the clip's fps, or for Walk without strides at the
+        // speed-scaled fps (FlipbookMath.FpsForSpeed). The phase carries across speed changes.
+        void UpdateSprite(CatAnimState state, CatClip clip, float speed, float travelled, float dt, bool byDistance)
         {
-            CatAnimationClip clip = ClipFor(state);
-            if (clip == null || clip.Frames == null || clip.Frames.Length == 0)
+            if (clip == null || clip.Count == 0)
             {
                 WarnMissingClipOnce(state);
                 return;
             }
 
-            float fps = state == CatAnimState.Walk
-                ? FlipbookMath.FpsForSpeed(
-                    rawAlong,
-                    config.ReferenceSpeed,
-                    clip.Fps,
-                    config.MinFps,
-                    config.MaxFps)
-                : clip.Fps;
-            int index = ClipFrameIndex(clipClock, fps, clip.Frames.Length, clip.Loop);
+            bool distance = byDistance && clip.ByDistance;
+            int index;
+            if (clip != current)
+            {
+                index = EntryFrame(clip, distance);
+                current = clip;
+                phase = distance ? clip.DistanceAtFrame(index) : index;
+            }
+            else if (distance)
+            {
+                phase += travelled;
+                index = clip.FrameAtDistance(phase);
+            }
+            else
+            {
+                float fps = clip.State == CatAnimState.Walk
+                    ? FlipbookMath.FpsForSpeed(speed, config.ReferenceSpeed, clip.Fps, config.MinFps, config.MaxFps)
+                    : clip.Fps;
+                phase += (dt > 0f ? dt : 0f) * fps;
+                index = FrameAt(phase, clip.Count, clip.Loop);
+            }
+
             Sprite sprite = clip.Frames[index];
             if (sprite == null)
             {
@@ -283,35 +290,45 @@ namespace Parallax.Gameplay.Presentation
 
             bodyRenderer.sprite = sprite;
             if (outlineRenderer != null) outlineRenderer.sprite = sprite;
-            ClipName = ClipLabel(state);
+            ClipName = clip.Slot;
             FrameIndex = index;
-            clipClock += dt > 0f ? dt : 0f;
         }
 
-        CatAnimationClip ClipFor(CatAnimState state)
+        // A one-shot starts at 0. A loop starts on its entry frame closest to the pose on screen; braking into a clip played by
+        // distance (a digital stop from a run), on the frame from which the remaining travel ends on a stance frame, so the
+        // cat stops with its paws where Idle puts them. The remaining travel on screen is how far the drawn root trails the
+        // body (interpolation) plus the body's braking distance at the motor's deceleration (0 against a wall). Reads only.
+        int EntryFrame(CatClip clip, bool distance)
         {
-            switch (state)
+            if (!clip.Loop || current == null) return 0;
+            Vector2 pose = current.PoseCentroid(FrameIndex);
+            if (distance && stateMachine.Braking && body != null && config.BrakeDeceleration > 0f)
             {
-                case CatAnimState.Walk: return walkClip;
-                case CatAnimState.Rise: return riseClip;
-                case CatAnimState.Fall: return fallClip;
-                case CatAnimState.Land: return landClip;
-                // PAX-087 (D-089): Climb shows the Idle frames until the art ticket delivers a climb sheet.
-                default: return idleClip;
+                Vector2 down = gravity.Direction;
+                float bodySpeed = Mathf.Abs(GravityFrame.Along(body.linearVelocity, down));
+                float lag = Mathf.Abs(GravityFrame.Along(body.position - (Vector2)motionRoot.position, down));
+                return clip.StanceEntry(lag + BrakingDistance(bodySpeed, config.BrakeDeceleration), pose, shownFacing, Facing);
             }
+            return clip.ClosestPose(pose, shownFacing, Facing);
         }
 
-        // The clip ClipFor(state) returns, by name.
-        static string ClipLabel(CatAnimState state)
+        /// <summary>How far a body moving at `speed` still travels while the motor brakes it at `deceleration`, tick by tick
+        /// (each tick's velocity is the previous one less deceleration × tick, as CatMotor2D's MoveTowards does).</summary>
+        public static float BrakingDistance(float speed, float deceleration)
         {
-            switch (state)
-            {
-                case CatAnimState.Walk: return "Walk";
-                case CatAnimState.Rise: return "Rise";
-                case CatAnimState.Fall: return "Fall";
-                case CatAnimState.Land: return "Land";
-                default: return "Idle";
-            }
+            float tick = TickTime.SecondsPerTick, step = deceleration * tick, d = 0f;
+            if (step <= 0f) return 0f;
+            for (float v = speed - step; v > 0f; v -= step) d += v * tick;
+            return d;
+        }
+
+        static int FrameAt(float framePhase, int frameCount, bool loop)
+        {
+            if (frameCount <= 1) return 0;
+            int frame = Mathf.FloorToInt(framePhase);
+            if (!loop) return Mathf.Clamp(frame, 0, frameCount - 1);
+            frame %= frameCount;
+            return frame < 0 ? frame + frameCount : frame;
         }
 
         void WarnMissingClipOnce(CatAnimState state)
@@ -323,14 +340,6 @@ namespace Parallax.Gameplay.Presentation
             Debug.LogWarning(
                 $"CatVisualPresenter on '{gameObject.name}' has a missing or empty {state} clip. Keeping the previous state's frame.",
                 this);
-        }
-
-        static int ClipFrameIndex(float elapsed, float fps, int frameCount, bool loop)
-        {
-            if (frameCount <= 1 || fps <= 0f) return 0;
-
-            int frame = Mathf.FloorToInt(elapsed * fps);
-            return loop ? frame % frameCount : Mathf.Min(frame, frameCount - 1);
         }
     }
 }
