@@ -1,6 +1,6 @@
 # PAX-V07b · Fed-up reaction on respawn
 
-**Status:** Approved 2026-09-30 (the developer's decisions: plays on respawn at 5, 10, 15… deaths in the same room, both
+**Status:** Parked 2026-09-30 (polish, to revisit after the environment pass). Was: Approved 2026-09-30 (the developer's decisions: plays on respawn at 5, 10, 15… deaths in the same room, both
 numbers in the config, any movement cancels it on the same frame).
 **Order:** after PAX-V07; the seamless vine follows it.
 **Phase 1 size:** None (small and mechanical).
