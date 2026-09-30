@@ -74,7 +74,8 @@ namespace Parallax.Editor.Art
         public static bool Capture(string outDir, string filter, bool images)
         {
             var regex = new Regex(filter);
-            List<CaptureScenario> scenarios = CatCaptureScenarios.All.Where(s => regex.IsMatch(s.Name)).ToList();
+            List<CaptureScenario> scenarios = CatCaptureScenarios.All.Concat(filter.StartsWith("measure_") ? CatCaptureScenarios.Measure : new List<CaptureScenario>())
+                .Where(s => regex.IsMatch(s.Name)).ToList();
             if (scenarios.Count == 0) { Debug.LogError($"CAPTURE: no scenario matches '{filter}'."); return false; }
             for (int i = 0; i < SceneManager.sceneCount; i++)
                 if (SceneManager.GetSceneAt(i).isDirty) { Debug.LogError("CAPTURE: save or discard the open scene first (the capture restores it from disk)."); return false; }
@@ -193,6 +194,8 @@ namespace Parallax.Editor.Art
                     Vector2 centre = root.TransformPoint(rig.CatCollider.offset);
                     FrameRow row = Row(rig, runner, n, t, down, centre);
                     row.M = CatCaptureMeasure.Measure(alpha, rig.BodyRenderer, down, centre, filter, rig.CatCollider);
+                    row.Paw = rig.BodyRenderer.transform.position;
+                    row.Sunk = Sunk(rig, centre, down);
                     if (rows.Count > 0) Pop(rows[^1], row);
                     // A platformer camera: horizontally the cat, vertically where it last stood (so a jump doesn't move the
                     // floor), kept inside the window.
@@ -200,8 +203,7 @@ namespace Parallax.Editor.Art
                     cam = Follow(cam, ref camVelocity, new Vector2(centre.x, standY), centre, frameDt, n == 0);
                     if (row.M.HasSprite) cam = KeepInView(cam, row.M.BoxMin, row.M.BoxMax);
                     row.Cam = cam;
-                    Vector2 paw = rig.BodyRenderer.transform.position;
-                    row.Paw = paw;
+                    Vector2 paw = row.Paw;
                     row.PawImg = new Vector2((paw.x - cam.x) * RenderPixelsPerUnit + ViewWidthUnits * RenderPixelsPerUnit * 0.5f,
                         ViewHeightUnits * RenderPixelsPerUnit * 0.5f - (paw.y - cam.y) * RenderPixelsPerUnit);
                     if (shots != null)
@@ -268,12 +270,16 @@ namespace Parallax.Editor.Art
             };
         }
 
-        // Pose pop at a sprite change: the silhouette's centroid (and box edges) move beyond what the root moved.
+        // Pose pop at a sprite change: the silhouette's centroid (and box edges) move beyond what the sprite's carrier moved.
+        // Item 2: the carrier is the Visual's pivot (the paw row), which is the root's except while TakeOff keeps the paws on
+        // the ground (the presenter's TakeOff anchor); how far the pivot strays from the root is reported beside it.
         static void Pop(FrameRow prev, FrameRow row)
         {
+            row.CarrierOffsetPhonePx = ((row.Paw - prev.Paw) - (row.Root - prev.Root)).magnitude * CaptureThresholds.PhonePixelsPerUnit;
+            if ((row.Root - prev.Root).magnitude >= 1f) row.CarrierOffsetPhonePx = 0f;
             if (!row.M.HasSprite || !prev.M.HasSprite || row.Sprite == prev.Sprite || row.Holding || prev.Holding) return;
-            Vector2 rootMove = row.Root - prev.Root;
-            if (rootMove.magnitude >= 1f) return;   // a respawn
+            Vector2 rootMove = row.Paw - prev.Paw;
+            if ((row.Root - prev.Root).magnitude >= 1f) return;   // a respawn
             float s = CaptureThresholds.PhonePixelsPerUnit;
             row.PopPhonePx = ((row.M.Centroid - prev.M.Centroid) - rootMove).magnitude * s;
             Vector2 dMin = row.M.BoxMin - prev.M.BoxMin - rootMove, dMax = row.M.BoxMax - prev.M.BoxMax - rootMove;
@@ -321,7 +327,7 @@ namespace Parallax.Editor.Art
               .Append(",\"tick\":").Append(r.Tick).Append(",\"step\":\"").Append(r.Step).Append('"')
               .Append(",\"state\":\"").Append(r.State).Append("\",\"clip\":\"").Append(r.Clip).Append("\",\"clip_frame\":").Append(r.ClipFrame)
               .Append(",\"sprite\":\"").Append(r.Sprite).Append("\",\"facing\":").Append(r.Facing)
-              .Append(",\"grounded\":").Append(B(r.Grounded)).Append(",\"climbing\":").Append(B(r.Climbing)).Append(",\"jumped\":").Append(B(r.Jumped))
+              .Append(",\"grounded\":").Append(B(r.Grounded)).Append(",\"sunk\":").Append(B(r.Sunk)).Append(",\"climbing\":").Append(B(r.Climbing)).Append(",\"jumped\":").Append(B(r.Jumped))
               .Append(",\"frozen\":").Append(B(r.Frozen)).Append(",\"holding\":").Append(B(r.Holding)).Append(",\"gravity\":\"").Append(r.GravityDown ? "down" : "up").Append('"')
               .Append(",\"v_along\":").Append(F(r.VAlong)).Append(",\"v_gravity\":").Append(F(r.VGravity))
               .Append(",\"root\":[").Append(F(r.Root.x)).Append(',').Append(F(r.Root.y)).Append(']')
@@ -329,18 +335,33 @@ namespace Parallax.Editor.Art
               .Append(",\"paw\":[").Append(F(r.Paw.x)).Append(',').Append(F(r.Paw.y)).Append(']')
               .Append(",\"paw_img\":[").Append(F(r.PawImg.x)).Append(',').Append(F(r.PawImg.y)).Append(']')
               .Append(",\"depth_sprite_px\":").Append(r.M.SurfaceFound ? F(r.M.PenetrationSpritePx) : "null")
+              .Append(",\"ceiling_depth_sprite_px\":").Append(r.M.CeilingFound ? F(r.M.CeilingPenetrationSpritePx) : "null")
               .Append(",\"cat_box\":").Append(r.M.HasSprite ? $"[{F(r.M.BoxMin.x)},{F(r.M.BoxMin.y)},{F(r.M.BoxMax.x)},{F(r.M.BoxMax.y)}]" : "null")
               .Append(",\"surface\":\"").Append(r.M.Surface).Append('"')
               .Append(",\"contact_px\":").Append(r.M.ContactAlong.Length)
               .Append(",\"contacts\":[").Append(string.Join(",", CatCaptureMath.ClusterRanges(r.M.ContactAlong, CaptureThresholds.ClusterGapSpritePx / Mathf.Max(1f, r.M.Ppu))
                   .Select(c => $"[{F(c.x)},{F(c.y)}]"))).Append(']')
               .Append(",\"pop_phone_px\":").Append(r.PopPhonePx >= 0f ? F(r.PopPhonePx) : "null")
+              .Append(",\"carrier_offset_phone_px\":").Append(F(r.CarrierOffsetPhonePx))
               .Append(",\"box_pop_phone_px\":").Append(r.BoxPopPhonePx >= 0f ? F(r.BoxPopPhonePx) : "null")
               .Append(",\"image\":").Append(r.Image != null ? "\"" + r.Image + "\"" : "null").Append('}');
             return sb.ToString();
         }
 
         static string B(bool b) => b ? "true" : "false";
+
+        // Item 2: the motor is grounded but the cat's bottom is below the top of the collider it stands on by more than the
+        // presenter's groundSinkTolerance (a capsule rolling off a ledge's corner): the presenter shows it as off the ground.
+        static bool Sunk(CatCaptureRig rig, Vector2 centre, Vector2 down)
+        {
+            Collider2D ground = rig.Cat.GroundCollider;
+            if (!rig.Cat.IsGrounded || ground == null || rig.Cat.JumpedThisStep) return false;
+            var so = new SerializedObject(rig.Presenter);
+            var config = so.FindProperty("config").objectReferenceValue as Parallax.Gameplay.Presentation.CatVisualConfig;
+            float grace = config != null ? config.GroundSinkTolerance : 0f;
+            Vector2 paws = centre + down * (rig.Motor.ColliderSize.y * 0.5f);
+            return Parallax.Gameplay.Presentation.CatPresentationSignals.SunkBelow(ground.bounds, paws, down, grace);
+        }
 
         /// <summary>Tools/Art/cat_capture_sheet.py over the output (python3 on PATH, or PARALLAX_PYTHON).</summary>
         static void RunSheets(string outDir)

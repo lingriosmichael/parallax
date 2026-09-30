@@ -30,7 +30,7 @@ namespace Parallax.Editor.Art
         public Func<RouteSession, List<CaptureStep>> Steps;
     }
 
-    static class CatCaptureScenarios
+    static partial class CatCaptureScenarios
     {
         // ---------- steps ----------
 
@@ -316,7 +316,7 @@ namespace Parallax.Editor.Art
                     new Hold(0f, 1f, "after the respawn"),
                 },
             },
-        }.Concat(GroundScenarios()).ToList();
+        }.Concat(GroundScenarios()).Concat(AirScenarios()).ToList();
 
         /// <summary>A level's solution as the route harness plays it: one screen-relative command per tick, read from the
         /// replay's own records (Move, Jump, Climb), so this rig plays the same inputs on the same ticks.</summary>

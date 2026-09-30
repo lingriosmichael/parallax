@@ -54,6 +54,18 @@ namespace Parallax.Tests.EditMode
             StringAssert.Contains("Idle", statesSeen);
         }
 
+        // PAX-V07 item 2: inputs pressed during TakeOff, Land and HardLand (on the air bench's tower, both gravities).
+        [TestCase("parity_air_down")]
+        [TestCase("parity_air_up")]
+        public void PresenterStepped_VsNot_IdenticalOnEveryTick_InputsDuringTheAirStates(string scenario)
+        {
+            string difference = Parity(scenario, out int ticks, out string statesSeen);
+            Assert.Greater(ticks, 50, "the scenario ran");
+            Assert.IsNull(difference, difference);
+            foreach (string state in new[] { "TakeOff", "Land", "HardLand" })
+                StringAssert.Contains(state, statesSeen, $"no {state} was shown: the parity script doesn't press inputs during {state}");
+        }
+
         [TestCase("parity_ground_down")]
         [TestCase("parity_ground_up")]
         public void ParityScript_ShowsRun(string scenario)

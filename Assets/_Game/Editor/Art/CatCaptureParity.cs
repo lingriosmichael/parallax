@@ -89,6 +89,8 @@ namespace Parallax.Editor.Art
                 WalkEnter = config != null ? config.WalkEnter : 0f,
                 RunEnter = config != null ? config.RunEnterSpeed : float.PositiveInfinity,
                 RunExit = config != null ? config.RunExitSpeed : float.PositiveInfinity,
+                AirThreshold = config != null ? config.RiseExit : float.PositiveInfinity,
+                AirGraceDrop = config != null ? config.AirGraceDrop : 0f,
             };
             SerializedProperty clips = so.FindProperty("clips.clips");
             for (int i = 0; clips != null && i < clips.arraySize; i++)

@@ -9,7 +9,7 @@ updated after every item, so it's current even if the run stopped early.
 |---|---|---|---|
 | 0 · Capture harness | **BLOCKED** (usable; the death-hold visibility defect was named in two rounds) | 2 | item 0 commit |
 | 1 · Ground | **BLOCKED** (+ art needs listed; the switch pops and turn strobe were named in two rounds) | 2 | item 1 commit |
-| 2 · Air | pending | – | – |
+| 2 · Air | **BLOCKED** (+ art needs listed; the turning-jump facing flip, the running hard landing and the geyser cut were named in two rounds) | 2 | item 2 commit |
 | 3 · Climb | pending | – | – |
 | 4 · Gravity | pending | – | – |
 | 5 · Idle fidgets | pending | – | – |
@@ -204,6 +204,96 @@ Coverage (critic's note): every overview in both gravities and at least one stri
 No paw-in-floor or paw-in-ceiling penetration, and no wrong facing within a steady loop. The Idle, Walk and Run loops read cleanly in both gravities, and gravity up matches gravity down.
 
 2. **Rating: fair.** The cat's steady loops look good and hold up upside down. But every clip change is an unblended cut between very different silhouettes, and the turn is a 0.1 s strobe of side, rear and front drawings. Quick inputs (the double turn, a run into a wall) make the cat flicker through 2–4 frame clips. On a store-page video, where starts, stops and turns happen constantly, those pops would be the first thing a viewer notices.
+
+
+### Item 2 · Air: BLOCKED (the rest needs art)
+
+**Rounds:** 2, rated **fair** both times. Round 2 fixed round 1's code defects:
+- the mid-takeoff mirror;
+- the ledge-landing stutter through Run, a frozen Walk and Idle;
+- the low-ceiling takeoff skipping Rise, and its one-frame Rise;
+- the weightless running landing off a tower;
+- the Fall→Walk head jump.
+
+It stops under the brief's rule because the critic named three things in both rounds:
+- **A jump against the facing still turns in one frame.** It now turns on TakeOff 0, the gather, rather than mid-push,
+  but there's no Turn clip in the air.
+- **The running hard landing.** Round 2 gives it HardLand 1's impact for 3 frames, which the critic called a flicker.
+- **The geyser Idle→Rise cut.** That belongs to the parked Launched state.
+
+The rest is art (`Docs/Art/NEEDED_ASSETS.md`, item 2, entries 1–10). Round 2's code is kept.
+
+**What it does now:**
+- **TakeOff:** 2 frames. The gather is anchored to the ground it left (up to 0.4 u), then Rise releases it.
+- **Rise, Apex and Fall** play by the arc. Air frames never go backward and never show for a single frame.
+  `airThreshold` is 2 u/s, so the apex band lasts about 8 frames. A walk-off shows Fall, not Apex.
+- **Land or HardLand** by the fall distance along gravity from the high point. A mid-air flip resets the high point.
+  - `hardLandDistance` is 2.75 u, in the gap between the 20 levels' ordinary landings (0–2.5 u) and their tower and
+    cliff drops (≥ 2.97 u), from 247 measured landings.
+  - HardLand recovers through Land.
+  - A landing released on touchdown plays the full Land and skids to a stop.
+  - A moving landing plays a quick Land bridge into Walk.
+  - A hard landing while running shows HardLand 1's impact for 3 frames, then Run.
+- **Clearance:** under low ceilings and beside steps, an air pose is drawn up to 0.3 u clear, easing back, using
+  read-only raycasts on the cat's own reality. Where no shift clears, it gives way to the flatter Apex.
+- **Ledges:** a capsule rolling off a ledge corner while the motor still says grounded is shown as off the ground, so
+  the cat no longer walks on air.
+- **A one-tick ground loss** on a flat floor seam no longer flashes Land.
+- **Death during Land** is wired as a priority input for item 6.
+
+**For the developer to rule on (§3):**
+- The quick Land bridge (Land 0 ×2, Land 1 ×2, about 67 ms) also plays when a move is pressed on the landing tick.
+  §3 says the visual moves to the motion's state on that same frame.
+- The motion is identical: the parity tests pass bit for bit, so no input is delayed. Only the drawn state lags.
+- It was added because the critic called the direct Fall→Walk cut a pop.
+- A reversal pressed on the landing tick still goes straight to Turn.
+
+**Automated checks (round 2, 16 air scenarios, both gravities):**
+- 0 over for paws in floor, head in ceiling and foot slide.
+- 0 state-rule frames broken, including the new `takeoff-late`, `apex-outside-band` and stricter `land-late` rules.
+- Capture parity identical, and no one-frame air sprites.
+- Pose pop is the only failure: 6–29 per scenario, max 18.8 pp, all at art seams.
+
+**Regression:**
+- Item 1's 12 ground scenarios are identical on every number.
+- Item 0's four scenarios have 0 state-rule frames broken (item 1 had 3), and the pit's paws went from 7.9 sp to −0.9.
+- Across the 20 level solutions (captured without images), paws in floor is 0 over in 18 levels. Before this item, 15
+  levels were over, by up to 51.7 sp. Two single frames remain: L015 f829 (6.3 sp) and L019 f225 (4.7 sp).
+
+**Tests:**
+- Red first: 66 run, 18 failed for the ticket's reasons.
+- Green: 206 of 206, 0 warnings.
+  - State machine tests went from 38 to 64.
+  - Parity tests went from 8 to 10, adding `parity_air_down` and `parity_air_up`.
+  - Capture tests went from 22 to 27.
+- The new `CatCaptureAirScenarios.cs` holds a capture-only "air bench" room with a gravity-up mirror. The gravity-down
+  geyser runs in Trap Lab room 8.
+
+**Final sheets:** `Docs/V_TASKS/PAX-V07_gauntlet/item2/`.
+
+**Critic's last verdict (round 2), word for word:**
+
+Coverage (critic's note): every overview except 054 and 074; at least one takeoff and one landing strip for every scenario in both gravities; HardLand→Land and HardLand→Run in both gravities. A tool request limit dropped some early reads; all conclusions come from images actually seen.
+
+**What works:** Touchdown contact is clean. On every landing strip the paws meet the surface on the touchdown frame, with no paws in the floor. Takeoffs leave the surface cleanly. The gravity-up versions match gravity-down frame for frame. Facing stays correct through the air in every case except defect 1.
+
+1. **Defects:**
+   1. 084_air_tower_jump_down strip, f62→f63 (also 081 at f63), and 090_air_tower_jump_up strip, f137→f138. The cat faces right in Idle and is facing left, crouched, on the first TakeOff frame. The facing flips in one frame with no turn. Noticeable.
+   2. 026_air_running_jump_down strip, f53→f54, and 038_air_running_jump_up strip, f141→f142. From a full-stride run, TakeOff[0] snaps to an upright, near-standing squat with the tail flicked up, which reads as braking to a stop right before a running leap. Noticeable.
+   3. 098_air_low_ceiling_down strip, f144→f145, and 105_air_low_ceiling_up strip, f231→f232. The flat Apex[0] pose is held 6 frames into Fall, then pops straight to the arched Fall[1] (Fall[0] skipped). The body rotates about 30° and the tail swings from trailing to vertical in one frame. Noticeable.
+   4. 073_air_tower_run_down strip, f72→f76 (071 at f73→f76), and 079_air_tower_run_up strip, f148→f152. The hard-landing crouch lasts only 3 frames (~50 ms) between the fall pose and a full run stride; reads as a one-frame flicker or pop, not an impact. Noticeable.
+   5. The in-place standing jump uses forward-leap poses: 001_air_standing_jump_down overview f36→f66 and 009_air_standing_jump_up overview f120→f156. Straight up and down but a diagonal forward leap, then a horizontal gallop stretch. Noticeable.
+   6. Walking off a ledge snaps into a full leap pose (legs flung forward and back, tail up) on the first air frame, so a small step-down reads as a deliberate jump: 047_air_ledge_down f135→f136 (1 u drop); 053_air_ledge_up f223→f224; 059_air_tower_drop_down f70→f71; 072_air_tower_run_down f46→f47; 078_air_tower_run_up f122→f123. Noticeable.
+   7. Hind paws and tail overlap the adjacent wall: hind toes inside the tower wall through the fall (060 f86→f96, 067 f162→f172); HardLand tail curls into the wall (060 f97→f101, 085 f119→f123, 091 f195→f199); after landing the tail tip stays inside the tower wall through Land into Idle (057 f112→f136, 064 f188→f199); hind paws into the ledge corner (047 f145→f146, 053 f233→f234). Subtle for paws; noticeable for the tail at the tower base (2×).
+   8. Stray outline fragments: a detached orange speck stays in the air at the takeoff spot ~5–8 frames after leaving the ground (007 f32→f39, 017 f120→f124, 026 f56→f61, 038 f144→f148, 084 f65→f69, 081 f65→f68, 090 f140→f145, 104 f218→f220, 112 f127→f128); every HardLand[1] frame has a loose orange tick right of the tail (016 f40→f44, 060 f97→f101, 073 f73→f75, 079 f149→f151, 085 f119→f123, 121 f197→f201); HardLand[2] tail tip cut square with a rectangular rim (016 f45→f47, 060 f102→f104, 085 f124→f126). Subtle at phone scale, recurs every takeoff and hard landing.
+   9. HardLand[1] body looks washed out and blurrier (lighter brown, soft edge) than neighbouring Fall and Run sprites: 060 f97→f101, 079 f149→f151, 121 f197→f201. Subtle.
+   10. The geyser launch goes from standing Idle straight to a full leap pose with no crouch or reaction frame (112_air_geyser_down f126→f127, 120_air_geyser_up f126→f127); Rise[0] then held static ~20 frames while the cat shoots up (106 overview f127→f149). Noticeable.
+   11. Long falls hold one static Fall[2] frame while the sprite slides down 15–20+ frames: 060 f86→f96, 067 f162→f172, 085 f108→f118, 091 f184→f194. Reads as a frozen cut-out on the 3.2–4.8 u drops. Subtle.
+   12. At the low slab, ear tips (down) and chin (up) touch or poke into the slab during Apex: 097 f133→f137, 105 f226→f227 (104 f221→f225). Subtle.
+
+   Also noted, outside animation scope: while the vent builds up, the steam VFX draws over the cat and makes it look piebald (112 f116→f125, 120 f116→f125).
+
+2. **Rating: fair.** The individual poses are well drawn, and contact at touchdown and liftoff is correct in both gravities. But the transitions are where a store-page viewer would catch it: the one-frame facing flip on a turning jump; the braking squat before a running leap; the Apex to Fall pop; the 3-frame hard-landing flicker; leap poses on simple walk-offs and in-place jumps. On top of that, the stray orange specks and the tail clipping into walls recur on nearly every takeoff and hard landing, so it isn't good yet.
 
 
 ## Full suite

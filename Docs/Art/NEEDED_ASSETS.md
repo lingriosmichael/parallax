@@ -42,3 +42,38 @@ Numbers are phone px at 80 px/u (pp) or sprite px at PPU 143.3 (sp). The evidenc
    - The outline shader rims them, so single orange pixels float next to the face and back.
    - Fix: clean the sheets' alpha, for example by dropping islands under a size and alpha threshold in
      `cat_register.py`, or add an alpha cutoff to the outline shader. The shader is outside V07's file list.
+
+## Item 2 · Air (CatA_TakeOff, Rise, Apex, Fall, Land, HardLand)
+
+1. **Landing impact and recovery.**
+   - Fall→Land pops 15.3 pp and Fall→HardLand 18.8 pp. There is no impact/contact frame between the air pose and the
+     crouch.
+   - Land's own 3 frames pop 4.8–6.5 pp at each step.
+   - HardLand 3 → Land 0 pops 7.8–8.3 pp, 14 times: no frame bridges the flat crouch to the raised crouch.
+   - Land 1's curled tail meets Walk's upright tail at 8.1–10.5 pp (the quick-land bridge into Walk).
+   - Wanted: 1–2 contact frames per landing kind, and a HardLand recovery that ends on Land 0's pose (or on Idle).
+2. **HardLand sprite.**
+   - The tail tip is cut square at the cell edge in HardLand 2. A08 recorded the source as `sourceCutAtCellEdge: true`
+     with `clippedPx: 0`: the AutoSprite source was already cut.
+   - HardLand 1 has a loose outline tick right of the tail, and a lighter, softer body than Fall and Run.
+   - HardLand 0 can't be used after a dive.
+3. **Takeoff.**
+   - TakeOff 1 → Rise 0 pops 9 pp.
+   - From a full run, TakeOff 0 is an upright squat that reads as braking; a running takeoff (a stride push-off) is
+     missing.
+4. **A straight-up Rise/Fall.** Rise is a forward pounce (Rise 0 is a diagonal leap), so a jump in place looks like it
+   should travel.
+5. **Rise→Apex (4.3–4.8 pp) and Apex→Fall (4.6–5.4 pp) in-betweens.**
+6. **A step-down / walk-off pose.** A walk-off shows the full leap pose on its first air frame, so a 1 u step-down reads
+   as a jump.
+7. **A longer Fall loop.**
+   - Long falls (3.2–4.8 u) hold Fall 2 for 15–20+ frames, a frozen cut-out.
+   - Wanted: a 2–4 frame falling loop (fur and tail flutter).
+8. **Geyser launch.**
+   - Idle → Rise 0 cuts, then Rise 0 holds for about 20 frames while the cat shoots up.
+   - This belongs to the parked `Launched` state (22 launched, "redo first"). Until that ticket, it shows Rise.
+9. **Specks.** A detached outline speck on Rise 0 (it stays at the takeoff spot for 5–8 frames) and on Land 1. The same
+   cause as item 1 entry 6.
+10. **Pose size against the collider (not art-only).** Every pose is taller than the 0.56 u collider. The ear tips touch
+    the 0.7 u slabs during Apex, and an Idle cat's ears draw into L011's 0.7 u gap for 59 frames. A08's accepted
+    trade-off (the ear tips touch the 0.70 u ceilings) covers it; listed so it isn't forgotten.

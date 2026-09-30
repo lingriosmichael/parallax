@@ -39,6 +39,17 @@ namespace Parallax.Gameplay.Presentation
         float phase;
         int shownFacing = 1;
         int missingClipWarnings;
+        // Item 2: the air clips' velocity range (a normal jump's speed), and the ground the cat last stood on (its height
+        // against gravity), which TakeOff's paws stay on while the body rises.
+        float jumpSpeed;
+        float groundTop;   // the face against gravity of the ground the cat last stood on (paw level)
+        bool anchored;
+        int pendingAirFrame = -1;
+        bool airStateEnding;
+        float appliedLift;
+        readonly CatAirFit airFit = new CatAirFit();
+        ContactFilter2D roomFilter;
+        readonly RaycastHit2D[] roomHits = new RaycastHit2D[8];
 
         void Awake()
         {
@@ -68,19 +79,29 @@ namespace Parallax.Gameplay.Presentation
                 return;
             }
 
-            CatClip turn = clips.ForState(CatAnimState.Turn);
+            CatClip turn = clips.ForState(CatAnimState.Turn), land = clips.ForState(CatAnimState.Land);
+            CatClip takeOff = clips.ForState(CatAnimState.TakeOff), hardLand = clips.ForState(CatAnimState.HardLand);
             stateMachine = new CatAnimStateMachine(new CatAnimSettings(
                 config.RiseExit,
                 config.FallEnter,
                 config.WalkEnter,
                 config.WalkExit,
-                config.LandDuration,
+                land != null ? land.DurationFromEntry : config.LandDuration,
                 config.RunEnterSpeed,
                 config.RunExitSpeed,
                 turn != null ? turn.Duration : 0f,
                 config.FlipHysteresis,
                 config.SnapAcceleration,
-                config.MinStateFrames));
+                config.MinStateFrames,
+                config.HardLandDistance,
+                takeOff != null ? takeOff.DurationFromEntry : 0f,
+                hardLand != null ? hardLand.DurationFromEntry : 0f,
+                config.AirGraceDrop,
+                config.MovingLandDuration,
+                config.MovingImpactDuration,
+                config.SpeedLeadTolerance));
+            jumpSpeed = config.JumpSpeed(gravity.Strength);
+            roomFilter = new ContactFilter2D { useLayerMask = true, layerMask = reality != null ? reality.PhysicsMask : 0, useTriggers = false };
             shownFacing = Facing;
 
             if (outlineRenderer != null)
@@ -161,14 +182,22 @@ namespace Parallax.Gameplay.Presentation
             float rawVelocityAlongGravity = Vector2.Dot(measuredVelocity, down);
             float travelled = teleported ? 0f : Mathf.Abs(GravityFrame.Along(delta, down));
 
+            float height = -Vector2.Dot(currentPosition, down);
+            Vector2 paws = motionRoot.TransformPoint(restLocalPosition);
+            Collider2D ground = motor.GroundCollider;
+            bool rollingOff = ground != null && !motor.JumpedThisStep && CatPresentationSignals.SunkBelow(ground.bounds, paws, down, config.GroundSinkTolerance);
             CatAnimState next = teleported
                 ? stateMachine.State
-                : stateMachine.Step(new CatAnimInput(motor.IsGrounded, motor.IsClimbing, rawAlong, rawVelocityAlongGravity, dt,
-                    motor.JumpedThisStep, down.y > 0f ? 1f : -1f));
+                : stateMachine.Step(new CatAnimInput(motor.IsGrounded && !rollingOff, motor.IsClimbing, rawAlong, rawVelocityAlongGravity, dt,
+                    motor.JumpedThisStep, down.y > 0f ? 1f : -1f, height, rollingOff: rollingOff,
+                    bodySurfaceSpeed: body != null ? GravityFrame.Along(body.linearVelocity, down) : rawAlong));
             ApplyFacing(stateMachine.Facing);
+            if (motor.IsGrounded && ground != null) groundTop = CatPresentationSignals.FaceAgainstGravity(ground.bounds, down);
 
             UpdateEchoAlpha();
             ApplyClimbPose(next == CatAnimState.Climb, down);
+            float lift = next == CatAnimState.TakeOff ? Mathf.Clamp(-Vector2.Dot(paws, down) - groundTop, 0f, config.TakeOffAnchor) : 0f;
+            bool lifting = false;
             // PAX-087 (D-089): until the climbing item wires the climb sheet, Climb shows the Walk frames while the cat moves
             // on the vine (at the vertical speed) and the Idle frame while it hangs still, turned by the climb pose.
             if (next == CatAnimState.Climb)
@@ -177,7 +206,24 @@ namespace Parallax.Gameplay.Presentation
                 CatAnimState shown = moving ? CatAnimState.Walk : CatAnimState.Idle;
                 UpdateSprite(shown, clips.ForState(shown), moving ? Mathf.Abs(rawVelocityAlongGravity) : 0f, 0f, dt, byDistance: false);
             }
-            else UpdateSprite(next, clips.ForState(next), Mathf.Abs(rawAlong), travelled, dt, byDistance: true);
+            else
+            {
+                // Item 2: next to solids an air pose gives way to a flatter one, and what still overlaps them is drawn clear.
+                float progress = CatClipSet.AirProgress(next, rawVelocityAlongGravity, config.RiseExit, config.FallEnter, jumpSpeed);
+                airStateEnding = CatClip.AirFramesLeft(next, rawVelocityAlongGravity, config.RiseExit, config.FallEnter, gravity.Strength * dt) < config.MinStateFrames;
+                float headroom = float.PositiveInfinity, footroom = float.PositiveInfinity;
+                lifting = progress >= 0f || next == CatAnimState.TakeOff;
+                if (lifting && reality != null) CatPresentationSignals.Room(paws, down, config.RoomHalfWidth, config.RoomReach, roomFilter, bodyCollider, roomHits, out headroom, out footroom);
+                UpdateSprite(next, airFit.Choose(clips, next, progress, headroom, footroom, config.AirPoseShift, config.MinStateFrames), Mathf.Abs(rawAlong), travelled, dt, byDistance: true, progress,
+                    stateMachine.MovingLanding && next == CatAnimState.Land ? config.MovingLandFps : 0f);
+                if (current != null && progress >= 0f) lift = CatClipSet.AirShift(current.PoseTop(FrameIndex), current.PoseBottom(FrameIndex), headroom, footroom, config.AirPoseShift);
+                // Round 2: the lift eases back (never snaps: the TakeOff anchor's release, a ceiling left behind) and never
+                // draws the pose into a solid.
+                if (lifting && current != null) lift = CatClipSet.EaseLift(appliedLift, lift, config.LiftRecoverSpeed * dt,
+                    footroom - current.PoseBottom(FrameIndex), headroom - current.PoseTop(FrameIndex));
+            }
+            appliedLift = lifting ? lift : 0f;
+            anchored = CatClipSet.ApplyLift(transform, restLocalPosition, down, appliedLift, anchored);
             shownFacing = Facing;
         }
 
@@ -246,12 +292,10 @@ namespace Parallax.Gameplay.Presentation
             }
         }
 
-        // One frame of `clip`. Entering a clip picks its first frame: a loop starts on the frame whose pose is closest to the
-        // one on screen (no pose pop, e.g. Walk from Idle's stance, Run from Walk); a one-shot starts at 0. A clip with
-        // strides is played by distance (`travelled`, units along the surface): each frame lasts its own stride, so a
-        // planted paw stays put at any speed. Otherwise by time: at the clip's fps, or for Walk without strides at the
-        // speed-scaled fps (FlipbookMath.FpsForSpeed). The phase carries across speed changes.
-        void UpdateSprite(CatAnimState state, CatClip clip, float speed, float travelled, float dt, bool byDistance)
+        // One frame of `clip`, entered on EntryFrame. Rise, Apex and Fall follow the arc (`progress`); a clip with strides is
+        // played by distance (`travelled`): each frame lasts its own stride, so a planted paw stays put at any speed; others by
+        // time, at the clip's fps (Walk without strides at FlipbookMath.FpsForSpeed). The phase carries across speed changes.
+        void UpdateSprite(CatAnimState state, CatClip clip, float speed, float travelled, float dt, bool byDistance, float progress = -1f, float fpsOverride = 0f)
         {
             if (clip == null || clip.Count == 0)
             {
@@ -261,7 +305,16 @@ namespace Parallax.Gameplay.Presentation
 
             bool distance = byDistance && clip.ByDistance;
             int index;
-            if (clip != current)
+            if (progress >= 0f)
+            {
+                int target = clip.FrameForProgress(progress);
+                if (clip != current) pendingAirFrame = -1;
+                if (clip == current && airStateEnding) target = Mathf.Min(target, FrameIndex);   // no frame shown only once before the next state
+                index = clip == current ? CatClip.SteadyAdvance(FrameIndex, target, ref pendingAirFrame) : target;
+                current = clip;
+                phase = index;
+            }
+            else if (clip != current)
             {
                 index = EntryFrame(clip, distance);
                 current = clip;
@@ -274,7 +327,7 @@ namespace Parallax.Gameplay.Presentation
             }
             else
             {
-                float fps = clip.State == CatAnimState.Walk
+                float fps = fpsOverride > 0f ? fpsOverride : clip.State == CatAnimState.Walk
                     ? FlipbookMath.FpsForSpeed(speed, config.ReferenceSpeed, clip.Fps, config.MinFps, config.MaxFps)
                     : clip.Fps;
                 phase += (dt > 0f ? dt : 0f) * fps;
@@ -294,14 +347,16 @@ namespace Parallax.Gameplay.Presentation
             FrameIndex = index;
         }
 
-        // A one-shot starts at 0. A loop starts on its entry frame closest to the pose on screen; braking into a clip played by
-        // distance (a digital stop from a run), on the frame from which the remaining travel ends on a stance frame, so the
-        // cat stops with its paws where Idle puts them. The remaining travel on screen is how far the drawn root trails the
-        // body (interpolation) plus the body's braking distance at the motor's deceleration (0 against a wall). Reads only.
+        // A one-shot starts at its first entry frame. A loop starts on its entry frame closest to the pose on screen; braking
+        // into a clip played by distance, on the frame from which the remaining travel (the drawn root's lag behind the body
+        // plus the motor's braking distance) ends on a stance frame, so the cat stops with its paws where Idle puts them.
         int EntryFrame(CatClip clip, bool distance)
         {
-            if (!clip.Loop || current == null) return 0;
+            if (!clip.Loop) return clip.FirstEntryFrame;
+            if (current == null) return 0;
             Vector2 pose = current.PoseCentroid(FrameIndex);
+            // Item 2: a landing from the air into the gait enters on a frame whose paws reach for the ground.
+            if (IsAir(current.State)) return clip.LandEntry(pose, shownFacing, Facing);
             if (distance && stateMachine.Braking && body != null && config.BrakeDeceleration > 0f)
             {
                 Vector2 down = gravity.Direction;
@@ -312,15 +367,10 @@ namespace Parallax.Gameplay.Presentation
             return clip.ClosestPose(pose, shownFacing, Facing);
         }
 
-        /// <summary>How far a body moving at `speed` still travels while the motor brakes it at `deceleration`, tick by tick
-        /// (each tick's velocity is the previous one less deceleration × tick, as CatMotor2D's MoveTowards does).</summary>
-        public static float BrakingDistance(float speed, float deceleration)
-        {
-            float tick = TickTime.SecondsPerTick, step = deceleration * tick, d = 0f;
-            if (step <= 0f) return 0f;
-            for (float v = speed - step; v > 0f; v -= step) d += v * tick;
-            return d;
-        }
+        /// <summary>How far a body moving at `speed` still travels while the motor brakes it (CatClip.BrakingDistance).</summary>
+        public static float BrakingDistance(float speed, float deceleration) => CatClip.BrakingDistance(speed, deceleration);
+
+        static bool IsAir(CatAnimState s) => s == CatAnimState.Rise || s == CatAnimState.Apex || s == CatAnimState.Fall || s == CatAnimState.TakeOff;
 
         static int FrameAt(float framePhase, int frameCount, bool loop)
         {

@@ -18,6 +18,7 @@ namespace Parallax.Editor.Art
         public const float PhonePixelsPerUnit = 80f;
         public const float AlphaOpaque = 0.5f;          // a pixel counts as drawn at alpha >= this
         public const float PawsInFloorSpritePx = 2f;    // no drawn pixel deeper than this inside a solid, along gravity
+        public const float HeadInCeilingSpritePx = 2f;  // item 2: nor inside a solid above it, against gravity
         public const int NearGroundTicks = 3;           // air frames this close (in ticks) to a grounded tick are checked too
         public const float FloatGapSpritePx = 2f;       // grounded frames: the lowest drawn pixel within this of the surface
         public const float ContactBandSpritePx = 2f;    // contact pixels: within this of the surface
@@ -36,6 +37,8 @@ namespace Parallax.Editor.Art
         public bool HasSprite, SurfaceFound;
         public string Surface = "";   // the solid under the deepest (or least-gapped) column
         public float PenetrationSpritePx = float.NegativeInfinity;   // max depth of a drawn pixel past the surface; < 0 = gap
+        public float CeilingPenetrationSpritePx = float.NegativeInfinity;   // item 2: the same against gravity, into a solid above
+        public bool CeilingFound;
         public float Ppu;
         public Vector2 Centroid, BoxMin, BoxMax;
         public float[] ContactAlong = Array.Empty<float>();          // along-surface coordinate of each contact pixel, sorted
@@ -106,6 +109,7 @@ namespace Parallax.Editor.Art
                 int[] ys = e.Columns[c];
                 var points = new Vector2[ys.Length];
                 float lowest = float.NegativeInfinity; Vector2 lowestPoint = default;
+                float highest = float.PositiveInfinity; Vector2 highestPoint = default;
                 for (int i = 0; i < ys.Length; i++)
                 {
                     Vector2 w = CatCaptureMath.PixelToWorld(e.ColumnX[c], ys[i], e.PivotPx, e.Ppu, toWorld);
@@ -114,6 +118,17 @@ namespace Parallax.Editor.Art
                     min = Vector2.Min(min, w); max = Vector2.Max(max, w);
                     float d = Vector2.Dot(w, down);
                     if (d > lowest) { lowest = d; lowestPoint = w; }
+                    if (d < highest) { highest = d; highestPoint = w; }
+                }
+                // Item 2: the solid above this column (a low ceiling), searched from the collider centre's height against
+                // gravity up to RayMarginUnits past the column's highest pixel; how far that pixel is inside it.
+                Vector2 up = -down;
+                Vector2 top0 = highestPoint + down * Vector2.Dot(colliderCentre - highestPoint, down);
+                float upReach = Vector2.Dot(highestPoint - top0, up) + CaptureThresholds.RayMarginUnits;
+                if (upReach > 0f && Surface(top0, up, upReach, filter, self, out Vector2 ceiling, out _))
+                {
+                    m.CeilingFound = true;
+                    m.CeilingPenetrationSpritePx = Mathf.Max(m.CeilingPenetrationSpritePx, Vector2.Dot(highestPoint - ceiling, up) * e.Ppu);
                 }
                 // The ray starts at this column's along-surface position, at the collider centre's height (inside the cat).
                 Vector2 origin = lowestPoint + down * Vector2.Dot(colliderCentre - lowestPoint, down);
@@ -153,6 +168,8 @@ namespace Parallax.Editor.Art
     sealed class CaptureSpeeds
     {
         public float WalkEnter, RunEnter, RunExit, TurnSeconds;
+        public float AirThreshold = float.PositiveInfinity, AirGraceDrop;   // item 2
+        public const float DropTolerance = 0.005f;   // units: the drawn root's interpolation against the presenter's own reading
         public const int LagFrames = 2;   // interpolation shows the body up to one tick (1.2 frames) late: this many frames of lag are allowed
     }
 
@@ -165,6 +182,8 @@ namespace Parallax.Editor.Art
         public float VAlong, VGravity; public Vector2 Root, ColliderCentre, Cam, Paw, PawImg;
         public FrameMeasure M;
         public float PopPhonePx = -1f, BoxPopPhonePx = -1f;   // -1: no sprite change this frame
+        public bool Sunk;                        // item 2: grounded, but below its ground's top past airGraceDrop (shown off the ground)
+        public float CarrierOffsetPhonePx;       // item 2: this frame's move of the Visual's pivot beyond the root's (the TakeOff anchor)
         public string Image;
     }
 
@@ -182,9 +201,15 @@ namespace Parallax.Editor.Art
         // PAX-V07 item 1: consecutive frames (this one included) where Run shows below the run exit speed, Walk above the
         // run speed, or the cat moves against its facing above walkEnter.
         public int RunSlowFrames, WalkFastFrames, AgainstFacingFrames;
+        // Item 2: how far the cat is below where it last stood (units), Apex frames outside the band, the frame before last's jump flag.
+        public float GroundHeight, DropSinceGround;
+        public int ApexOutsideFrames;
+        public bool PrevPrevJumped;
         public CaptureSpeeds Speeds;
-        public bool Air(CatAnimState s) => s == CatAnimState.Rise || s == CatAnimState.Fall;
+        public bool Air(CatAnimState s) => s == CatAnimState.Rise || s == CatAnimState.Apex || s == CatAnimState.Fall;
         public bool GroundLocomotion(CatAnimState s) => s == CatAnimState.Idle || s == CatAnimState.Walk || s == CatAnimState.Run || s == CatAnimState.Turn;
         public bool Excluded => Row.Holding || Row.Frozen;
+        /// <summary>Item 2: on the ground as the presenter reads it (the motor's flag, less a capsule rolling off a corner).</summary>
+        public bool OnGround => Row.Grounded && !Row.Sunk;
     }
 }

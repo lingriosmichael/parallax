@@ -32,9 +32,10 @@ namespace Parallax.Editor.Art
         // the state, the playback rate and loop flag, and for the locomotion clips each frame's stride.
         readonly struct ClipRow
         {
-            public ClipRow(string slot, CatAnimState state, float fps, bool loop, float[] stridePx = null, int[] entry = null, int[] stance = null)
+            public ClipRow(string slot, CatAnimState state, float fps, bool loop, float[] stridePx = null, int[] entry = null, int[] stance = null, int[] landEntry = null)
             {
                 Slot = slot; State = state; Fps = fps; Loop = loop; StridePx = stridePx; Entry = entry ?? new int[0]; Stance = stance ?? new int[0];
+                LandEntry = landEntry ?? new int[0];
             }
 
             public readonly string Slot;
@@ -44,6 +45,7 @@ namespace Parallax.Editor.Art
             public readonly float[] StridePx;   // sprite px at the manifest PPU; null = played by time
             public readonly int[] Entry;        // the frames a loop may start on from another clip (empty = any)
             public readonly int[] Stance;       // the frames a stop settles on
+            public readonly int[] LandEntry;    // the frames a landing from the air enters on (item 2)
         }
 
         // Strides (PAX-V07 item 1): how far a planted paw moves back from each frame to the next, in sprite px at the
@@ -66,6 +68,10 @@ namespace Parallax.Editor.Art
         static readonly int[] WalkStance = { 1, 7 };
         static readonly int[] RunPushOff = { 1, 2 };
 
+        // Item 2 (see the air notes below; declared before Rows, which reads them during static initialization).
+        static readonly int[] HardLandEntry = { 1 };
+        static readonly int[] RunTouchDown = { 4 };
+
         static readonly ClipRow[] Rows =
         {
             new ClipRow("Idle", CatAnimState.Idle, 7f, true),
@@ -73,15 +79,16 @@ namespace Parallax.Editor.Art
             new ClipRow("IdleEar", CatAnimState.IdleFidget, 12f, false),
             new ClipRow("IdleSit", CatAnimState.IdleFidget, 12f, false),
             // Walk's fps is used only where it's played by time (Climb's interim use, FpsForSpeed at the reference speed).
-            new ClipRow("Walk", CatAnimState.Walk, 10f, true, WalkStridePx, WalkStance, WalkStance),
-            new ClipRow("Run", CatAnimState.Run, 10f, true, RunStridePx, RunPushOff),
+            new ClipRow("Walk", CatAnimState.Walk, 10f, true, WalkStridePx, WalkStance, WalkStance, WalkStance),
+            new ClipRow("Run", CatAnimState.Run, 10f, true, RunStridePx, RunPushOff, landEntry: RunTouchDown),
             new ClipRow("Turn", CatAnimState.Turn, TurnFps, false),
-            new ClipRow("TakeOff", CatAnimState.TakeOff, 20f, false),
+            new ClipRow("TakeOff", CatAnimState.TakeOff, TakeOffFps, false),
+            // Rise, Apex and Fall are played by the cat's velocity along gravity (CatClipSet.AirProgress), not by time.
             new ClipRow("Rise", CatAnimState.Rise, 12f, false),
             new ClipRow("Apex", CatAnimState.Apex, 12f, false),
             new ClipRow("Fall", CatAnimState.Fall, 12f, false),
-            new ClipRow("Land", CatAnimState.Land, 12f, false),
-            new ClipRow("HardLand", CatAnimState.HardLand, 12f, false),
+            new ClipRow("Land", CatAnimState.Land, LandFps, false),
+            new ClipRow("HardLand", CatAnimState.HardLand, HardLandFps, false, entry: HardLandEntry),
             new ClipRow("Death", CatAnimState.Death, 10f, false),
             new ClipRow("Death_Pit", CatAnimState.Death, 10f, false),
             new ClipRow("Death_Spiked", CatAnimState.Death, 10f, false),
@@ -117,6 +124,37 @@ namespace Parallax.Editor.Art
         // or more changes the speed by 6 u/s² or less. 20 u/s² splits them: braking harder, the cat walks the brake out on
         // Walk frames that end on a stance (see CatClip.StanceEntry).
         const float SnapAcceleration = 20f;
+
+        // Air (PAX-V07 item 2; see the gauntlet reports). A jump leaves at 9.8 u/s (1.6 u at gravity 30) and is airborne ~0.65 s.
+        // - TakeOff: its 2 frames (crouch, push) at 60 fps, one display frame each, drawn with the paws on the ground the cat
+        //   jumped from (TakeOffAnchor) while the body already rises: no input waits, and no crouch floats above the floor.
+        // - airThreshold 2 u/s: the apex band lasts 4 / 30 = 0.13 s (8 frames), long enough for the Apex stretch to read
+        //   between Rise and Fall; Rise and Fall each run ~0.26 s, their 3 frames following the velocity.
+        // - Land 3 frames at 15 fps (0.2 s): crouch, recover, stand (Land 2 is Idle's stance, so Idle follows without a pop).
+        // - HardLand from its frame 1 (frame 0 is a tall pre-impact stand that pops after the dive), 3 frames at 12 fps (0.25 s),
+        //   then Land's recovery.
+        // - hardLandDistance 2.75 u: the 20 levels' solutions land after 0-2.5 u (a normal jump's own fall is 1.6-1.7 u, a jump
+        //   onto or off a step 0.2-2.5 u) or after 2.97 u and more (drops off towers and cliffs, 3-14 u); 2.75 sits in that gap.
+        // - Run's landing frame: Run 4, fore paws reaching to touch down (a running landing enters the gallop there).
+        const float TakeOffFps = 60f, LandFps = 15f, HardLandFps = 12f;
+        // - groundSinkTolerance 0.01 u: a standing cat's paws sit 0.005 u above its floor; a capsule rolling off a ledge's corner
+        //   (still grounded) draws its paws into the ledge 2 sprite px (0.014 u) deep by 0.02 u of sink, so it's shown off the
+        //   ground from 0.01 u.
+        // - The room test for air poses: 5 rays from the paws spread 0.7 u either side (the drawn cat, tail included, spans
+        //   about -0.7..+0.5 u), reaching 1.4 u (the tallest air poses reach 0.9-1.06 u above the paws: Rise, Fall, TakeOff 1).
+        //   What still overlaps a solid is drawn up to 0.3 u clear of it: every air pose stands 0.1-0.5 u taller than the
+        //   0.56 u collider (the Apex stretch under the bench's 1.3 u slab overlaps it by 0.12 u), and Rise's hind legs hang
+        //   0.25 u below the paws (a jump up beside a step behind the cat).
+        const float RoomHalfWidth = 0.7f, RoomReach = 1.4f, AirPoseShift = 0.3f;
+        // Round 2 (critic round 1):
+        // - A landing still moving on (the body no slower than the drawn cat) is quick: a walking one plays Land 0-1 at 30 fps
+        //   (4 frames, 0.067 s: the crouch absorbs it, then Walk), a hard one HardLand's impact frame for 3 frames (0.05 s),
+        //   then the gait; a running one from a normal jump goes straight into Run 4. Released on touchdown, it skids in Land.
+        // - speedLeadTolerance 0.5 u/s: the motor changes the body's speed by 1.2 u/s (accelerating) or 1.6 u/s (braking) in
+        //   one tick; the drawn speed trails by up to a tick, so a lead past 0.5 is the player's input.
+        // - liftRecoverSpeed 4.8 u/s (0.08 u a frame): the TakeOff anchor's 0.3 u eases out over about 4 frames.
+        const float MovingLandDuration = 4f / 60f, MovingLandFps = 30f, MovingImpactDuration = 3f / 60f, SpeedLeadTolerance = 0.5f, LiftRecoverSpeed = 4.8f;
+        const float AirThreshold = 2f, HardLandDistance = 2.75f, AirGraceDrop = 0.03f, TakeOffAnchor = 0.4f, GroundSinkTolerance = 0.01f;
 
         public static string[] SlotNames => Rows.Select(r => r.Slot).ToArray();
 
@@ -298,9 +336,14 @@ namespace Parallax.Editor.Art
 
         // Each frame's silhouette centroid (alpha >= 0.5, as the capture checks count a pixel drawn), relative to the pivot,
         // in world units at facing +1: read from the sheet PNG on disk, so the importer needs no Read/Write.
-        static Vector2[] PoseCentroids(Sprite[] frames)
+        static Vector2[] PoseCentroids(Sprite[] frames) => PoseCentroids(frames, out _, out _);
+
+        // Item 2: also each frame's highest drawn pixel above the pivot (units): an air pose too tall for a low ceiling gives way.
+        static Vector2[] PoseCentroids(Sprite[] frames, out float[] tops, out float[] bottoms)
         {
             var result = new Vector2[frames.Length];
+            tops = new float[frames.Length];
+            bottoms = new float[frames.Length];
             if (frames.Length == 0) return result;
             string path = AssetDatabase.GetAssetPath(frames[0].texture);
             var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
@@ -313,12 +356,14 @@ namespace Parallax.Editor.Art
                 {
                     Rect r = frames[f].rect;
                     int x0 = Mathf.RoundToInt(r.x * scale), y0 = Mathf.RoundToInt(r.y * scale), w = Mathf.RoundToInt(r.width * scale), h = Mathf.RoundToInt(r.height * scale);
-                    double sx = 0, sy = 0; int n = 0;
+                    double sx = 0, sy = 0; int n = 0, top = -1, bottom = -1;
                     for (int y = 0; y < h; y++)
                         for (int x = 0; x < w; x++)
-                            if (pixels[(y0 + y) * tex.width + x0 + x].a >= 128) { sx += x + 0.5; sy += y + 0.5; n++; }
+                            if (pixels[(y0 + y) * tex.width + x0 + x].a >= 128) { sx += x + 0.5; sy += y + 0.5; n++; top = y; if (bottom < 0) bottom = y; }
                     Vector2 pivot = frames[f].pivot * scale;
                     float ppu = frames[f].pixelsPerUnit * scale;
+                    tops[f] = top < 0 ? 0f : (top + 1 - pivot.y) / ppu;
+                    bottoms[f] = bottom < 0 ? 0f : (pivot.y - bottom) / ppu;
                     result[f] = n == 0 ? Vector2.zero : new Vector2((float)(sx / n - pivot.x) / ppu, (float)(sy / n - pivot.y) / ppu);
                 }
             }
@@ -359,7 +404,10 @@ namespace Parallax.Editor.Art
                 changed |= SetFloats(clip.FindPropertyRelative("strideUnits"), strides);
                 changed |= SetInts(clip.FindPropertyRelative("entryFrames"), row.Entry);
                 changed |= SetInts(clip.FindPropertyRelative("stanceFrames"), row.Stance);
-                Vector2[] centroids = PoseCentroids(frames);
+                changed |= SetInts(clip.FindPropertyRelative("landEntryFrames"), row.LandEntry);
+                Vector2[] centroids = PoseCentroids(frames, out float[] tops, out float[] bottoms);
+                changed |= SetFloats(clip.FindPropertyRelative("poseTops"), tops);
+                changed |= SetFloats(clip.FindPropertyRelative("poseBottoms"), bottoms);
                 SerializedProperty poses = clip.FindPropertyRelative("poseCentroids");
                 if (poses.arraySize != centroids.Length) { poses.arraySize = centroids.Length; changed = true; }
                 for (int k = 0; k < centroids.Length; k++)
@@ -381,12 +429,25 @@ namespace Parallax.Editor.Art
                 | SetFloat(so.FindProperty("snapAcceleration"), SnapAcceleration)
                 | SetFloat(so.FindProperty("idleSpeedThreshold"), WalkEnterSpeed)
                 | SetFloat(so.FindProperty("walkExit"), WalkExitSpeed)
-                | SetInt(so.FindProperty("minStateFrames"), MinStateFrames);
+                | SetInt(so.FindProperty("minStateFrames"), MinStateFrames)
+                | SetFloat(so.FindProperty("airThreshold"), AirThreshold)
+                | SetFloat(so.FindProperty("hardLandDistance"), HardLandDistance)
+                | SetFloat(so.FindProperty("airGraceDrop"), AirGraceDrop)
+                | SetFloat(so.FindProperty("takeOffAnchor"), TakeOffAnchor)
+                | SetFloat(so.FindProperty("groundSinkTolerance"), GroundSinkTolerance)
+                | SetFloat(so.FindProperty("roomHalfWidth"), RoomHalfWidth)
+                | SetFloat(so.FindProperty("roomReach"), RoomReach)
+                | SetFloat(so.FindProperty("airPoseShift"), AirPoseShift)
+                | SetFloat(so.FindProperty("movingLandDuration"), MovingLandDuration)
+                | SetFloat(so.FindProperty("movingLandFps"), MovingLandFps)
+                | SetFloat(so.FindProperty("movingImpactDuration"), MovingImpactDuration)
+                | SetFloat(so.FindProperty("speedLeadTolerance"), SpeedLeadTolerance)
+                | SetFloat(so.FindProperty("liftRecoverSpeed"), LiftRecoverSpeed);
             if (!changed) return;
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssetIfDirty(config);
-            changes.Add($"set CatA_VisualConfig thresholds (run {RunFraction} / {RunExitFraction} x MaxSpeed, walk {WalkEnterSpeed} / {WalkExitSpeed} u/s, {MinStateFrames} frames) and motor config");
+            changes.Add($"set CatA_VisualConfig thresholds (run {RunFraction} / {RunExitFraction} x MaxSpeed, walk {WalkEnterSpeed} / {WalkExitSpeed} u/s, {MinStateFrames} frames, air {AirThreshold} u/s, hard land {HardLandDistance} u) and motor config");
         }
 
         static bool SetString(SerializedProperty p, string v) { if (p.stringValue == v) return false; p.stringValue = v; return true; }

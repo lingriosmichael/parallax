@@ -301,6 +301,59 @@ namespace Parallax.Tests.EditMode
             Assert.GreaterOrEqual(last, 0, "Walk was shown");
         }
 
+        // PAX-V07 item 2: the air clips follow the arc; the frame never goes back and never shows for a single frame.
+        [Test]
+        public void AirProgress_RunsOverEachStatesVelocityBand()
+        {
+            Assert.AreEqual(0f, CatClipSet.AirProgress(CatAnimState.Rise, -9.8f, 2f, 2f, 9.8f), 1e-5f, "the jump speed starts Rise");
+            Assert.AreEqual(0f, CatClipSet.AirProgress(CatAnimState.Rise, -14f, 2f, 2f, 9.8f), 1e-5f, "a geyser's faster launch holds Rise's first frame");
+            Assert.AreEqual(1f, CatClipSet.AirProgress(CatAnimState.Rise, -2f, 2f, 2f, 9.8f), 1e-5f);
+            Assert.AreEqual(0.5f, CatClipSet.AirProgress(CatAnimState.Apex, 0f, 2f, 2f, 9.8f), 1e-5f);
+            Assert.AreEqual(1f, CatClipSet.AirProgress(CatAnimState.Fall, 20f, 2f, 2f, 9.8f), 1e-5f, "a long fall holds Fall's last frame");
+            Assert.Less(CatClipSet.AirProgress(CatAnimState.Walk, 0f, 2f, 2f, 9.8f), 0f, "not an air state");
+        }
+
+        [Test]
+        public void SteadyAdvance_NeverBacksAFrame_AndMovesOnOnlyWhenAskedTwiceRunning()
+        {
+            int pending = -1;
+            Assert.AreEqual(1, CatClip.SteadyAdvance(1, 0, ref pending), "never back");
+            Assert.AreEqual(1, CatClip.SteadyAdvance(1, 2, ref pending), "asked once: hold");
+            Assert.AreEqual(2, CatClip.SteadyAdvance(1, 2, ref pending), "asked twice running: move on");
+            Assert.AreEqual(2, CatClip.SteadyAdvance(2, 3, ref pending));
+            Assert.AreEqual(2, CatClip.SteadyAdvance(2, 2, ref pending), "the request lapsed");
+            Assert.AreEqual(2, CatClip.SteadyAdvance(2, 3, ref pending), "a new request starts over");
+        }
+
+        [Test]
+        public void AirFramesLeft_CountsTheFramesToTheBandsEdge()
+        {
+            Assert.AreEqual(3f, CatClip.AirFramesLeft(CatAnimState.Rise, -3.5f, 2f, 2f, 0.5f), 1e-5f);
+            Assert.AreEqual(2f, CatClip.AirFramesLeft(CatAnimState.Apex, 1f, 2f, 2f, 0.5f), 1e-5f);
+            Assert.IsTrue(float.IsPositiveInfinity(CatClip.AirFramesLeft(CatAnimState.Fall, 5f, 2f, 2f, 0.5f)));
+        }
+
+        [Test]
+        public void SunkBelow_ComparesThePawsWithTheGroundsFaceAgainstGravity()
+        {
+            var ledge = new Bounds(new Vector3(15.5f, 0.5f), new Vector3(3f, 1f));
+            Assert.IsFalse(CatPresentationSignals.SunkBelow(ledge, new Vector2(16f, 1.005f), Vector2.down, 0.01f), "standing on it");
+            Assert.IsTrue(CatPresentationSignals.SunkBelow(ledge, new Vector2(17.3f, 0.985f), Vector2.down, 0.01f), "rolling off its corner");
+            var hanging = new Bounds(new Vector3(15.5f, 6.5f), new Vector3(3f, 1f));   // gravity up: its underside (y 6) is the ground
+            Assert.IsFalse(CatPresentationSignals.SunkBelow(hanging, new Vector2(16f, 5.995f), Vector2.up, 0.01f));
+            Assert.IsTrue(CatPresentationSignals.SunkBelow(hanging, new Vector2(17.3f, 6.02f), Vector2.up, 0.01f));
+        }
+
+        [Test]
+        public void AirShift_DrawsAnAirPoseClearOfTheSolidsAroundIt()
+        {
+            Assert.AreEqual(0f, CatClipSet.AirShift(0.9f, 0.25f, 2f, 1f, 0.3f), 1e-6f, "room enough");
+            Assert.AreEqual(0.12f, CatClipSet.AirShift(0.68f, 0f, 0.56f, 1f, 0.3f), 1e-5f, "under a low ceiling: drawn lower");
+            Assert.AreEqual(-0.2f, CatClipSet.AirShift(0.9f, 0.25f, 2f, 0.05f, 0.3f), 1e-5f, "hind legs over a step: drawn higher");
+            Assert.AreEqual(-0.3f, CatClipSet.AirShift(0.9f, 0.25f, 2f, -0.4f, 0.3f), 1e-5f, "at most the limit");
+            Assert.AreEqual(0.05f, CatClipSet.AirShift(0.68f, 0f, 0.56f, 0.05f, 0.3f), 1e-5f, "never down into the floor below");
+        }
+
         [Test]
         public void BrakingDistance_SumsTheTicksLeft()
         {
@@ -361,6 +414,8 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual(CatAnimState.Fall, presenter.State);
             Assert.AreEqual("Fall", presenter.ClipName);
             SetGrounded(motor, true);
+            presenter.Present(1f / 60f);
+            Assert.AreEqual(CatAnimState.Fall, presenter.State, "item 2: the first grounded frame is the air pose's contact frame");
             presenter.Present(1f / 60f);
             Assert.AreEqual(CatAnimState.Land, presenter.State);
             Assert.AreEqual("Land", presenter.ClipName);

@@ -16,13 +16,22 @@ namespace Parallax.Editor.Art
         // (e.g. no Run below the run threshold, TakeOff within a frame of the jump).
         public static readonly List<StateRule> Rules = new()
         {
-            new StateRule("air-state-while-grounded", "Rise or Fall shown while the motor has been grounded for more than one frame",
-                c => !c.Excluded && c.Air(c.Row.State) && c.Row.Grounded && c.GroundedFrames > 1),
-            new StateRule("ground-state-while-airborne", "Idle, Walk or Run shown while the motor has been airborne (not climbing) for more than one frame",
-                c => !c.Excluded && (c.Row.State == CatAnimState.Idle || c.Row.State == CatAnimState.Walk || c.Row.State == CatAnimState.Run) && !c.Row.Grounded && !c.Row.Climbing && c.AirborneFrames > 1),
+            new StateRule("air-state-while-grounded", "Rise, Apex or Fall (or TakeOff after the jump tick) shown while the motor has been grounded for more than one frame",
+                c => !c.Excluded && c.OnGround && ((c.Air(c.Row.State) && c.GroundedFrames > 1) || (c.Row.State == CatAnimState.TakeOff && !c.Row.Jumped && c.GroundedFrames > 1))),
+            // Item 2: a ground state may hold through a one-tick ground blip or the first moment off a ledge (the presenter's
+            // airGraceDrop), never once the cat has dropped past it.
+            new StateRule("ground-state-while-airborne", "Idle, Walk or Run shown while the motor has been airborne (not climbing) for more than one frame, once the cat has dropped more than airGraceDrop below where it stood",
+                c => !c.Excluded && (c.Row.State == CatAnimState.Idle || c.Row.State == CatAnimState.Walk || c.Row.State == CatAnimState.Run) && !c.OnGround && !c.Row.Climbing && c.AirborneFrames > 1
+                     && (c.Speeds == null || c.DropSinceGround > c.Speeds.AirGraceDrop + CaptureSpeeds.DropTolerance)),
+            // Item 2: the air rows.
+            new StateRule("takeoff-late", "a jump from the ground (JumpedThisStep's first frame) with TakeOff shown neither on that frame nor the next",
+                c => !c.Excluded && c.Prev != null && c.Prev.Jumped && c.Prev.Grounded && !c.Prev.Climbing && !c.PrevPrevJumped
+                     && c.Prev.State != CatAnimState.TakeOff && c.Row.State != CatAnimState.TakeOff),
+            new StateRule("apex-outside-band", "Apex shown while the drawn speed along gravity is outside the apex band (airThreshold) for more than 2 frames",
+                c => !c.Excluded && c.ApexOutsideFrames > CaptureSpeeds.LagFrames),
             // PAX-V07 item 1: the ground rows.
             new StateRule("turn-off-ground", "Turn shown on a frame the motor isn't grounded (no Turn in the air)",
-                c => !c.Excluded && c.Row.State == CatAnimState.Turn && (!c.Row.Grounded || c.Row.Climbing)),
+                c => !c.Excluded && c.Row.State == CatAnimState.Turn && (!c.OnGround || c.Row.Climbing)),
             new StateRule("run-below-exit", "Run shown on the ground below runExitFraction x MaxSpeed (the drawn speed) for more than 2 frames",
                 c => !c.Excluded && c.RunSlowFrames > CaptureSpeeds.LagFrames),
             new StateRule("walk-above-run", "Walk shown on the ground at or above runFraction x MaxSpeed (the drawn speed) for more than 2 frames",
@@ -34,9 +43,11 @@ namespace Parallax.Editor.Art
                 c => !c.Excluded && c.Speeds != null && c.AgainstFacingFrames > Mathf.CeilToInt(c.Speeds.TurnSeconds * CatCapture.FrameRate) + CaptureSpeeds.LagFrames),
             new StateRule("climb-without-climbing", "Climb shown while the motor isn't climbing",
                 c => c.Row.State == CatAnimState.Climb && !c.Row.Climbing),
-            new StateRule("land-late", "Land not shown by the frame after touchdown (after at least 3 airborne frames)",
-                c => !c.Excluded && c.Row.Grounded && c.GroundedFrames == 2 && c.LastAirRun >= 3
-                     && c.Row.State != CatAnimState.Land && c.Prev != null && c.Prev.State != CatAnimState.Land),
+            // Item 2: a landing shows Land or HardLand, or (moving at touchdown, or acting on it) the gait, Turn or a TakeOff:
+            // by the frame after touchdown, never an air state.
+            new StateRule("land-late", "an air state (TakeOff, Rise, Apex, Fall) still shown on the frame after touchdown (after at least 3 airborne frames)",
+                c => !c.Excluded && c.OnGround && c.GroundedFrames == 2 && c.LastAirRun >= 3 && !c.Row.Jumped
+                     && (c.Air(c.Row.State) || c.Row.State == CatAnimState.TakeOff)),
         };
 
         public sealed class Result { public string Json; public string Line; public bool Pass; }
@@ -60,8 +71,18 @@ namespace Parallax.Editor.Art
                 for (int d = -CaptureThresholds.NearGroundTicks; d <= CaptureThresholds.NearGroundTicks; d++) if (groundedTicks.Contains(r.Tick + d)) return true;
                 return false;
             }
-            bool Checkable(FrameRow r) => r.M.HasSprite && r.M.SurfaceFound && !r.Holding && !r.Frozen && !r.Climbing;
-            var pawFrames = rows.Where(r => Checkable(r) && (r.Grounded || NearGround(r))).ToList();
+            // Item 2: the ticks right after a gravity flip (the body turns 180 degrees in one tick, drawn half-turned into the
+            // surface it leaves) are the Flip state's (item 5), left out of the paws and head checks and counted apart.
+            var flipTicks = new HashSet<int>();
+            for (int i = 0; i < rows.Count; i++)
+                if (rows[i].GravityDown != (i > 0 ? rows[i - 1].GravityDown : true))   // every room starts with gravity down
+                    for (int d = 0; d <= CaptureThresholds.NearGroundTicks; d++) flipTicks.Add(rows[i].Tick + d);
+            bool Flipping(FrameRow r) => flipTicks.Contains(r.Tick);
+            bool Checkable(FrameRow r) => r.M.HasSprite && r.M.SurfaceFound && !r.Holding && !r.Frozen && !r.Climbing && !Flipping(r);
+            // Item 2: every frame whose drawn pixels come within RayMarginUnits (0.5 u) of a surface along gravity (a surface is
+            // only found that close: Checkable), grounded or not, so the takeoff until 0.5 u clear and the last 0.5 u before
+            // touchdown are covered, plus air frames within NearGroundTicks of a grounded tick.
+            var pawFrames = rows.Where(r => Checkable(r) && (r.Grounded || NearGround(r) || !r.Grounded)).ToList();
             FrameRow worstPaw = pawFrames.OrderByDescending(r => r.M.PenetrationSpritePx).FirstOrDefault();
             float worstPawPx = worstPaw != null ? worstPaw.M.PenetrationSpritePx : 0f;
             var pawFails = pawFrames.Where(r => r.M.PenetrationSpritePx > CaptureThresholds.PawsInFloorSpritePx).ToList();
@@ -73,6 +94,17 @@ namespace Parallax.Editor.Art
                 .Num("max_depth_air_near_ground_sprite_px", Max(pawFrames.Where(r => !r.Grounded), r => r.M.PenetrationSpritePx))
                 .Num("frames_over", pawFails.Count).Ints("first_frames_over", pawFails.Take(20).Select(r => r.Frame)).Bool("pass", pawPass).Close();
             line.Append($" | paws max {worstPawPx:F1}sp ({pawFails.Count} over)");
+
+            // --- head in ceiling (item 2): no drawn pixel inside a solid above the cat (a low ceiling), any frame ---
+            var headFrames = rows.Where(r => r.M.HasSprite && r.M.CeilingFound && !r.Holding && !r.Frozen && !r.Climbing && !Flipping(r)).ToList();
+            FrameRow worstHead = headFrames.OrderByDescending(r => r.M.CeilingPenetrationSpritePx).FirstOrDefault();
+            var headFails = headFrames.Where(r => r.M.CeilingPenetrationSpritePx > CaptureThresholds.HeadInCeilingSpritePx).ToList();
+            pass &= headFails.Count == 0;
+            j.Key("head_in_ceiling").Open().Num("threshold_sprite_px", CaptureThresholds.HeadInCeilingSpritePx).Num("frames_checked", headFrames.Count)
+                .Num("max_depth_sprite_px", worstHead != null ? worstHead.M.CeilingPenetrationSpritePx : 0f).Num("worst_frame", worstHead?.Frame ?? -1)
+                .Num("frames_over", headFails.Count).Ints("first_frames_over", headFails.Take(20).Select(r => r.Frame))
+                .Num("flip_frames_unchecked", rows.Count(Flipping)).Bool("pass", headFails.Count == 0).Close();
+            if (headFrames.Count > 0) line.Append($" | head max {worstHead.M.CeilingPenetrationSpritePx:F1}sp ({headFails.Count} over)");
 
             // --- float gap on grounded frames ---
             var ground = rows.Where(r => Checkable(r) && r.Grounded).ToList();
@@ -117,6 +149,8 @@ namespace Parallax.Editor.Art
                 .Num("sprite_changes", changes.Count).Num("centroid_max_phone_px", changes.Count > 0 ? changes.Max(r => r.PopPhonePx) : 0f)
                 .Num("box_max_phone_px", changes.Count > 0 ? changes.Max(r => r.BoxPopPhonePx) : 0f)
                 .Num("centroid_pops", pops.Count).Num("box_pops", boxPops.Count)
+                .Num("carrier_offset_max_phone_px", rows.Count > 0 ? rows.Max(r => r.CarrierOffsetPhonePx) : 0f)
+                .Str("carrier_note", "item 2: pops are measured against the Visual pivot's move; carrier_offset is how far that pivot moved beyond the root in one frame (the TakeOff anchor and its release)")
                 .Raw("worst", PopList(changes.OrderByDescending(r => r.PopPhonePx))).Bool("pass", popPass).Close();
             line.Append($" | pop max {(changes.Count > 0 ? changes.Max(r => r.PopPhonePx) : 0f):F1}pp ({pops.Count} over)");
 
@@ -160,8 +194,15 @@ namespace Parallax.Editor.Art
                 c.Row = r;
                 // A death hold (frozen) or a respawn (a teleport) starts the counts again: the motor's flags are stale there.
                 bool teleport = c.Prev != null && (r.Root - c.Prev.Root).magnitude >= 1f;
+                c.PrevPrevJumped = i > 1 && rows[i - 2].Jumped;
                 if (c.Excluded || teleport) { c.GroundedFrames = c.AirborneFrames = c.LastAirRun = 0; if (c.Excluded) continue; }
-                if (r.Grounded)
+                // Item 2: the drop below where the cat last stood, and Apex outside the band (the drawn speed along gravity).
+                float height = r.GravityDown ? r.Root.y : -r.Root.y;
+                if ((r.Grounded && !r.Sunk) || r.Climbing || teleport || c.Prev == null || c.Prev.GravityDown != r.GravityDown) c.GroundHeight = height;
+                c.DropSinceGround = c.GroundHeight - height;
+                float drawnGravity = c.Prev != null && c.Prev.GravityDown == r.GravityDown ? -(height - (r.GravityDown ? c.Prev.Root.y : -c.Prev.Root.y)) * CatCapture.FrameRate : r.VGravity;
+                c.ApexOutsideFrames = speeds != null && r.State == CatAnimState.Apex && Mathf.Abs(drawnGravity) > speeds.AirThreshold ? c.ApexOutsideFrames + 1 : 0;
+                if (r.Grounded && !r.Sunk)
                 {
                     if (c.GroundedFrames == 0) c.LastAirRun = c.AirborneFrames;
                     c.GroundedFrames++; c.AirborneFrames = 0;
