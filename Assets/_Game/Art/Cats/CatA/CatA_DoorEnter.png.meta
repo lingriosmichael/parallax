@@ -1,0 +1,369 @@
+fileFormatVersion: 2
+guid: b2f04e1cf4991466dbddc03569b946bc
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6168481900107431097
+    second: CatA_DoorEnter_0
+  - first:
+      213: -2392205411723102262
+    second: CatA_DoorEnter_1
+  - first:
+      213: -3110914910819739227
+    second: CatA_DoorEnter_2
+  - first:
+      213: 888878253591579413
+    second: CatA_DoorEnter_3
+  - first:
+      213: -3021056181795266904
+    second: CatA_DoorEnter_4
+  - first:
+      213: -4855800659360302899
+    second: CatA_DoorEnter_5
+  - first:
+      213: 6588639916249673218
+    second: CatA_DoorEnter_6
+  - first:
+      213: 5300982632141220650
+    second: CatA_DoorEnter_7
+  - first:
+      213: 1811402840709192898
+    second: CatA_DoorEnter_8
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 143.3036
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: 50
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: CatA_DoorEnter_00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 228
+        height: 192
+      alignment: 9
+      pivot: {x: 0.61689, y: 0.06055}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1fe8411d991db1b4024d6fe84b6a44e5
+      internalID: -1523632688
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_DoorEnter_01
+      rect:
+        serializedVersion: 2
+        x: 228
+        y: 0
+        width: 228
+        height: 192
+      alignment: 9
+      pivot: {x: 0.61689, y: 0.06055}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a1abf8212eec59b6d8ed2aa7e0b70ad9
+      internalID: -155338537
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_DoorEnter_02
+      rect:
+        serializedVersion: 2
+        x: 456
+        y: 0
+        width: 228
+        height: 192
+      alignment: 9
+      pivot: {x: 0.61689, y: 0.06055}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b28556a680d92663a655173e0d782853
+      internalID: -15372531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_DoorEnter_03
+      rect:
+        serializedVersion: 2
+        x: 684
+        y: 0
+        width: 228
+        height: 192
+      alignment: 9
+      pivot: {x: 0.61689, y: 0.06055}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 81fdb6b3b95a2ad962f66f14a388b71e
+      internalID: -1665767721
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_DoorEnter_04
+      rect:
+        serializedVersion: 2
+        x: 912
+        y: 0
+        width: 228
+        height: 192
+      alignment: 9
+      pivot: {x: 0.61689, y: 0.06055}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5d493526684e1593cf9a973cd92abf54
+      internalID: 2106940086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_DoorEnter_05
+      rect:
+        serializedVersion: 2
+        x: 1140
+        y: 0
+        width: 228
+        height: 192
+      alignment: 9
+      pivot: {x: 0.61689, y: 0.06055}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 53b2120c12d7a6dff1cdeaaaabd4b407
+      internalID: -438184775
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_DoorEnter_06
+      rect:
+        serializedVersion: 2
+        x: 1368
+        y: 0
+        width: 228
+        height: 192
+      alignment: 9
+      pivot: {x: 0.61689, y: 0.06055}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4131d949ecde6f626d206625af995641
+      internalID: 2009861758
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_DoorEnter_07
+      rect:
+        serializedVersion: 2
+        x: 1596
+        y: 0
+        width: 228
+        height: 192
+      alignment: 9
+      pivot: {x: 0.61689, y: 0.06055}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2a69b126db2b91c7fd6d757023e7197d
+      internalID: -2092936058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: c7211ff7f853542f8961bf954695fe8c
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures:
+    - texture: {fileID: 2800000, guid: 066f1edaa7e8c4ebab6cf4aaf432b882, type: 3}
+      name: _NormalMap
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      CatA_DoorEnter_00: -1523632688
+      CatA_DoorEnter_01: -155338537
+      CatA_DoorEnter_02: -15372531
+      CatA_DoorEnter_03: -1665767721
+      CatA_DoorEnter_04: 2106940086
+      CatA_DoorEnter_05: -438184775
+      CatA_DoorEnter_06: 2009861758
+      CatA_DoorEnter_07: -2092936058
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

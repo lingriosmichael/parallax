@@ -129,6 +129,43 @@ class PlacementTests(unittest.TestCase):
         self.assertGreater(report["clippedPx"], 0)
 
 
+class BleedTests(unittest.TestCase):
+    """PAX-A08 (ruled 2026-09-30): the colour under fully transparent pixels is the nearest edge colour, so bilinear
+    filtering and ASTC blocks at the silhouette never mix in black. Alpha never changes."""
+
+    def two_colour_block(self):
+        a = blank(64, 64)
+        fill(a, 20, 32, 20, 44, rgb=(0.8, 0.1, 0.1))     # red left half
+        fill(a, 32, 44, 20, 44, rgb=(0.1, 0.1, 0.8))     # blue right half
+        return a
+
+    def test_transparent_pixels_near_the_edge_take_the_edge_colour_and_alpha_is_untouched(self):
+        a = self.two_colour_block()
+        out = cr.bleed(a)
+        np.testing.assert_array_equal(out[..., 3], a[..., 3])
+        visible = a[..., 3] > 0
+        np.testing.assert_array_equal(out[visible], a[visible])
+        np.testing.assert_allclose(out[30, 15, :3], (0.8, 0.1, 0.1), atol=1e-6)   # 5 px left of the red edge
+        np.testing.assert_allclose(out[30, 48, :3], (0.1, 0.1, 0.8), atol=1e-6)   # 4 px right of the blue edge
+
+    def test_the_bleed_stops_at_its_ring(self):
+        a = self.two_colour_block()
+        out = cr.bleed(a)
+        self.assertTrue((out[30, 20 - cr.BLEED_PX, :3] > 0).all())
+        self.assertEqual(float(np.abs(out[30, 20 - cr.BLEED_PX - 1, :3]).sum()), 0.0)
+
+    def test_a_pixel_that_quantizes_to_zero_alpha_counts_as_transparent(self):
+        a = self.two_colour_block()
+        a[30, 10] = (0.9, 0.9, 0.9, 0.001)          # rounds to alpha 0 in the 8-bit sheet
+        out = cr.bleed(a)
+        np.testing.assert_allclose(out[30, 10, :3], (0.8, 0.1, 0.1), atol=1e-6)
+        self.assertEqual(out[30, 10, 3], np.float32(0.001))
+
+    def test_the_bleed_is_deterministic(self):
+        a = self.two_colour_block()
+        self.assertEqual(cr.bleed(a).tobytes(), cr.bleed(a.copy()).tobytes())
+
+
 class DeterminismTests(unittest.TestCase):
     def test_the_same_input_gives_the_same_sheet_bytes(self):
         frames = [synthetic_cat(), synthetic_cat(dx=3)]

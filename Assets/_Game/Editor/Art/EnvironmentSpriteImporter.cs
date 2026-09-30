@@ -3,10 +3,18 @@ using UnityEngine;
 
 namespace Parallax.Editor.Art
 {
-    /// <summary>Applies the Cat A importer baseline to environment PNGs as they arrive through LFS.</summary>
+    /// <summary>Applies the environment importer baseline to environment PNGs as they arrive through LFS.</summary>
     public sealed class EnvironmentSpriteImporter : AssetPostprocessor
     {
-        const string CatPath = "Assets/_Game/Art/Cats/CatA/CatA_Walk.png";
+        /// <summary>PAX-A08 §4.4 (ruled 2026-09-30): the environment's PPU is fixed at the value A02 records (the old Cat A
+        /// PPU, 196.667), no longer read from CatA_Walk's importer: the cat's PPU changed with its new art, and following
+        /// it would have rescaled every later environment import.</summary>
+        public const float WorldPixelsPerUnit = 196.66666f;
+        /// <summary>Backgrounds and materials use half (98.333).</summary>
+        public const float BackgroundPixelsPerUnit = WorldPixelsPerUnit * 0.5f;
+
+        public static float PixelsPerUnitFor(string assetPath) =>
+            IsBackground(assetPath) || IsMaterial(assetPath) ? BackgroundPixelsPerUnit : WorldPixelsPerUnit;
 
         void OnPreprocessTexture()
         {
@@ -18,15 +26,8 @@ namespace Parallax.Editor.Art
 #pragma warning disable CS0618
             importer.spritesheet = System.Array.Empty<SpriteMetaData>();
 #pragma warning restore CS0618
-            var catImporter = AssetImporter.GetAtPath(CatPath) as TextureImporter;
-            if (catImporter == null)
-            {
-                Debug.LogError("EnvironmentSpriteImporter: CatA_Walk TextureImporter is required.");
-                return;
-            }
             bool background = IsBackground(assetPath);
-            bool material = IsMaterial(assetPath);
-            importer.spritePixelsPerUnit = background || material ? catImporter.spritePixelsPerUnit * 0.5f : catImporter.spritePixelsPerUnit;
+            importer.spritePixelsPerUnit = PixelsPerUnitFor(assetPath);
             importer.filterMode = FilterMode.Bilinear;
             importer.mipmapEnabled = false;
             importer.textureCompression = background ? TextureImporterCompression.Compressed : TextureImporterCompression.Uncompressed;

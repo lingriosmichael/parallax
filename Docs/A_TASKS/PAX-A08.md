@@ -1,6 +1,8 @@
 # PAX-A08 · The cat comes alive: register and import the Cat A animation set
 
 **Status:** **Approved 2026-09-29** (revised text, reviewed by the developer); decisions re-confirmed 2026-09-30.
+**Implemented 2026-09-30:** Stage 0 in ebe53f1, Stage 1 in the commit after it. Open: the developer's Editor play
+check (§10, YOU) and the device check of the rim (§11).
 PAX-A13 is committed (2026-09-30), so this ticket can start. It replaces the earlier A08 text. The clips already exist
 (generated 2026-09-29, see `Art_Source/AutoSprite/Cats/HANDOVER.md`), so this ticket no longer generates anything: it
 registers, imports and reports. PAX-A11 stays absorbed (climb). The seamless vine (old item 15) is **not** in A08: it
@@ -136,6 +138,10 @@ The script is deterministic (the same input gives the same bytes) and has offlin
   centre 0.06 u ahead of the pivot, so the collider sits inside the painted nose and tail.
 - **Cleanup:** Remaining background fringe is trimmed, meaning
   alpha below 10% is zeroed and grey or white halos are removed.
+- **Colour bleed (ruled 2026-09-30):** on the colour sheets, every pixel that is transparent in the 8-bit PNG takes the
+  alpha-weighted colour of its nearest visible neighbours, ring by ring out to 12 px (two ASTC 6×6 blocks); alpha is
+  never changed. Bilinear filtering and ASTC blocks at the silhouette then never mix in black. The normal maps are
+  unaffected (`normal_map` weights luminance by alpha). The manifest records `colourBleedPx`.
 - **Vine clips** (Climb, Hang, Leap): the baked-in vine is keyed out by hue (olive green on dark brown), and each key is
   checked on the review sheet.
 
@@ -192,14 +198,22 @@ For each slot, `CatA_<Slot>_n.png` is made with `trap_process.normal_map`, using
 - **Compression:** ASTC 6×6 (ruled 2026-09-30). Mipmaps off, bilinear filtering.
 - The menu items stay: `PARALLAX/Art/Import Cat A Sheets`, plus the selected-sheet import.
 
-### 4.3 Setup menu
+### 4.3 No Cat Visual re-run in A08 (ruled 2026-09-30)
 
-Re-run `PARALLAX/Setup/Cat Visual` (unchanged code). The existing five states pick up the new art. The new slots are
-wired by PAX-V07.
+`PARALLAX/Setup/Cat Visual` is **not** re-run: its sheet check expects one 256 px cell and Walk's pivot, and V07 rewrites
+it for the manifest's per-sheet cells. The five existing sheets keep their sprite names, so `Cat_Player`'s existing clip
+references pick up the new art. After the import, every sprite reference in `Cat_Player.prefab` is checked to resolve
+to a non-blank frame of the new sheets; a missing or blank frame is a stop.
 
 **Interim until V07:**
-- Walk plays at every speed.
+- Idle, Walk, Rise, Fall and Land play their existing frame counts with the new art; the extra frames wait for V07.
 - Climb still shows the rotated Idle and Walk frames.
+
+### 4.4 The environment's PPU is fixed (ruled 2026-09-30)
+
+`EnvironmentSpriteImporter` set every environment sprite's PPU from `CatA_Walk`'s (half of it for backgrounds and
+materials), so the new cat PPU would have rescaled every later environment import by about 1.37. It now uses fixed
+values, the ones A02 records: **196.667** for gameplay art and **98.333** for backgrounds and materials. A test pins them.
 
 ## 5. Phase 1 (Lite): questions
 
@@ -227,17 +241,24 @@ wired by PAX-V07.
 - `Tools/Art/cat_register.py`, `cat_frames.py`, `cat_review.py` (new; split per the developer, 2026-09-30).
 - `Tools/Art/tests/test_cat_register.py` (new, offline).
 - `Art_Source/AutoSprite/Cats/A/_import/**`.
-- `Docs/Art/A02_asset_manifest.md` (new section: Cat A animation slots).
+- `Docs/Art/A02_asset_manifest.md` (new section: Cat A animation slots; line 4, the fixed environment PPU, §4.4).
+- `Docs/V_TASKS/PAX-V07.md`: the takeoff-paws check (ruled 2026-09-30).
 - `Assets/_Game/Art/Cats/CatA/*.png`, and their Unity-generated `.meta` files.
 - `Assets/_Game/Editor/Art/CatSpriteImporter.cs`.
+- `Assets/_Game/Editor/Art/EnvironmentSpriteImporter.cs` (the fixed environment PPU, §4.4; ruled 2026-09-30), and a test
+  pinning it.
 - `Assets/_Game/Tests/EditMode/CatSheetImportTests.cs` (new): every sheet has the manifest's PPU, pivot, cell size and
   compression, and a normal map.
-- `Cat_Player.prefab`, changed only by running `PARALLAX/Setup/Cat Visual`.
+- ~~`Cat_Player.prefab`, changed only by running `PARALLAX/Setup/Cat Visual`.~~ Not wired in A08 (§4.3).
+  `Cat_Player.prefab`: **Unity-derived `m_Size` only** (ruled 2026-09-30). Unity rewrites both SpriteRenderers'
+  `m_Size` (1.3017 → 1.3398 u, 192 px ÷ 143.30) when the referenced sprites change size; the draw mode is Simple, so
+  it isn't used.
 - `CLAUDE.md`: both D-044 references, in the A08 commit, per the developer (2026-09-30):
   - the scope line, updated to "no lives, unlimited retries, per-room death count (D-044)";
   - the Rooms section's "Whether/how it's shown, persisted, or turned into lives is still D-044 (undecided)", updated to
-    say D-044 settled no lives and unlimited retries, and that the count's UI and persistence come with the ticket that
-    shows it.
+    say D-044 settled no lives and unlimited retries, and that D-061 shows the per-room count once, on the
+    level-complete screen, without saving it; "with no UI" is dropped from the line above (ruled 2026-09-30, after the
+    review found the first wording contradicted D-061).
 - This ticket file (results section).
 
 ## 8. Out of scope
@@ -273,3 +294,26 @@ wired by PAX-V07.
 - Check both gravities.
 
 **Device:** readability at phone scale is unverified until Phase H.
+
+## 11. Results (Stage 1, 2026-09-30)
+
+- **Import log:** 26 sheets, PPU 143.3036. Android ASTC 6×6: colour 2.76 MB, normals 2.76 MB, total 5.52 MB. The pivot
+  falls at 104.65 px across on every sheet (the shared world pivot); each sheet's own cell and pivot are in the manifest.
+- **Cat_Player:** every sprite reference (Idle_00 ×3, Walk_00–09, Rise_00, Fall_00, Land_00) resolves to a non-blank
+  frame of the new art. The prefab diff is Unity's `m_Size` only (ruled 2026-09-30).
+- **Tests:** `CatSheetImportTests` 35/35 (red before the import). The full EditMode suite in batch on the clone:
+  1510/1510, which is the PAX-096 baseline 1482 plus the first 28 `CatSheetImportTests`; the 7 cases added after the
+  review passed through MCP, so the total is 1517. Offline Stage 0 tests 30/30; `cat_register.py --check` identical.
+- **Colour bleed (ruling 3):** Stage 0 had none (transparent pixels were black), so it was added (§3.3). Only the 26
+  colour sheets changed; alpha and visible pixels are identical. Unity's Alpha Is Transparency already dilated on
+  import, so the Editor renders didn't change.
+- **Rim and specks:** the warm rim is painted rim light in the source art. The faint specks outside the silhouette are
+  resampling residue (alpha ≤ 7/255, within 2 px of the body). Both are visible only magnified about 6× past game scale.
+  **Check on device.**
+- **Rise_00** hangs 0.25 u below the paw line: recorded as a V07 check (ruled 2026-09-30).
+- **Review (pax-reviewer, one round):** accept after fixes, no Blockers. Fixed: the environment PPU is now tested by
+  path and against every imported Reality A environment sprite; the normal maps' own import settings, the slot count
+  and each sprite's rect are asserted; the sheets' default max size is 8192 (Walk and Climb were capped at 2048 off
+  Android); A02 line 4 and §7 were corrected; the D-044 line follows D-061 (ruled 2026-09-30).
+- **Pre-existing, not A08:** frozen Reality B's `B_GAME_Platform_Fill` and `B_GAME_Wall` carry PPU 196.667, against the
+  importer's 98.333 rule for materials.

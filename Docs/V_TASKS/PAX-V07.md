@@ -264,5 +264,8 @@ The parity test in §6 checks this.
 - Deaths read within the hold, and each tagged trap shows its own death. A geyser death shows the frightened pose.
 - Standing still plays look around, then ear twitch, then sit down. Touching the stick while seated ends the sit at once.
 - Turning, landing and respawning never feel delayed.
+- **Takeoff paws (from PAX-A08, 2026-09-30):** Rise_00's hind legs and tail hang 0.25 u below the paw line (the shared
+  pivot). Once TakeOff plays before Rise, confirm no paws draw into the floor in the ticks after takeoff, in both
+  gravities.
 
 **Device:** feel is unverified until Phase H.

@@ -24,6 +24,7 @@
     1.0,
     0.56
   ],
+  "colourBleedPx": 12,
   "facingCheck": {
     "worstMarginUnits": 0.012,
     "passes": true,

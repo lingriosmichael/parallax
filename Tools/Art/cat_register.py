@@ -23,10 +23,10 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cat_frames import *  # noqa: E402,F401,F403  (re-exported: the tests use cat_register's frame functions)
-from cat_frames import (ALPHA_FLOOR, CATS, CELL, COLLIDER_H, COLLIDER_W, LOOP_CLOSE_MIN, OUT, REPO,  # noqa: E402
+from cat_frames import (ALPHA_FLOOR, BLEED_PX, CATS, CELL, COLLIDER_H, COLLIDER_W, LOOP_CLOSE_MIN, OUT, REPO,  # noqa: E402
                         body_centre, cleanup, clip_frames, collider_margins, key_vine, mask, mask_iou, measure_body,
                         normal_frames, pick_loop_count, place, png_bytes, scale_frame, sheet_image, slot_indices,
-                        astc_bytes, cell_for, downscale, touches_edge)
+                        astc_bytes, bleed, cell_for, downscale, touches_edge)
 from cat_review import build_review  # noqa: E402
 
 
@@ -110,7 +110,7 @@ def register(preview_climb_loop=5):
         name = s["slot"]
         sh = sheets[name]
         frames = sh["frames"]
-        colour, normal = sheet_image(frames), sheet_image(normal_frames(frames))
+        colour, normal = sheet_image([bleed(f) for f in frames]), sheet_image(normal_frames(frames))
         files[f"sheets/CatA_{name}.png"] = png_bytes(colour)
         files[f"sheets/CatA_{name}_n.png"] = png_bytes(normal)
         w, h = sh["cell"]
@@ -213,6 +213,7 @@ def main(argv):
         "pivotRule": f"the shared world pivot: the paw row, {NOSE_BACK_UNITS} u behind Idle's median torso centre; each "
                      "sheet records where it falls in its own cell",
         "colliderUnits": [COLLIDER_W, COLLIDER_H],
+        "colourBleedPx": BLEED_PX,
         "facingCheck": {"worstMarginUnits": round(worst, 3), "passes": worst >= 0, "frames": facing},
         "ceilingGap": {"units": 0.70, "where": "L017 UF_W under Door_Ledge; L012 F4_B under Stub_C (pax-room-auditor 2026-09-30)"},
         "crusherGaps": {"vertical": {"units": 0.20, "where": "L018 Drop_3 over the Well floor"},

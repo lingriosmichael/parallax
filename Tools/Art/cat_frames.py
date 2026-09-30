@@ -19,6 +19,7 @@ OUT = CATS / "_import"
 CELL = 256
 COLLIDER_W, COLLIDER_H = 1.0, 0.56
 ALPHA_FLOOR = 0.10
+BLEED_PX = 12          # two ASTC 6x6 blocks past the silhouette
 LOOP_CLOSE_MIN = 0.85
 
 # ---------- loops ----------
@@ -229,6 +230,36 @@ def sheet_image(frames):
     for i, f in enumerate(frames):
         im.paste(Image.fromarray((np.clip(f, 0, 1) * 255.0 + 0.5).astype(np.uint8), "RGBA"), (i * w, 0))
     return im
+
+
+def bleed(a, px=BLEED_PX):
+    """Colour bleed (ruled 2026-09-30): every pixel that is transparent in the 8-bit sheet takes the colour of its
+    nearest visible neighbours, ring by ring out to `px`, so bilinear filtering and ASTC blocks at the silhouette never
+    mix in black. Each ring is the weighted mean of its filled 8-neighbours: visible pixels weigh their alpha, bled
+    pixels weigh 1. Alpha is never changed. (Unity's Alpha Is Transparency dilates too; this keeps the PNGs safe on
+    their own, e.g. in an atlas.)"""
+    out = a.copy()
+    filled = out[..., 3] * 255.0 + 0.5 >= 1.0
+    rgb = np.where(filled[..., None], out[..., :3], 0.0).astype(np.float32)
+    weight = np.where(filled, out[..., 3], 0.0).astype(np.float32)
+    h, w = filled.shape
+    for _ in range(px):
+        pr, pw = np.pad(rgb * weight[..., None], ((1, 1), (1, 1), (0, 0))), np.pad(weight, 1)
+        acc, total = np.zeros_like(rgb), np.zeros_like(weight)
+        for dy in (0, 1, 2):
+            for dx in (0, 1, 2):
+                if dy == 1 and dx == 1:
+                    continue
+                acc += pr[dy:dy + h, dx:dx + w]
+                total += pw[dy:dy + h, dx:dx + w]
+        ring = ~filled & (total > 0)
+        if not ring.any():
+            break
+        rgb[ring] = acc[ring] / total[ring][:, None]
+        weight[ring] = 1.0
+        filled |= ring
+    out[..., :3] = rgb
+    return out
 
 
 def png_bytes(im):

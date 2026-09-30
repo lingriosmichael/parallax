@@ -1,0 +1,808 @@
+fileFormatVersion: 2
+guid: 4ff5b769222dd47f39b4f55fb7a9338e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2940592994536766024
+    second: CatA_Climb_0
+  - first:
+      213: 3932599192682645828
+    second: CatA_Climb_1
+  - first:
+      213: 4094322635954140260
+    second: CatA_Climb_2
+  - first:
+      213: 2682314925024933442
+    second: CatA_Climb_3
+  - first:
+      213: 7498707624875229419
+    second: CatA_Climb_4
+  - first:
+      213: 7729809276482837062
+    second: CatA_Climb_5
+  - first:
+      213: -1930571404189239794
+    second: CatA_Climb_6
+  - first:
+      213: 6880740831855116467
+    second: CatA_Climb_7
+  - first:
+      213: -4211899689172822423
+    second: CatA_Climb_8
+  - first:
+      213: 4128273148638378348
+    second: CatA_Climb_9
+  - first:
+      213: 5454462823923631830
+    second: CatA_Climb_10
+  - first:
+      213: -1095522907583740060
+    second: CatA_Climb_11
+  - first:
+      213: -6284555700845014977
+    second: CatA_Climb_12
+  - first:
+      213: -4644439502057805452
+    second: CatA_Climb_13
+  - first:
+      213: 6849402253404776639
+    second: CatA_Climb_14
+  - first:
+      213: 3830265574750756062
+    second: CatA_Climb_15
+  - first:
+      213: 7742841292223687411
+    second: CatA_Climb_16
+  - first:
+      213: 7692866242721459465
+    second: CatA_Climb_17
+  - first:
+      213: 8050481149943468833
+    second: CatA_Climb_18
+  - first:
+      213: 4148944573732501990
+    second: CatA_Climb_19
+  - first:
+      213: -4985214099032884995
+    second: CatA_Climb_20
+  - first:
+      213: -6284690998270994187
+    second: CatA_Climb_21
+  - first:
+      213: 8083301371648918926
+    second: CatA_Climb_22
+  - first:
+      213: 67747626804537839
+    second: CatA_Climb_23
+  - first:
+      213: 2303793646597333246
+    second: CatA_Climb_24
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 143.3036
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: 50
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: CatA_Climb_00
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 49bce2ad60ab83076e1a8e6a885ec7f4
+      internalID: 717022148
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_01
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 314c626df78b9f6d5c40dffa943ec57a
+      internalID: 949652992
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_02
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c672de86932f0e42abae1f4213bc9a32
+      internalID: -171854386
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_03
+      rect:
+        serializedVersion: 2
+        x: 576
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aafb28768c5e71e5e60f48ea72168c83
+      internalID: 845876411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_04
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b008b60576b1a0bac0ebc420d54ed2ff
+      internalID: -201095639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_05
+      rect:
+        serializedVersion: 2
+        x: 960
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 61abf7d0e6e2fb39f001b906d04ff949
+      internalID: 590978878
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_06
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f9aecddadecb7489ab2ab8aa1b96b5ab
+      internalID: -1500663907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_07
+      rect:
+        serializedVersion: 2
+        x: 1344
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 677c5893308ca4e70ed5a70a436ae3b3
+      internalID: -1050752815
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_08
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4eb4e82a878672dd1e280af5f255ef3a
+      internalID: 406598358
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_09
+      rect:
+        serializedVersion: 2
+        x: 1728
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6d6ffd6f391a4a36ca58f44daa8f4ded
+      internalID: -1748968661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_10
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e31d15a522b16731744f7c1b82894ce
+      internalID: 5454462823923631830
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_11
+      rect:
+        serializedVersion: 2
+        x: 2112
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 88180a96c30114659ecb7c58b86729d0
+      internalID: -1095522907583740060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_12
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 81532c04bcc0830d323dde08087ea055
+      internalID: -6284555700845014977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_13
+      rect:
+        serializedVersion: 2
+        x: 2496
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4fe6aad245d5251bae7d827b0c58ae73
+      internalID: -4644439502057805452
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_14
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a4ce4608fcfe7fc0079d736d5314c5ae
+      internalID: 6849402253404776639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_15
+      rect:
+        serializedVersion: 2
+        x: 2880
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 475e3284ecfbe57ca7c31b0e604621ec
+      internalID: 3830265574750756062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_16
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc7d50dcfff901e373e94e2ee2ae6066
+      internalID: 7742841292223687411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_17
+      rect:
+        serializedVersion: 2
+        x: 3264
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 02cb321d97d702ea358ed9a0040db6b2
+      internalID: 7692866242721459465
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_18
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d746fdee05468f9f5b73b81696b1156e
+      internalID: 8050481149943468833
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_19
+      rect:
+        serializedVersion: 2
+        x: 3648
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f2b2e630fb425245b0eaa14527cf7fc5
+      internalID: 4148944573732501990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_20
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b5299ded4d38c2b61dd668474b6a4d37
+      internalID: -4985214099032884995
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_21
+      rect:
+        serializedVersion: 2
+        x: 4032
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2717d2de5df5d4d77ca95189799deef5
+      internalID: -6284690998270994187
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_22
+      rect:
+        serializedVersion: 2
+        x: 4224
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2401c3ebbd02d2b58042275550f8af82
+      internalID: 8083301371648918926
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_23
+      rect:
+        serializedVersion: 2
+        x: 4416
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4a510daff3fce3b4f45c8c7b517240c5
+      internalID: 67747626804537839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Climb_24
+      rect:
+        serializedVersion: 2
+        x: 4608
+        y: 0
+        width: 192
+        height: 246
+      alignment: 9
+      pivot: {x: 0.54506, y: 0.26677}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 389ec02d9d3bbb5966626fa3f5198dba
+      internalID: 2303793646597333246
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 629e0932d76b54272a545f3d76e39d53
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures:
+    - texture: {fileID: 2800000, guid: 8ad4903002ecf4e718f6dcb2d4b89f4e, type: 3}
+      name: _NormalMap
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      CatA_Climb_00: 717022148
+      CatA_Climb_01: 949652992
+      CatA_Climb_02: -171854386
+      CatA_Climb_03: 845876411
+      CatA_Climb_04: -201095639
+      CatA_Climb_05: 590978878
+      CatA_Climb_06: -1500663907
+      CatA_Climb_07: -1050752815
+      CatA_Climb_08: 406598358
+      CatA_Climb_09: -1748968661
+      CatA_Climb_10: 5454462823923631830
+      CatA_Climb_11: -1095522907583740060
+      CatA_Climb_12: -6284555700845014977
+      CatA_Climb_13: -4644439502057805452
+      CatA_Climb_14: 6849402253404776639
+      CatA_Climb_15: 3830265574750756062
+      CatA_Climb_16: 7742841292223687411
+      CatA_Climb_17: 7692866242721459465
+      CatA_Climb_18: 8050481149943468833
+      CatA_Climb_19: 4148944573732501990
+      CatA_Climb_20: -4985214099032884995
+      CatA_Climb_21: -6284690998270994187
+      CatA_Climb_22: 8083301371648918926
+      CatA_Climb_23: 67747626804537839
+      CatA_Climb_24: 2303793646597333246
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

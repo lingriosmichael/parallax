@@ -227,8 +227,8 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
   `TickTime.SecondsPerTickSource` and restore it in `[TearDown]`; nothing writes
   `Time.fixedDeltaTime`. Changing the tick rate is a new decision.
   Motor windows (coyote, jump buffer) are whole ticks derived from seconds via `TickTime` (D-077).
-- **A minimal per-room death count exists (D-058)**, in `RoomDeath`/`DeathCounter`, with no UI.
-  Whether/how it's shown, persisted, or turned into lives is still D-044 (undecided).
+- **A minimal per-room death count exists (D-058)**, in `RoomDeath`/`DeathCounter`.
+  D-044 settled no lives and unlimited retries; D-061 shows the per-room count once, on the level-complete screen, and doesn't save it.
 - Arrows: tell ≥ 6 ticks, harmless when stopped, lane checked by the validator (D-078).
 - Every room declares a solution route and its betrayal routes; `ValidateRoutes` replays them through the real game code (D-079).
 - A betrayal route Dies (killer, lead ≥ 6) or Recovers (the room completes after the reveal); non-lethal betraying surfaces need trigger coverage, and a fake platform is never a landing surface (D-080).
@@ -274,7 +274,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 
 ## Scope — not until explicitly approved
 
-No co-op or networking work (co-op update) · no lives or death counter (D-044) · no tilt (D-045) · no voice chat · no IAP · no matchmaking · no final art · no iOS · no analytics · no cloud saves · nothing beyond the current ticket.
+No co-op or networking work (co-op update) · no lives, unlimited retries, per-room death count (D-044) · no tilt (D-045) · no voice chat · no IAP · no matchmaking · no final art · no iOS · no analytics · no cloud saves · nothing beyond the current ticket.
 
 ## Ticket phases and agent budgets
 
