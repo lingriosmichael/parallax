@@ -10,11 +10,11 @@ updated after every item, so it's current even if the run stopped early.
 | 0 · Capture harness | **BLOCKED** (usable; the death-hold visibility defect was named in two rounds) | 2 | item 0 commit |
 | 1 · Ground | **BLOCKED** (+ art needs listed; the switch pops and turn strobe were named in two rounds) | 2 | item 1 commit |
 | 2 · Air | **BLOCKED** (+ art needs listed; the turning-jump facing flip, the running hard landing and the geyser cut were named in two rounds) | 2 | item 2 commit |
-| 3 · Climb | pending | – | – |
-| 4 · Gravity | pending | – | – |
-| 5 · Idle fidgets | pending | – | – |
-| 6 · Deaths | pending | – | – |
-| 7 · Door | pending | – | – |
+| 3 · Climb | **STOPPED** mid-build, round 1 (developer's call); partial code left uncommitted | 0 | – |
+| 4 · Gravity | not started | – | – |
+| 5 · Idle fidgets | not started | – | – |
+| 6 · Deaths | not started | – | – |
+| 7 · Door | not started | – | – |
 
 ## Phase 1
 
@@ -296,9 +296,18 @@ Coverage (critic's note): every overview except 054 and 074; at least one takeof
 2. **Rating: fair.** The individual poses are well drawn, and contact at touchdown and liftoff is correct in both gravities. But the transitions are where a store-page viewer would catch it: the one-frame facing flip on a turning jump; the braking squat before a running leap; the Apex to Fall pop; the 3-frame hard-landing flicker; leap poses on simple walk-offs and in-place jumps. On top of that, the stray orange specks and the tail clipping into walls recur on nearly every takeoff and hard landing, so it isn't good yet.
 
 
+### Item 3 · Climb: stopped
+
+The developer stopped the run during item 3's first build, before any critic round. The builder's partial work is
+**left uncommitted in the working tree**: 15 modified files plus the new `CatCaptureClimb.cs` and
+`CatCaptureClimbScenarios.cs`. It is unverified: it wasn't compiled after the last edits, and its tests weren't run.
+To resume item 3, keep it. To drop it, discard it with `git restore` / `git clean` on those paths, and keep
+`Band2DevTests.cs`.
+
 ## Full suite
 
-(pending)
+Not run: the developer ended the gauntlet after item 3. The baseline was 1517 of 1517. Items 0–2 ran only their own
+test sets in batch; the last was 206 of 206 for item 2. Run the full batch suite before accepting items 0–2.
 
 ## Needed assets
 
