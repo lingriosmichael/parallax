@@ -1,6 +1,6 @@
 # PAX-A14 · Cat A animation polish, offline and lean
 
-**Status:** Draft 2026-09-30 (lean rewrite), for the developer's approval.
+**Status:** Approved and run 2026-09-30 (the developer ran `/pax-ticket`); results in §9, for the developer's review.
 **Folder:** `Docs/A_TASKS/` · **Phase:** E, look and feel · **Implementer:** Claude Code
 **Phase 1 size:** None. The open choices are defaults in §6; the developer can override them before the run.
 **Depends on:** PAX-V07 (the clip table, `CatVisualSetup`, the capture harness, `CatAnimationCheckTests`) and PAX-A08
@@ -135,3 +135,77 @@ smallest change that plays them.
 - The scale pass moves Idle's standing height off 0.56 u by more than a pixel.
 - A bridge frame changes the cat's motion (a parity test differs) or delays input.
 - A consistency result reads worse than the original. That clip stays as it was and is reported.
+
+## 9. Run results (2026-09-30)
+
+Offline throughout: no AutoSprite call, no generation, no MCP, nothing in `Art_Source/AutoSprite/Cats/A/<clip>/` changed.
+Unity ran only at the end, in batch on the work clone.
+
+### A. Consistency pass (`cat_consistency.py`, a stage of `cat_register.py`)
+
+| Item | Result |
+|---|---|
+| Scale | Run was drawn about 18 % small (head 27 px against Walk's 33; eroded torso 81.5 against 100 sheet px). Scaled by its torso length to Walk's: **1.183**. Idle's standing height is unchanged (107 source px, PPU 143.3036). Body height medians at the sheet: Idle 81, Walk 81, Run 76 px: Idle and Walk are within 2 %; Run's gallop stays 6 % lower, as §3 A asks ("the gallop stays low"). No other clip measured off-scale (standing frames 78-80 px against Idle's 80). |
+| Style | 25 clips matched to Walk's luma distribution (opaque pixels; RGB scaled per pixel, hue kept, alpha untouched). **Death_Zapped is not** (§8 stop condition: matched, its electric glow turned into a grey smudge; it stays as it was). |
+| Specks | 1,371 detached never-drawn islands removed; **0** remain. Detached pieces with drawn pixels (zap sparks, an arrow frame's tail tip) stay. |
+| Spiked reach | Re-registered +0.44 u: in Trap Lab room 0 the kill happens with the spike edge at x 5.00 and the cat's root at 4.56; frame 0's paws now meet that edge. |
+
+### B. In-betweens (`cat_inbetween.py`); seams in phone px (80 px/u, the V07 harness's centroid metric)
+
+| # | Seam | Before | After | How |
+|---|---|---|---|---|
+| 1 | Walk ↔ Run | 7.7-8.8 | **2.6-3.8** | No bridge needed: the scale pass. New foot-matched switch tables (leg overlap ≥ 0.40): Walk 0/1/3/4/5/8/9/10 → Run 6/1/5/6/6/5/5/6; Run 1/5/6 → Walk 1/3/10. |
+| 2 | Fall → Land | 6.0 (into the stand, Land 2; no squash) / 15.3 into the crouch | 8.7 → 6.7 | `LandContact`: Land 0's crouch raised 20 sheet px over its paws. Land = [contact, 0, 1, 2], entries {contact, Land 0}. |
+| 2 | Fall → HardLand | 18.8 | 11.7-12.2 → 7.9 | `HardLandContact`: HardLand 1 raised 28 px. HardLand = [0, contact, 1, 2, 3], entries {contact, 1, 2, 3}. |
+| 3 | Flip roll | 10.0 / 4.2 / 6.0 | **1.9-3.4** | `FlipRoll`: 4 cels turned between the drawn ones (-102°: two, -45° and -57°: one each); 8 cels at 24 fps, still 0.33 s. The tuck and uncurl are **dropped** (the flip starts from any pose; one generic tuck needs drawing). |
+| 4 | Climb grab | 14.2 (Walk), 18.5 (Fall) | not done | **Dropped.** A rearing grab (Walk 1 turned upright) splits it 7.0 + 7.1, but placed between the poses its hind paws draw ~0.3 u into the floor at a vine's foot, and it needs new timed-bridge code in the presenter (403 lines). |
+| 5 | Climb down | Climb reversed: max step 1.5, loop close 0.89 | not wired | `09_vine_climb_down` measured worse: max step 5.6, loop close 0.75, and keying out the vine cuts the body and head. |
+
+Bridge frames live on their own sheets (§6), as manifest slots with `bridgeFor` and `bridgePositions`; `CatVisualSetup`
+plays them inside their host clip. The presenter and `CatClipSet` are unchanged.
+
+### Developer ruling during the run (2026-09-30)
+
+The new switch tables exposed an asymmetry in the V07 harness: `walk-above-run` allows Walk to wait for a switch frame,
+`run-below-exit` allowed only the 2-frame lag, so `ground_ramp` failed. Ruled: mirror the rule. `CatCaptureParity.cs`,
+`CatCaptureChecks.cs` and `CatCaptureReport.cs` (outside §5) now give Run the same wait for its switch frames at the
+run-exit speed.
+
+### C. The moving-floor glitch (developer's report on L017's `Slide_4`, added to A14 by the developer, 2026-09-30)
+
+Two causes, both confirmed:
+1. **The cat walked on the spot.** The presenter measured the cat's speed from its drawn motion, the floor's included: a
+   still cat on `Slide_4` (1.7 u/s) read as walking (walkEnter 0.6); on Trap Lab room 12's Mover (5 u/s) it flickered
+   Walk/Run/Walk (capture: 209 frames of `walk-while-carried`).
+2. **The cat and the floor juddered.** Measured in play mode (a throwaway probe on the clone): writing
+   `Rigidbody2D.position` drops that body's interpolation for the tick (the body shows each tick's pose: 0.1, 0.1, ..., 0
+   u a frame at 5 u/s and 50 on 60 Hz), while a velocity or kinematic `MovePosition` body glides (0.0833 u every frame);
+   a zero write keeps it. `ApplyCarry` writes the position every tick a floor moves, and moving floors didn't interpolate:
+   both snapped together, 6.7 phone px of judder against the background.
+
+Fix (presentation only; the motion is unchanged, the parity and rewind fixtures green):
+- `MovingTrap.Awake` sets its body to interpolate (no scene rebuild; kinematic `MovePosition`, measured smooth).
+- `CatMotor2D` exposes read-only `CarrierVelocity`, `CarryShift` and `StepStartPosition` (written in `Step`/`ApplyCarry`,
+  never read by motion).
+- `CatVisualPresenter` draws Visual where interpolation would have on a tick the carry wrote the position
+  (`StepStartPosition` + interpolation × the tick's move), and measures the cat's own motion against the Carry floor's
+  drawn motion. `LateUpdate` passes Unity's interpolation fraction; the harness passes its own.
+- The harness draws the room's other bodies as the player loop does (interpolated only when their body interpolates), shows
+  the tick pose on a carry tick, and has a `carry_stand_down` scenario, a `walk-while-carried` rule and a `carried` check
+  (the cat's and the floor's judder against their steady speed, and the cat against the floor).
+
+Result on `carry_stand_down` (212 steady frames): judder 6.7 → **0.005** phone px (cat and floor), cat against the floor
+0.00, `walk-while-carried` 209 → **0** frames. Not covered: a vertically moving Carry floor (its lift goes through the
+body's velocity, which interpolates; not measured), and L017 itself (the Trap Lab Mover is the same trap kind, 3x faster).
+
+### Deviations
+
+- The presenter is 441 lines (it was 403): the carry drawing is one self-contained presentation concern.
+- Files outside §5, approved by the developer during the run: `CatCaptureParity.cs`, `CatCaptureChecks.cs`,
+  `CatCaptureReport.cs`, `CatCapture.cs`, `CatCaptureScenarios.cs` (harness), `CatMotor2D.cs` (read-only getters),
+  `MovingTrap.cs` (interpolation), `CatAnimationCheckTests.cs`.
+
+- `CatSpriteImporter.cs`, `CatClipSet.cs` and `CatVisualPresenter.cs` needed no change.
+- The cat test limits for the landings are measured values (8.7 / 6.7 and 11.7-12.2 / 7.9), not the 4 px target, which
+  one frame can't reach; §4's "reported with its number".
+

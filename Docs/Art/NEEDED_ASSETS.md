@@ -1,6 +1,7 @@
-# Needed assets (PAX-V07)
+# Needed assets (PAX-V07, updated by PAX-A14)
 
-This lists only art that is still visibly wrong after V07's code fixes. V07 doesn't hide art in code (ruled 2026-09-30):
+This lists only art that is still visibly wrong after V07's code fixes and A14's offline art pass (2026-09-30: the
+consistency pass and in-betweens made from the existing frames; nothing generated). V07 doesn't hide art in code (ruled 2026-09-30):
 no pose is drawn off its registered pivot, and every entry below shows in game as described.
 
 Nothing here was generated: no AutoSprite credits were spent and nothing in `Art_Source/` changed.
@@ -9,10 +10,8 @@ Units: pp = phone px at 80 px/u; sp = sprite px at PPU 143.3.
 
 ## Ground
 
-1. **Walk↔Run bridge (new art, 2–3 frames each way).**
-   - Run's body is drawn about 12 sp lower than Walk's, and its tail is level where Walk's is upright.
-   - V07 switches gait only on frames where the feet match (Walk 3/4/9/10 → Run 5, Run 3/5/6 → Walk 3/10). The body
-     still drops or rises 7.7–8.8 pp at every switch.
+1. ~~Walk↔Run bridge~~ **Fixed by A14:** Run was drawn about 18 % small (its head 27 px against Walk's 33). Scaled to Walk's
+   torso length, every foot-matched switch moves the body 2.6–3.8 pp (it was 7.7–8.8). No bridge frames needed.
 2. **Run brake (new art, 3–4 frames).** A gallop-to-walk stop that ends on a stance (Walk 1 or 7's pose). A run stop
    still pops 6–9 pp where Run hands over to Walk.
 3. **Walk-to-stand (new art, 2–3 frames per half cycle).**
@@ -24,19 +23,16 @@ Units: pp = phone px at 80 px/u; sp = sprite px at PPU 143.3.
    - `CatA_Turn`'s three drawings (side, rear, front three-quarter) aren't symmetric and are 20–35 % smaller than Walk, so
      they aren't played.
 5. **A push-against-a-wall pose.** Running into a wall ends in a relaxed Idle while the stick still pushes.
-6. **Idle to match Walk/Run (`CatA_Idle`), or the reverse.**
-   - Idle has a textured coat, pink ears and no visible eye; Walk and Run have a flatter coat and glowing orange eyes.
-   - Idle is about 9 % bigger.
-   - The style changes on every start and stop.
+6. **Idle to match Walk/Run (`CatA_Idle`), or the reverse.** A14 matched Idle's tones to Walk's (darker, less red), and its
+   body height already matches (81 px at the sheet for both). What remains is the drawing: Idle's coat is more textured and
+   its ears pinker than Walk's flat coat.
 
 ## Air
 
-7. **Landing contact.**
-   - A landing now enters on the frame matching the fall (Land 2: a 6 pp step), so a normal landing has no squash.
-   - A hard landing enters HardLand's impact crouch, frame 1 (an 18.8 pp step), and recovers HardLand 3 → Land 0
-     (8.3 pp). HardLand 0 is a tall pre-impact stand: it matches the fall better (12 pp) but pops the cat up stiffly, so
-     it isn't an entry frame.
-   - Wanted: 1–2 contact frames between Fall 2 and each landing clip.
+7. **Landing contact.** A14 added one contact frame per landing (the crouch with its legs part extended): a normal landing
+   now goes Fall 2 → contact (8.7 pp) → Land 0's crouch (6.7 pp) → stand, and a hard landing Fall → contact (11.7–12.2 pp)
+   → HardLand 1 (7.9 pp); it recovers HardLand 3 → Land 0 (8.3 pp). One frame can only halve the 15–19 pp compression.
+   Wanted: a second, drawn contact frame for each (fore paws touching, rear still up), to get every step under 4 pp.
 8. **HardLand sprite.**
    - HardLand 2's tail tip is cut square at the cell edge. The source was already cut (A08: `sourceCutAtCellEdge`).
    - HardLand 1 has a loose outline tick right of the tail, and a lighter, softer body than Fall and Run.
@@ -57,15 +53,19 @@ Units: pp = phone px at 80 px/u; sp = sprite px at PPU 143.3.
 
 ## Gravity flip (`CatA_Flip`)
 
-- **The roll needs more drawings, plus a tuck and an uncurl.**
-  - It is 4 cels at 12 fps, so it steps 45–90° at a time.
-  - A stretched Apex/Fall/Walk pose becomes a ball in one frame, and the ball becomes a spread Fall in one frame.
-  - Wanted: 6–8 roll frames, with a tuck at the start and an uncurl at the end.
+- **A tuck and an uncurl.** A14 turned 4 in-between roll cels out of the drawn ones (8 cels at 24 fps, still 0.33 s; every
+  step 1.9–3.4 pp, it was 4.2–10). The ends remain: a stretched Apex/Fall/Walk pose still becomes a ball in one frame, and
+  the ball a spread Fall in one frame. The flip starts from any pose, so one generic tuck needs drawing, not a turn.
 
 ## Climb (`CatA_Climb`, `CatA_Hang`, `CatA_Leap`)
 
 - **Grab and release in-betweens.** The side-view cat and the back-view climb have nothing between them. Grabbing from
-  the ground or a jump, and letting go at the top or bottom, are one-frame pops.
+  the ground or a jump, and letting go at the top or bottom, are one-frame pops (Walk → Climb 14.2 pp, Fall → Climb
+  18.5 pp). A14 tried a rearing grab (Walk 1 turned upright, 7.0 + 7.1 pp) and dropped it: placed between the poses, its
+  hind paws draw about 0.3 u into the floor at a vine's foot, and it needs new timed-bridge code.
+- **Climb down (`09_vine_climb_down`, kept).** A14 measured it against Climb played in reverse (the current climb down) and
+  didn't wire it: keying out the vine, which runs through the cat's body, cuts the body and head; its largest step is
+  5.6 pp against Climb's 1.5, and its loop closes at IoU 0.75 against 0.89. Wanted: a redraw on a clinging-to-vine base.
 - **A dismount at the vine's foot and at the top.** Climbing down ends in the floor, then pops to Idle. In gravity up, it
   pops to the upside-down Idle.
 - **The climb pose against the collider.**
@@ -84,14 +84,14 @@ Units: pp = phone px at 80 px/u; sp = sprite px at PPU 143.3.
   straight to Walk.
 - **`CatA_Death_Arrow`.** Frames 2–3 hold the cat about 0.5 u in the air, then frame 4 lies on the floor: a mid-air hang,
   then a drop, with no fall in-between. The arrow isn't carried in the drawing.
-- **`CatA_Death_Spiked`.**
-  - The cat dies 0.1–0.2 u short of the spikes, because of the pose's reach against the pivot.
-  - It collapses from an upright 1.1 u pose to lying in one frame.
+- **`CatA_Death_Spiked`.** A14 re-registered it onto the spike edge (+0.44 u: the upright frames' paws now meet the spikes
+  where the kill happens in Trap Lab room 0). It still collapses from an upright 1.1 u pose to lying in one frame.
 - **`CatA_Death_Crushed`.** A pancake squashed from above; the crusher closes from the side.
 - **`CatA_Door`.** It reads as pawing at the door rather than celebrating, and frames 0–1 rear with the hind paws off the
   floor.
-- **Style.** The death and door clips use lighter, fluffier shading and bright orange eyes, while Walk, Idle and Run are
-  near-flat black.
+- **Style.** A14 matched the death, door, respawn, fidget and air clips' tones to Walk's; their eyes are dimmer now, and
+  their fluffier drawing stays. `CatA_Death_Zapped` keeps its own lighter shading: matched, its electric glow turned into a
+  grey smudge.
 
 ## Not art, and not V07 code (for the developer)
 
@@ -106,11 +106,8 @@ Units: pp = phone px at 80 px/u; sp = sprite px at PPU 143.3.
 
 ## Every clip
 
-14. **Detached specks.**
-    - Idle, Walk, Run, Turn, Rise 0 and Land 1 carry 65–188 detached low-alpha pixel groups (whisker and fur fringe).
-    - The outline shader rims them, so single orange pixels float next to the cat.
-    - Fix: clean the sheets' alpha (drop small islands under an alpha threshold in `cat_register.py`), or add an alpha
-      cutoff to the outline shader, which is outside V07.
+14. ~~Detached specks~~ **Fixed by A14:** `cat_register.py` removes every detached island with no drawn pixel (1,371 across
+    the sheets); 0 remain. Detached pieces with drawn pixels (the zap's sparks, an arrow frame's tail tip) stay.
 15. **Pose size against the collider.**
     - Every pose stands 0.1–0.5 u taller than the 0.56 u collider, and the tail and hind paws reach past it.
     - Now that no pose is drawn clear of solids:
