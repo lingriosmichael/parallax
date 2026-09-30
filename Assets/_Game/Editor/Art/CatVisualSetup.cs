@@ -20,6 +20,7 @@ namespace Parallax.Editor.Art
     {
         const string PrefabPath = "Assets/_Game/Gameplay/Player/Cat_Player.prefab";
         const string ConfigPath = "Assets/_Game/Data/CatA_VisualConfig.asset";
+        const string DeathTablePath = "Assets/_Game/Data/CatA_DeathClips.asset";
         const string CatArtPath = "Assets/_Game/Art/Cats/CatA/";
         const string ShaderPath = "Assets/_Game/Art/Shaders/SpriteOutlineUnlit.shader";
         const string MaterialFolderPath = "Assets/_Game/Art/Materials";
@@ -32,10 +33,11 @@ namespace Parallax.Editor.Art
         // the state, the playback rate and loop flag, and for the locomotion clips each frame's stride.
         readonly struct ClipRow
         {
-            public ClipRow(string slot, CatAnimState state, float fps, bool loop, float[] stridePx = null, int[] entry = null, int[] stance = null, int[] landEntry = null)
+            public ClipRow(string slot, CatAnimState state, float fps, bool loop, float[] stridePx = null, int[] entry = null, int[] stance = null, int[] landEntry = null,
+                int[] switchFrames = null, int[] switchTargets = null)
             {
                 Slot = slot; State = state; Fps = fps; Loop = loop; StridePx = stridePx; Entry = entry ?? new int[0]; Stance = stance ?? new int[0];
-                LandEntry = landEntry ?? new int[0];
+                LandEntry = landEntry ?? new int[0]; SwitchFrames = switchFrames ?? new int[0]; SwitchTargets = switchTargets ?? new int[0];
             }
 
             public readonly string Slot;
@@ -46,6 +48,8 @@ namespace Parallax.Editor.Art
             public readonly int[] Entry;        // the frames a loop may start on from another clip (empty = any)
             public readonly int[] Stance;       // the frames a stop settles on
             public readonly int[] LandEntry;    // the frames a landing from the air enters on (item 2)
+            public readonly int[] SwitchFrames; // Walk / Run: the frames that may hand over to the other gait
+            public readonly int[] SwitchTargets;// ... and the other gait's frame each enters on
         }
 
         // Strides (PAX-V07 item 1): how far a planted paw moves back from each frame to the next, in sprite px at the
@@ -69,8 +73,31 @@ namespace Parallax.Editor.Art
         static readonly int[] RunPushOff = { 1, 2 };
 
         // Item 2 (see the air notes below; declared before Rows, which reads them during static initialization).
-        static readonly int[] HardLandEntry = { 1 };
         static readonly int[] RunTouchDown = { 4 };
+        // HardLand enters on its impact crouch or later (final critic): frame 0 is a tall pre-impact stand, the best centroid
+        // match after a fall but a stiff pop-up on screen. The landing's pose match picks among these (ruled 2026-09-30).
+        static readonly int[] HardLandEntry = { 1, 2, 3 };
+
+        // Walk↔Run switch frames (ruled 2026-09-30: switch at the matching foot position). Measured on the sheets: the overlap
+        // of the legs (the silhouette's lowest 45 px, both frames aligned at the shared pivot) between every Walk and Run frame.
+        // The best-matching pairs, all above 0.43: Walk 3/4/9/10 -> Run 5 (0.45 / 0.48 / 0.44 / 0.49), and Run 5/6 -> Walk 10
+        // (0.49 / 0.44), Run 3 -> Walk 3 (0.43). Every other pair is 0.19-0.42. The body still drops or rises 7.7-8.8 phone px
+        // at the switch: Run's body is drawn about 12 px lower than Walk's (NEEDED_ASSETS: Walk↔Run bridge frames).
+        static readonly int[] WalkSwitch = { 3, 4, 9, 10 }, WalkSwitchToRun = { 5, 5, 5, 5 };
+        static readonly int[] RunSwitch = { 3, 5, 6 }, RunSwitchToWalk = { 3, 10, 10 };
+
+        // Climb (PAX-V07 item 3): the 25-frame loop (§11 R7) is drawn climbing in place, so the body's climb over each frame
+        // is how far a gripping paw moves down the cell to the next frame. Measured on the imported sheet: the vine-side fore
+        // paw grips from frame 13 to 6 and the hind paw from 8 to 24; each pair's step is the vertical shift (1/4 px steps)
+        // that best overlays the paw's patch on the next frame, the mean where both grip; frames 6 and 7 (the fore paw
+        // letting go before the hind paw grips) take the mean. The loop climbs 79.4 px = 0.554 u. Played by these strides, a
+        // gripping paw stays on its hold: at the full 4 u/s the loop runs 7.2 times a second (180 frames/s, three per display
+        // frame at 60 fps); at the slow Climb 0.1 (0.4 u/s) at 18 frames/s.
+        static readonly float[] ClimbStridePx = { 2.25f, 4.25f, 2.75f, 2.5f, 1.75f, 3.5f, 3f, 3f, 2.5f, 4.5f, 2.5f, 2.75f, 2.5f,
+            6.6f, 3.25f, 3.75f, 3.1f, 6.1f, 2.6f, 2.25f, 2.5f, 4f, 1.6f, 1.4f, 4.5f };
+        // Leap from its frame 1: frame 0 is a head-down dive off the vine with vine residue (NEEDS ART), wrong for a leap that
+        // goes up at the jump speed.
+        static readonly int[] LeapEntry = { 1 };
 
         static readonly ClipRow[] Rows =
         {
@@ -79,8 +106,8 @@ namespace Parallax.Editor.Art
             new ClipRow("IdleEar", CatAnimState.IdleFidget, 12f, false),
             new ClipRow("IdleSit", CatAnimState.IdleFidget, 12f, false),
             // Walk's fps is used only where it's played by time (Climb's interim use, FpsForSpeed at the reference speed).
-            new ClipRow("Walk", CatAnimState.Walk, 10f, true, WalkStridePx, WalkStance, WalkStance, WalkStance),
-            new ClipRow("Run", CatAnimState.Run, 10f, true, RunStridePx, RunPushOff, landEntry: RunTouchDown),
+            new ClipRow("Walk", CatAnimState.Walk, 10f, true, WalkStridePx, WalkStance, WalkStance, WalkStance, WalkSwitch, WalkSwitchToRun),
+            new ClipRow("Run", CatAnimState.Run, 10f, true, RunStridePx, RunPushOff, landEntry: RunTouchDown, switchFrames: RunSwitch, switchTargets: RunSwitchToWalk),
             new ClipRow("Turn", CatAnimState.Turn, TurnFps, false),
             new ClipRow("TakeOff", CatAnimState.TakeOff, TakeOffFps, false),
             // Rise, Apex and Fall are played by the cat's velocity along gravity (CatClipSet.AirProgress), not by time.
@@ -97,15 +124,17 @@ namespace Parallax.Editor.Art
             new ClipRow("Death_Arrow", CatAnimState.Death, 10f, false),
             new ClipRow("Respawn", CatAnimState.Respawn, 20f, false),
             new ClipRow("Flip", CatAnimState.Flip, 12f, false),
-            new ClipRow("Climb", CatAnimState.Climb, 21f, true),
+            // Climb is played by the distance climbed (its strides; the fps is unused); Hang is one frame.
+            new ClipRow("Climb", CatAnimState.Climb, 21f, true, ClimbStridePx),
             new ClipRow("Hang", CatAnimState.Hang, 1f, false),
-            new ClipRow("Leap", CatAnimState.Leap, 12f, false),
+            new ClipRow("Leap", CatAnimState.Leap, LeapFps, false, entry: LeapEntry),
             new ClipRow("Door", CatAnimState.Door, 10f, false),
         };
 
-        // Turn (PAX-V07 item 1): 3 frames. The motor reverses in 0.1 s (acceleration 60 u/s^2 to 6 u/s), so the turn-in-place
-        // art shows only while the cat is still slow: 3 frames at 30 fps = 0.1 s.
-        const float TurnFps = 30f;
+        // Turn: CatA_Turn stays in the table (every A08 slot is wired) but isn't played. Ruled 2026-09-30: the turn flips on the
+        // most symmetrical frame of the gait on screen and holds it one frame (turnHoldTime). Its 3 drawings (side, rear, front
+        // three-quarter) aren't symmetric (mirror overlap 0.29-0.44) and strobed at 0.1 s (NEEDED_ASSETS: Turn redraw).
+        const float TurnFps = 30f, TurnHoldTime = 1f / 60f;
 
         // CatVisualConfig values the setup writes (PAX-V07 item 1, round 2; see the gauntlet reports). Walk covers 0.724 u a
         // stride (11 frames), Run 1.161 u (10 frames). Played by distance, a clip's cadence is speed / stride:
@@ -125,36 +154,40 @@ namespace Parallax.Editor.Art
         // Walk frames that end on a stance (see CatClip.StanceEntry).
         const float SnapAcceleration = 20f;
 
-        // Air (PAX-V07 item 2; see the gauntlet reports). A jump leaves at 9.8 u/s (1.6 u at gravity 30) and is airborne ~0.65 s.
-        // - TakeOff: its 2 frames (crouch, push) at 60 fps, one display frame each, drawn with the paws on the ground the cat
-        //   jumped from (TakeOffAnchor) while the body already rises: no input waits, and no crouch floats above the floor.
+        // Air (PAX-V07 item 2). A jump leaves at 9.8 u/s (1.6 u at gravity 30) and is airborne ~0.65 s. Every pose is drawn on
+        // the body (ruled 2026-09-30: art defects aren't hidden in code, so no pose is drawn off its registered pivot).
+        // - TakeOff: its 2 frames (crouch, push) at 60 fps, one display frame each; the body is 0.3 u up when Rise starts, so
+        //   Rise 0's hind legs (0.25 u below the paws) clear the floor.
         // - airThreshold 2 u/s: the apex band lasts 4 / 30 = 0.13 s (8 frames), long enough for the Apex stretch to read
         //   between Rise and Fall; Rise and Fall each run ~0.26 s, their 3 frames following the velocity.
-        // - Land 3 frames at 15 fps (0.2 s): crouch, recover, stand (Land 2 is Idle's stance, so Idle follows without a pop).
-        // - HardLand from its frame 1 (frame 0 is a tall pre-impact stand that pops after the dive), 3 frames at 12 fps (0.25 s),
-        //   then Land's recovery.
+        // - Land 3 frames at 15 fps, HardLand 4 at 12 fps; each enters on its frame matching the fall's last pose (ruled
+        //   2026-09-30; after a normal fall that is Land 2, 6 phone px from Fall 2, against 15 for Land 0) and plays to its end.
+        //   HardLand recovers through Land, entered on Land's frame matching HardLand's last pose.
+        // - §3 (ruled 2026-09-30): any movement input cancels the landing on the same frame; a cat moving on at touchdown goes
+        //   straight into its gait. speedLeadTolerance 0.5 u/s: the motor changes the body's speed by 1.2 u/s (accelerating) or
+        //   1.6 u/s (braking) in one tick; the drawn speed trails by up to a tick, so a body slower than drawn by more than 0.5
+        //   is braking (a release: the landing skids in Land), not input.
         // - hardLandDistance 2.75 u: the 20 levels' solutions land after 0-2.5 u (a normal jump's own fall is 1.6-1.7 u, a jump
         //   onto or off a step 0.2-2.5 u) or after 2.97 u and more (drops off towers and cliffs, 3-14 u); 2.75 sits in that gap.
         // - Run's landing frame: Run 4, fore paws reaching to touch down (a running landing enters the gallop there).
-        const float TakeOffFps = 60f, LandFps = 15f, HardLandFps = 12f;
         // - groundSinkTolerance 0.01 u: a standing cat's paws sit 0.005 u above its floor; a capsule rolling off a ledge's corner
         //   (still grounded) draws its paws into the ledge 2 sprite px (0.014 u) deep by 0.02 u of sink, so it's shown off the
         //   ground from 0.01 u.
-        // - The room test for air poses: 5 rays from the paws spread 0.7 u either side (the drawn cat, tail included, spans
-        //   about -0.7..+0.5 u), reaching 1.4 u (the tallest air poses reach 0.9-1.06 u above the paws: Rise, Fall, TakeOff 1).
-        //   What still overlaps a solid is drawn up to 0.3 u clear of it: every air pose stands 0.1-0.5 u taller than the
-        //   0.56 u collider (the Apex stretch under the bench's 1.3 u slab overlaps it by 0.12 u), and Rise's hind legs hang
-        //   0.25 u below the paws (a jump up beside a step behind the cat).
-        const float RoomHalfWidth = 0.7f, RoomReach = 1.4f, AirPoseShift = 0.3f;
-        // Round 2 (critic round 1):
-        // - A landing still moving on (the body no slower than the drawn cat) is quick: a walking one plays Land 0-1 at 30 fps
-        //   (4 frames, 0.067 s: the crouch absorbs it, then Walk), a hard one HardLand's impact frame for 3 frames (0.05 s),
-        //   then the gait; a running one from a normal jump goes straight into Run 4. Released on touchdown, it skids in Land.
-        // - speedLeadTolerance 0.5 u/s: the motor changes the body's speed by 1.2 u/s (accelerating) or 1.6 u/s (braking) in
-        //   one tick; the drawn speed trails by up to a tick, so a lead past 0.5 is the player's input.
-        // - liftRecoverSpeed 4.8 u/s (0.08 u a frame): the TakeOff anchor's 0.3 u eases out over about 4 frames.
-        const float MovingLandDuration = 4f / 60f, MovingLandFps = 30f, MovingImpactDuration = 3f / 60f, SpeedLeadTolerance = 0.5f, LiftRecoverSpeed = 4.8f;
-        const float AirThreshold = 2f, HardLandDistance = 2.75f, AirGraceDrop = 0.03f, TakeOffAnchor = 0.4f, GroundSinkTolerance = 0.01f;
+        const float TakeOffFps = 60f, LandFps = 15f, HardLandFps = 12f;
+        const float SpeedLeadTolerance = 0.5f, AirThreshold = 2f, HardLandDistance = 2.75f, AirGraceDrop = 0.03f, GroundSinkTolerance = 0.01f;
+
+        // Climbing (PAX-V07 item 3):
+        // - climbStillSpeed 0.02 u/s: the motor sets the climb speed directly (Climb x 4 u/s); still is Climb below 0.005, so
+        //   the slowest analog climb (the stick just past the 0.35 dead zone) still climbs.
+        // - leapSpeedFraction 0.5: a leap leaves at the jump speed (9.8 u/s at gravity 30) against gravity, a release at most
+        //   the climb speed (4 u/s, a snap vine) and a geyser launch at 14: the band 6.9-12.7 u/s is a leap.
+        // - Leap 1-2 at 9 fps (0.22 s), about the rise to the apex band (9.8 - 2 u/s at 30 u/s² = 0.26 s), so Apex follows it.
+        const float ClimbStillSpeed = 0.02f, LeapSpeedFraction = 0.5f, LeapFps = 9f;
+
+        // Idle fidgets (PAX-V07 item 5): the cycle look around -> ear twitch -> sit down, in the rows' order above (IdleLook,
+        // IdleEar, IdleSit, 8 frames each at 12 fps = 0.67 s; the sit then holds its seated frame until input). fidgetDelay 3 s:
+        // longer than a player's usual pause before a trap (1-2 s), short enough that a player waiting sees the cat's life.
+        const float FidgetDelay = 3f;
 
         public static string[] SlotNames => Rows.Select(r => r.Slot).ToArray();
 
@@ -220,6 +253,24 @@ namespace Parallax.Editor.Art
                 AssignObject(presenterSO, "outlineRenderer", outline, changes, "CatVisualPresenter.outlineRenderer");
                 AssignObject(presenterSO, "motor", motor, changes, "CatVisualPresenter.motor");
                 AssignClips(presenterSO, manifest, framesBySlot, changes);
+                presenterSO.ApplyModifiedPropertiesWithoutUndo();
+
+                // PAX-V07 §4-5: the death clip table (built from the clip table just written) and the scene signals.
+                var clipSet = (CatClipSet)typeof(CatVisualPresenter).GetField("clips", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(presenter);
+                CatDeathClipTable deathTable = GetOrCreateDeathTable(changes);
+                if (!FillDeathTable(deathTable, clipSet, changes)) return;
+                CatPresentationSignals signals = visual.GetComponent<CatPresentationSignals>();
+                if (signals == null)
+                {
+                    signals = visual.gameObject.AddComponent<CatPresentationSignals>();
+                    changes.Add("added CatPresentationSignals to Visual");
+                }
+                var signalsSO = new SerializedObject(signals);
+                AssignObject(signalsSO, "motor", motor, changes, "CatPresentationSignals.motor");
+                signalsSO.ApplyModifiedPropertiesWithoutUndo();
+                presenterSO.Update();
+                AssignObject(presenterSO, "deathClips", deathTable, changes, "CatVisualPresenter.deathClips");
+                AssignObject(presenterSO, "signals", signals, changes, "CatVisualPresenter.signals");
                 presenterSO.ApplyModifiedPropertiesWithoutUndo();
                 SetConfigDefaults(config, motor, changes);
 
@@ -336,14 +387,9 @@ namespace Parallax.Editor.Art
 
         // Each frame's silhouette centroid (alpha >= 0.5, as the capture checks count a pixel drawn), relative to the pivot,
         // in world units at facing +1: read from the sheet PNG on disk, so the importer needs no Read/Write.
-        static Vector2[] PoseCentroids(Sprite[] frames) => PoseCentroids(frames, out _, out _);
-
-        // Item 2: also each frame's highest drawn pixel above the pivot (units): an air pose too tall for a low ceiling gives way.
-        static Vector2[] PoseCentroids(Sprite[] frames, out float[] tops, out float[] bottoms)
+        static Vector2[] PoseCentroids(Sprite[] frames)
         {
             var result = new Vector2[frames.Length];
-            tops = new float[frames.Length];
-            bottoms = new float[frames.Length];
             if (frames.Length == 0) return result;
             string path = AssetDatabase.GetAssetPath(frames[0].texture);
             var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
@@ -356,14 +402,12 @@ namespace Parallax.Editor.Art
                 {
                     Rect r = frames[f].rect;
                     int x0 = Mathf.RoundToInt(r.x * scale), y0 = Mathf.RoundToInt(r.y * scale), w = Mathf.RoundToInt(r.width * scale), h = Mathf.RoundToInt(r.height * scale);
-                    double sx = 0, sy = 0; int n = 0, top = -1, bottom = -1;
+                    double sx = 0, sy = 0; int n = 0;
                     for (int y = 0; y < h; y++)
                         for (int x = 0; x < w; x++)
-                            if (pixels[(y0 + y) * tex.width + x0 + x].a >= 128) { sx += x + 0.5; sy += y + 0.5; n++; top = y; if (bottom < 0) bottom = y; }
+                            if (pixels[(y0 + y) * tex.width + x0 + x].a >= 128) { sx += x + 0.5; sy += y + 0.5; n++; }
                     Vector2 pivot = frames[f].pivot * scale;
                     float ppu = frames[f].pixelsPerUnit * scale;
-                    tops[f] = top < 0 ? 0f : (top + 1 - pivot.y) / ppu;
-                    bottoms[f] = bottom < 0 ? 0f : (pivot.y - bottom) / ppu;
                     result[f] = n == 0 ? Vector2.zero : new Vector2((float)(sx / n - pivot.x) / ppu, (float)(sy / n - pivot.y) / ppu);
                 }
             }
@@ -405,9 +449,9 @@ namespace Parallax.Editor.Art
                 changed |= SetInts(clip.FindPropertyRelative("entryFrames"), row.Entry);
                 changed |= SetInts(clip.FindPropertyRelative("stanceFrames"), row.Stance);
                 changed |= SetInts(clip.FindPropertyRelative("landEntryFrames"), row.LandEntry);
-                Vector2[] centroids = PoseCentroids(frames, out float[] tops, out float[] bottoms);
-                changed |= SetFloats(clip.FindPropertyRelative("poseTops"), tops);
-                changed |= SetFloats(clip.FindPropertyRelative("poseBottoms"), bottoms);
+                changed |= SetInts(clip.FindPropertyRelative("switchFrames"), row.SwitchFrames);
+                changed |= SetInts(clip.FindPropertyRelative("switchTargets"), row.SwitchTargets);
+                Vector2[] centroids = PoseCentroids(frames);
                 SerializedProperty poses = clip.FindPropertyRelative("poseCentroids");
                 if (poses.arraySize != centroids.Length) { poses.arraySize = centroids.Length; changed = true; }
                 for (int k = 0; k < centroids.Length; k++)
@@ -433,16 +477,12 @@ namespace Parallax.Editor.Art
                 | SetFloat(so.FindProperty("airThreshold"), AirThreshold)
                 | SetFloat(so.FindProperty("hardLandDistance"), HardLandDistance)
                 | SetFloat(so.FindProperty("airGraceDrop"), AirGraceDrop)
-                | SetFloat(so.FindProperty("takeOffAnchor"), TakeOffAnchor)
                 | SetFloat(so.FindProperty("groundSinkTolerance"), GroundSinkTolerance)
-                | SetFloat(so.FindProperty("roomHalfWidth"), RoomHalfWidth)
-                | SetFloat(so.FindProperty("roomReach"), RoomReach)
-                | SetFloat(so.FindProperty("airPoseShift"), AirPoseShift)
-                | SetFloat(so.FindProperty("movingLandDuration"), MovingLandDuration)
-                | SetFloat(so.FindProperty("movingLandFps"), MovingLandFps)
-                | SetFloat(so.FindProperty("movingImpactDuration"), MovingImpactDuration)
                 | SetFloat(so.FindProperty("speedLeadTolerance"), SpeedLeadTolerance)
-                | SetFloat(so.FindProperty("liftRecoverSpeed"), LiftRecoverSpeed);
+                | SetFloat(so.FindProperty("climbStillSpeed"), ClimbStillSpeed)
+                | SetFloat(so.FindProperty("leapSpeedFraction"), LeapSpeedFraction)
+                | SetFloat(so.FindProperty("turnHoldTime"), TurnHoldTime)
+                | SetFloat(so.FindProperty("fidgetDelay"), FidgetDelay);
             if (!changed) return;
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(config);
@@ -596,6 +636,48 @@ namespace Parallax.Editor.Art
                 changes.Add("assigned Outline material");
             }
             return renderer;
+        }
+
+        // PAX-V07 §4: death kind -> slot. Unmapped kinds (Splash, when it comes) fall back to Default, the frightened pose.
+        static readonly (CatDeathKind kind, string slot)[] DeathSlots =
+        {
+            (CatDeathKind.Default, "Death"), (CatDeathKind.Pit, "Death_Pit"), (CatDeathKind.Spiked, "Death_Spiked"),
+            (CatDeathKind.Crushed, "Death_Crushed"), (CatDeathKind.Zapped, "Death_Zapped"), (CatDeathKind.Arrow, "Death_Arrow"),
+        };
+
+        static CatDeathClipTable GetOrCreateDeathTable(List<string> changes)
+        {
+            CatDeathClipTable table = AssetDatabase.LoadAssetAtPath<CatDeathClipTable>(DeathTablePath);
+            if (table != null) return table;
+            table = ScriptableObject.CreateInstance<CatDeathClipTable>();
+            AssetDatabase.CreateAsset(table, DeathTablePath);
+            changes.Add("created CatA_DeathClips asset");
+            return table;
+        }
+
+        // Copies each death slot's clip from the clip table into the death table, when it differs. False on a missing slot.
+        static bool FillDeathTable(CatDeathClipTable table, CatClipSet clips, List<string> changes)
+        {
+            bool changed = false;
+            foreach ((CatDeathKind kind, string slot) in DeathSlots)
+            {
+                CatClip source = clips?.ForSlot(slot);
+                if (source == null || source.Count == 0)
+                {
+                    Debug.LogError($"CatVisualSetup: the clip table has no {slot} clip for the {kind} death. Stopping without saving.");
+                    return false;
+                }
+                CatClip have = table.Exact(kind);
+                if (have != null && have.Slot == source.Slot && Mathf.Approximately(have.Fps, source.Fps) && have.Frames.SequenceEqual(source.Frames)
+                    && have.PoseCentroids.SequenceEqual(source.PoseCentroids)) continue;
+                table.Set(kind, new CatClip(source.Slot, CatAnimState.Death, source.Frames.ToArray(), source.Fps, false, null, source.PoseCentroids.ToArray()));
+                changed = true;
+            }
+            if (!changed) return true;
+            EditorUtility.SetDirty(table);
+            AssetDatabase.SaveAssetIfDirty(table);
+            changes.Add($"filled CatA_DeathClips ({DeathSlots.Length} kinds)");
+            return true;
         }
 
         static CatVisualConfig GetOrCreateConfig(List<string> changes)

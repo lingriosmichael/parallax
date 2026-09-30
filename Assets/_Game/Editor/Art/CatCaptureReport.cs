@@ -34,15 +34,31 @@ namespace Parallax.Editor.Art
                 c => !c.Excluded && c.Row.State == CatAnimState.Turn && (!c.OnGround || c.Row.Climbing)),
             new StateRule("run-below-exit", "Run shown on the ground below runExitFraction x MaxSpeed (the drawn speed) for more than 2 frames",
                 c => !c.Excluded && c.RunSlowFrames > CaptureSpeeds.LagFrames),
-            new StateRule("walk-above-run", "Walk shown on the ground at or above runFraction x MaxSpeed (the drawn speed) for more than 2 frames",
-                c => !c.Excluded && c.WalkFastFrames > CaptureSpeeds.LagFrames),
-            new StateRule("one-frame-state", "a state shown for exactly one frame between two frames of other states (a flicker)",
+            // Walk waits for a switch frame where the paws of both gaits match (ruled 2026-09-30): up to the longest run of Walk
+            // frames between two switch frames (CaptureSpeeds.SwitchWaitFrames at the run threshold) on top of the lag.
+            new StateRule("walk-above-run", "Walk shown on the ground at or above runFraction x MaxSpeed (the drawn speed) for more than the wait for a switch frame plus 2 frames",
+                c => !c.Excluded && c.WalkFastFrames > CaptureSpeeds.LagFrames + (c.Speeds != null ? c.Speeds.SwitchWaitFrames : 0)),
+            // A flicker is a drawing shown for one frame: the clip on screen, not the state name. Turn's one-frame hold draws the
+            // gait's own flip frame (ruled 2026-09-30), so it isn't one.
+            new StateRule("one-frame-state", "a clip shown for exactly one frame between two frames of other clips (a flicker)",
+                // A Respawn that input ends on the next frame is §3 (any input ends it on that frame), not a flicker.
                 c => !c.Excluded && c.Prev != null && c.Next != null && !c.Next.Holding && !c.Next.Frozen
-                     && c.Row.State != c.Prev.State && c.Row.State != c.Next.State),
+                     && c.Row.Clip != c.Prev.Clip && c.Row.Clip != c.Next.Clip
+                     && !(c.Row.State == CatAnimState.Respawn && Mathf.Abs(c.Next.VAlong) > 0f)),
             new StateRule("facing-late", "on the ground, moving against the facing above walkEnter for longer than the Turn clip plus the lag",
                 c => !c.Excluded && c.Speeds != null && c.AgainstFacingFrames > Mathf.CeilToInt(c.Speeds.TurnSeconds * CatCapture.FrameRate) + CaptureSpeeds.LagFrames),
-            new StateRule("climb-without-climbing", "Climb shown while the motor isn't climbing",
-                c => c.Row.State == CatAnimState.Climb && !c.Row.Climbing),
+            new StateRule("climb-without-climbing", "Climb or Hang shown while the motor isn't climbing",
+                c => (c.Row.State == CatAnimState.Climb || c.Row.State == CatAnimState.Hang) && !c.Row.Climbing),
+            // Item 3: the vine rows.
+            new StateRule("vine-state-missing", "the motor climbing (not in a hold) with neither Climb nor Hang shown for more than 2 frames",
+                c => !c.Excluded && c.OffVineStateFrames > CaptureSpeeds.LagFrames),
+            new StateRule("hang-while-moving", "Hang shown while the cat moves along the vine (the drawn speed above climbStillSpeed) for more than 2 frames",
+                c => !c.Excluded && c.HangMovingFrames > CaptureSpeeds.LagFrames),
+            new StateRule("climb-while-still", "Climb shown while the cat is still on the vine for more than MinStateFrames + 2 frames",
+                c => !c.Excluded && c.Speeds != null && c.ClimbStillFrames > c.Speeds.MinStateFrames + CaptureSpeeds.LagFrames),
+            new StateRule("leap-late", "climbing ended with the leap's launch (the body against gravity within the leap band) and Leap shown neither on that frame nor the next",
+                c => !c.Excluded && c.Speeds != null && c.Prev != null && c.Prev.Climbing && !c.Row.Climbing && -c.Row.VGravity >= c.Speeds.LeapMin && -c.Row.VGravity <= c.Speeds.LeapMax
+                     && c.Row.State != CatAnimState.Leap && (c.Next == null || c.Next.State != CatAnimState.Leap)),
             // Item 2: a landing shows Land or HardLand, or (moving at touchdown, or acting on it) the gait, Turn or a TakeOff:
             // by the frame after touchdown, never an air state.
             new StateRule("land-late", "an air state (TakeOff, Rise, Apex, Fall) still shown on the frame after touchdown (after at least 3 airborne frames)",
@@ -78,11 +94,14 @@ namespace Parallax.Editor.Art
                 if (rows[i].GravityDown != (i > 0 ? rows[i - 1].GravityDown : true))   // every room starts with gravity down
                     for (int d = 0; d <= CaptureThresholds.NearGroundTicks; d++) flipTicks.Add(rows[i].Tick + d);
             bool Flipping(FrameRow r) => flipTicks.Contains(r.Tick);
-            bool Checkable(FrameRow r) => r.M.HasSprite && r.M.SurfaceFound && !r.Holding && !r.Frozen && !r.Climbing && !Flipping(r);
+            bool Checkable(FrameRow r) => r.M.HasSprite && r.M.SurfaceFound && !r.Holding && !r.Frozen && !Flipping(r);
             // Item 2: every frame whose drawn pixels come within RayMarginUnits (0.5 u) of a surface along gravity (a surface is
             // only found that close: Checkable), grounded or not, so the takeoff until 0.5 u clear and the last 0.5 u before
             // touchdown are covered, plus air frames within NearGroundTicks of a grounded tick.
-            var pawFrames = rows.Where(r => Checkable(r) && (r.Grounded || NearGround(r) || !r.Grounded)).ToList();
+            // Climbing frames are reported apart, not failed: on the vine the vertical pose centred on the collider hangs below
+            // it, into the ground at a vine's foot (art: NEEDED_ASSETS), and V07 doesn't draw poses off their pivot.
+            var climbFloor = rows.Where(r => Checkable(r) && r.Climbing).ToList();
+            var pawFrames = rows.Where(r => Checkable(r) && !r.Climbing).ToList();
             FrameRow worstPaw = pawFrames.OrderByDescending(r => r.M.PenetrationSpritePx).FirstOrDefault();
             float worstPawPx = worstPaw != null ? worstPaw.M.PenetrationSpritePx : 0f;
             var pawFails = pawFrames.Where(r => r.M.PenetrationSpritePx > CaptureThresholds.PawsInFloorSpritePx).ToList();
@@ -92,11 +111,13 @@ namespace Parallax.Editor.Art
                 .Num("max_depth_sprite_px", worstPawPx).Num("worst_frame", worstPaw?.Frame ?? -1)
                 .Num("max_depth_grounded_sprite_px", Max(pawFrames.Where(r => r.Grounded), r => r.M.PenetrationSpritePx))
                 .Num("max_depth_air_near_ground_sprite_px", Max(pawFrames.Where(r => !r.Grounded), r => r.M.PenetrationSpritePx))
-                .Num("frames_over", pawFails.Count).Ints("first_frames_over", pawFails.Take(20).Select(r => r.Frame)).Bool("pass", pawPass).Close();
+                .Num("frames_over", pawFails.Count).Ints("first_frames_over", pawFails.Take(20).Select(r => r.Frame))
+                .Num("climb_frames_over_reported", climbFloor.Count(r => r.M.PenetrationSpritePx > CaptureThresholds.PawsInFloorSpritePx))
+                .Num("climb_max_depth_sprite_px", Max(climbFloor, r => r.M.PenetrationSpritePx)).Bool("pass", pawPass).Close();
             line.Append($" | paws max {worstPawPx:F1}sp ({pawFails.Count} over)");
 
             // --- head in ceiling (item 2): no drawn pixel inside a solid above the cat (a low ceiling), any frame ---
-            var headFrames = rows.Where(r => r.M.HasSprite && r.M.CeilingFound && !r.Holding && !r.Frozen && !r.Climbing && !Flipping(r)).ToList();
+            var headFrames = rows.Where(r => r.M.HasSprite && r.M.CeilingFound && !r.Holding && !r.Frozen && !Flipping(r)).ToList();
             FrameRow worstHead = headFrames.OrderByDescending(r => r.M.CeilingPenetrationSpritePx).FirstOrDefault();
             var headFails = headFrames.Where(r => r.M.CeilingPenetrationSpritePx > CaptureThresholds.HeadInCeilingSpritePx).ToList();
             pass &= headFails.Count == 0;
@@ -154,6 +175,18 @@ namespace Parallax.Editor.Art
                 .Raw("worst", PopList(changes.OrderByDescending(r => r.PopPhonePx))).Bool("pass", popPass).Close();
             line.Append($" | pop max {(changes.Count > 0 ? changes.Max(r => r.PopPhonePx) : 0f):F1}pp ({pops.Count} over)");
 
+            // --- the body on the collider (item 3): every Climb or Hang frame on the vine ---
+            var vine = rows.Where(r => r.ClimbBodyOffsetSpritePx >= 0f).ToList();
+            var vineOver = vine.Where(r => r.ClimbBodyOffsetSpritePx > CaptureThresholds.ClimbBodyOffsetSpritePx).ToList();
+            pass &= vineOver.Count == 0;
+            j.Key("climb_body_on_collider").Open().Num("threshold_sprite_px", CaptureThresholds.ClimbBodyOffsetSpritePx).Num("frames_checked", vine.Count)
+                .Num("max_sprite_px", vine.Count > 0 ? vine.Max(r => r.ClimbBodyOffsetSpritePx) : 0f).Num("frames_over", vineOver.Count)
+                .Ints("first_frames_over", vineOver.Take(20).Select(r => r.Frame))
+                .Num("lifted_frames", vine.Count(r => r.ClimbLiftUnits > 1e-4f)).Num("max_lift_units", vine.Count > 0 ? vine.Max(r => r.ClimbLiftUnits) : 0f)
+                .Str("note", "the body centre (the drawn pixels' centroid after a 5 px erosion) against the collider centre plus the Visual's lift off its rest pose (reported: the lift keeps the pose out of the ground at a vine's foot)")
+                .Bool("pass", vineOver.Count == 0).Close();
+            if (vine.Count > 0) line.Append($" | vine body max {vine.Max(r => r.ClimbBodyOffsetSpritePx):F1}sp ({vineOver.Count} over), lift max {vine.Max(r => r.ClimbLiftUnits):F2}u");
+
             // --- state vs motor ---
             var broken = StateRules(rows, speeds);
             bool rulesPass = broken.All(b => b.Value.Count == 0);
@@ -163,8 +196,36 @@ namespace Parallax.Editor.Art
                 .Bool("pass", rulesPass).Close();
             line.Append($" | rules {broken.Sum(b => b.Value.Count)} frames broken");
 
-            // --- hold timing (item 6) ---
-            j.Key("hold_timing").Open().Str("status", "placeholder: item 6 (a death clip's held frame is shown by the end of the hold)").Close();
+            // --- hold timing (item 6): in every death hold, Death shows and reaches its clip's last (held) frame by the hold's
+            // last frame (the hold is RoomSafetyConfig.HoldTicks: 0.6 s at 50 Hz) ---
+            var holds = new List<(int first, int last, int reached)>();
+            for (int i = 0; i < rows.Count; i++)
+            {
+                if (!rows[i].Holding || (i > 0 && rows[i - 1].Holding)) continue;
+                int k = i; while (k + 1 < rows.Count && rows[k + 1].Holding) k++;
+                int reached = -1;
+                for (int f = i; f <= k && reached < 0; f++)
+                    if (rows[f].State == CatAnimState.Death && rows[f].ClipFrames > 0 && rows[f].ClipFrame == rows[f].ClipFrames - 1) reached = rows[f].Frame;
+                holds.Add((rows[i].Frame, rows[k].Frame, reached));
+            }
+            bool holdPass = holds.All(h => h.reached >= 0);
+            pass &= holdPass;
+            j.Key("hold_timing").Open().Num("holds", holds.Count)
+                .Raw("spans", "[" + string.Join(",", holds.Select(h => $"{{\"first\":{h.first},\"last\":{h.last},\"held_frame_at\":{h.reached}}}")) + "]")
+                .Bool("pass", holdPass).Close();
+            if (holds.Count > 0) line.Append(holdPass ? $" | holds {holds.Count} ok" : $" | HOLD NOT REACHED ({holds.Count(h => h.reached < 0)} of {holds.Count})");
+
+            // --- door (item 7): a completed level shows Door from completion and ends on its last (held) frame ---
+            if (completed)
+            {
+                FrameRow first = rows.FirstOrDefault(r => r.State == CatAnimState.Door), last = rows.Count > 0 ? rows[^1] : null;
+                bool doorPass = first != null && last != null && last.State == CatAnimState.Door && last.ClipFrames > 0 && last.ClipFrame == last.ClipFrames - 1
+                                && rows.SkipWhile(r => r != first).All(r => r.State == CatAnimState.Door);
+                pass &= doorPass;
+                j.Key("door").Open().Num("first_frame", first?.Frame ?? -1).Str("last_clip", last?.Clip ?? "").Num("last_clip_frame", last?.ClipFrame ?? -1)
+                    .Bool("pass", doorPass).Close();
+                line.Append(doorPass ? " | door ok" : " | DOOR MISSING OR NOT HELD");
+            }
 
             // --- the harness itself: stepping frames between ticks must not change physics ---
             bool parityPass = parity == null;
@@ -216,6 +277,12 @@ namespace Parallax.Editor.Art
                 c.RunSlowFrames = speeds != null && ground && r.State == CatAnimState.Run && drawn < speeds.RunExit ? c.RunSlowFrames + 1 : 0;
                 c.WalkFastFrames = speeds != null && ground && r.State == CatAnimState.Walk && drawn >= speeds.RunEnter ? c.WalkFastFrames + 1 : 0;
                 c.AgainstFacingFrames = speeds != null && ground && speed > speeds.WalkEnter && (r.VAlong > 0f ? 1 : -1) != r.Facing ? c.AgainstFacingFrames + 1 : 0;
+                // Item 3: on the vine, judged on the drawn speed along it.
+                bool vineState = r.State == CatAnimState.Climb || r.State == CatAnimState.Hang;
+                bool moving = speeds != null && Mathf.Abs(drawnGravity) > speeds.ClimbStill;
+                c.OffVineStateFrames = r.Climbing && !vineState ? c.OffVineStateFrames + 1 : 0;
+                c.HangMovingFrames = r.Climbing && r.State == CatAnimState.Hang && moving ? c.HangMovingFrames + 1 : 0;
+                c.ClimbStillFrames = speeds != null && r.Climbing && r.State == CatAnimState.Climb && !moving ? c.ClimbStillFrames + 1 : 0;
                 foreach (StateRule rule in Rules) if (rule.Broken(c)) broken[rule.Name].Add(r.Frame);
             }
             return broken;
@@ -239,7 +306,10 @@ namespace Parallax.Editor.Art
                 FrameRow r = rows[i];
                 bool loco = r.Grounded && !r.Holding && !r.Frozen && !r.Climbing && r.M.SurfaceFound
                     && (r.State == CatAnimState.Walk || r.State == CatAnimState.Run || Mathf.Abs(r.VAlong) > 0.1f);
-                if (!loco) { foreach (var p in active) End(p); active.Clear(); continue; }
+                // A turn mirrors the legs (ruled 2026-09-30: the flip on the most symmetrical frame): no paw stays planted across
+                // a facing change, so plants end there (the flip itself is judged by the pose-pop check).
+                bool flipped = i > 0 && rows[i - 1].Facing != r.Facing;
+                if (!loco || flipped) { foreach (var p in active) End(p); active.Clear(); if (!loco) continue; }
                 bool change = i == 0 || rows[i - 1].Sprite != r.Sprite || active.Count == 0;
                 if (!change) continue;
                 Vector3[] clusters = CatCaptureMath.ClusterRanges(r.M.ContactAlong, CaptureThresholds.ClusterGapSpritePx / r.M.Ppu);

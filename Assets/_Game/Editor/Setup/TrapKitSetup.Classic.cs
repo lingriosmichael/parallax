@@ -48,7 +48,7 @@ namespace Parallax.Editor.Setup
         {
             GameObject go = CreateTrap<HiddenSpikesTrap>(parent, root, name, position, size, color, roomId, rooms, death, observers, true, sortingOrder, changes);
             Hazard hazard = SetupUtility.Ensure<Hazard>(go, changes);
-            Write(hazard, changes, ("observers", (Object)observers), ("roomDeath", death), ("rooms", rooms), ("armed", false));
+            Write(hazard, changes, ("observers", (Object)observers), ("roomDeath", death), ("rooms", rooms), ("armed", false), ("deathKind", (int)CatDeathKind.Spiked));
             BoxCollider2D trigger = CreateTrigger(go.transform, root, triggerName, triggerLocalPosition, triggerSize, changes);
             HiddenSpikesTrap trap = go.GetComponent<HiddenSpikesTrap>();
             Write(trap, changes, ("hazard", hazard), ("trigger", trigger), ("revealDelayTicks", revealDelayTicks));

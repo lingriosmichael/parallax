@@ -45,6 +45,7 @@ namespace Parallax.Gameplay.Rooms
         }
 
         protected override int DelayTicks => delayTicks;
+        protected override CatDeathKind DeclaredDeathKind => CatDeathKind.Arrow;   // PAX-V07 §4: arrows and the spear variant
 
         protected override void OnLiveRoomStep()
         {

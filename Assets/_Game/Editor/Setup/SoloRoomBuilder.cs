@@ -17,6 +17,15 @@ namespace Parallax.Editor.Setup
     // SoloRoomsSetup and TrapLabSetup now forward to these methods instead of owning the bodies.
     public static class SoloRoomBuilder
     {
+        /// <summary>PAX-V07 §4 (Phase 1 question 6): the death kind of a Hazard element: Pit for the hazard a Pit opening names
+        /// (a pit floor), Spiked otherwise.</summary>
+        public static CatDeathKind HazardKind(SoloRoomDefinition room, string element)
+        {
+            foreach (SoloRoomOpening opening in room.Openings ?? System.Array.Empty<SoloRoomOpening>())
+                if (opening.Kind == SoloRoomOpeningKind.Pit && opening.HazardName == element) return CatDeathKind.Pit;
+            return CatDeathKind.Spiked;
+        }
+
         static readonly Color Ground = new(.72f, .52f, .28f, 1f);
         static readonly Color Red = new(.85f, .12f, .10f, 1f);
         static readonly Color Purple = new(.55f, .22f, .75f, .38f);
@@ -314,7 +323,7 @@ namespace Parallax.Editor.Setup
                 case SoloRoomElementKind.Floor: case SoloRoomElementKind.Ceiling: case SoloRoomElementKind.Wall: case SoloRoomElementKind.PitBottom: BuildGeometry(parent, root, e.Name, position, e.Size, changes); break;
                 case SoloRoomElementKind.Checkpoint: CheckpointSetup.BuildMarkerCore(parent, root, e.Name, checkpoints, observers, room.Id, position + Vector2.up * -config.ColliderBottom, Vector2.down, changes); break;
                 case SoloRoomElementKind.Door: RoomSetup.BuildDoorCore(parent, root, e.Name, rooms, room.Id, position, e.Size, new Color(.9f,.5f,1f,1f), -2, changes); break;
-                case SoloRoomElementKind.Hazard: HazardSetup.BuildHazardCore(parent, root, e.Name, death, observers, rooms, position, e.Size, Red, -2, changes); break;
+                case SoloRoomElementKind.Hazard: HazardSetup.BuildHazardCore(parent, root, e.Name, death, observers, rooms, position, e.Size, Red, -2, changes, HazardKind(room, e.Name)); break;
                 case SoloRoomElementKind.CollapsingFloor: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildCollapsingFloorCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings.DelayTicks, TrapFloorSortingOrder, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.HiddenSpikes: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildHiddenSpikesCore(parent, root, e.Name, position, e.Size, Red, room.Id, rooms, death, observers, e.Settings.TriggerName, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings.RevealDelayTicks, -2, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.FallingBlock: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildFallingBlockCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings.TriggerName, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings.Direction, e.Settings.DelayTicks, e.Settings.UnitsPerTick, e.Settings.TravelDistance, -2, changes), e.Settings, parent, changes); break;

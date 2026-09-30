@@ -32,6 +32,7 @@ namespace Parallax.Editor.Art
         public RealityRoot Root; public CatMotor2D Cat; public Rigidbody2D Body; public Collider2D CatCollider; public GravityReceiver Gravity;
         public CatVisualPresenter Presenter; public SpriteRenderer BodyRenderer; public CatRespawn Respawn;
         public CatMotorConfig Motor; public Vector2 Origin; public int Tick;
+        public Vector3 VisualRest;   // item 3: the Visual's authored local position (its rest pose), read before any frame
         public int Respawns;
         ScriptedInput input;
 
@@ -70,6 +71,7 @@ namespace Parallax.Editor.Art
             rig.Presenter = catGo.GetComponentInChildren<CatVisualPresenter>(true);
             if (rig.Presenter == null) throw new InvalidOperationException("CatCapture: Cat_Player.prefab has no CatVisualPresenter.");
             rig.BodyRenderer = rig.Presenter.GetComponent<SpriteRenderer>();
+            rig.VisualRest = rig.Presenter.transform.localPosition;
             rig.Motor = motor;
 
             Set(rig.Checkpoints, "rootA", rig.Root);
@@ -108,6 +110,8 @@ namespace Parallax.Editor.Art
             Invoke(rig.Cat, "Awake");
             Invoke(rig.Respawn, "Awake");
             Invoke(rig.Presenter, "Awake");
+            // PAX-V07 item 6: the presenter's scene signals subscribe to the cat's respawn in OnEnable (EditMode runs none).
+            foreach (CatPresentationSignals signals in catGo.GetComponentsInChildren<CatPresentationSignals>(true)) Invoke(signals, "OnEnable");
             Invoke(observer, "Awake");
             Invoke(rig.Death, "Awake");
             Invoke(router, "Awake");

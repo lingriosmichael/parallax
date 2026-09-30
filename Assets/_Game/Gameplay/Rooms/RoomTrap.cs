@@ -6,8 +6,19 @@ using UnityEngine;
 
 namespace Parallax.Gameplay.Rooms
 {
-    public abstract class RoomTrap : MonoBehaviour, IRoomResettable, IRoomSnapshot
+    public abstract class RoomTrap : MonoBehaviour, IRoomResettable, IRoomSnapshot, IDeathKindSource
     {
+        [Header("PAX-V07 death kind")]
+        [Tooltip("Use deathKindOverride instead of this trap's declared kind (off by default; for one placed object).")]
+        [SerializeField] bool overrideDeathKind;
+        [SerializeField] CatDeathKind deathKindOverride;
+
+        /// <summary>PAX-V07 §4: the death clip this trap's kill shows: the per-object override when set, else the declared kind.</summary>
+        public CatDeathKind DeathKind => overrideDeathKind ? deathKindOverride : DeclaredDeathKind;
+
+        /// <summary>PAX-V07 §4: the kind of death this trap class causes (subclasses declare theirs).</summary>
+        protected virtual CatDeathKind DeclaredDeathKind => CatDeathKind.Default;
+
         [SerializeField] int roomId;
         [SerializeField] TrapState initialState = TrapState.Armed;
         [SerializeField] RoomDeath roomDeath;

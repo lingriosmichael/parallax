@@ -278,6 +278,43 @@ namespace Parallax.Tests
             Assert.AreEqual(-1, m.Facing, "the facing flipped at the end of Turn");
         }
 
+        // Ruled 2026-09-30: the turn flips on the most symmetrical frame, holding it one frame (the presenter picks the frame).
+        [Test]
+        public void V07_Turn_HoldsOneFrame_ThenFlips()
+        {
+            var m = new CatAnimStateMachine(new CatAnimSettings(RiseExit, FallEnter, WalkEnter, WalkExit, LandDuration,
+                RunEnter, RunExit, 1f / 60f, FlipHysteresis));
+            for (int i = 0; i < 3; i++) Ground(m, 1f);
+            Assert.AreEqual(CatAnimState.Turn, Ground(m, -1f));
+            Assert.AreEqual(1, m.Facing, "the hold frame still faces the old way");
+            Assert.AreNotEqual(CatAnimState.Turn, Ground(m, -1f), "one frame only");
+            Assert.AreEqual(-1, m.Facing);
+        }
+
+        // Ruled 2026-09-30: Walk↔Run switch at the matching foot position, not on the first frame over the threshold.
+        [Test]
+        public void V07_WalkToRun_WaitsForTheSwitchFrame()
+        {
+            var m = CreateV07();
+            for (int i = 0; i < 3; i++) Ground(m, 1f);
+            Assert.AreEqual(CatAnimState.Walk, m.Step(new CatAnimInput(true, false, 3f, 0f, F, gaitSwitchReady: false)), "over the threshold, paws don't match: Walk");
+            Assert.AreEqual(CatAnimState.Walk, m.Step(new CatAnimInput(true, false, 3f, 0f, F, gaitSwitchReady: false)));
+            Assert.AreEqual(CatAnimState.Run, m.Step(new CatAnimInput(true, false, 3f, 0f, F, gaitSwitchReady: true)), "the switch frame: Run");
+        }
+
+        [Test]
+        public void V07_RunToWalk_WaitsForTheSwitchFrame_ButAStopDoesnt()
+        {
+            var m = CreateV07();
+            for (int i = 0; i < 3; i++) Ground(m, 3f);
+            Assert.AreEqual(CatAnimState.Run, m.State);
+            Assert.AreEqual(CatAnimState.Run, m.Step(new CatAnimInput(true, false, 1.5f, 0f, F, gaitSwitchReady: false)), "below RunExit, paws don't match: Run");
+            Assert.AreEqual(CatAnimState.Walk, m.Step(new CatAnimInput(true, false, 1.5f, 0f, F, gaitSwitchReady: true)));
+            var stop = CreateV07();
+            for (int i = 0; i < 3; i++) Ground(stop, 3f);
+            Assert.AreNotEqual(CatAnimState.Run, stop.Step(new CatAnimInput(true, false, 0.05f, 0f, F, gaitSwitchReady: false)), "a stop doesn't wait");
+        }
+
         [Test]
         public void V07_Turn_AtRunSpeed()
         {
@@ -442,7 +479,7 @@ namespace Parallax.Tests
             new CatAnimStateMachine(new CatAnimSettings(RiseExit, FallEnter, WalkEnter, WalkExit, LandDuration,
                 RunEnter, RunExit, TurnDuration, FlipHysteresis, snapAcceleration: 20f, minStateFrames: 2,
                 hardLandDistance: HardLandDistance, takeOffDuration: TakeOffDuration, hardLandDuration: HardLandDuration, airGraceDrop: AirGrace,
-                movingLandDuration: 4f / 60f, movingImpactDuration: 3f / 60f, speedLeadTolerance: 0.5f));
+                speedLeadTolerance: 0.5f));
 
         // Touchdown: the first grounded frame keeps the air pose (its contact frame); returns the state on the frame after.
         static CatAnimState Touch(CatAnimStateMachine m, float speed, float height, float gravitySign = -1f, bool holding = false, float body = float.NaN)
@@ -591,44 +628,42 @@ namespace Parallax.Tests
             Assert.AreEqual(1.5f, m.LastFallDistance, 0.05f);
         }
 
+        // §3 (ruled 2026-09-30): any movement input cancels the landing animation on the same frame.
         [Test]
         public void Air_RunningLanding_GoesStraightToTheGait_NoLandCrouchSliding()
         {
             var m = CreateAir();
             Jump(m, 0f, 0f, speed: 6f);
             Assert.AreEqual(CatAnimState.Run, Touch(m, 6f, 0f), "running on at touchdown: the motion implies Run");
-            Assert.IsFalse(m.MovingLanding);
         }
 
-        // Round 2 (critic #7): a walking landing bridges the dive and the walk with a quick Land (4 frames), then Walk.
         [Test]
-        public void Air_WalkingLanding_PlaysAQuickLand_ThenWalk()
+        public void Air_WalkingLanding_GoesStraightToWalk()
         {
             var walk = CreateAir();
             Jump(walk, 0f, 0f, speed: 1f);
-            Assert.AreEqual(CatAnimState.Land, Touch(walk, 1f, 0f));
-            Assert.IsTrue(walk.MovingLanding);
-            var seen = new System.Collections.Generic.List<CatAnimState> { CatAnimState.Land };
-            for (int i = 0; i < 6; i++) seen.Add(Frame(walk, true, 1f, 0f, 0f));
-            Assert.AreEqual(4, seen.FindAll(x => x == CatAnimState.Land).Count, string.Join(",", seen));
-            Assert.AreEqual(CatAnimState.Walk, seen[^1]);
+            Assert.AreEqual(CatAnimState.Walk, Touch(walk, 1f, 0f), "moving on at touchdown: no Land (§3)");
         }
 
-        // Round 2: a move pressed on the landing tick (the body already moving, the drawn cat not yet) is a moving landing: the
-        // quick Land plays in full (4 frames), never a one-frame Land cut short by the acceleration.
         [Test]
-        public void Air_AMovePressedOnTheLandingTick_PlaysTheQuickLand_NoOneFrameLand()
+        public void Air_AMovePressedOnTheLandingTick_CancelsTheLanding_OnThatFrame()
         {
             var m = CreateAir();
             Jump(m, 0f, 0f);
-            Assert.AreEqual(CatAnimState.Land, Touch(m, 0f, 0f, body: 1.2f));
-            Assert.IsTrue(m.MovingLanding);
-            var seen = new System.Collections.Generic.List<CatAnimState> { CatAnimState.Land };
-            foreach (float v in new[] { 1.2f, 2.4f, 3.6f, 3.6f }) seen.Add(Frame(m, true, v - 1.2f, 0f, 0f, body: v));
-            Assert.AreEqual(4, seen.FindAll(x => x == CatAnimState.Land).Count, string.Join(",", seen));
+            Assert.AreEqual(CatAnimState.Walk, Touch(m, 0f, 0f, body: 1.2f), "the body moves on the landing tick: Walk at once");
         }
 
-        // Round 2: a reversal pressed on the landing tick goes straight to Turn (no Land shown for one frame).
+        [Test]
+        public void Air_AMovePressedDuringLand_CancelsItOnTheSameFrame()
+        {
+            var m = CreateAir();
+            Jump(m, 0f, 0f);
+            Assert.AreEqual(CatAnimState.Land, Touch(m, 0f, 0f));
+            Assert.AreEqual(CatAnimState.Land, Frame(m, true, 0f, 0f, 0f));
+            Assert.AreEqual(CatAnimState.Walk, Frame(m, true, 0f, 0f, 0f, body: 1.2f), "movement input: Land ends on this frame");
+        }
+
+        // A reversal pressed on the landing tick goes straight to Turn (no Land shown for one frame).
         [Test]
         public void Air_AReversalPressedOnTheLandingTick_Turns()
         {
@@ -637,33 +672,38 @@ namespace Parallax.Tests
             Assert.AreEqual(CatAnimState.Turn, Touch(m, -0.3f, 0f, body: -1.2f));
         }
 
-        // Round 2 (critic #2/#3): released on touchdown (the body already slower than the drawn cat), the landing skids in Land.
+        // Released on touchdown (the body already slower than the drawn cat, braking), the landing skids in Land: no input.
         [Test]
         public void Air_ReleasedOnTouchdown_SkidsInLand_NoGaitStutter()
         {
             var m = CreateAir();
             Jump(m, 0f, 0f, speed: 6f);
             Assert.AreEqual(CatAnimState.Land, Touch(m, 5.7f, 0f, body: 4.4f), "released: Land, not Run");
-            Assert.IsFalse(m.MovingLanding);
             foreach (float v in new[] { 4.4f, 2.8f, 1.2f, 0f, 0f })
                 Assert.AreEqual(CatAnimState.Land, Frame(m, true, v, 0f, 0f, body: Mathf.Max(0f, v - 1.6f)), "the skid stays in Land (braking isn't acting)");
         }
 
-        // Round 2 (critic #6): a hard landing still running shows HardLand's impact, then the gait.
         [Test]
-        public void Air_HardLandingWhileRunning_ShowsTheImpact_ThenRun()
+        public void Air_HardLandingWhileRunning_GoesStraightToRun()
         {
             var m = CreateAir();
             for (int i = 0; i < 3; i++) Frame(m, true, 6f, 0f, 3.2f);
             float h = 3.2f, v = 1.5f;
             while (h > 0f) { Frame(m, false, 6f, v, h); h -= v * F; v += 0.5f; }
-            Assert.AreEqual(CatAnimState.HardLand, Touch(m, 6f, 0f));
-            Assert.IsTrue(m.MovingLanding);
-            var seen = new System.Collections.Generic.List<CatAnimState> { CatAnimState.HardLand };
-            for (int i = 0; i < 5; i++) seen.Add(Frame(m, true, 6f, 0f, 0f));
-            Assert.AreEqual(3, seen.FindAll(x => x == CatAnimState.HardLand).Count, string.Join(",", seen));
-            CollectionAssert.DoesNotContain(seen, CatAnimState.Land, "a moving impact goes straight to the gait");
-            Assert.AreEqual(CatAnimState.Run, seen[^1]);
+            Assert.AreEqual(CatAnimState.Run, Touch(m, 6f, 0f), "still running: the gait at once (§3)");
+            Assert.GreaterOrEqual(m.LastFallDistance, HardLandDistance);
+        }
+
+        // The landing's length comes from the frame it enters on (the presenter matches the fall's last pose).
+        [Test]
+        public void Air_LandLasts_FromTheMatchedEntryFrame()
+        {
+            var m = CreateAir();
+            Jump(m, 0f, 0f);
+            Frame(m, true, 0f, 0f, 0f);   // the contact frame keeps the air pose
+            int frames = 0;
+            while (m.Step(new CatAnimInput(true, false, 0f, 0f, F, landDuration: 3f / 60f)) == CatAnimState.Land) frames++;
+            Assert.AreEqual(3, frames, 1, "three frames from the matched entry, not the whole clip");
         }
 
         // Round 2 (critic #1): the facing is decided at the jump from the body's motion, on the TakeOff's first frame; it never
@@ -794,6 +834,216 @@ namespace Parallax.Tests
                 Assert.That(Frame(m, true, i % 20 < 10 ? 2f : 0f, 0f, 0f) is not (CatAnimState.Rise or CatAnimState.Apex or CatAnimState.Fall or CatAnimState.TakeOff));
         }
 
+        // ---------- PAX-V07 item 3: Climb / Hang (row 5), Leap (row 6), grab and release ----------
+
+        // The motor's numbers: climb 4 u/s, jump 9.8 u/s at gravity 30; a leap is recognized between 6.9 and 12.7 u/s against
+        // gravity (halfway from the climb speed to the jump speed, either side of the jump speed).
+        const float ClimbSpeed = 4f, LeapMin = 6.9f, LeapMax = 12.7f, LeapDuration = 0.27f, ClimbStill = 0.02f;
+
+        static CatAnimStateMachine CreateClimb() =>
+            new CatAnimStateMachine(new CatAnimSettings(RiseExit, FallEnter, WalkEnter, WalkExit, LandDuration,
+                RunEnter, RunExit, TurnDuration, FlipHysteresis, snapAcceleration: 20f, minStateFrames: 2,
+                hardLandDistance: HardLandDistance, takeOffDuration: TakeOffDuration, hardLandDuration: HardLandDuration, airGraceDrop: AirGrace,
+                speedLeadTolerance: 0.5f,
+                climbStillSpeed: ClimbStill, leapSpeedMin: LeapMin, leapSpeedMax: LeapMax, leapDuration: LeapDuration));
+
+        // One frame on the vine, moving `upTheVine` u/s against gravity (negative: down the vine). `surface` is the drawn speed
+        // along the surface (the grab's x snap shows there for a frame).
+        static CatAnimState Vine(CatAnimStateMachine m, float upTheVine, float height = 1f, float gravitySign = -1f, float surface = 0f, bool holding = false) =>
+            m.Step(new CatAnimInput(false, true, surface, -upTheVine, F, false, gravitySign, height, holding, bodySurfaceSpeed: 0f, bodyVelocityAlongGravity: -upTheVine));
+
+        // One frame off the vine: `alongGravity` is the drawn velocity along gravity, `body` the body's (the motor's) after the tick.
+        static CatAnimState Off(CatAnimStateMachine m, bool grounded, float alongGravity, float body, float height = 1f, float bodySurface = 0f,
+            bool jumped = false, float gravitySign = -1f) =>
+            m.Step(new CatAnimInput(grounded, false, bodySurface, alongGravity, F, jumped, gravitySign, height, bodySurfaceSpeed: bodySurface, bodyVelocityAlongGravity: body));
+
+        static CatAnimStateMachine OnTheVine(float upTheVine = ClimbSpeed)
+        {
+            var m = CreateClimb();
+            for (int i = 0; i < 3; i++) Frame(m, true, 0f, 0f, 0f);
+            for (int i = 0; i < 6; i++) Vine(m, upTheVine);
+            return m;
+        }
+
+        [Test]
+        public void Climb_MovingOnTheVine_ShowsClimb_StillShowsHang_AfterMinStateFrames()
+        {
+            var m = CreateClimb();
+            for (int i = 0; i < 3; i++) Frame(m, true, 0f, 0f, 0f);
+            Assert.AreEqual(CatAnimState.Climb, Vine(m, ClimbSpeed), "the grab while climbing");
+            for (int i = 0; i < 5; i++) Assert.AreEqual(CatAnimState.Climb, Vine(m, ClimbSpeed));
+            Assert.AreEqual(CatAnimState.Climb, Vine(m, 0f), "the first still frame holds Climb (MinStateFrames 2)");
+            Assert.AreEqual(CatAnimState.Hang, Vine(m, 0f), "still: Hang");
+            Assert.AreEqual(CatAnimState.Hang, Vine(m, 0f));
+            Assert.AreEqual(CatAnimState.Climb, Vine(m, 0.1f), "moving again climbs at once");
+        }
+
+        [Test]
+        public void Climb_TheSlowestAnalogClimb_StillShowsClimb()
+        {
+            // The stick just past the 0.35 dead zone: Climb 0.015 x 4 u/s.
+            var m = OnTheVine(0.06f);
+            Assert.AreEqual(CatAnimState.Climb, Vine(m, 0.06f));
+        }
+
+        [Test]
+        public void Climb_AReversalThroughZero_NeverFlashesHang()
+        {
+            var m = OnTheVine();
+            Assert.AreEqual(CatAnimState.Climb, Vine(m, 0f), "the drawn speed passes through zero on one frame");
+            Assert.AreEqual(CatAnimState.Climb, Vine(m, -ClimbSpeed));
+            Assert.AreEqual(CatAnimState.Climb, Vine(m, -ClimbSpeed));
+        }
+
+        [Test]
+        public void Climb_GrabbingWithoutMoving_ShowsHang()
+        {
+            var m = CreateClimb();
+            Frame(m, false, 0f, 3f, 2f);
+            Frame(m, false, 0f, 3f, 1.95f);
+            Assert.AreEqual(CatAnimState.Hang, Vine(m, 0f), "a grab that doesn't move (e.g. at the vine's top) hangs");
+        }
+
+        [TestCase(-1f)]
+        [TestCase(1f)]
+        public void Climb_DownTheVine_PlaysInReverse(float gravitySign)
+        {
+            var m = CreateClimb();
+            Vine(m, ClimbSpeed, gravitySign: gravitySign);
+            Assert.AreEqual(1, m.ClimbDirection, "up the vine (against gravity): forward");
+            Vine(m, -ClimbSpeed, gravitySign: gravitySign);
+            Assert.AreEqual(-1, m.ClimbDirection, "down the vine (along gravity): reversed");
+            Vine(m, 0f, gravitySign: gravitySign);
+            Vine(m, 0f, gravitySign: gravitySign);
+            Assert.AreEqual(CatAnimState.Hang, m.State);
+            Assert.AreEqual(-1, m.ClimbDirection, "hanging keeps the last direction");
+        }
+
+        [Test]
+        public void Climb_PlayedByDistance_DownTheVine_RunsTheFramesBackwards()
+        {
+            // The presenter advances the Climb clip by the distance climbed (signed: down the vine is negative), so climbing
+            // down shows the frames in reverse order with the paws still planted.
+            var clip = new Parallax.Gameplay.Presentation.CatClip("Climb", CatAnimState.Climb, new Sprite[5], 21f, true,
+                new[] { .1f, .1f, .1f, .1f, .1f }, null);
+            float phase = clip.DistanceAtFrame(2) + .05f;
+            var shown = new System.Collections.Generic.List<int>();
+            for (int i = 0; i < 4; i++) { phase -= .1f; shown.Add(clip.FrameAtDistance(phase)); }
+            CollectionAssert.AreEqual(new[] { 1, 0, 4, 3 }, shown);
+        }
+
+        [Test]
+        public void Climb_TheFacingHolds_OnTheVine_ThroughTheGrabsSnap()
+        {
+            var m = CreateClimb();
+            for (int i = 0; i < 3; i++) Frame(m, true, 2f, 0f, 0f, body: 2f);
+            Assert.AreEqual(1, m.Facing);
+            Vine(m, ClimbSpeed, surface: -15f);   // the grab tick snaps x to the vine's centre: a one-frame drawn surface speed
+            Vine(m, ClimbSpeed);
+            Assert.AreEqual(1, m.Facing, "the snap is not a reversal");
+        }
+
+        [Test]
+        public void Leap_ClimbingEndsWithTheLaunch_ShowsLeap_ThenTheAirRows()
+        {
+            var m = OnTheVine();
+            float v = -9.8f, h = 3f, t = 0f;
+            Assert.AreEqual(CatAnimState.Leap, Off(m, false, v * .6f, v, h, 6f), "the launch frame (the drawn speed still trails the body)");
+            var seen = new System.Collections.Generic.List<CatAnimState>();
+            for (int i = 0; i < 40; i++)
+            {
+                v += 30f * F; h -= v * F; t += F;
+                seen.Add(Off(m, false, v, v, h, 6f));
+            }
+            int leapFrames = seen.FindIndex(s => s != CatAnimState.Leap) + 1;
+            Assert.AreEqual(Mathf.CeilToInt(LeapDuration / F - 1e-3f), leapFrames, "Leap shows for its duration");
+            CatAnimState after = seen[leapFrames - 1];
+            Assert.That(after is CatAnimState.Rise or CatAnimState.Apex, "then the air rows by velocity, was " + after);
+            Assert.AreEqual(CatAnimState.Fall, seen[^1]);
+        }
+
+        [Test]
+        public void Leap_AlsoOnJumpedThisStep()
+        {
+            var m = OnTheVine();
+            Assert.AreEqual(CatAnimState.Leap, Off(m, false, -3f, -3f, jumped: true));
+        }
+
+        [TestCase(-1f)]
+        [TestCase(1f)]
+        public void Leap_AgainstTheFacing_TurnsAtTheLeap(float gravitySign)
+        {
+            var m = CreateClimb();
+            for (int i = 0; i < 3; i++) Frame(m, true, 2f, 0f, 0f, gravitySign: gravitySign, body: 2f);
+            for (int i = 0; i < 4; i++) Vine(m, ClimbSpeed, gravitySign: gravitySign);
+            Assert.AreEqual(1, m.Facing);
+            Off(m, false, -5f, -9.8f, bodySurface: -6f, gravitySign: gravitySign);
+            Assert.AreEqual(CatAnimState.Leap, m.State);
+            Assert.AreEqual(-1, m.Facing, "the leap's own direction, on its first frame");
+        }
+
+        [Test]
+        public void Release_InTheAir_ShowsTheAirRows_NotLeap()
+        {
+            var down = OnTheVine(-ClimbSpeed);
+            Assert.AreEqual(CatAnimState.Fall, Off(down, false, ClimbSpeed, ClimbSpeed), "climbing down past the vine's end: Fall");
+            var snapped = OnTheVine(ClimbSpeed);
+            Assert.AreEqual(CatAnimState.Rise, Off(snapped, false, -ClimbSpeed, -ClimbSpeed), "a snap while climbing up keeps the climb speed: Rise, not Leap");
+            var still = OnTheVine(0f);
+            Assert.AreEqual(CatAnimState.Fall, Off(still, false, .2f, .6f), "a release from Hang: Fall (not Apex)");
+        }
+
+        [Test]
+        public void Release_AGeyserLaunchOffTheVine_IsNotALeap()
+        {
+            var m = OnTheVine();
+            Assert.AreEqual(CatAnimState.Rise, Off(m, false, -8f, -14f), "a launch faster than the jump band shows Rise (§2)");
+        }
+
+        [Test]
+        public void Release_OntoTheGround_ShowsIdle_NoLandNoLeap()
+        {
+            var m = OnTheVine(-ClimbSpeed);
+            CatAnimState first = Off(m, true, 0f, 0f, 0f);
+            Assert.AreEqual(CatAnimState.Idle, first);
+            Assert.AreEqual(CatAnimState.Idle, Off(m, true, 0f, 0f, 0f));
+        }
+
+        [Test]
+        public void Climb_BeatsLeap_ARegrabDuringTheLeap_Climbs()
+        {
+            var m = OnTheVine();
+            Off(m, false, -9f, -9.8f, 3f, 6f);
+            Assert.AreEqual(CatAnimState.Leap, Off(m, false, -9.3f, -9.3f, 3.15f, 6f));
+            Assert.AreEqual(CatAnimState.Climb, Vine(m, ClimbSpeed, 3.2f));
+        }
+
+        [Test]
+        public void Climb_DeathOnTheVine_ShowsDeath()
+        {
+            var m = OnTheVine();
+            Assert.AreEqual(CatAnimState.Death, Vine(m, ClimbSpeed, holding: true));
+        }
+
+        [Test]
+        public void Climb_Leap_LandingFromTheLeap_ShowsLand()
+        {
+            var m = OnTheVine();
+            Off(m, false, -9.8f, -9.8f, 1f, 6f);
+            Off(m, false, -9f, -9f, 1.15f, 6f);
+            Assert.AreEqual(CatAnimState.Leap, m.State);
+            Off(m, true, 0f, 0f, 0.2f, 6f);   // the contact frame keeps the air pose
+            Assert.That(Off(m, true, 0f, 0f, 0.2f, 0f) is CatAnimState.Land or CatAnimState.HardLand, "a leap lands like any air state");
+        }
+
+        [Test]
+        public void Legacy_Step_Climbing_NeverShowsHangOrLeap()
+        {
+            var machine = Create();
+            Assert.AreEqual(CatAnimState.Climb, machine.Step(true, false, 0f, 0f, 0.02f));
+            Assert.AreEqual(CatAnimState.Rise, machine.Step(false, false, 0f, -9.8f, 0.02f));
+        }
+
         [Test]
         public void Legacy_Step_NeverShowsRunOrTurn()
         {
@@ -824,6 +1074,239 @@ namespace Parallax.Tests
             public float SurfaceSpeed { get; }
             public float GravityVelocity { get; }
             public float Dt { get; }
+        }
+
+        // ---------- PAX-V07 item 4: Flip (the tucked roll on a gravity flip) ----------
+
+        const float FlipDuration = 4f / 12f;
+
+        static CatAnimStateMachine CreateFlip() =>
+            new CatAnimStateMachine(new CatAnimSettings(RiseExit, FallEnter, WalkEnter, WalkExit, LandDuration,
+                RunEnter, RunExit, TurnDuration, FlipHysteresis, snapAcceleration: 20f, minStateFrames: 2,
+                hardLandDistance: HardLandDistance, takeOffDuration: TakeOffDuration, hardLandDuration: HardLandDuration, airGraceDrop: AirGrace,
+                speedLeadTolerance: 0.5f, flipDuration: FlipDuration));
+
+        [TestCase(-1f, 1f)]
+        [TestCase(1f, -1f)]
+        public void Flip_OnAGravitySignChange_PlaysTheRoll_ThenTheMotionsState(float from, float to)
+        {
+            var m = CreateFlip();
+            for (int i = 0; i < 3; i++) Frame(m, true, 0f, 0f, 0f, gravitySign: from);
+            Assert.AreEqual(CatAnimState.Flip, Frame(m, false, 0f, 0.5f, 0f, gravitySign: to), "the frame gravity flips: Flip");
+            int frames = 1;
+            CatAnimState s;
+            while ((s = Frame(m, false, 0f, 3f, -0.05f * frames, gravitySign: to)) == CatAnimState.Flip) frames++;
+            Assert.AreEqual(Mathf.RoundToInt(FlipDuration * 60f), frames, 1, "the roll's length");
+            Assert.AreEqual(CatAnimState.Fall, s, "then the motion's state: falling toward the new ground");
+        }
+
+        [Test]
+        public void Flip_BeatsClimb()
+        {
+            var m = CreateFlip();
+            for (int i = 0; i < 3; i++) m.Step(new CatAnimInput(false, true, 0f, -4f, F, gravitySign: -1f));
+            Assert.AreEqual(CatAnimState.Climb, m.State);
+            Assert.AreEqual(CatAnimState.Flip, m.Step(new CatAnimInput(false, true, 0f, 4f, F, gravitySign: 1f)));
+        }
+
+        [Test]
+        public void Flip_NotAfterAReset_ARespawnSnapsGravityWithoutARoll()
+        {
+            var m = CreateFlip();
+            for (int i = 0; i < 3; i++) Frame(m, true, 0f, 0f, 0f, gravitySign: 1f);
+            m.Reset();
+            Assert.AreNotEqual(CatAnimState.Flip, Frame(m, true, 0f, 0f, 0f, gravitySign: -1f));
+        }
+
+        [Test]
+        public void Flip_EndingOnTheGround_Lands()
+        {
+            var m = CreateFlip();
+            for (int i = 0; i < 3; i++) Frame(m, true, 0f, 0f, 0f, gravitySign: -1f);
+            Assert.AreEqual(CatAnimState.Flip, Frame(m, false, 0f, 0.5f, 0f, gravitySign: 1f));
+            for (int i = 1; i < 10; i++) Frame(m, false, 0f, 3f, -0.2f * i, gravitySign: 1f);   // falls 1.8 u to the ceiling
+            CatAnimState s = Frame(m, true, 0f, 0f, -2f, gravitySign: 1f);
+            while (s == CatAnimState.Flip || s == CatAnimState.Fall) s = Frame(m, true, 0f, 0f, -2f, gravitySign: 1f);
+            Assert.AreEqual(CatAnimState.Land, s, "a 2 u fall after the flip: Land");
+        }
+
+        // ---------- PAX-V07 item 5: idle fidgets (look around -> ear twitch -> sit down) ----------
+
+        const float FidgetDelay = 3f;
+        static readonly float[] FidgetDurations = { 8f / 12f, 8f / 12f, 8f / 12f };   // look, ear, sit (sit then holds)
+
+        static CatAnimStateMachine CreateFidget() =>
+            new CatAnimStateMachine(new CatAnimSettings(RiseExit, FallEnter, WalkEnter, WalkExit, LandDuration,
+                RunEnter, RunExit, TurnDuration, FlipHysteresis, snapAcceleration: 20f, minStateFrames: 2,
+                hardLandDistance: HardLandDistance, takeOffDuration: TakeOffDuration, hardLandDuration: HardLandDuration, airGraceDrop: AirGrace,
+                speedLeadTolerance: 0.5f, flipDuration: FlipDuration, fidgetDelay: FidgetDelay, fidgetDurations: FidgetDurations));
+
+        static CatAnimState Still(CatAnimStateMachine m) => Frame(m, true, 0f, 0f, 0f, body: 0f);
+
+        // Stands still until the next fidget starts; returns how many frames that took.
+        static int UntilFidget(CatAnimStateMachine m)
+        {
+            int n = 0;
+            while (Still(m) != CatAnimState.IdleFidget) { n++; Assert.Less(n, 2000, "no fidget"); }
+            return n;
+        }
+
+        [Test]
+        public void Fidget_NotBeforeTheDelay()
+        {
+            var m = CreateFidget();
+            for (int i = 0; i < Mathf.FloorToInt(FidgetDelay * 60f) - 2; i++) Assert.AreEqual(CatAnimState.Idle, Still(m), $"frame {i}");
+        }
+
+        [Test]
+        public void Fidget_TheFixedCycle_LookEarSit_TheSitHolds()
+        {
+            var m = CreateFidget();
+            UntilFidget(m);
+            Assert.AreEqual(0, m.FidgetIndex, "first: look around");
+            int look = 1; while (Still(m) == CatAnimState.IdleFidget) look++;
+            Assert.AreEqual(Mathf.RoundToInt(FidgetDurations[0] * 60f), look, 1, "look around plays its clip");
+            Assert.AreEqual(CatAnimState.Idle, m.State, "back to Idle: the timer starts again");
+            Assert.AreEqual(Mathf.RoundToInt(FidgetDelay * 60f), UntilFidget(m) + 1, 2, "the next fidget after the delay again");
+            Assert.AreEqual(1, m.FidgetIndex, "second: ear twitch");
+            while (Still(m) == CatAnimState.IdleFidget) { }
+            UntilFidget(m);
+            Assert.AreEqual(2, m.FidgetIndex, "third: sit down");
+            for (int i = 0; i < 600; i++) Assert.AreEqual(CatAnimState.IdleFidget, Still(m), "the sit holds until input");
+        }
+
+        [Test]
+        public void Fidget_AnyInputCancelsIt_OnTheSameFrame_AndTheCycleRestarts()
+        {
+            var m = CreateFidget();
+            UntilFidget(m);
+            Assert.AreEqual(CatAnimState.Walk, Frame(m, true, 0f, 0f, 0f, body: 1.2f), "a move: the body moves, Walk on that frame");
+            for (int i = 0; i < 5; i++) Frame(m, true, 0f, 0f, 0f, body: 0f);
+            UntilFidget(m);
+            Assert.AreEqual(0, m.FidgetIndex, "movement resets the cycle: look around again");
+            Assert.AreEqual(CatAnimState.TakeOff, Frame(m, true, 0f, -9.8f, 0.1f, jumped: true), "a jump cancels it on that frame");
+        }
+
+        [Test]
+        public void Fidget_TheSitEndsOnInput()
+        {
+            var m = CreateFidget();
+            for (int k = 0; k < 3; k++) { UntilFidget(m); if (k < 2) while (Still(m) == CatAnimState.IdleFidget) { } }
+            Assert.AreEqual(2, m.FidgetIndex);
+            for (int i = 0; i < 120; i++) Still(m);
+            Assert.AreEqual(CatAnimState.Walk, Frame(m, true, 0f, 0f, 0f, body: 1.2f), "touching the stick while seated ends the sit at once");
+        }
+
+        [Test]
+        public void Fidget_ALandingResetsTheCycle()
+        {
+            var m = CreateFidget();
+            UntilFidget(m);
+            while (Still(m) == CatAnimState.IdleFidget) { }
+            Jump(m, 0f, 0f);
+            Touch(m, 0f, 0f);
+            while (Still(m) != CatAnimState.Idle) { }
+            UntilFidget(m);
+            Assert.AreEqual(0, m.FidgetIndex, "after a landing the cycle starts with look around");
+        }
+
+        // ---------- PAX-V07 items 6 and 7: Death, Respawn, Door ----------
+
+        const float RespawnDuration = 4f / 20f;
+
+        static CatAnimStateMachine CreateLife() =>
+            new CatAnimStateMachine(new CatAnimSettings(RiseExit, FallEnter, WalkEnter, WalkExit, LandDuration,
+                RunEnter, RunExit, TurnDuration, FlipHysteresis, snapAcceleration: 20f, minStateFrames: 2,
+                hardLandDistance: HardLandDistance, takeOffDuration: TakeOffDuration, hardLandDuration: HardLandDuration, airGraceDrop: AirGrace,
+                speedLeadTolerance: 0.5f, flipDuration: FlipDuration, fidgetDelay: FidgetDelay, fidgetDurations: FidgetDurations,
+                respawnDuration: RespawnDuration));
+
+        static CatAnimState Life(CatAnimStateMachine m, bool holding = false, bool respawned = false, bool complete = false, float body = 0f, float gravitySign = -1f) =>
+            m.Step(new CatAnimInput(true, false, 0f, 0f, F, false, gravitySign, 0f, holding, bodySurfaceSpeed: body, respawned: respawned, levelComplete: complete));
+
+        [Test]
+        public void Death_DuringLand_BeatsIt()
+        {
+            var m = CreateLife();
+            Jump(m, 0f, 0f);
+            Assert.AreEqual(CatAnimState.Land, Touch(m, 0f, 0f));
+            Assert.AreEqual(CatAnimState.Death, Life(m, holding: true));
+        }
+
+        [Test]
+        public void Respawn_AfterTheHold_PlaysItsClip_ThenIdle()
+        {
+            var m = CreateLife();
+            for (int i = 0; i < 10; i++) Life(m, holding: true);
+            Assert.AreEqual(CatAnimState.Respawn, Life(m, respawned: true));
+            int frames = 1;
+            while (Life(m) == CatAnimState.Respawn) frames++;
+            Assert.AreEqual(Mathf.RoundToInt(RespawnDuration * 60f), frames, 1);
+            Assert.AreEqual(CatAnimState.Idle, m.State);
+        }
+
+        [Test]
+        public void Respawn_AnyInputEndsIt_OnThatFrame()
+        {
+            var m = CreateLife();
+            Assert.AreEqual(CatAnimState.Respawn, Life(m, respawned: true));
+            Assert.AreNotEqual(CatAnimState.Respawn, Life(m, body: 1.2f), "a move ends the Respawn clip");
+        }
+
+        [Test]
+        public void Respawn_ThatSnapsGravity_NeverRolls()
+        {
+            var m = CreateLife();
+            for (int i = 0; i < 3; i++) Life(m, gravitySign: 1f);
+            Assert.AreEqual(CatAnimState.Respawn, Life(m, respawned: true, gravitySign: -1f));
+            for (int i = 0; i < 20; i++) Assert.AreNotEqual(CatAnimState.Flip, Life(m, gravitySign: -1f));
+        }
+
+        [Test]
+        public void Door_OnLevelComplete_BeatsDeath_AndHolds()
+        {
+            var m = CreateLife();
+            Assert.AreEqual(CatAnimState.Death, Life(m, holding: true));
+            Assert.AreEqual(CatAnimState.Door, Life(m, holding: true, complete: true), "level complete during Death: Door");
+            for (int i = 0; i < 300; i++) Assert.AreEqual(CatAnimState.Door, Life(m, body: i % 2 == 0 ? 0f : 1.2f), "Door never leaves");
+        }
+
+        // ---------- final critic fixes ----------
+
+        // The body turns 180 degrees with gravity: the facing flips with it so the cat keeps facing the same way on screen.
+        [TestCase(-1f, 1f)]
+        [TestCase(1f, -1f)]
+        public void Flip_KeepsTheCatFacingTheSameWayOnScreen(float from, float to)
+        {
+            var m = CreateFlip();
+            for (int i = 0; i < 3; i++) Frame(m, true, 0f, 0f, 0f, gravitySign: from);
+            int before = m.Facing;
+            Frame(m, false, 0f, 0.5f, 0f, gravitySign: to);
+            Assert.AreEqual(-before, m.Facing, "local facing flips with the body, so the screen facing holds");
+        }
+
+        // A reversal at a run (the motor accelerating the other way, not its release braking) keeps the gallop into the Turn: no
+        // Walk flashes between two runs.
+        [Test]
+        public void RunReversal_KeepsTheGallop_IntoTheTurn()
+        {
+            var m = new CatAnimStateMachine(new CatAnimSettings(RiseExit, FallEnter, WalkEnter, WalkExit, LandDuration,
+                RunEnter, RunExit, 1f / 60f, FlipHysteresis, snapAcceleration: 20f, minStateFrames: 2));
+            for (int i = 0; i < 5; i++) Ground(m, 6f);
+            var seen = new System.Collections.Generic.List<CatAnimState>();
+            for (float v = 6f; v > -3f; v -= 1f)
+                seen.Add(m.Step(new CatAnimInput(true, false, v, 0f, F, gaitSwitchReady: false, stopping: false)));
+            CollectionAssert.DoesNotContain(seen.GetRange(0, seen.IndexOf(CatAnimState.Turn)), CatAnimState.Walk, string.Join(",", seen));
+        }
+
+        [Test]
+        public void RunStop_StillWalksTheBrakeOut()
+        {
+            var m = CreateV07();
+            var m2 = new CatAnimStateMachine(new CatAnimSettings(RiseExit, FallEnter, WalkEnter, WalkExit, LandDuration,
+                RunEnter, RunExit, TurnDuration, FlipHysteresis, snapAcceleration: 20f, minStateFrames: 2));
+            for (int i = 0; i < 5; i++) Ground(m2, 6f);
+            Assert.AreEqual(CatAnimState.Walk, m2.Step(new CatAnimInput(true, false, 4.4f, 0f, F, stopping: true)), "a stop: Run hands over to Walk");
         }
     }
 }

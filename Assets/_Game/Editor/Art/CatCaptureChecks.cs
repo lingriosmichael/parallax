@@ -28,6 +28,8 @@ namespace Parallax.Editor.Art
         public const float PosePopPhonePx = 3f;         // centroid jump at a sprite change, beyond the root's motion
         public const float PoseBoxPhonePx = 6f;         // bounding-box edge jump (reported, not pass/fail)
         public const float RayMarginUnits = 0.5f;       // the surface search reaches this far past the column's lowest pixel
+        public const int BodyErosionSpritePx = 5;       // item 3: a body centre is the drawn pixels' centroid after this erosion (A08's radius 7 at source scale)
+        public const float ClimbBodyOffsetSpritePx = 6f; // item 3: on the vine, the body centre lies within this of the collider centre (the lift taken out)
     }
 
     /// <summary>One frame's measurements of the drawn cat, computed analytically from the sprite's alpha, pivot and PPU
@@ -169,6 +171,8 @@ namespace Parallax.Editor.Art
     {
         public float WalkEnter, RunEnter, RunExit, TurnSeconds;
         public float AirThreshold = float.PositiveInfinity, AirGraceDrop;   // item 2
+        public float ClimbStill, LeapMin = float.PositiveInfinity, LeapMax = float.PositiveInfinity; public int MinStateFrames = 1;   // item 3
+        public int SwitchWaitFrames;   // the longest wait for a Walk→Run switch frame at the run threshold (ruled 2026-09-30)
         public const float DropTolerance = 0.005f;   // units: the drawn root's interpolation against the presenter's own reading
         public const int LagFrames = 2;   // interpolation shows the body up to one tick (1.2 frames) late: this many frames of lag are allowed
     }
@@ -177,13 +181,15 @@ namespace Parallax.Editor.Art
     sealed class FrameRow
     {
         public int Frame, Tick; public double Time; public string Step; public bool Setup;
-        public CatAnimState State; public string Clip, Sprite; public int ClipFrame, Facing;
+        public CatAnimState State; public string Clip, Sprite; public int ClipFrame, ClipFrames, Facing;
         public bool Grounded, Climbing, Jumped, Frozen, Holding, GravityDown;
         public float VAlong, VGravity; public Vector2 Root, ColliderCentre, Cam, Paw, PawImg;
         public FrameMeasure M;
         public float PopPhonePx = -1f, BoxPopPhonePx = -1f;   // -1: no sprite change this frame
         public bool Sunk;                        // item 2: grounded, but below its ground's top past airGraceDrop (shown off the ground)
         public float CarrierOffsetPhonePx;       // item 2: this frame's move of the Visual's pivot beyond the root's (the TakeOff anchor)
+        public float ClimbBodyOffsetSpritePx = -1f;   // item 3: on the vine (a Climb or Hang frame), the body centre's distance from the collider centre; -1 otherwise
+        public float ClimbLiftUnits;             // item 3: how far the Visual is drawn off its rest pose on that frame (the lift at a vine's foot)
         public string Image;
     }
 
@@ -204,6 +210,8 @@ namespace Parallax.Editor.Art
         // Item 2: how far the cat is below where it last stood (units), Apex frames outside the band, the frame before last's jump flag.
         public float GroundHeight, DropSinceGround;
         public int ApexOutsideFrames;
+        // Item 3: consecutive frames on the vine without a vine state, Hang while moving, Climb while still.
+        public int OffVineStateFrames, HangMovingFrames, ClimbStillFrames;
         public bool PrevPrevJumped;
         public CaptureSpeeds Speeds;
         public bool Air(CatAnimState s) => s == CatAnimState.Rise || s == CatAnimState.Apex || s == CatAnimState.Fall;

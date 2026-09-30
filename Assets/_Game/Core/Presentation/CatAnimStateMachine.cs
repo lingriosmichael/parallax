@@ -57,8 +57,12 @@ namespace Parallax.Core
         /// cat left the ground (a ledge's height for a walk-off; reset by a gravity flip in the air) to where it landed.</summary>
         public float LastFallDistance { get; private set; }
 
-        /// <summary>Round 2: the Land or HardLand on screen is a moving landing's quick clip (the presenter plays it faster).</summary>
-        public bool MovingLanding => movingLanding && (State == CatAnimState.Land || State == CatAnimState.HardLand);
+        /// <summary>Item 3: +1 while the cat moves up the vine (against gravity), -1 down it; held while it hangs still. Climb
+        /// plays its frames forward or reversed by it.</summary>
+        public int ClimbDirection { get; private set; } = 1;
+
+        /// <summary>Item 5: which fidget IdleFidget shows (0 look around, 1 ear twitch, 2 sit down).</summary>
+        public int FidgetIndex { get; private set; }
 
         /// <summary>Presentation frames the current state has shown, this one included.</summary>
         public int FramesInState { get; private set; }
@@ -86,6 +90,7 @@ namespace Parallax.Core
                 if (next == CatAnimState.Turn) pendingFlip = false;
                 next = before;
             }
+            if (next != CatAnimState.Idle && next != CatAnimState.IdleFidget) ResetFidgets();   // movement, a landing, a death...
             FramesInState = next != before ? 1 : FramesInState + 1;
             StateTime = next != before ? dt : StateTime + dt;
             State = next;
@@ -109,8 +114,23 @@ namespace Parallax.Core
             bool jumpEdge = input.JumpedThisStep && !jumpSeen;
             jumpSeen = input.JumpedThisStep;
             float v = input.VelocityAlongGravity;
+            // Item 4: the gravity sign, seen every frame (a respawn or a reset forgets it, so it never rolls).
+            bool flipped = gravityKnown && input.GravitySign != lastGravitySign;
+            lastGravitySign = input.GravitySign;
+            gravityKnown = !input.Respawned;
+            // The body turns 180 degrees with gravity, so the same local facing would point the other way on screen: the facing
+            // flips with it, and the cat keeps facing where it faced (D-049: screen-relative; final critic).
+            if (flipped) { CompleteTurn(); Facing = -Facing; }
 
-            // Priority 2 (item 6 wires the signal): this cat's death hold beats everything below.
+            // Row 1 (item 7): level complete, the celebration; it never leaves (held under the level-complete screen).
+            if (input.LevelComplete || State == CatAnimState.Door)
+            {
+                CompleteTurn();
+                landTimeRemaining = 0f;
+                return CatAnimState.Door;
+            }
+
+            // Row 2 (item 6): this cat's death hold beats everything below.
             if (input.Holding)
             {
                 CompleteTurn();
@@ -118,13 +138,73 @@ namespace Parallax.Core
                 return CatAnimState.Death;
             }
 
+            // Row 3 (item 6): the respawn, until its clip ends or any input moves the cat. It snaps gravity and position: the
+            // gravity sign and the high point start again, so no Flip and no landing follows.
+            if (input.Respawned)
+            {
+                CompleteTurn();
+                landTimeRemaining = 0f;
+                contact = false;
+                gravityKnown = false;
+                heightKnown = false;
+                return CatAnimState.Respawn;
+            }
+            if (State == CatAnimState.Respawn)
+            {
+                float moved = input.BodySurfaceSpeed < 0f ? -input.BodySurfaceSpeed : input.BodySurfaceSpeed;
+                if (StateTime < settings.RespawnDuration - Epsilon && moved <= walkExit && !input.JumpedThisStep && onGround) return CatAnimState.Respawn;
+            }
+
+            // Row 4 (item 4): the sign of gravity changed: the tucked roll, over Climb and everything below. A reset (a respawn,
+            // which snaps gravity) forgets the sign, so it never rolls.
+            if (settings.FlipDuration > 0f)
+            {
+                if (flipped)
+                {
+                    CompleteTurn();
+                    landTimeRemaining = 0f;
+                    contact = false;
+                    return CatAnimState.Flip;
+                }
+                if (State == CatAnimState.Flip && StateTime < settings.FlipDuration - Epsilon) return CatAnimState.Flip;
+            }
+
+            // Row 5 (item 3): on the vine, Climb while moving along it, Hang when still. The facing is the one the cat grabbed
+            // with (the grab's x snap to the vine's centre is not a reversal). A stop holds Climb until it has been still for
+            // MinStateFrames frames, so a reversal (the speed passing through zero) never flashes Hang.
             if (input.Climbing)
             {
                 CompleteTurn();
-                if (against) Facing = motion;
                 landTimeRemaining = 0f;
-                return CatAnimState.Climb;
+                contact = false;
+                wasClimbing = true;
+                float up = -input.VelocityAlongGravity;
+                bool still = (up < 0f ? -up : up) <= settings.ClimbStillSpeed;
+                climbStillFrames = still ? climbStillFrames + 1 : 0;
+                if (!still) ClimbDirection = up > 0f ? 1 : -1;
+                if (State == CatAnimState.Climb && still && climbStillFrames < settings.MinStateFrames) return CatAnimState.Climb;
+                return still ? CatAnimState.Hang : CatAnimState.Climb;
             }
+
+            // Row 6 (item 3): climbing ends. With the leap's launch (the body leaving against gravity at about the jump speed:
+            // the motor's climber doesn't raise JumpedThisStep, so the launch speed is the signal, read only) it's Leap, with the
+            // facing of the leap's own direction; otherwise a release, and the ordinary rows below (Fall, or Idle on the ground).
+            if (wasClimbing)
+            {
+                wasClimbing = false;
+                climbStillFrames = 0;
+                float launch = -input.BodyVelocityAlongGravity;
+                if (input.JumpedThisStep || (launch >= settings.LeapSpeedMin && launch <= settings.LeapSpeedMax))
+                {
+                    float body = input.BodySurfaceSpeed;
+                    if ((body < 0f ? -body : body) > settings.FlipHysteresis) Facing = body > 0f ? 1 : -1;
+                    rose = true;
+                    return CatAnimState.Leap;
+                }
+                rose = false;
+            }
+            // Leap plays for its duration (its clip), then the air rows; landing ends it like any air state.
+            if (State == CatAnimState.Leap && !onGround && StateTime < settings.LeapDuration - Epsilon) return CatAnimState.Leap;
 
             // Row 7, TakeOff: a jump from the ground (or from a ground or landing state: a coyote jump, a jump during Land),
             // or (§11 R16) a frame long enough for two ticks that starts grounded and ends rising above airThreshold, the
@@ -139,7 +219,6 @@ namespace Parallax.Core
                 float body = input.BodySurfaceSpeed;
                 if ((body < 0f ? -body : body) > settings.FlipHysteresis) Facing = body > 0f ? 1 : -1;
                 landTimeRemaining = 0f;
-                movingLanding = false;
                 rose = true;
                 return CatAnimState.TakeOff;
             }
@@ -167,8 +246,8 @@ namespace Parallax.Core
                 return Airborne(v);
             }
 
-            // Touchdown (row 9): Land, or HardLand past hardLandDistance along gravity. Moving at touchdown, the motion already
-            // implies the gait (§3): the cat lands into Walk or Run and no crouch slides along the floor.
+            // Touchdown (row 9): Land, or HardLand past hardLandDistance along gravity. §3 (ruled 2026-09-30): any movement input
+            // cancels the landing on the same frame, so a cat moving on at touchdown goes straight into its gait or Turn.
             if (Air(State))
             {
                 // The first grounded frame keeps the air pose (its paws meet the ground): a jump on the next tick then goes
@@ -179,59 +258,45 @@ namespace Parallax.Core
                 LastFallDistance = drop;
                 bool hard = drop >= settings.HardLandDistance;
                 float bodyAbs = input.BodySurfaceSpeed < 0f ? -input.BodySurfaceSpeed : input.BodySurfaceSpeed;
-                // Still moving on (not released: the body isn't already slower than the drawn cat), the landing is quick and
-                // the gait follows: a hard landing shows HardLand's impact, a walking one a quick Land, a running one goes
-                // straight into Run. Standing, or released on touchdown (the landing skids to a stop), it plays in full.
-                // The body's speed counts too: a move pressed on the landing tick is a moving landing (§3), not a Land cut short.
-                movingLanding = (abs > bodyAbs ? abs : bodyAbs) > walkEnter && bodyAbs >= abs - settings.SpeedLeadTolerance && !against;
-                int bodyMotion = input.BodySurfaceSpeed > 0f ? 1 : -1;
-                if (bodyAbs > walkEnter && bodyMotion != Facing)
+                if (Acting(abs, bodyAbs, against))
                 {
-                    // A reversal pressed on the landing: the motion implies Turn at once (no Land cut short after a frame).
-                    speed = input.BodySurfaceSpeed; abs = bodyAbs; motion = bodyMotion; against = true;
-                    movingLanding = false;
+                    // Moving on: the motion's state, on this frame. A reversal pressed on the landing is a Turn.
+                    if (bodyAbs > abs) { speed = input.BodySurfaceSpeed; abs = bodyAbs; motion = speed > 0f ? 1 : -1; }
+                    against = abs > settings.FlipHysteresis && motion != Facing;
                     landTimeRemaining = 0f;
-                }
-                else if (!movingLanding)
-                {
-                    if (against) Facing = motion;
-                    landTimeRemaining = hard ? settings.HardLandDuration : landDuration;
-                    return hard ? CatAnimState.HardLand : CatAnimState.Land;
                 }
                 else
                 {
-                    if (hard && settings.MovingImpactDuration > 0f) { landTimeRemaining = settings.MovingImpactDuration; return CatAnimState.HardLand; }
-                    if ((abs > bodyAbs ? abs : bodyAbs) < settings.RunEnter && settings.MovingLandDuration > 0f) { landTimeRemaining = settings.MovingLandDuration; return CatAnimState.Land; }
-                    movingLanding = false;
-                    landTimeRemaining = 0f;
+                    if (against) Facing = motion;
+                    landTimeRemaining = hard ? LandingDuration(input.HardLandDuration, settings.HardLandDuration)
+                                             : LandingDuration(input.LandDuration, landDuration);
+                    return hard ? CatAnimState.HardLand : CatAnimState.Land;
                 }
             }
             else if (State == CatAnimState.Land || State == CatAnimState.HardLand)
             {
-                // Plays to its end unless the player acts (§11 R5: the motion changes because of input): a move pressed (the
-                // body already faster than the drawn cat) or a reversal leaves it on that frame for the gait or Turn below.
-                // HardLand's deep crouch recovers through Land; a moving landing's quick clip hands over to the gait.
+                // Plays to its end unless the player acts (§3): any movement input leaves it on that frame for the gait or Turn
+                // below. HardLand recovers through Land, entered on the frame matching HardLand's last pose.
                 landTimeRemaining -= dt;
                 float bodyAbs = input.BodySurfaceSpeed < 0f ? -input.BodySurfaceSpeed : input.BodySurfaceSpeed;
-                // A moving landing's quick clip already follows the motion: only a reversal cuts it short.
-                bool acting = (!movingLanding && bodyAbs > abs + settings.SpeedLeadTolerance) || (against && (abs > bodyAbs ? abs : bodyAbs) > walkEnter);
+                // From a standstill a movement input shows as the body pulling ahead of the drawn cat (a steady drift isn't one:
+                // with no input the motor brakes), or a reversal.
+                bool acting = bodyAbs > abs + settings.SpeedLeadTolerance || (against && (abs > bodyAbs ? abs : bodyAbs) > walkEnter);
                 if (!acting)
                 {
                     if (landTimeRemaining > Epsilon) return State;
-                    if (State == CatAnimState.HardLand && !movingLanding)
+                    if (State == CatAnimState.HardLand)
                     {
-                        landTimeRemaining = landDuration;
-                        return CatAnimState.Land;
+                        landTimeRemaining = LandingDuration(input.LandDuration, landDuration);
+                        if (landTimeRemaining > Epsilon) return CatAnimState.Land;
                     }
                 }
-                if (acting && bodyAbs > abs)
+                else if (bodyAbs > abs)
                 {
-                    // The drawn cat hasn't caught up with the input yet: the state the motion implies is the body's (a move
-                    // pressed from the crouch walks or turns at once, no Idle between).
+                    // The drawn cat hasn't caught up with the input yet: the state the motion implies is the body's.
                     speed = input.BodySurfaceSpeed; abs = bodyAbs; motion = speed > 0f ? 1 : -1;
                     against = abs > settings.FlipHysteresis && motion != Facing;
                 }
-                movingLanding = false;
                 landTimeRemaining = 0f;
             }
 
@@ -249,13 +314,62 @@ namespace Parallax.Core
                 pendingFlip = true;
                 return CatAnimState.Turn;
             }
-            return Locomotion(abs, against);
+            return Fidget(Locomotion(abs, against, input), input, dt);
         }
 
+        // Row 12 (item 5): idling fidgetDelay seconds plays the next fidget of the fixed cycle (look around -> ear twitch -> sit
+        // down); look around and ear twitch go back to Idle at their clip's end (the timer starts again), sit down holds.
+        // Any input cancels any fidget on this frame (§11 R5: read from the body: moving faster than walkExit, which a pressed
+        // stick passes on its first tick, or a jump), and restarts the cycle.
+        CatAnimState Fidget(CatAnimState loco, in CatAnimInput input, float dt)
+        {
+            float[] durations = settings.FidgetDurations;
+            if (durations == null || durations.Length == 0 || float.IsInfinity(settings.FidgetDelay)) return loco;
+            float body = input.BodySurfaceSpeed < 0f ? -input.BodySurfaceSpeed : input.BodySurfaceSpeed;
+            if (loco != CatAnimState.Idle || body > walkExit || input.JumpedThisStep)
+            {
+                ResetFidgets();
+                // The drawn cat hasn't moved yet on the input's frame: the state the motion implies is the body's.
+                return loco == CatAnimState.Idle && State == CatAnimState.IdleFidget && body > walkEnter ? CatAnimState.Walk : loco;
+            }
+            if (State == CatAnimState.IdleFidget)
+            {
+                if (FidgetIndex >= durations.Length - 1 || StateTime < durations[FidgetIndex] - Epsilon) return CatAnimState.IdleFidget;
+                nextFidget = FidgetIndex + 1;
+                idleTime = 0f;
+                return CatAnimState.Idle;
+            }
+            idleTime += dt;
+            if (idleTime < settings.FidgetDelay - Epsilon) return CatAnimState.Idle;
+            FidgetIndex = nextFidget;
+            idleTime = 0f;
+            return CatAnimState.IdleFidget;
+        }
+
+        void ResetFidgets()
+        {
+            nextFidget = 0;
+            idleTime = 0f;
+        }
+
+        // §3, at touchdown: a movement input keeps the body moving on at walking speed without braking off the drawn speed (a
+        // release skids: the body is already slower than drawn), or reverses it.
+        bool Acting(float abs, float bodyAbs, bool against) =>
+            ((abs > bodyAbs ? abs : bodyAbs) > walkEnter && bodyAbs >= abs - settings.SpeedLeadTolerance)
+            || (against && (abs > bodyAbs ? abs : bodyAbs) > walkEnter);
+
+        // A landing's length from the frame it enters on (the presenter's pose match), or the clip's full length.
+        static float LandingDuration(float fromPose, float full) => fromPose > 0f ? fromPose : full;
+
         const float Epsilon = 1e-4f;
+        bool wasClimbing;       // the previous frame was on the vine (item 3)
+        int climbStillFrames;   // consecutive still frames on the vine, this one included
         bool groundedLastFrame = true;
+        float idleTime;         // item 5: seconds idling since the last fidget (or since moving)
+        int nextFidget;         // item 5: the next fidget in the cycle
+        bool gravityKnown;      // item 4: the gravity sign has been seen (a reset forgets it)
+        float lastGravitySign;
         bool jumpSeen;
-        bool movingLanding;     // Land / HardLand is a moving landing's quick clip (the gait follows it)
         bool contact;           // the air pose is showing its one frame of contact with the ground
         float contactDrop;      // the fall distance at that contact
         bool rose;              // this air phase went up (a jump or a launch): its apex band shows Apex; a walk-off's shows Fall
@@ -280,14 +394,15 @@ namespace Parallax.Core
         }
 
         static bool Air(CatAnimState s) =>
-            s == CatAnimState.Rise || s == CatAnimState.Apex || s == CatAnimState.Fall || s == CatAnimState.TakeOff;
+            s == CatAnimState.Rise || s == CatAnimState.Apex || s == CatAnimState.Fall || s == CatAnimState.TakeOff || s == CatAnimState.Leap
+            || s == CatAnimState.Flip;
 
         static bool GroundOrLanding(CatAnimState s) =>
-            Ground(s) || s == CatAnimState.Land || s == CatAnimState.HardLand;
+            Ground(s) || s == CatAnimState.Land || s == CatAnimState.HardLand || s == CatAnimState.IdleFidget;
 
         // Run / Walk / Idle by surface speed, each boundary with its hysteresis band. A creep against the facing below
         // walkEnter stays Idle (no Turn below walkEnter, §2 row 10).
-        CatAnimState Locomotion(float abs, bool against)
+        CatAnimState Locomotion(float abs, bool against, in CatAnimInput input)
         {
             bool running = State == CatAnimState.Run;
             bool moving = running || State == CatAnimState.Walk || State == CatAnimState.Turn;
@@ -297,9 +412,15 @@ namespace Parallax.Core
             // A digital stop or reversal brakes in a few ticks. Braking hard, the cat walks it out: Run hands over to Walk at
             // once (the presenter enters Walk on the frame that brings the paws to a stance just as the body stops), and
             // Walk holds to the stop, so no gallop frame freezes while the body slides and nothing flashes before a Turn.
+            // A reversal at a run (the motor brakes at its acceleration, not its deceleration: input.Stopping false) keeps the
+            // gallop into the Turn, which flips on a symmetrical Run frame; only a real stop walks the brake out.
+            if (Braking && running && !input.Stopping) return CatAnimState.Run;
             if (Braking && (running || State == CatAnimState.Walk)) return CatAnimState.Walk;
-            if (abs >= settings.RunEnter || (running && abs >= settings.RunExit)) return CatAnimState.Run;
-            if (abs > walkEnter) return CatAnimState.Walk;
+            bool wantsRun = abs >= settings.RunEnter || (running && abs >= settings.RunExit);
+            // Walk↔Run switch only where the paws of both clips match (the presenter's switch frames), not on the first frame
+            // over the threshold; a stop (below walkEnter) or a hard brake doesn't wait.
+            if (wantsRun) return running || input.GaitSwitchReady ? CatAnimState.Run : CatAnimState.Walk;
+            if (abs > walkEnter) return running && !input.GaitSwitchReady ? CatAnimState.Run : CatAnimState.Walk;
             if (abs < walkExit)
             {
                 // Coming to rest, the cat stands on a Walk frame for MinStateFrames frames before Idle: a reversal (the speed
@@ -407,9 +528,13 @@ namespace Parallax.Core
             heightKnown = false;
             rose = false;
             contact = false;
-            movingLanding = false;
             jumpSeen = false;
             groundedLastFrame = true;
+            wasClimbing = false;
+            climbStillFrames = 0;
+            ClimbDirection = 1;
+            gravityKnown = false;
+            ResetFidgets();
         }
 
         CatAnimState SetState(CatAnimState state)

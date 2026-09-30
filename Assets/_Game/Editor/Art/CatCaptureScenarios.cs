@@ -123,6 +123,25 @@ namespace Parallax.Editor.Art
 
         static List<CaptureStep> IdleHold() => new() { new Hold(0f, 3f, "stand 3 s") };
 
+        // PAX-V07 item 5: the fidget cycle (fidgetDelay 3 s; each fidget 0.67 s): look around at 3 s, ear twitch at 6.7 s, sit
+        // down at 10.3 s; seated 1.2 s, then a walk (the stand-up), a stop, look around again and a move during it, then a
+        // jump during the ear twitch.
+        static List<CaptureStep> Fidgets() => new()
+        {
+            new Hold(0f, 12f, "stand 12 s: look around, ear twitch, sit down") { Cut = true },
+            new Hold(0.4f, 0.4f, "walk: the stand-up from the sit") { Cut = true },
+            new Until(0f, Still, 1f, "release: stop"),
+            new Hold(0f, 3.3f, "stand 3.3 s: look around starts") { Cut = true },
+            new Hold(-0.4f, 0.4f, "walk left during look around") { Cut = true },
+            new Until(0f, Still, 1f, "release: stop"),
+            new Hold(0f, 3.3f, "stand: look around again"),
+            new Hold(0f, 3.8f, "stand: ear twitch starts") { Cut = true },
+            new Press(0f, "jump during the ear twitch"),
+            new Until(0f, Airborne, 0.2f, "take off"),
+            new Until(0f, Grounded, 2f, "until landed"),
+            new Hold(0f, 0.5f, "stand"),
+        };
+
         static List<CaptureStep> SlowWalk() => new()
         {
             new Hold(0f, 0.5f, "stand 0.5 s"),
@@ -226,6 +245,7 @@ namespace Parallax.Editor.Art
         {
             var list = new List<CaptureStep>
             {
+                new Hold(0f, 0.1f, "stand 0.1 s") { Setup = true },   // the presenter sees gravity down first, so the flip rolls
                 new Act(r => r.Gravity.Flip(), "flip gravity") { Setup = true },
                 new Until(0f, Airborne, 0.5f, "take off") { Setup = true },
                 new Until(0f, Grounded, 3f, "fall to the ceiling") { Setup = true },
@@ -254,6 +274,7 @@ namespace Parallax.Editor.Art
 
         static IEnumerable<CaptureScenario> GroundScenarios() =>
             Ground("ground_idle", "standing still 3 s", IdleHold, 10f, 5f)
+            .Concat(Ground("ground_fidget", "the idle fidgets: look around, ear twitch, sit down, a stand-up, input during a fidget", Fidgets, 10f, 5f))
             .Concat(Ground("ground_slow", "analog 0.3 right, stop, analog 0.5 left, stop", SlowWalk, 8f, 5f))
             .Concat(Ground("ground_ramp", "analog ramps 0 to 1 and back, right then left (walk, run, walk, idle)", Ramps, 7f, 3f))
             .Concat(Ground("ground_digital", "digital start and stop, right then left", Digital, 9f, 5f))
@@ -299,7 +320,7 @@ namespace Parallax.Editor.Art
                 Steps = session => new List<CaptureStep>
                 {
                     new Replay(RouteCommands(session, "L001"), "L001 solution"),
-                    new Hold(0f, 0.3f, "after the door"),
+                    new Hold(0f, 1.2f, "after the door: the celebration plays and holds") { Cut = true },
                 },
             },
             // Room 2: the cat starts at x 19 (past RearmBlock's trigger), walks slowly onto RearmCollapse over the pit and
@@ -316,7 +337,72 @@ namespace Parallax.Editor.Art
                     new Hold(0f, 1f, "after the respawn"),
                 },
             },
-        }.Concat(GroundScenarios()).Concat(AirScenarios()).ToList();
+        }.Concat(GroundScenarios()).Concat(AirScenarios()).Concat(ClimbScenarios()).Concat(FlipScenarios()).Concat(DeathScenarios()).ToList();
+
+        // PAX-V07 item 6: a death of each kind through a real trap (the pit is traplab2_pit_down), the hold, the respawn, and a
+        // move pressed right after the respawn (it ends the Respawn clip). Gravity down: the kill sources sit on the floor.
+        static IEnumerable<CaptureScenario> DeathScenarios()
+        {
+            List<CaptureStep> DieThenMove(string approach, float move, Func<CatCaptureRig, bool> until = null) => new()
+            {
+                new Hold(0f, 0.3f, "stand"),
+                new Until(move, until ?? (r => r.Death.IsHolding), 6f, approach) { Cut = true },
+                new Until(0f, r => r.Respawns > 0, 3f, "the death hold, the respawn") { Cut = true },
+                new Hold(0.6f, 0.4f, "walk right at once after the respawn") { Cut = true },
+                new Until(0f, Still, 1f, "release: stop"),
+                new Hold(0f, 0.5f, "stand"),
+            };
+            // Room 0: walking right into SourceSpikes' trigger (x 4.75-5.25) reveals the spikes under the cat (x 5-7).
+            yield return new CaptureScenario { Name = "death_spiked_down", Description = "Trap Lab room 0: walk into the hidden spikes (Spiked)", Room = _ => TrapLabLayout.Rooms[0], StartX = 3f, ExpectDeath = true, Steps = _ => DieThenMove("walk into the spikes", 0.4f) };
+            // Room 1: standing between FixedPillar (right edge x 22.5) and the Crusher's trigger (x 21.8-24.8): it slides 3 u left.
+            yield return new CaptureScenario { Name = "death_crushed_down", Description = "Trap Lab room 1: the crusher pins the cat against the pillar (Crushed)", Room = _ => TrapLabLayout.Rooms[1], StartX = 23.4f, ExpectDeath = true, Steps = _ => DieThenMove("stand in the crusher's path", 0f) };
+            // Room 3: past StopA, walking right into ArrowB's trigger (x 17.25): the disguised arrow fires left along the floor.
+            yield return new CaptureScenario { Name = "death_arrow_down", Description = "Trap Lab room 3: walk into the disguised arrow's trigger (Arrow)", Room = _ => TrapLabLayout.Rooms[3], StartX = 15.6f, ExpectDeath = true, Steps = _ => DieThenMove("walk into the arrow's lane", 0.4f) };
+            // Room 10: the storm cloud's betrayal route (wake it, stand still), replayed tick for tick.
+            yield return new CaptureScenario
+            {
+                Name = "death_zapped_down", Description = "Trap Lab room 10: stand still after waking the storm cloud (Zapped)", Room = _ => TrapLabLayout.Rooms[10], ExpectDeath = true,
+                Steps = session => new List<CaptureStep>
+                {
+                    new Replay(RouteCommands(session, TrapLabLayout.Rooms[10], TrapLabRoutes.Room10().Betrayals[0].Route), "stand still after waking the cloud") { Cut = true },
+                    new Until(0f, r => r.Respawns > 0, 3f, "the death hold, the respawn") { Cut = true },
+                    new Hold(0.6f, 0.4f, "walk right at once after the respawn") { Cut = true },
+                    new Until(0f, Still, 1f, "release: stop"),
+                    new Hold(0f, 0.5f, "stand"),
+                },
+            };
+        }
+
+        // PAX-V07 item 4: gravity flips in Trap Lab room 3 (floor clear from x 0.5 to ShieldA at 7.0, ceiling to 14.5; the
+        // cat starts at x 3). Each flips down→up and back up→down, so both directions of the roll are captured.
+        static IEnumerable<CaptureScenario> FlipScenarios()
+        {
+            CaptureScenario Flip(string name, string what, Func<List<CaptureStep>> steps) => new CaptureScenario
+            {
+                Name = name + "_down", Description = $"Trap Lab room 3, starting with gravity down: {what}", Room = _ => TrapLabLayout.Rooms[3], StartX = 3f, Steps = _ => steps(),
+            };
+            CaptureStep FlipNow(string label) => new Act(r => r.Gravity.Flip(), label) { Cut = true };
+            yield return Flip("flip_stand", "standing: flip up, fall to the ceiling, stand, flip down, fall to the floor, stand", () => new List<CaptureStep>
+            {
+                new Hold(0f, 0.5f, "stand 0.5 s"), FlipNow("flip up"), new Until(0f, Airborne, 0.5f, "leave the floor"),
+                new Until(0f, Grounded, 3f, "fall to the ceiling"), new Hold(0f, 0.8f, "stand on the ceiling"),
+                FlipNow("flip down"), new Until(0f, Airborne, 0.5f, "leave the ceiling"), new Until(0f, Grounded, 3f, "fall to the floor"),
+                new Hold(0f, 0.8f, "stand"),
+            });
+            yield return Flip("flip_walk", "walking right: flip up mid-walk, keep walking on the ceiling, flip down mid-walk", () => new List<CaptureStep>
+            {
+                new Hold(0f, 0.3f, "stand"), new Hold(0.4f, 0.5f, "walk right"), FlipNow("flip up while walking"),
+                new Until(0.4f, Grounded, 3f, "walking: fall to the ceiling"), new Hold(0.4f, 0.4f, "walk on the ceiling"),
+                FlipNow("flip down while walking"), new Until(0.4f, Grounded, 3f, "walking: fall to the floor"), new Hold(0.4f, 0.3f, "walk"),
+                new Until(0f, Still, 1f, "release: stop"), new Hold(0f, 0.3f, "stand"),
+            });
+            yield return Flip("flip_jump", "a jump in place, flipped at the apex: up to the ceiling", () => new List<CaptureStep>
+            {
+                new Hold(0f, 0.3f, "stand"), new Press(0f, "jump"), new Until(0f, Airborne, 0.2f, "take off"),
+                new Until(0f, r => r.Body.linearVelocity.y <= 0f, 1f, "rise to the apex"), FlipNow("flip at the apex"),
+                new Until(0f, Grounded, 3f, "fall to the ceiling"), new Hold(0f, 0.8f, "stand on the ceiling"),
+            });
+        }
 
         /// <summary>A level's solution as the route harness plays it: one screen-relative command per tick, read from the
         /// replay's own records (Move, Jump, Climb), so this rig plays the same inputs on the same ticks.</summary>
@@ -324,6 +410,15 @@ namespace Parallax.Editor.Art
         {
             ReplayResult result = RouteHarness.Replay(session, LevelLayouts.ById[level], LevelRoutes.ById[level].Solution, new ReplayOptions { ResolveCause = false });
             if (!result.Completed) Debug.LogWarning($"CatCapture: {level}'s solution didn't complete in the route harness ({result.Failure ?? "died"}).");
+            return Commands(result);
+        }
+
+        // Item 6: any route in any room, up to its end (a betrayal's kill tick).
+        static CatCommand[] RouteCommands(RouteSession session, SoloRoomDefinition room, Route route) =>
+            Commands(RouteHarness.Replay(session, room, route, new ReplayOptions { ResolveCause = false }));
+
+        static CatCommand[] Commands(ReplayResult result)
+        {
             var commands = new CatCommand[result.Records.Count - 1];
             for (int i = 1; i < result.Records.Count; i++)
             {

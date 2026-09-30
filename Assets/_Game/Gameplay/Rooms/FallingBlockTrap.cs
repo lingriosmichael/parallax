@@ -10,6 +10,8 @@ namespace Parallax.Gameplay.Rooms
     {
         [SerializeField] ObserverSet observers; [SerializeField] BoxCollider2D trigger; [SerializeField] FallingBlockDirection direction; [SerializeField] int delayTicks; [SerializeField] float unitsPerTick = .3f; [SerializeField] float travelDistance = 3f;
         Rigidbody2D body; BoxCollider2D box; TrapCountdown countdown; ContactFilter2D filter; readonly Collider2D[] results = new Collider2D[8]; Vector2 start;
+        protected override CatDeathKind DeclaredDeathKind => CatDeathKind.Crushed;   // PAX-V07 §4
+
         protected override void Awake()
         {
             base.Awake(); body = GetComponent<Rigidbody2D>(); box = GetComponent<BoxCollider2D>();

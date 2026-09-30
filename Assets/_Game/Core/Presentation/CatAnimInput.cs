@@ -6,8 +6,16 @@ namespace Parallax.Core
     {
         public CatAnimInput(bool grounded, bool climbing, float surfaceSpeed, float velocityAlongGravity, float dt,
             bool jumpedThisStep = false, float gravitySign = -1f, float heightAgainstGravity = 0f, bool holding = false, bool rollingOff = false,
-            float bodySurfaceSpeed = float.NaN)
+            float bodySurfaceSpeed = float.NaN, float bodyVelocityAlongGravity = float.NaN,
+            float landDuration = 0f, float hardLandDuration = 0f, bool gaitSwitchReady = true, bool respawned = false, bool levelComplete = false, bool stopping = true)
         {
+            Stopping = stopping;
+            Respawned = respawned;
+            LevelComplete = levelComplete;
+            LandDuration = landDuration;
+            HardLandDuration = hardLandDuration;
+            GaitSwitchReady = gaitSwitchReady;
+            BodyVelocityAlongGravity = float.IsNaN(bodyVelocityAlongGravity) ? velocityAlongGravity : bodyVelocityAlongGravity;
             BodySurfaceSpeed = float.IsNaN(bodySurfaceSpeed) ? surfaceSpeed : bodySurfaceSpeed;
             RollingOff = rollingOff;
             HeightAgainstGravity = heightAgainstGravity;
@@ -47,6 +55,25 @@ namespace Parallax.Core
         /// drawn speed trails it by up to a tick). It says what the player just did: a jump's direction, a release on landing
         /// (the body already slower than drawn), a move pressed during Land (the body already faster).</summary>
         public float BodySurfaceSpeed { get; }
+        /// <summary>Item 3: the body's own velocity along gravity after the latest tick (the motor's, read only; positive =
+        /// falling). A leap off a vine is recognized by it: the launch leaves at the jump speed against gravity, while a
+        /// release keeps at most the climb speed.</summary>
+        public float BodyVelocityAlongGravity { get; }
+        /// <summary>How long Land would show if it started now, from the Land frame matching the pose on screen (the
+        /// presenter's pose match; seconds). 0 = the clip's full length.</summary>
+        public float LandDuration { get; }
+        /// <summary>As LandDuration, for HardLand.</summary>
+        public float HardLandDuration { get; }
+        /// <summary>The frame on screen is one where Walk and Run's paws match (a switch frame of the clip shown): a Walk↔Run
+        /// change happens only on such a frame. True when the presenter has no switch table.</summary>
+        public bool GaitSwitchReady { get; }
+        /// <summary>Item 6: this cat respawned since the last frame (CatRespawn.Respawned).</summary>
+        public bool Respawned { get; }
+        /// <summary>Item 7: the level completed for this cat (the solo reality's cat).</summary>
+        public bool LevelComplete { get; }
+        /// <summary>The body's latest speed change was the motor's release braking (a stop), not a reversal's acceleration the
+        /// other way. True when unknown.</summary>
+        public bool Stopping { get; }
     }
 
     /// <summary>PAX-V07: the tunables of the animation table, in units/second and seconds. Built by the presenter from
@@ -56,11 +83,19 @@ namespace Parallax.Core
         public CatAnimSettings(float riseExit, float fallEnter, float walkEnter, float walkExit, float landDuration,
             float runEnter, float runExit, float turnDuration, float flipHysteresis, float snapAcceleration = float.PositiveInfinity,
             int minStateFrames = 1, float hardLandDistance = float.PositiveInfinity, float takeOffDuration = 0f,
-            float hardLandDuration = 0f, float airGraceDrop = 0f, float movingLandDuration = 0f, float movingImpactDuration = 0f,
-            float speedLeadTolerance = float.PositiveInfinity)
+            float hardLandDuration = 0f, float airGraceDrop = 0f,
+            float speedLeadTolerance = float.PositiveInfinity, float climbStillSpeed = 0f, float leapSpeedMin = float.PositiveInfinity,
+            float leapSpeedMax = float.PositiveInfinity, float leapDuration = 0f, float flipDuration = 0f,
+            float fidgetDelay = float.PositiveInfinity, float[] fidgetDurations = null, float respawnDuration = 0f)
         {
-            MovingLandDuration = movingLandDuration;
-            MovingImpactDuration = movingImpactDuration;
+            RespawnDuration = respawnDuration;
+            FidgetDelay = fidgetDelay;
+            FidgetDurations = fidgetDurations ?? System.Array.Empty<float>();
+            FlipDuration = flipDuration;
+            ClimbStillSpeed = climbStillSpeed;
+            LeapSpeedMin = leapSpeedMin;
+            LeapSpeedMax = leapSpeedMax;
+            LeapDuration = leapDuration;
             SpeedLeadTolerance = speedLeadTolerance;
             HardLandDistance = hardLandDistance;
             TakeOffDuration = takeOffDuration;
@@ -90,7 +125,7 @@ namespace Parallax.Core
         public float RunEnter { get; }
         /// <summary>Surface speed below which Run goes back to Walk (runExitFraction × MaxSpeed).</summary>
         public float RunExit { get; }
-        /// <summary>How long Turn shows (its clip's length); the facing flips at its end.</summary>
+        /// <summary>How long Turn holds its flip frame (one display frame); the facing flips at its end.</summary>
         public float TurnDuration { get; }
         /// <summary>Surface speed a reversal must exceed, against the facing, before it counts.</summary>
         public float FlipHysteresis { get; }
@@ -110,13 +145,24 @@ namespace Parallax.Core
         /// (units) and isn't moving along gravity faster than the apex band: a one-tick ground blip (a floor seam) never
         /// flashes an air state, and a walk-off shows Fall once it really falls.</summary>
         public float AirGraceDrop { get; }
-        /// <summary>Round 2: a landing still moving at walking speed plays a quick Land this long (the crouch absorbing the
-        /// landing) before the gait; 0 = straight into the gait.</summary>
-        public float MovingLandDuration { get; }
-        /// <summary>Round 2: a hard landing still moving shows HardLand's impact this long before the gait.</summary>
-        public float MovingImpactDuration { get; }
-        /// <summary>Round 2: how far (u/s) the body's speed must lead the drawn speed to count as the player's doing: slower = a
-        /// release (the landing skids into Land), faster = a move pressed (acting during Land cancels it).</summary>
+        /// <summary>How far (u/s) the body's speed may trail the drawn speed and still count as a movement input (§3): slower
+        /// than that is a release (the landing skids in Land).</summary>
         public float SpeedLeadTolerance { get; }
+        /// <summary>Item 3: on the vine, a speed along it (u/s) at or below this is still: Hang; above it, Climb.</summary>
+        public float ClimbStillSpeed { get; }
+        /// <summary>Item 3: climbing ends with the body moving against gravity at LeapSpeedMin..LeapSpeedMax (u/s): a leap (the
+        /// jump launch; a release keeps at most the climb speed, a geyser launch is faster).</summary>
+        public float LeapSpeedMin { get; }
+        public float LeapSpeedMax { get; }
+        /// <summary>Item 3: how long Leap shows (its bridge and clip) before the ordinary air rows take over.</summary>
+        public float LeapDuration { get; }
+        /// <summary>Item 4: how long Flip (the tucked roll) shows after a gravity flip (its clip's length); 0 = no Flip.</summary>
+        public float FlipDuration { get; }
+        /// <summary>Item 5: seconds of idling before the next fidget (infinity: none).</summary>
+        public float FidgetDelay { get; }
+        /// <summary>Item 5: each fidget's length (its clip), in the fixed cycle's order; the last one (sit down) then holds.</summary>
+        public float[] FidgetDurations { get; }
+        /// <summary>Item 6: how long Respawn shows (its clip, at most 0.2 s); any input ends it sooner.</summary>
+        public float RespawnDuration { get; }
     }
 }

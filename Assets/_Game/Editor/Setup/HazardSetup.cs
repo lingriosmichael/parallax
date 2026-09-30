@@ -68,7 +68,7 @@ namespace Parallax.Editor.Setup
         static void BuildHazard(RealityRoot root, RoomDeath death, ObserverSet observers, int id, float x, float groundTop, List<string> changes) =>
             BuildHazardCore(SetupUtility.EnsureChild(root.transform, "Hazards", LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id)), changes), root, $"Hazard_{id}", death, observers, Object.FindAnyObjectByType<RoomManager>(FindObjectsInactive.Include), new Vector2(x, groundTop + HazardSize.y * 0.5f), HazardSize, Color.red, null, changes);
 
-        internal static Hazard BuildHazardCore(Transform parent, RealityRoot root, string name, RoomDeath death, ObserverSet observers, RoomManager rooms, Vector2 localPosition, Vector2 size, Color color, int? sortingOrder, List<string> changes)
+        internal static Hazard BuildHazardCore(Transform parent, RealityRoot root, string name, RoomDeath death, ObserverSet observers, RoomManager rooms, Vector2 localPosition, Vector2 size, Color color, int? sortingOrder, List<string> changes, CatDeathKind kind = CatDeathKind.Spiked)
         {
             int layer = LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id));
             GameObject go = SetupUtility.EnsureChild(parent, name, layer, changes).gameObject;
@@ -82,6 +82,7 @@ namespace Parallax.Editor.Setup
             SetupUtility.SetObject(hazard, "observers", observers, changes);
             SetupUtility.SetObject(hazard, "roomDeath", death, changes);
             SetupUtility.SetObject(hazard, "rooms", rooms, changes);
+            TrapKitSetup.Write(hazard, changes, ("deathKind", (int)kind));   // PAX-V07 §4: the builder declares the kind
             return hazard;
         }
 

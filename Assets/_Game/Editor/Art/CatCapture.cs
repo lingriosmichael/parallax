@@ -96,6 +96,25 @@ namespace Parallax.Editor.Art
             return true;
         }
 
+        /// <summary>The checks of each named scenario, as its checks.json (no images; files go to a temporary folder). For the
+        /// EditMode tests (CatAnimationCheckTests), which reach it by reflection. One route session for all of them.</summary>
+        public static string[] CheckJson(string[] scenarioNames)
+        {
+            var byName = CatCaptureScenarios.All.ToDictionary(s => s.Name);
+            string root = Path.Combine(Application.temporaryCachePath, "CatCaptureChecks");
+            var results = new string[scenarioNames.Length];
+            using (var session = new RouteSession())
+            using (var alpha = new SpriteAlphaCache())
+            {
+                for (int i = 0; i < scenarioNames.Length; i++)
+                {
+                    if (!byName.TryGetValue(scenarioNames[i], out CaptureScenario scenario)) throw new ArgumentException($"CatCapture: no scenario '{scenarioNames[i]}'.");
+                    results[i] = CaptureScenario(session, alpha, scenario, Path.Combine(root, scenario.Name), images: false).Json;
+                }
+            }
+            return results;
+        }
+
         sealed class Runner
         {
             readonly List<CaptureStep> steps; int index, inStep;
@@ -196,6 +215,11 @@ namespace Parallax.Editor.Art
                     row.M = CatCaptureMeasure.Measure(alpha, rig.BodyRenderer, down, centre, filter, rig.CatCollider);
                     row.Paw = rig.BodyRenderer.transform.position;
                     row.Sunk = Sunk(rig, centre, down);
+                    if (rig.Cat.IsClimbing && CatClimbMeasure.VineClip(row.Clip))
+                    {
+                        row.ClimbBodyOffsetSpritePx = CatClimbMeasure.BodyOffsetSpritePx(alpha, rig.BodyRenderer, root, rig.VisualRest, centre, out Vector2 lift);
+                        row.ClimbLiftUnits = lift.magnitude;
+                    }
                     if (rows.Count > 0) Pop(rows[^1], row);
                     // A platformer camera: horizontally the cat, vertically where it last stood (so a jump doesn't move the
                     // floor), kept inside the window.
@@ -261,7 +285,7 @@ namespace Parallax.Editor.Art
             return new FrameRow
             {
                 Frame = n, Time = t, Tick = rig.Tick, Step = runner.Label, Setup = runner.Setup,
-                State = rig.Presenter.State, Clip = rig.Presenter.ClipName, ClipFrame = rig.Presenter.FrameIndex, Facing = rig.Presenter.Facing,
+                State = rig.Presenter.State, Clip = rig.Presenter.ClipName, ClipFrame = rig.Presenter.FrameIndex, ClipFrames = rig.Presenter.ClipFrameCount, Facing = rig.Presenter.Facing,
                 Sprite = rig.BodyRenderer.sprite != null ? rig.BodyRenderer.sprite.name : "",
                 Grounded = rig.Cat.IsGrounded, Climbing = rig.Cat.IsClimbing, Jumped = rig.Cat.JumpedThisStep, Frozen = rig.Cat.IsFrozen,
                 Holding = rig.Death.IsHolding, GravityDown = down.y < 0f,

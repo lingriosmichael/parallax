@@ -345,16 +345,6 @@ namespace Parallax.Tests.EditMode
         }
 
         [Test]
-        public void AirShift_DrawsAnAirPoseClearOfTheSolidsAroundIt()
-        {
-            Assert.AreEqual(0f, CatClipSet.AirShift(0.9f, 0.25f, 2f, 1f, 0.3f), 1e-6f, "room enough");
-            Assert.AreEqual(0.12f, CatClipSet.AirShift(0.68f, 0f, 0.56f, 1f, 0.3f), 1e-5f, "under a low ceiling: drawn lower");
-            Assert.AreEqual(-0.2f, CatClipSet.AirShift(0.9f, 0.25f, 2f, 0.05f, 0.3f), 1e-5f, "hind legs over a step: drawn higher");
-            Assert.AreEqual(-0.3f, CatClipSet.AirShift(0.9f, 0.25f, 2f, -0.4f, 0.3f), 1e-5f, "at most the limit");
-            Assert.AreEqual(0.05f, CatClipSet.AirShift(0.68f, 0f, 0.56f, 0.05f, 0.3f), 1e-5f, "never down into the floor below");
-        }
-
-        [Test]
         public void BrakingDistance_SumsTheTicksLeft()
         {
             Func<float> saved = TickTime.SecondsPerTickSource;
@@ -362,9 +352,9 @@ namespace Parallax.Tests.EditMode
             try
             {
                 // 80 u/s² takes 1.6 u/s a tick: 4.4 -> 2.8 -> 1.2 -> 0, so (2.8 + 1.2) x 0.02 u are still to come.
-                Assert.AreEqual(0.08f, CatVisualPresenter.BrakingDistance(4.4f, 80f), 1e-5f);
-                Assert.AreEqual(0f, CatVisualPresenter.BrakingDistance(0f, 80f), 1e-6f);
-                Assert.AreEqual(0f, CatVisualPresenter.BrakingDistance(1.2f, 80f), 1e-6f);
+                Assert.AreEqual(0.08f, CatClip.BrakingDistance(4.4f, 80f), 1e-5f);
+                Assert.AreEqual(0f, CatClip.BrakingDistance(0f, 80f), 1e-6f);
+                Assert.AreEqual(0f, CatClip.BrakingDistance(1.2f, 80f), 1e-6f);
             }
             finally
             {

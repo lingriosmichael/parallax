@@ -20,11 +20,6 @@ namespace Parallax.Gameplay.Presentation
         [Tooltip("Each frame's silhouette centroid relative to the pivot, in world units (facing +1). Entering a looping " +
                  "clip starts on the frame closest to the pose on screen.")]
         [SerializeField] Vector2[] poseCentroids = new Vector2[0];
-        [Tooltip("Each frame's highest drawn pixel above the pivot, in world units (against gravity): an air pose that doesn't " +
-                 "fit under a low ceiling gives way to one that does.")]
-        [SerializeField] float[] poseTops = new float[0];
-        [Tooltip("Each frame's lowest drawn pixel below the pivot, in world units (along gravity; negative = above the pivot).")]
-        [SerializeField] float[] poseBottoms = new float[0];
         [Tooltip("Loops: the frames the clip may start on from another clip (empty = any), e.g. Run's push-off frames.")]
         [SerializeField] int[] entryFrames = new int[0];
         [Tooltip("Locomotion clips: the stance frames a stop settles on (paws where the Idle stance puts them).")]
@@ -32,14 +27,18 @@ namespace Parallax.Gameplay.Presentation
         [Tooltip("Locomotion clips: the frames a landing from the air enters on (empty = the entry frames), e.g. Run's fore paws " +
                  "reaching to touch down.")]
         [SerializeField] int[] landEntryFrames = new int[0];
+        [Tooltip("Walk / Run (ruled 2026-09-30): the frames on which this gait may hand over to the other one, where the paws of " +
+                 "both clips match (measured from the art), and the other gait's frame each one enters on (same order).")]
+        [SerializeField] int[] switchFrames = new int[0];
+        [SerializeField] int[] switchTargets = new int[0];
 
         public CatClip() { }
 
         public CatClip(string slot, CatAnimState state, Sprite[] frames, float fps, bool loop, float[] strideUnits, Vector2[] poseCentroids,
-            int[] entryFrames = null, int[] stanceFrames = null, int[] landEntryFrames = null, float[] poseTops = null, float[] poseBottoms = null)
+            int[] entryFrames = null, int[] stanceFrames = null, int[] landEntryFrames = null, int[] switchFrames = null, int[] switchTargets = null)
         {
-            this.poseBottoms = poseBottoms ?? new float[0];
-            this.poseTops = poseTops ?? new float[0];
+            this.switchFrames = switchFrames ?? new int[0];
+            this.switchTargets = switchTargets ?? new int[0];
             this.landEntryFrames = landEntryFrames ?? new int[0];
             this.entryFrames = entryFrames ?? new int[0];
             this.stanceFrames = stanceFrames ?? new int[0];
@@ -64,6 +63,8 @@ namespace Parallax.Gameplay.Presentation
         public int[] LandEntryFrames => landEntryFrames;
         /// <summary>A one-shot starts here: its first entry frame (0 without entry frames).</summary>
         public int FirstEntryFrame => FirstEntry;
+        /// <summary>How long the clip shows from frame `index` to its end (seconds at its fps).</summary>
+        public float DurationFrom(int index) => fps > 0f ? Mathf.Max(0, Count - Mathf.Clamp(index, 0, Count)) / fps : 0f;
         /// <summary>How long a one-shot shows from its first entry frame to its end.</summary>
         public float DurationFromEntry => fps > 0f ? Mathf.Max(0, Count - FirstEntry) / fps : 0f;
         public int Count => frames != null ? frames.Length : 0;
@@ -224,11 +225,33 @@ namespace Parallax.Gameplay.Presentation
             return d;
         }
 
-        /// <summary>Frame `index`'s highest drawn pixel above the pivot (units); 0 when unknown.</summary>
-        public float PoseTop(int index) => poseTops != null && index >= 0 && index < poseTops.Length ? poseTops[index] : 0f;
+        public bool HasSwitchFrames => switchFrames != null && switchFrames.Length > 0;
+        public bool IsSwitchFrame(int index) => switchFrames != null && Array.IndexOf(switchFrames, index) >= 0;
 
-        /// <summary>Frame `index`'s lowest drawn pixel below the pivot (units); 0 when unknown.</summary>
-        public float PoseBottom(int index) => poseBottoms != null && index >= 0 && index < poseBottoms.Length ? poseBottoms[index] : 0f;
+        /// <summary>The other gait's frame that switch frame `index` enters on (0 when `index` isn't a switch frame).</summary>
+        public int SwitchTarget(int index)
+        {
+            int k = switchFrames != null ? Array.IndexOf(switchFrames, index) : -1;
+            return k >= 0 && switchTargets != null && k < switchTargets.Length ? switchTargets[k] : 0;
+        }
+
+        /// <summary>How far the silhouette's centroid moves when frame `index` is mirrored about the pivot (units): twice its
+        /// distance from the pivot across the facing.</summary>
+        public float MirrorShift(int index) => 2f * Mathf.Abs(PoseCentroid(index).x);
+
+        /// <summary>The frame a turn flips on (ruled 2026-09-30): the one whose mirror moves the silhouette least, counting the
+        /// step to it from frame `shown` (for a loop; a one-shot, or a clip without pose data, keeps `shown`).</summary>
+        public int FlipFrame(int shown)
+        {
+            if (!loop || poseCentroids == null || poseCentroids.Length != Count || shown < 0 || shown >= Count) return shown;
+            int best = shown; float bestCost = MirrorShift(shown);
+            for (int i = 0; i < Count; i++)
+            {
+                float cost = (poseCentroids[i] - poseCentroids[shown]).magnitude + MirrorShift(i);
+                if (cost < bestCost - 1e-6f) { bestCost = cost; best = i; }
+            }
+            return best;
+        }
 
         public Vector2 PoseCentroid(int index) =>
             poseCentroids != null && index >= 0 && index < poseCentroids.Length ? poseCentroids[index] : Vector2.zero;
@@ -265,56 +288,21 @@ namespace Parallax.Gameplay.Presentation
             }
         }
 
-        /// <summary>Item 2: under a low ceiling (`headroom` units above the pivot, against gravity), an air pose that would
-        /// draw into it gives way to the Apex stretch, the flattest air pose, when that one fits (a jump into a low slab).
-        /// Returns the clip to show; `clip` itself when it fits or nothing fits better.</summary>
-        public CatClip FittingAir(CatClip clip, float progress, float headroom, float footroom = float.PositiveInfinity, float shift = 0f)
+        /// <summary>The `index`-th clip declared for `state` (item 5: the fidgets, in the cycle's order), or null.</summary>
+        public CatClip ForState(CatAnimState state, int index)
         {
-            if (clip == null || float.IsInfinity(headroom)) return clip;
-            int frame = clip.FrameForProgress(progress);
-            // Round 2: a pose the shift can clear (drawn lower, up to `shift`, without its underside entering the floor) stays.
-            float over = clip.PoseTop(frame) - headroom, room = Mathf.Min(shift, footroom - clip.PoseBottom(frame));
-            if (over <= Mathf.Max(0f, room)) return clip;
-            CatClip apex = ForState(CatAnimState.Apex);
-            return apex != null && apex != clip && apex.PoseTop(apex.FrameForProgress(progress)) < clip.PoseTop(frame) ? apex : clip;
+            if (clips == null) return null;
+            foreach (CatClip clip in clips)
+                if (clip != null && clip.State == state && clip.Count > 0 && index-- == 0) return clip;
+            return null;
         }
 
-        /// <summary>Round 2: the next visual lift (units along gravity; negative = against it) from the one shown, `shown`,
-        /// toward `target`: more clearance (a deeper TakeOff anchor, a lower ceiling, a higher step) applies at once, less
-        /// eases back by at most `step`; then it's kept from drawing the pose into a solid: at most `below` (the room under the
-        /// pose), at least -`above` (the room over it).</summary>
-        public static float EaseLift(float shown, float target, float step, float below, float above)
+        /// <summary>Each clip declared for `state`, in order: its length from its first entry frame (seconds).</summary>
+        public float[] Durations(CatAnimState state)
         {
-            float lift = (target > 0f && target >= shown) || (target < 0f && target <= shown) ? target : Mathf.MoveTowards(shown, target, step);
-            if (lift > 0f && !float.IsInfinity(below)) lift = Mathf.Min(lift, Mathf.Max(0f, below));
-            if (lift < 0f && !float.IsInfinity(above)) lift = Mathf.Max(lift, -Mathf.Max(0f, above));
-            return lift;
-        }
-
-        /// <summary>Item 2: draws Visual `lift` units along gravity from its rest position (TakeOff's paws kept on the ground
-        /// the cat jumped from; an air pose kept clear of the solids around it; negative = against gravity), or back at rest. Visual only; writes the
-        /// transform only when the lift changes it. Returns whether Visual is now lifted.</summary>
-        public static bool ApplyLift(Transform visual, Vector3 rest, Vector2 down, float lift, bool lifted)
-        {
-            if (Mathf.Abs(lift) < 1e-5f)
-            {
-                if (lifted) visual.localPosition = rest;
-                return false;
-            }
-            Vector3 local = visual.parent != null ? visual.parent.InverseTransformVector(down * lift) : (Vector3)(down * lift);
-            visual.localPosition = rest + new Vector3(local.x, local.y, 0f);
-            return true;
-        }
-
-        /// <summary>Item 2: how far to draw an air pose along gravity (positive: lower, negative: higher) so it clears the
-        /// solids around it: a pose reaching `top` above the paws under `headroom` is drawn lower; one hanging `bottom` below
-        /// them over `footroom` (a step beside a cat jumping up: Rise's hind legs hang 0.25 u below the paws) is drawn higher.
-        /// At most `limit` either way, and never so far that the other side then overlaps.</summary>
-        public static float AirShift(float top, float bottom, float headroom, float footroom, float limit)
-        {
-            if (top > headroom) return Mathf.Min(top - headroom, limit, Mathf.Max(0f, footroom - bottom));
-            if (bottom > footroom) return -Mathf.Min(bottom - footroom, limit, Mathf.Max(0f, headroom - top));
-            return 0f;
+            var list = new System.Collections.Generic.List<float>();
+            if (clips != null) foreach (CatClip clip in clips) if (clip != null && clip.State == state && clip.Count > 0) list.Add(clip.DurationFromEntry);
+            return list.ToArray();
         }
 
         public CatClip ForSlot(string slot)
@@ -322,31 +310,6 @@ namespace Parallax.Gameplay.Presentation
             if (clips == null) return null;
             foreach (CatClip clip in clips) if (clip != null && clip.Slot == slot) return clip;
             return null;
-        }
-    }
-
-    /// <summary>Round 2: under a low ceiling an air pose that no shift can clear gives way to the flatter Apex. The swap holds
-    /// at least `minFrames` frames and until the pose fits without any shift, so no clip flashes for a single frame.</summary>
-    public sealed class CatAirFit
-    {
-        CatAnimState swapState;
-        CatClip swapClip;
-        int swapFrames;
-
-        public CatClip Choose(CatClipSet clips, CatAnimState state, float progress, float headroom, float footroom, float shift, int minFrames)
-        {
-            CatClip wanted = clips.ForState(state);
-            if (progress < 0f || wanted == null) { swapClip = null; return wanted; }
-            if (swapClip != null && swapState == state)
-            {
-                swapFrames++;
-                bool fits = wanted.PoseTop(wanted.FrameForProgress(progress)) <= headroom;
-                if (swapFrames < minFrames || !fits) return swapClip;
-            }
-            swapClip = null;
-            CatClip fit = clips.FittingAir(wanted, progress, headroom, footroom, shift);
-            if (fit != wanted) { swapClip = fit; swapState = state; swapFrames = 1; }
-            return fit;
         }
     }
 }

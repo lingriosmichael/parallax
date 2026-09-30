@@ -28,6 +28,9 @@ namespace Parallax.Gameplay.Rooms
         [SerializeField] int delayTicks;
         Rigidbody2D body; BoxCollider2D box; ContactFilter2D filter; readonly Collider2D[] results = new Collider2D[8]; Vector2 start;
 
+        // PAX-V07 §4: a Solid mover (push wall, crusher, lift, drop-and-return, falling ceiling) crushes; a Hazard one spikes.
+        protected override CatDeathKind DeclaredDeathKind => kind == MovingTrapKind.Solid ? CatDeathKind.Crushed : CatDeathKind.Spiked;
+
         public SurfaceMotion Motion => surfaceMotion;
         protected override int DelayTicks => delayTicks;
         // PAX-093 (D-095): this room tick's move, pose(t) - pose(t-1); zero on a tick it didn't move. Valid only on

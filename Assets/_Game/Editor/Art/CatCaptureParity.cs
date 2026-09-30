@@ -91,14 +91,34 @@ namespace Parallax.Editor.Art
                 RunExit = config != null ? config.RunExitSpeed : float.PositiveInfinity,
                 AirThreshold = config != null ? config.RiseExit : float.PositiveInfinity,
                 AirGraceDrop = config != null ? config.AirGraceDrop : 0f,
+                ClimbStill = config != null ? config.ClimbStillSpeed : 0f,
+                LeapMin = config != null ? config.LeapSpeedMin(rig.Gravity.Strength) : float.PositiveInfinity,
+                LeapMax = config != null ? config.LeapSpeedMax(rig.Gravity.Strength) : float.PositiveInfinity,
+                MinStateFrames = config != null ? config.MinStateFrames : 1,
             };
             SerializedProperty clips = so.FindProperty("clips.clips");
             for (int i = 0; clips != null && i < clips.arraySize; i++)
             {
                 SerializedProperty c = clips.GetArrayElementAtIndex(i);
-                float fps = c.FindPropertyRelative("fps").floatValue;
-                if (c.FindPropertyRelative("slot").stringValue == "Turn" && fps > 0f) speeds.TurnSeconds = c.FindPropertyRelative("frames").arraySize / fps;
+                if (c.FindPropertyRelative("slot").stringValue != "Walk") continue;
+                // The longest stretch of Walk between two switch frames (cyclic), in frames at the run threshold.
+                SerializedProperty strides = c.FindPropertyRelative("strideUnits"), switches = c.FindPropertyRelative("switchFrames");
+                var at = new List<int>();
+                for (int k = 0; k < switches.arraySize; k++) at.Add(switches.GetArrayElementAtIndex(k).intValue);
+                at.Sort();
+                float longest = 0f;
+                int n = strides.arraySize;
+                for (int k = 0; k < at.Count && n > 0; k++)
+                {
+                    int f = at[k], to = at[(k + 1) % at.Count], steps = 0;
+                    float d = 0f;
+                    do { d += strides.GetArrayElementAtIndex(f).floatValue; f = (f + 1) % n; } while (f != to && ++steps < n);
+                    longest = Mathf.Max(longest, d);
+                }
+                if (speeds.RunEnter > 0f && !float.IsInfinity(speeds.RunEnter)) speeds.SwitchWaitFrames = Mathf.CeilToInt(longest / speeds.RunEnter * CatCapture.FrameRate);
             }
+            // Turn holds its flip frame for turnHoldTime (ruled 2026-09-30); the Turn clip isn't played.
+            if (config != null) speeds.TurnSeconds = config.TurnHoldTime;
             return speeds;
         }
 

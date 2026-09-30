@@ -69,32 +69,20 @@ namespace Parallax.Gameplay.Presentation
         [Tooltip("PAX-V07: a grounded cat whose paws are further than this (units) below the top of the collider it stands on (its rounded collider rolling off a ledge's corner) is shown off the ground (set by the setup menu).")]
         [SerializeField, Min(0f)] float groundSinkTolerance = 0.01f;
 
-        [Tooltip("PAX-V07: the room test for air poses: rays along and against gravity from the paws, spread this far (units) either side of them (set by the setup menu).")]
-        [SerializeField, Min(0f)] float roomHalfWidth = 0.6f;
-
-        [Tooltip("PAX-V07: how far from the paws (units) the room test looks: the tallest air pose's height (set by the setup menu).")]
-        [SerializeField, Min(0f)] float roomReach = 1.4f;
-
-        [Tooltip("PAX-V07: an air pose that still overlaps a solid next to it is drawn up to this far (units) clear of it, along or against gravity (set by the setup menu).")]
-        [SerializeField, Min(0f)] float airPoseShift = 0.3f;
-
-        [Tooltip("PAX-V07: a landing still moving at walking speed plays a quick Land this long (seconds) before Walk (set by the setup menu).")]
-        [SerializeField, Min(0f)] float movingLandDuration = 0.067f;
-
-        [Tooltip("PAX-V07: the quick Land's frame rate (set by the setup menu).")]
-        [SerializeField, Min(0f)] float movingLandFps = 30f;
-
-        [Tooltip("PAX-V07: a hard landing still moving shows HardLand's impact this long (seconds) before the gait (set by the setup menu).")]
-        [SerializeField, Min(0f)] float movingImpactDuration = 0.05f;
-
         [Tooltip("PAX-V07: how far (u/s) the body's speed must lead the drawn speed to count as the player's doing: a release on landing, a move pressed during Land (set by the setup menu).")]
         [SerializeField, Min(0f)] float speedLeadTolerance = 0.5f;
 
-        [Tooltip("PAX-V07: how fast (u/s) a visual lift (the TakeOff anchor, an air pose kept clear of a ceiling or step) eases back (set by the setup menu).")]
-        [SerializeField, Min(0f)] float liftRecoverSpeed = 4.8f;
+        [Tooltip("PAX-V07 (ruled 2026-09-30): a ground reversal holds the turn's flip frame this long (seconds) before the facing flips: one display frame (set by the setup menu).")]
+        [SerializeField, Min(0f)] float turnHoldTime = 1f / 60f;
 
-        [Tooltip("PAX-V07: while TakeOff plays, its paws stay on the ground the cat jumped from, up to this far below the rising body (units); 0 draws TakeOff on the body (set by the setup menu).")]
-        [SerializeField, Min(0f)] float takeOffAnchor = 0f;
+        [Tooltip("PAX-V07 item 5: seconds of idling before the next fidget of the cycle (look around -> ear twitch -> sit down; set by the setup menu).")]
+        [SerializeField, Min(0f)] float fidgetDelay = 3f;
+
+        [Tooltip("PAX-V07 item 3: on the vine, a speed along it (u/s) at or below this is still: Hang (set by the setup menu).")]
+        [SerializeField, Min(0f)] float climbStillSpeed = 0.02f;
+
+        [Tooltip("PAX-V07 item 3: climbing ends with a leap when the body leaves against gravity within this fraction of the way from the jump speed toward the climb speed, either side of the jump speed (set by the setup menu).")]
+        [SerializeField, Range(0f, 1f)] float leapSpeedFraction = 0.5f;
 
         [Tooltip("Unlit outline colour for Reality A.")]
         [SerializeField] Color outlineColorA = new Color(1f, 0.75f, 0.3f, 1f);
@@ -123,16 +111,16 @@ namespace Parallax.Gameplay.Presentation
         public int MinStateFrames => minStateFrames;
         public float HardLandDistance => hardLandDistance;
         public float AirGraceDrop => airGraceDrop;
-        public float TakeOffAnchor => takeOffAnchor;
         public float GroundSinkTolerance => groundSinkTolerance;
-        public float RoomHalfWidth => roomHalfWidth;
-        public float RoomReach => roomReach;
-        public float AirPoseShift => airPoseShift;
-        public float MovingLandDuration => movingLandDuration;
-        public float MovingLandFps => movingLandFps;
-        public float MovingImpactDuration => movingImpactDuration;
         public float SpeedLeadTolerance => speedLeadTolerance;
-        public float LiftRecoverSpeed => liftRecoverSpeed;
+        public float TurnHoldTime => turnHoldTime;
+        public float FidgetDelay => fidgetDelay;
+        public float ClimbStillSpeed => climbStillSpeed;
+        /// <summary>Item 3: the band of launch speeds against gravity (u/s) that make the end of a climb a leap: the jump speed
+        /// less / plus leapSpeedFraction of its difference from the climb speed (a release keeps at most the climb speed; a
+        /// geyser launch is faster). Infinite without a motor config (no leap is recognized).</summary>
+        public float LeapSpeedMin(float gravityStrength) => motorConfig != null ? JumpSpeed(gravityStrength) - leapSpeedFraction * (JumpSpeed(gravityStrength) - motorConfig.ClimbSpeed) : float.PositiveInfinity;
+        public float LeapSpeedMax(float gravityStrength) => motorConfig != null ? JumpSpeed(gravityStrength) + leapSpeedFraction * (JumpSpeed(gravityStrength) - motorConfig.ClimbSpeed) : float.PositiveInfinity;
         /// <summary>The motor's jump speed, u/s, at `gravityStrength` (0 without a motor config): the air clips' frames run
         /// over the velocity range of a normal jump.</summary>
         public float JumpSpeed(float gravityStrength) => motorConfig != null ? Parallax.Core.JumpMath.SpeedForHeight(motorConfig.JumpHeight, gravityStrength) : 0f;

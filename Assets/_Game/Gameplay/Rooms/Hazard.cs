@@ -6,8 +6,12 @@ using UnityEngine;
 namespace Parallax.Gameplay.Rooms
 {
     [RequireComponent(typeof(BoxCollider2D))]
-    public sealed class Hazard : MonoBehaviour
+    public sealed class Hazard : MonoBehaviour, IDeathKindSource
     {
+        [Tooltip("PAX-V07 §4: the death this hazard causes, set by the builder that adds it (spikes: Spiked; a pit floor: Pit).")]
+        [SerializeField] CatDeathKind deathKind;
+        public CatDeathKind DeathKind => deathKind;
+
         [SerializeField] ObserverSet observers;
         [SerializeField] RoomDeath roomDeath;
         [SerializeField] RoomManager rooms;

@@ -71,6 +71,7 @@ namespace Parallax.Gameplay.Rooms
         }
 
         protected override int DelayTicks => delayTicks;
+        protected override CatDeathKind DeclaredDeathKind => CatDeathKind.Zapped;   // PAX-V07 §4
 
         protected override void OnLiveRoomStep()
         {

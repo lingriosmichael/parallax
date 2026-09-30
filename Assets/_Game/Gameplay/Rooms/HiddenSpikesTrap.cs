@@ -22,6 +22,7 @@ namespace Parallax.Gameplay.Rooms
             filter = new ContactFilter2D { useLayerMask = true, layerMask = Reality.PhysicsMask, useTriggers = false }; countdown = new TrapCountdown(revealDelayTicks); hazard.SetArmed(false); visual.enabled = false;
         }
         protected override int DelayTicks => revealDelayTicks;
+        protected override CatDeathKind DeclaredDeathKind => CatDeathKind.Spiked;   // PAX-V07 §4
         protected override void OnLiveRoomStep() { if (!enabled) return; if (StepTiming(trigger != null && IsLocalHumanOverlapping(trigger, observers, filter, results, out _))) { hazard.SetArmed(true); visual.enabled = true; } }
         protected override void OnReset() { countdown.Reset(); hazard.SetArmed(false); visual.enabled = false; }
         protected override void OnTimingRearmed() { hazard.SetArmed(false); visual.enabled = false; }
