@@ -299,3 +299,54 @@ frame rates two ticks can fall in one frame (R16).
 | R14 | 60 fps against 50 Hz | The harness emulates the prefab's `Rigidbody2D` interpolation: for each 60 fps frame it places the cat root at the interpolated pose, runs `Present(1/60)`, renders, then restores the body's pose before the next tick. | That's what the presenter sees on a phone. |
 | R15 | Commits | One commit per gauntlet item, **not pushed** (the brief overrides the standing push-every-commit rule for this run). `Band2DevTests.cs` is never committed. | The developer's brief. |
 | R16 | One-tick signals | The state machine doesn't rely on seeing `JumpedThisStep` in a render frame. A takeoff is also recognized as grounded on the last frame and rising against gravity above `airThreshold` on this one. | At 60 fps a tick is always followed by a frame, but at 30 fps two ticks can share one. |
+
+## 12. Resumed run (2026-09-30, a normal /pax-ticket run after the gauntlet)
+
+### State at the start
+- There was no stash: item 3 was still uncommitted in the working tree. It compiled once the main Editor imported the new
+  files from items 1–2; they had never been imported, which is likely why the developer's Cat Visual run didn't take.
+- `Cat_Player.prefab` and `CatA_VisualConfig.asset` were unchanged since A08. The setup menu must still be run in the main
+  project (see the handover).
+
+### Developer rulings (2026-09-30)
+- **Landing:** ticket §3. Any movement input cancels the landing animation on the same frame. The quick Land and the
+  moving HardLand impact are gone.
+- **Art defects baked into clips are out of scope.** They aren't hidden in code; they're listed in
+  `Docs/Art/NEEDED_ASSETS.md`.
+- **The three pops:**
+  - Walk→Run switches at the matching foot position.
+  - The turn flips on the most symmetrical frame, or holds one frame.
+  - A landing enters the landing clip at the frame matching the fall's last pose.
+- **Tests:** the harness checks become ordinary tests. One critic pass at the end, then no more rounds.
+
+### Decisions made in this run
+| # | Decision | Why |
+|---|---|---|
+| D1 | Removed every drawing offset: the TakeOff anchor, the air-pose clearance shift and ease, the Rise→Apex swap under low ceilings, the climb bridges (TakeOff/Rise frames at a grab or leap) and the lift at a vine's foot. Visual never leaves its rest pose. | Each one hid an art defect (pose size against the collider, missing in-betweens). |
+| D2 | Walk↔Run switch frames, from the legs' overlap at the shared pivot: Walk 3/4/9/10 → Run 5, Run 3/5/6 → Walk 3/10/10. Walk waits for a switch frame, at most one stride. A stop or hard brake doesn't wait. | The ruling. The pairs are the only ones above 0.43 overlap. |
+| D3 | The turn: `CatA_Turn` isn't played. Turn shows the frame of the gait on screen whose mirror moves the silhouette least (counting the step to it) for one frame (`turnHoldTime` 1/60 s); the next frame shows it mirrored. | The Turn drawings aren't symmetric (mirror overlap 0.29–0.44). Walk 9 mirrors with a 1.9 px shift, Run 1–7 under 1 px, Idle about 1.5 px. |
+| D4 | Land and HardLand enter on their frame whose centroid is closest to the pose on screen, and last from there to the clip's end. HardLand's entry frames are 1–3: frame 0 is a tall pre-impact stand that pops up stiffly (final critic). | The ruling. Land 2 is 6 px from Fall 2, against 15 px for Land 0. |
+| D5 | During a landing, "input" is the body pulling ahead of the drawn cat, or a reversal. At touchdown, it is moving on without braking. | §3 with §11 R5: a release brakes at the motor's deceleration; a held stick doesn't. |
+| D6 | The check tests (`CatAnimationCheckTests`): climbing frames are reported, not failed, in the paws check; plants end at a facing flip; Walk above run speed may wait one stride for a switch frame; the flicker rule counts drawings, not state names, and a Respawn ended by input is exempt (§3). | Each rule was measuring a ruled behaviour as a defect. |
+| D7 | Flip is an air state, lasts its clip (4 frames at 12 fps), outranks Climb, and flips the facing, so the cat keeps facing the same way on screen. A respawn or reset forgets the gravity sign, so it never rolls. | The final critic: the facing reversed on every flip. |
+| D8 | Fidgets: `fidgetDelay` 3 s. "Input" is the body moving faster than walkExit, or a jump. The fidget clips play in the clip table's order. | §11 R5; the developer's cycle. |
+| D9 | Death kinds: `SoloRoomBuilder.HazardKind` returns Pit for the hazard a Pit opening names, and Spiked otherwise. `BuildHazardCore` takes the kind (default Spiked). The hidden-spikes builder sets its Hazard to Spiked. | §7 Q6. |
+| D10 | `CatPresentationSignals` is on Visual (added by the setup menu). It looks up RoomDeath, RoomManager and the cat's ObserverContext in its own scene once, and latches `CatRespawn.Respawned`. The capture rig calls its `OnEnable`, since EditMode runs none. | §11 R1. |
+| D11 | A run reversal keeps the gallop into the Turn: the body brakes at the motor's acceleration, not its deceleration. Only a real stop hands Run to Walk. Hang shows its own drawing. A loop that covers several frames per display frame (the climb at full speed) steps through every k-th frame. | Final critic, code items. |
+| D12 | `CatAnimStateMachine` is 540 lines. | It keeps the §2 priority table in one pure Core class. The presenter is under 400. |
+| D13 | Not strictly red-first: the state-machine landing rework came before its rewritten tests; the three pop data tests were written with the fix; the Door row was written with the Respawn row, and the door check passed on its first run. The Flip, fidget, death-kind, clip-table, hold and check tests were red first. | Recorded as it happened. |
+
+### Found and not fixed (outside V07's files)
+- **Draw order:** the pit's debris, the crusher and the storm cloud's glow draw over the dying cat.
+- **Flip rotation:** the body's rotation passes through about 90° for 3–4 frames on a gravity flip (motor or
+  interpolation).
+- **Climb seams:** the motor grabs the vine late and climbs past its ends. The state follows the motor.
+
+### Results
+- **Full EditMode suite, batch, clone: 1835 total, 1833 passed, 2 failed** (the baseline was 1517).
+  - The 2 failures are `SavedSceneSyncTests` (L001 and Sandbox_TrapLab). Their saved hazards don't carry the new
+    `deathKind` yet (§11 R11). They pass after **Rebuild All Levels** and the Trap Lab setup.
+- **Final critic pass (four areas, one pass): all rated poor.**
+  - Code items fixed once: the facing on a gravity flip, the Walk flash in a run reversal, Hang's frozen frame, the
+    climb's strobe at full speed, HardLand's stiff entry, and the harness's flip timing.
+  - Art items are listed in `Docs/Art/NEEDED_ASSETS.md`. The offline follow-up is PAX-A14.

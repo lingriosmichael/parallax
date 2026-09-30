@@ -113,6 +113,11 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 
 - Before claiming the project compiles: `refresh_unity` (with compilation), then `validate_script` on changed files, then `read_console`. Quote the relevant console lines.
 - After any change to `Parallax.Core` or `Parallax.Gameplay`: run EditMode tests via `run_tests` / `get_test_job`. Report the **pass count** and the **names** of any failures. The baseline is the total reported by the previous committed ticket; a lower total is a regression, not a rounding error. Report it.
+- **Which tests, when (standing rule):**
+  - During a ticket, run only the test fixtures the change touches.
+  - The full batch suite runs once, at the end, before the stop for review.
+  - The slow level fixtures (`Band2RouteResultsTests`, `Band2LevelTests`, `ValidateRoutesTests`) run only in that final
+    run, unless the ticket changes layouts, routes, the validator or trap timing; then they also run during the work.
 - Clear the console before an acceptance run so the output you report belongs to that run.
 - **Known console noise.** Exclude these from "zero new warnings", but still quote anything else:
   - `MCP-FOR-UNITY: [WebSocket] Unexpected receive error: WebSocket is not initialised`

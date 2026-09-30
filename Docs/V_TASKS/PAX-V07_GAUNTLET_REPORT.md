@@ -5,16 +5,18 @@ updated after every item, so it's current even if the run stopped early.
 
 ## Status
 
+The gauntlet stopped during item 3. A normal /pax-ticket run finished items 3–7 afterwards; see `PAX-V07.md` §12.
+
 | Item | Status | Rounds | Commit |
 |---|---|---|---|
 | 0 · Capture harness | **BLOCKED** (usable; the death-hold visibility defect was named in two rounds) | 2 | item 0 commit |
 | 1 · Ground | **BLOCKED** (+ art needs listed; the switch pops and turn strobe were named in two rounds) | 2 | item 1 commit |
 | 2 · Air | **BLOCKED** (+ art needs listed; the turning-jump facing flip, the running hard landing and the geyser cut were named in two rounds) | 2 | item 2 commit |
-| 3 · Climb | **STOPPED** mid-build, round 1 (developer's call); partial code left uncommitted | 0 | – |
-| 4 · Gravity | not started | – | – |
-| 5 · Idle fidgets | not started | – | – |
-| 6 · Deaths | not started | – | – |
-| 7 · Door | not started | – | – |
+| 3 · Climb | Finished in the resumed run (ticket §12) | – | resumed-run commit |
+| 4 · Gravity | Finished in the resumed run (ticket §12) | – | resumed-run commit |
+| 5 · Idle fidgets | Finished in the resumed run (ticket §12) | – | resumed-run commit |
+| 6 · Deaths | Finished in the resumed run (ticket §12) | – | resumed-run commit |
+| 7 · Door | Finished in the resumed run (ticket §12) | – | resumed-run commit |
 
 ## Phase 1
 
