@@ -269,3 +269,33 @@ The parity test in §6 checks this.
   gravities.
 
 **Device:** feel is unverified until Phase H.
+
+## 11. Rulings (overnight, decided by Claude Code, 2026-09-30)
+
+The overnight gauntlet run had no developer to ask. Each open point was decided by taking the option that changes the
+least (never `CatMotor2D`, colliders, routes or trap timing). All of these are open to the developer's review.
+
+**Phase 1 trace (Lite).** Files touched are the §8 list, plus the capture harness the gauntlet brief asked for (R8).
+Allowed-list check: `ClimbInputTests.cs` calls the old `Step` overload and is not in §8 (R4); `CatVisualSetup.cs` is
+already 436 lines (R12). Risks: the presenter runs in `LateUpdate`, which EditMode never calls (R9); the presenter reads
+an interpolated transform at 60 fps while the motor ticks at 50 Hz (R14); `JumpedThisStep` lasts one tick, so at low
+frame rates two ticks can fall in one frame (R16).
+
+| # | Question | Ruling | Why |
+|---|---|---|---|
+| R1 | Q1: how does the presenter reach `RoomDeath`, `RoomManager` and the `ObserverContext`? | `CatPresentationSignals` looks them up **in the cat's own scene** (`gameObject.scene` roots, `GetComponentInChildren<T>(true)`), lazily on first use, and caches them per instance (re-resolving a destroyed reference). `CatRespawn` and `GravityReceiver` come from the motor's GameObject. No static state, no singleton, no new scene wiring. | The alternative, a serialized reference set by the setup menu, rewrites `_LevelTemplate`, all 20 `Level_NNN` scenes (Rebuild All Levels) and Trap Lab. `ObserverContext` has no link to `RoomDeath` and isn't in §8. A per-scene lookup changes only the prefab. |
+| R2 | Q2: does level complete pause time? | No. `LevelCompleteScreen.OnLevelCompleted` freezes the cat (`CatMotor2D.Freeze`) and never calls `RunningState`. Door plays on scaled `deltaTime`. | Read from the code. If a later ticket pauses at completion, Door must then use unscaled time. |
+| R3 | Q3: are the signals per observer? | Yes. Death shows only while `RoomDeath.HoldObserver.Cat` is this cat's motor. Door shows only for the cat of `RoomManager.SoloReality`'s observer. Respawn and Flip read this cat's own `CatRespawn` and `GravityReceiver`. Echo and B cats never enter a hold (`RoomDeath.Kill` holds only `LocalHuman` in the solo reality). `Level_Solo01` gets the prefab change only, and no UI. | Read from `RoomDeath.Kill`. |
+| R4 | Q4: which tests pin the old behaviour? | `CatAnimStateMachineTests` (16), `ClimbPoseTests` (8) and `ClimbInputTests` (it calls the old `Step`; not in §8). The old `Step` overloads keep the **pre-V07 behaviour exactly** (a legacy path), so `ClimbInputTests` and the existing `CatAnimStateMachineTests` cases stay unchanged. The new table runs only through `Step(in CatAnimInput)`. `ClimbPoseTests` is rewritten with at least 8 cases. | It changes the fewest tests, and none outside §8. |
+| R5 | Q5: can the presenter read the control sample? | No. `IObserverDriver` exposes no sample, and `LocalHumanDriver` drains the router, so reading it would change files outside §8. **"Any input"** is read from the motor: any motion of the cat (surface or gravity-axis speed above `walkExit`, or a jump or leaving the ground). A push into a wall that doesn't move the cat doesn't cancel the sit. The sit ends on the frame the input first moves the cat. | The ticket's own definition allows "any motion of the cat". |
+| R6 | Q6 | As the developer ruled (§7 Q6): builders set each `Hazard`'s kind. | Already decided. |
+| R7 | Climb loop length | **25 frames** (A08 slot table, developer 2026-09-30), not the 5 in the gauntlet brief. It's checked at the slowest and at full climb speed. | A08's ruling is newer and names the imported sheet. |
+| R8 | Capture harness (gauntlet item 0) | New Editor code under `Assets/_Game/Editor/Art/` (a batch `-executeMethod` entry) and an offline contact-sheet script under `Tools/Art/`. Its output goes outside `Assets/`: per-frame images in a scratch folder, and the final sheets in `Docs/V_TASKS/PAX-V07_gauntlet/`. It builds its own rig from the same parts as `RouteHarness` and doesn't edit `RouteReplay.cs`. | The brief asks for it; §8 doesn't list it. Nothing in it ships. |
+| R9 | EditMode has no `LateUpdate` | `CatVisualPresenter.Present(float dt)` is public. `LateUpdate` keeps the visibility check and calls it; the parity test and the harness call it directly. | It's the only way to step the presenter in a test. |
+| R10 | Setup outputs | `PARALLAX/Setup/Cat Visual` runs on the batch clone, for the harness and tests. Its outputs (`Cat_Player.prefab`, `CatA_VisualConfig.asset`, `CatA_DeathClips.asset`) are **not** copied into the main project. The developer runs the menu once in the morning and commits them. | CLAUDE.md: setup menus and prefab wiring are the developer's steps. Until then, the tests that read the assets fail in the main Editor. |
+| R11 | Hazard kinds in saved scenes | Builders set the kind when a level is rebuilt. Until the developer runs **Rebuild All Levels** and the Trap Lab setup, saved hazards report Default, which plays the frightened pose. | Scenes aren't edited overnight. |
+| R12 | `CatVisualSetup.cs` size | Stays one file (it's the one §8 lists), with the clip list as a data table. It's allowed over 400 lines because it's a table plus the existing wiring. | It keeps to §8. |
+| R13 | Parity test rig | Built in code by the test, the same way as the existing EditMode rigs, with the real `Cat_Player.prefab`. | It's the existing pattern. |
+| R14 | 60 fps against 50 Hz | The harness emulates the prefab's `Rigidbody2D` interpolation: for each 60 fps frame it places the cat root at the interpolated pose, runs `Present(1/60)`, renders, then restores the body's pose before the next tick. | That's what the presenter sees on a phone. |
+| R15 | Commits | One commit per gauntlet item, **not pushed** (the brief overrides the standing push-every-commit rule for this run). `Band2DevTests.cs` is never committed. | The developer's brief. |
+| R16 | One-tick signals | The state machine doesn't rely on seeing `JumpedThisStep` in a render frame. A takeoff is also recognized as grounded on the last frame and rising against gravity above `airThreshold` on this one. | At 60 fps a tick is always followed by a frame, but at 30 fps two ticks can share one. |

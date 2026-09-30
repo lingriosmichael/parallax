@@ -107,6 +107,15 @@ namespace Parallax.Gameplay.Presentation
         static readonly int OutlineColorId = Shader.PropertyToID("_OutlineColor");
         static readonly int OutlineWidthId = Shader.PropertyToID("_OutlineWidth");
 
+        /// <summary>PAX-V07 (§11 R9): what the presenter shows, read by the capture harness and tests. Read-only.</summary>
+        public CatAnimState State => stateMachine != null ? stateMachine.State : CatAnimState.Idle;
+        /// <summary>The clip whose frame is on screen, by name (Climb shows "Walk" or "Idle" until its sheet is wired).</summary>
+        public string ClipName { get; private set; } = "";
+        /// <summary>The index of the frame on screen within <see cref="ClipName"/>.</summary>
+        public int FrameIndex { get; private set; }
+        /// <summary>+1 facing the cat's local right, -1 facing its left (the sign of Visual's localScale.x).</summary>
+        public int Facing => transform.localScale.x >= 0f ? 1 : -1;
+
         void LateUpdate()
         {
             if (!bodyRenderer.isVisible)
@@ -115,6 +124,15 @@ namespace Parallax.Gameplay.Presentation
                 smoothedVelocity = Vector2.zero;
                 return;
             }
+            Present(Time.deltaTime);
+        }
+
+        /// <summary>PAX-V07 (§11 R9): one presentation frame of `dt` seconds. LateUpdate calls it while the body renderer is
+        /// visible; the capture harness and EditMode tests call it directly. Reads the motor and its transform, writes only
+        /// Visual. Does nothing before Awake has run (or after Awake disabled the presenter).</summary>
+        public void Present(float dt)
+        {
+            if (stateMachine == null) return;
 
             Vector2 currentPosition = motionRoot.position;
             if (!initialized)
@@ -123,7 +141,6 @@ namespace Parallax.Gameplay.Presentation
                 initialized = true;
             }
 
-            float dt = Time.deltaTime;
             Vector2 delta = currentPosition - lastWorldPosition;
             lastWorldPosition = currentPosition;
 
@@ -256,7 +273,7 @@ namespace Parallax.Gameplay.Presentation
                     config.MinFps,
                     config.MaxFps)
                 : clip.Fps;
-            int index = FrameIndex(clipClock, fps, clip.Frames.Length, clip.Loop);
+            int index = ClipFrameIndex(clipClock, fps, clip.Frames.Length, clip.Loop);
             Sprite sprite = clip.Frames[index];
             if (sprite == null)
             {
@@ -266,6 +283,8 @@ namespace Parallax.Gameplay.Presentation
 
             bodyRenderer.sprite = sprite;
             if (outlineRenderer != null) outlineRenderer.sprite = sprite;
+            ClipName = ClipLabel(state);
+            FrameIndex = index;
             clipClock += dt > 0f ? dt : 0f;
         }
 
@@ -282,6 +301,19 @@ namespace Parallax.Gameplay.Presentation
             }
         }
 
+        // The clip ClipFor(state) returns, by name.
+        static string ClipLabel(CatAnimState state)
+        {
+            switch (state)
+            {
+                case CatAnimState.Walk: return "Walk";
+                case CatAnimState.Rise: return "Rise";
+                case CatAnimState.Fall: return "Fall";
+                case CatAnimState.Land: return "Land";
+                default: return "Idle";
+            }
+        }
+
         void WarnMissingClipOnce(CatAnimState state)
         {
             int bit = 1 << (int)state;
@@ -293,7 +325,7 @@ namespace Parallax.Gameplay.Presentation
                 this);
         }
 
-        static int FrameIndex(float elapsed, float fps, int frameCount, bool loop)
+        static int ClipFrameIndex(float elapsed, float fps, int frameCount, bool loop)
         {
             if (frameCount <= 1 || fps <= 0f) return 0;
 
