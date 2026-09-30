@@ -21,10 +21,21 @@ seamless vine. One ticket at a time.
 - D-089/D-092: climbing.
 
 **Developer rulings (2026-09-29):**
-- Keep the collider. PPU is set so the painted torso spans 1.0 u.
+- Keep the collider. ~~PPU is set so the painted torso spans 1.0 u.~~ **Superseded 2026-09-30 (option B):** PPU is set so
+  the standing body height (paws to back line, Idle frame 0) is 0.56 u, PPU ≈ 196. The torso rule made the body 0.86 u
+  tall, well above the 0.56 collider, and the cat cut into the tightest solution-route ceilings (0.70 u, L017/L012).
 - Per-killer deaths are in, through a tag → clip table (PAX-V07).
 - Menu idle, fed up, dizzy and launched are parked.
-- ASTC compression.
+- ASTC compression. **6×6** (developer, 2026-09-30).
+- **Stage 0 rulings (2026-09-30):**
+  - The shared pivot sits 0.06 u behind the torso centre, so the collider stays inside the painted nose and tail.
+  - Per-sheet cell sizes with the same world pivot, recorded per sheet in the manifest. The base cell is **192 px** (the
+    source is scaled by 0.75, and PPU with it), since the cat is drawn at 90–119 px on screen.
+  - A loop is flagged only when its closing step is below its lowest ordinary step.
+  - The Climb preview comes in two versions, the 5-frame loop and the full 25-frame loop, each at the slowest and full
+    climb speed; the developer picks.
+  - The Stage 0 tool is split into modules under ~400 lines each: `cat_register.py` (the pipeline), `cat_frames.py`
+    (the frame work), `cat_review.py` (the review sheet and previews).
 - Loops are subsampled only evenly.
 
 ## 1. Why
@@ -41,7 +52,7 @@ manifest; the counts below are the targets. **Loops** use a frame count that div
 
 | Slot file (`Assets/_Game/Art/Cats/CatA/`) | Source clip | Frames | Loop | Used by (PAX-V07 state) |
 |---|---|---:|---|---|
-| `CatA_Idle.png` (replaces) | 01_idle, 20-frame loop f22–41 of the 56-frame re-cut | 10 | yes | Idle |
+| `CatA_Idle.png` (replaces) | 01_idle, 30-frame window f19–48 of the 56-frame re-cut at stride 3 (re-picked 2026-09-30: the only window that passes the loop check) | 10 | yes | Idle |
 | `CatA_IdleLook.png` | 17_look_around | 8 | no | idle fidget 1 |
 | `CatA_IdleEar.png` | 12b_fidget_ear | 8 | no | idle fidget 2 |
 | `CatA_IdleSit.png` | 12c_fidget_sit, ending seated | 8 | no (last frame held) | idle fidget 3 (last; held until input) |
@@ -62,7 +73,7 @@ manifest; the counts below are the targets. **Loops** use a frame count that div
 | `CatA_Death_Arrow.png` | 13e_death_arrow v2 | 6 | no | Death (tag Arrow) |
 | `CatA_Respawn.png` | 15_respawn v2 | 4 | no | Respawn (≤ 0.2 s) |
 | `CatA_Flip.png` | 21_gravity_twist, the tucked roll only (f7–12) | 4 | no | Flip |
-| `CatA_Climb.png` | 08_vine_climb_up, 25-frame loop f24–48 of the 56-frame re-cut, vine keyed out | 5 | yes | Climb (reversed for down) |
+| `CatA_Climb.png` | 08_vine_climb_up, 25-frame loop f24–48 of the 56-frame re-cut, vine keyed out | 25 (developer, 2026-09-30) | yes | Climb (reversed for down) |
 | `CatA_Hang.png` | 10_vine_hang, vine keyed out | 1 | – | Hang |
 | `CatA_Leap.png` | 11_vine_leap f10–20, vine keyed out | 3 | no | Leap |
 | `CatA_Door.png` | 16b_celebrate (A08's CELEBRATING pose) | 8 | no | Door (level complete) |
@@ -82,28 +93,32 @@ A new script, `Tools/Art/cat_register.py`, reads a slot list (`Art_Source/AutoSp
 one import-ready sheet per slot. It also writes a manifest and a review sheet to `Art_Source/AutoSprite/Cats/A/_import/`.
 The script is deterministic (the same input gives the same bytes) and has offline tests.
 
-### 3.1 Scale: one PPU for the whole set
+### 3.1 Scale: one PPU for the whole set (option B, ruled 2026-09-30)
 
-- **The torso** is the horizontal extent from the front of the chest to the back of the rump, excluding the head, neck
-  and tail. It is measured once, in pixels, on `CatA_Idle` frame 0 after registration.
-- The value (`torsoPx`) and a marked-up image showing it go into the manifest and into `A02_asset_manifest.md`.
-- **PPU = `torsoPx` / 1.0** (the collider length). The importer reads PPU from the manifest; it no longer derives it
-  from Walk frame 0's opaque width.
-- **Every clip is scaled to the same torso length.** A per-slot scale correction is allowed and recorded (the pit clip is
-  drawn smaller).
+- **The standing body height** is the vertical extent from the paw row to the back line on `CatA_Idle` frame 0 (source
+  f19 of the idle re-cut since the loop was re-picked on 2026-09-30), excluding the head, neck and tail. The back line is the median top of the silhouette over the
+  torso's middle columns (from the rump plus 15% to the chest minus 35% of the torso length, so neither the tail base nor
+  the rising neck counts). The rump and chest columns are measured once by hand and recorded.
+- The value (`bodyHeightPx`) and a marked-up image showing it go into the manifest and into `A02_asset_manifest.md`.
+- **PPU = `bodyHeightPx` / 0.56** (the collider height). The importer reads PPU from the manifest; it no longer derives
+  it from Walk frame 0's opaque width.
+- **Every clip is drawn at the same scale.** A per-slot scale correction is allowed and recorded (the pit clip is drawn
+  smaller).
+- **Accepted (developer, 2026-09-30):** at this scale the ear tips touch the 0.70 u ceilings in L017 and L012.
 
 ### 3.2 Frames and loops
 
 - **One-shot clips:** frames are picked from the sidecar's `suggest` range.
 - **Loops:** the target count must divide the source loop length evenly, and frames are taken at a fixed stride:
-  - idle 20 → 10 (stride 2);
+  - idle 30 → 10 (stride 3; the window f19–48, re-picked 2026-09-30);
   - run 10 → 10;
   - walk 22 → 11;
-  - climb 25 → 5.
+  - climb 25 → 25 (every frame; developer, 2026-09-30).
 - If no divisor is within ±50% of the target, the script keeps the whole loop or re-picks the loop window from the
   56-frame re-cut. It never subsamples unevenly.
-- A loop's last frame must flow into its first. The script reports the closing IoU (`loopCloseIoU`); below 0.85 it
-  flags the slot for review.
+- A loop's last frame must flow into its first. The script reports the closing IoU (`loopCloseIoU`) and the range of the
+  loop's ordinary steps; it flags the slot only when the closing step is below the lowest ordinary step (ruled
+  2026-09-30; the earlier fixed 0.85 flagged fast loops whose every step is below it).
 
 ### 3.3 Placement: one pivot for the whole set
 
@@ -113,7 +128,13 @@ The script is deterministic (the same input gives the same bytes) and has offlin
   - These clips have no paw line, so the pivot is still the shared one. The body lands on the collider.
   - The climb clips are drawn vertical. They are registered so the body centre is on the collider centre, with no
     rotation (V07 removes the interim 90° climb pose).
-- **Cleanup:** anything outside the 256 px cell is clipped and reported. Remaining background fringe is trimmed, meaning
+- **Cells (ruled 2026-09-30):** frames are placed at source scale in a large working canvas, scaled to the **192 px
+  base** (0.75), and cropped to each sheet's cell: the base cell around the shared pivot, grown on any side the clip
+  reaches past it, in whole ASTC 6×6 blocks. Each sheet records its cell and where the pivot falls in it; the world
+  pivot is the same for every sheet. Nothing is clipped; a clip that the source itself cut at its cell edge is reported.
+- **The pivot (ruled 2026-09-30):** the paw row, 0.06 u behind Idle's median torso centre. Ground clips put their torso
+  centre 0.06 u ahead of the pivot, so the collider sits inside the painted nose and tail.
+- **Cleanup:** Remaining background fringe is trimmed, meaning
   alpha below 10% is zeroed and grey or white halos are removed.
 - **Vine clips** (Climb, Hang, Leap): the baked-in vine is keyed out by hue (olive green on dark brown), and each key is
   checked on the review sheet.
@@ -124,7 +145,7 @@ For each slot, `CatA_<Slot>_n.png` is made with `trap_process.normal_map`, using
 
 ### 3.5 Manifest and review sheet
 
-- **A02 first.** Stage 0 adds the Cat A slot table (slot file, source clip and frames, loop, PPU, pivot, `torsoPx`) to
+- **A02 first.** Stage 0 adds the Cat A slot table (slot file, source clip and frames, loop, PPU, pivot, `bodyHeightPx`) to
   `Docs/Art/A02_asset_manifest.md`. Stage 1 doesn't import until those slots are there.
 - **Manifest** (`_import/manifest.json`). For each slot:
   - source clip, sheet and frame indices;
@@ -133,18 +154,20 @@ For each slot, `CatA_<Slot>_n.png` is made with `trap_process.normal_map`, using
   - output paths.
 
   For the set:
-  - `torsoPx`, PPU, pivot.
+  - `bodyHeightPx`, PPU, pivot.
 - **Review sheet** (`_import/review.png`), at phone scale, every slot's frames in a row, each with the 1.0 × 0.56
   collider outline and the paw line drawn in. Beside them:
   - the cat (Idle, Run, Rise, HardLand) under the **tightest ceiling gap** on a solution route in L001–L020;
   - the cat in the **tightest closed-crusher gap** in L001–L020;
-  - the same set **with gravity flipped** (root rotated 180°, paws on the ceiling).
+  - the same set **with gravity flipped** (root rotated 180°, paws on the ceiling);
+  - **the collider outline over Idle, Walk and Run, facing both ways.** The collider's front and back edges must not
+    stick out past the painted nose or the tail tip (checked on every frame of the three clips, and reported).
 
   Both gap values come from layout data, answered by `pax-room-auditor` in Phase 2 and recorded in the manifest. The
   developer judges ear and tail clipping on this sheet.
-- **Climb preview** (`_import/review_climb_slowest.gif`, with `review_climb_typical.gif` beside it for comparison): the
-  5-frame Climb loop played at the frame rate PAX-V07 will use at the **slowest climb speed**, so the developer can judge
-  its choppiness.
+- **Climb previews** (`_import/review_climb5_slowest.gif`, `review_climb5_full.gif`, `review_climb25_slowest.gif`,
+  `review_climb25_full.gif`): the 5-frame and the full 25-frame Climb loop, each at the frame rate PAX-V07 will use at
+  the **slowest** and at full climb speed, so the developer can pick.
   - That rate is `FlipbookMath.FpsForSpeed(slowestClimbSpeed, referenceSpeed, climbFps, minFps, maxFps)`, including
     the `minFps` clamp.
   - `slowestClimbSpeed` is read from the climb configuration (lowest non-zero climb speed), and the other values from
@@ -163,9 +186,10 @@ For each slot, `CatA_<Slot>_n.png` is made with `trap_process.normal_map`, using
 ### 4.2 `CatSpriteImporter`
 
 - The sheet list is read from a slot table (paths are data, so Cat B reuses the code).
-- PPU and pivot come from the Stage 0 manifest. Every sheet must match them, or the import stops with an error.
+- PPU comes from the Stage 0 manifest, and each sheet's cell size and pivot from its manifest entry (per-sheet cells,
+  one world pivot). Every sheet must match its entry, or the import stops with an error.
 - The `_NormalMap` secondary texture is added, as in `TrapKitImport`.
-- **Compression:** ASTC, block size chosen in Phase 2 against the budget. Mipmaps off, bilinear filtering.
+- **Compression:** ASTC 6×6 (ruled 2026-09-30). Mipmaps off, bilinear filtering.
 - The menu items stay: `PARALLAX/Art/Import Cat A Sheets`, plus the selected-sheet import.
 
 ### 4.3 Setup menu
@@ -181,13 +205,14 @@ wired by PAX-V07.
 
 1. May `cat_register.py` import `trap_process.normal_map` directly, or should it be moved to a shared module? PAX-A13 is
    committed, so the file is stable; the decision is to use the trap method either way.
-2. Is the torso definition in §3.1 right (chest to rump, no head, no tail)?
+2. ~~Is the torso definition in §3.1 right?~~ Replaced by option B (2026-09-30): the standing body height, §3.1.
 3. Does any EditMode test pin the current PPU or pivot values, which will change? `CatColliderConfigTests` and the
    visual-seat tests are the candidates.
 
 ## 6. Phase 2: measured and reported
 
-- `torsoPx`, PPU and pivot. Each slot's closing IoU and clipped pixels.
+- `bodyHeightPx`, PPU and pivot (the torso length at that PPU is reported too). Each slot's closing IoU and clipped
+  pixels. The collider's margin to the nose and the tail tip on Idle, Walk and Run, both facings.
 - **Memory** of the whole Cat A set under ASTC, **with and without normal maps**, per block size tried. The block size
   used is the one that fits PAX-V03's budget.
 - **The cat's on-screen size:** pixels per unit = screen height ÷ (2 × orthographic size), using the level camera in
@@ -199,7 +224,7 @@ wired by PAX-V07.
 
 ## 7. Allowed files
 
-- `Tools/Art/cat_register.py` (new).
+- `Tools/Art/cat_register.py`, `cat_frames.py`, `cat_review.py` (new; split per the developer, 2026-09-30).
 - `Tools/Art/tests/test_cat_register.py` (new, offline).
 - `Art_Source/AutoSprite/Cats/A/_import/**`.
 - `Docs/Art/A02_asset_manifest.md` (new section: Cat A animation slots).
@@ -225,8 +250,10 @@ wired by PAX-V07.
 
 ## 9. Stop conditions
 
-- **The torso doesn't fit.** At the torso PPU, the torso plus legs don't fit the collider's height (0.56) within the
-  paw-line offset.
+- **The body doesn't fit (rewritten 2026-09-30 for option B):** at the chosen PPU, the standing body height on Idle
+  frame 0 is not 0.56 u within one pixel.
+- **The collider sticks out:** on any frame of Idle, Walk or Run, facing either way, the collider's front or back edge
+  sticks out past the painted nose or the tail tip. Stop and show the developer.
 - **Memory is over budget.** Even the coarsest acceptable ASTC block exceeds PAX-V03's budget.
 - **A loop can't be subsampled evenly** without a visible hitch.
 - **A vine key-out** eats the cat's fur.

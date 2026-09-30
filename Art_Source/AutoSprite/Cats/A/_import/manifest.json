@@ -1,0 +1,1534 @@
+{
+  "ticket": "PAX-A08 Stage 0",
+  "scaleRule": "option B: standing body height on Idle frame 0 = 0.56 u",
+  "baseCell": 192,
+  "sourceCell": 256,
+  "cellScale": 0.75,
+  "idleFrame0Source": 19,
+  "bodyHeightPxSource": 107,
+  "ppuSource": 191.0714,
+  "ppu": 143.3036,
+  "pawRowSource": 240,
+  "backRowSource": 133,
+  "backColumnsSource": [
+    104,
+    170
+  ],
+  "torsoPxSource": [
+    84,
+    217
+  ],
+  "torsoLengthUnits": 0.701,
+  "pivotRule": "the shared world pivot: the paw row, 0.06 u behind Idle's median torso centre; each sheet records where it falls in its own cell",
+  "colliderUnits": [
+    1.0,
+    0.56
+  ],
+  "facingCheck": {
+    "worstMarginUnits": 0.012,
+    "passes": true,
+    "frames": [
+      {
+        "slot": "Idle",
+        "frame": 0,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.174
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.174
+        }
+      },
+      {
+        "slot": "Idle",
+        "frame": 1,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.188
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.188
+        }
+      },
+      {
+        "slot": "Idle",
+        "frame": 2,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.195
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.195
+        }
+      },
+      {
+        "slot": "Idle",
+        "frame": 3,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.202
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.202
+        }
+      },
+      {
+        "slot": "Idle",
+        "frame": 4,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.209
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.209
+        }
+      },
+      {
+        "slot": "Idle",
+        "frame": 5,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.209
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.209
+        }
+      },
+      {
+        "slot": "Idle",
+        "frame": 6,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.209
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.209
+        }
+      },
+      {
+        "slot": "Idle",
+        "frame": 7,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.209
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.209
+        }
+      },
+      {
+        "slot": "Idle",
+        "frame": 8,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.202
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.202
+        }
+      },
+      {
+        "slot": "Idle",
+        "frame": 9,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.195
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.195
+        }
+      },
+      {
+        "slot": "Walk",
+        "frame": 0,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.098
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.098
+        }
+      },
+      {
+        "slot": "Walk",
+        "frame": 1,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.091
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.091
+        }
+      },
+      {
+        "slot": "Walk",
+        "frame": 2,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.154
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.154
+        }
+      },
+      {
+        "slot": "Walk",
+        "frame": 3,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.202
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.202
+        }
+      },
+      {
+        "slot": "Walk",
+        "frame": 4,
+        "right": {
+          "nose": 0.054,
+          "tail": 0.181
+        },
+        "left": {
+          "nose": 0.054,
+          "tail": 0.181
+        }
+      },
+      {
+        "slot": "Walk",
+        "frame": 5,
+        "right": {
+          "nose": 0.054,
+          "tail": 0.126
+        },
+        "left": {
+          "nose": 0.054,
+          "tail": 0.126
+        }
+      },
+      {
+        "slot": "Walk",
+        "frame": 6,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.091
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.091
+        }
+      },
+      {
+        "slot": "Walk",
+        "frame": 7,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.084
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.084
+        }
+      },
+      {
+        "slot": "Walk",
+        "frame": 8,
+        "right": {
+          "nose": 0.054,
+          "tail": 0.147
+        },
+        "left": {
+          "nose": 0.054,
+          "tail": 0.147
+        }
+      },
+      {
+        "slot": "Walk",
+        "frame": 9,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.188
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.188
+        }
+      },
+      {
+        "slot": "Walk",
+        "frame": 10,
+        "right": {
+          "nose": 0.054,
+          "tail": 0.154
+        },
+        "left": {
+          "nose": 0.054,
+          "tail": 0.154
+        }
+      },
+      {
+        "slot": "Run",
+        "frame": 0,
+        "right": {
+          "nose": 0.026,
+          "tail": 0.209
+        },
+        "left": {
+          "nose": 0.026,
+          "tail": 0.209
+        }
+      },
+      {
+        "slot": "Run",
+        "frame": 1,
+        "right": {
+          "nose": 0.04,
+          "tail": 0.195
+        },
+        "left": {
+          "nose": 0.04,
+          "tail": 0.195
+        }
+      },
+      {
+        "slot": "Run",
+        "frame": 2,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.202
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.202
+        }
+      },
+      {
+        "slot": "Run",
+        "frame": 3,
+        "right": {
+          "nose": 0.054,
+          "tail": 0.216
+        },
+        "left": {
+          "nose": 0.054,
+          "tail": 0.216
+        }
+      },
+      {
+        "slot": "Run",
+        "frame": 4,
+        "right": {
+          "nose": 0.082,
+          "tail": 0.223
+        },
+        "left": {
+          "nose": 0.082,
+          "tail": 0.223
+        }
+      },
+      {
+        "slot": "Run",
+        "frame": 5,
+        "right": {
+          "nose": 0.047,
+          "tail": 0.202
+        },
+        "left": {
+          "nose": 0.047,
+          "tail": 0.202
+        }
+      },
+      {
+        "slot": "Run",
+        "frame": 6,
+        "right": {
+          "nose": 0.033,
+          "tail": 0.195
+        },
+        "left": {
+          "nose": 0.033,
+          "tail": 0.195
+        }
+      },
+      {
+        "slot": "Run",
+        "frame": 7,
+        "right": {
+          "nose": 0.026,
+          "tail": 0.188
+        },
+        "left": {
+          "nose": 0.026,
+          "tail": 0.188
+        }
+      },
+      {
+        "slot": "Run",
+        "frame": 8,
+        "right": {
+          "nose": 0.012,
+          "tail": 0.174
+        },
+        "left": {
+          "nose": 0.012,
+          "tail": 0.174
+        }
+      },
+      {
+        "slot": "Run",
+        "frame": 9,
+        "right": {
+          "nose": 0.012,
+          "tail": 0.209
+        },
+        "left": {
+          "nose": 0.012,
+          "tail": 0.209
+        }
+      }
+    ]
+  },
+  "ceilingGap": {
+    "units": 0.7,
+    "where": "L017 UF_W under Door_Ledge; L012 F4_B under Stub_C (pax-room-auditor 2026-09-30)"
+  },
+  "crusherGaps": {
+    "vertical": {
+      "units": 0.2,
+      "where": "L018 Drop_3 over the Well floor"
+    },
+    "horizontal": {
+      "units": 0.7,
+      "where": "L020 Push_3 against Post_P"
+    },
+    "fallingBlocks": "every falling block closes to 0.00 (a kill)"
+  },
+  "climbPreview": {
+    "minFps": 2.0,
+    "maxFps": 18.0,
+    "referenceSpeed": 6.0,
+    "climbSpeed": 4.0,
+    "slowestClimbSpeed": "approaches 0 (analog stick, 0.35 dead zone): the minFps clamp",
+    "frames5": {
+      "climbFps": 4.2,
+      "fullSpeedFps": 2.8,
+      "slowestFps": 2.0,
+      "cycleSecondsFull": 1.786
+    },
+    "frames25": {
+      "climbFps": 21.0,
+      "fullSpeedFps": 14.0,
+      "slowestFps": 2.0,
+      "cycleSecondsFull": 1.786
+    }
+  },
+  "memoryASTC": {
+    "block": "6x6",
+    "colourMB": 2.76,
+    "normalsMB": 2.76,
+    "totalMB": 5.52,
+    "climbSheetWithNormalsMB": 1.0
+  },
+  "onScreen": {
+    "maxViewHeight": 16.0,
+    "screenHeight": 1080,
+    "levels": 20,
+    "pxPerUnitMin": 67.5,
+    "pxPerUnitMax": 88.9,
+    "baseCellPxOnScreenMin": 90.4,
+    "baseCellPxOnScreenMax": 119.1
+  },
+  "slots": [
+    {
+      "slot": "Idle",
+      "file": "CatA_Idle.png",
+      "sourceClip": "01_idle",
+      "sourceSheet": "recut_64f_256.png",
+      "sourceFrames": [
+        19,
+        22,
+        25,
+        28,
+        31,
+        34,
+        37,
+        40,
+        43,
+        46
+      ],
+      "frames": 10,
+      "role": "ground",
+      "loop": true,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1920,
+        192
+      ],
+      "astc6x6Bytes": 163840,
+      "loopStride": 3,
+      "loopSource": [
+        19,
+        48
+      ],
+      "loopCloseIoU": 0.958,
+      "loopStepIoU": [
+        0.953,
+        0.994
+      ],
+      "loopFlag": false,
+      "note": "loop re-picked 2026-09-30: f19-48 at stride 3 is the only window in the re-cut that passes the loop check (about 1.5 source breathing cycles)"
+    },
+    {
+      "slot": "IdleLook",
+      "file": "CatA_IdleLook.png",
+      "sourceClip": "17_look_around",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20
+      ],
+      "frames": 8,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        106.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.53865,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1584,
+        192
+      ],
+      "astc6x6Bytes": 135168
+    },
+    {
+      "slot": "IdleEar",
+      "file": "CatA_IdleEar.png",
+      "sourceClip": "12b_fidget_ear",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19
+      ],
+      "frames": 8,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1536,
+        192
+      ],
+      "astc6x6Bytes": 131072
+    },
+    {
+      "slot": "IdleSit",
+      "file": "CatA_IdleSit.png",
+      "sourceClip": "12c_fidget_sit",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        19,
+        24
+      ],
+      "frames": 8,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.52854,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1584,
+        192
+      ],
+      "astc6x6Bytes": 135168,
+      "note": "ends seated; V07 holds the last frame"
+    },
+    {
+      "slot": "Walk",
+      "file": "CatA_Walk.png",
+      "sourceClip": "03_walk",
+      "sourceSheet": "recut_64f_256.png",
+      "sourceFrames": [
+        25,
+        27,
+        29,
+        31,
+        33,
+        35,
+        37,
+        39,
+        41,
+        43,
+        45
+      ],
+      "frames": 11,
+      "role": "ground",
+      "loop": true,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        2112,
+        192
+      ],
+      "astc6x6Bytes": 180224,
+      "loopStride": 2,
+      "loopSource": [
+        25,
+        46
+      ],
+      "loopCloseIoU": 0.637,
+      "loopStepIoU": [
+        0.622,
+        0.786
+      ],
+      "loopFlag": false
+    },
+    {
+      "slot": "Run",
+      "file": "CatA_Run.png",
+      "sourceClip": "02_run",
+      "sourceSheet": "recut_64f_256.png",
+      "sourceFrames": [
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
+      ],
+      "frames": 10,
+      "role": "ground",
+      "loop": true,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        105.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.53359,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1980,
+        192
+      ],
+      "astc6x6Bytes": 168960,
+      "loopStride": 1,
+      "loopSource": [
+        45,
+        54
+      ],
+      "loopCloseIoU": 0.676,
+      "loopStepIoU": [
+        0.56,
+        0.715
+      ],
+      "loopFlag": false
+    },
+    {
+      "slot": "Turn",
+      "file": "CatA_Turn.png",
+      "sourceClip": "18_turn",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        12,
+        14,
+        16
+      ],
+      "frames": 3,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        576,
+        192
+      ],
+      "astc6x6Bytes": 49152
+    },
+    {
+      "slot": "TakeOff",
+      "file": "CatA_TakeOff.png",
+      "sourceClip": "04_jump_rise",
+      "sourceSheet": "raw_v2.png",
+      "sourceFrames": [
+        6,
+        9
+      ],
+      "frames": 2,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        384,
+        192
+      ],
+      "astc6x6Bytes": 32768,
+      "note": "crouch and push"
+    },
+    {
+      "slot": "Rise",
+      "file": "CatA_Rise.png",
+      "sourceClip": "04_jump_rise",
+      "sourceSheet": "raw_v2.png",
+      "sourceFrames": [
+        12,
+        15,
+        18
+      ],
+      "frames": 3,
+      "role": "air",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        204,
+        216
+      ],
+      "pivotPx": [
+        115.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.56692,
+        0.16493
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        612,
+        216
+      ],
+      "astc6x6Bytes": 58752
+    },
+    {
+      "slot": "Apex",
+      "file": "CatA_Apex.png",
+      "sourceClip": "05_jump_apex",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        13,
+        17
+      ],
+      "frames": 2,
+      "role": "air",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        106.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.53865,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        396,
+        192
+      ],
+      "astc6x6Bytes": 33792
+    },
+    {
+      "slot": "Fall",
+      "file": "CatA_Fall.png",
+      "sourceClip": "06_jump_fall",
+      "sourceSheet": "recut_64f_256.png",
+      "sourceFrames": [
+        4,
+        12,
+        20
+      ],
+      "frames": 3,
+      "role": "air",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        576,
+        192
+      ],
+      "astc6x6Bytes": 49152
+    },
+    {
+      "slot": "Land",
+      "file": "CatA_Land.png",
+      "sourceClip": "07_land",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        9,
+        12,
+        16
+      ],
+      "frames": 3,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        106.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.53865,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        594,
+        192
+      ],
+      "astc6x6Bytes": 50688,
+      "note": "crouch and recover"
+    },
+    {
+      "slot": "HardLand",
+      "file": "CatA_HardLand.png",
+      "sourceClip": "19_hard_land",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        7,
+        9,
+        11,
+        13
+      ],
+      "frames": 4,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.52854,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        792,
+        192
+      ],
+      "astc6x6Bytes": 67584
+    },
+    {
+      "slot": "Death",
+      "file": "CatA_Death.png",
+      "sourceClip": "20_death_generic",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        9,
+        10,
+        11,
+        12,
+        14,
+        16
+      ],
+      "frames": 6,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.52854,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1188,
+        192
+      ],
+      "astc6x6Bytes": 101376,
+      "note": "ends on the held FRIGHTENED pose"
+    },
+    {
+      "slot": "Death_Pit",
+      "file": "CatA_Death_Pit.png",
+      "sourceClip": "13f_death_pit",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12
+      ],
+      "frames": 6,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.2738,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.52854,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1188,
+        192
+      ],
+      "astc6x6Bytes": 101376,
+      "note": "drawn smaller: scaled so its standing body height matches Idle frame 0"
+    },
+    {
+      "slot": "Death_Spiked",
+      "file": "CatA_Death_Spiked.png",
+      "sourceClip": "13a_death_spiked",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        13,
+        14,
+        17,
+        19,
+        21,
+        24
+      ],
+      "frames": 6,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        204
+      ],
+      "pivotPx": [
+        104.652,
+        191.375
+      ],
+      "pivotNormalized": [
+        0.52854,
+        0.06189
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1188,
+        204
+      ],
+      "astc6x6Bytes": 107712
+    },
+    {
+      "slot": "Death_Crushed",
+      "file": "CatA_Death_Crushed.png",
+      "sourceClip": "13b_death_crushed",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        9,
+        11,
+        13,
+        15,
+        17,
+        19
+      ],
+      "frames": 6,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.52854,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1188,
+        192
+      ],
+      "astc6x6Bytes": 101376,
+      "note": "runs off both cell edges (clipped, reported)"
+    },
+    {
+      "slot": "Death_Zapped",
+      "file": "CatA_Death_Zapped.png",
+      "sourceClip": "13c_death_zapped",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        5,
+        7,
+        9,
+        11,
+        13,
+        15
+      ],
+      "frames": 6,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1152,
+        192
+      ],
+      "astc6x6Bytes": 98304
+    },
+    {
+      "slot": "Death_Arrow",
+      "file": "CatA_Death_Arrow.png",
+      "sourceClip": "13e_death_arrow",
+      "sourceSheet": "raw_v2.png",
+      "sourceFrames": [
+        9,
+        11,
+        12,
+        13,
+        15,
+        17
+      ],
+      "frames": 6,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        204,
+        198
+      ],
+      "pivotPx": [
+        104.652,
+        182.375
+      ],
+      "pivotNormalized": [
+        0.513,
+        0.07891
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1224,
+        198
+      ],
+      "astc6x6Bytes": 107712
+    },
+    {
+      "slot": "Respawn",
+      "file": "CatA_Respawn.png",
+      "sourceClip": "15_respawn",
+      "sourceSheet": "raw_v2.png",
+      "sourceFrames": [
+        4,
+        9,
+        14,
+        19
+      ],
+      "frames": 4,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        768,
+        192
+      ],
+      "astc6x6Bytes": 65536
+    },
+    {
+      "slot": "Flip",
+      "file": "CatA_Flip.png",
+      "sourceClip": "21_gravity_twist",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        7,
+        9,
+        10,
+        12
+      ],
+      "frames": 4,
+      "role": "air",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        204
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.11581
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        768,
+        204
+      ],
+      "astc6x6Bytes": 69632,
+      "note": "the tucked roll only; code rotates the root"
+    },
+    {
+      "slot": "Climb",
+      "file": "CatA_Climb.png",
+      "sourceClip": "08_vine_climb_up",
+      "sourceSheet": "recut_64f_256.png",
+      "sourceFrames": [
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48
+      ],
+      "frames": 25,
+      "role": "climb",
+      "loop": true,
+      "scale": 1.0,
+      "cell": [
+        192,
+        246
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.26677
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": true,
+      "wired": true,
+      "sheetSize": [
+        4800,
+        246
+      ],
+      "astc6x6Bytes": 524800,
+      "loopStride": 1,
+      "loopSource": [
+        24,
+        48
+      ],
+      "loopCloseIoU": 0.891,
+      "loopStepIoU": [
+        0.76,
+        0.911
+      ],
+      "loopFlag": false,
+      "note": "25-frame loop (developer, 2026-09-30); the 5-frame loop is kept only as a preview"
+    },
+    {
+      "slot": "Hang",
+      "file": "CatA_Hang.png",
+      "sourceClip": "10_vine_hang",
+      "sourceSheet": "recut_64f_256.png",
+      "sourceFrames": [
+        14
+      ],
+      "frames": 1,
+      "role": "climb",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        228
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.20888
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": true,
+      "wired": true,
+      "sheetSize": [
+        192,
+        228
+      ],
+      "astc6x6Bytes": 19456
+    },
+    {
+      "slot": "Leap",
+      "file": "CatA_Leap.png",
+      "sourceClip": "11_vine_leap",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        10,
+        15,
+        20
+      ],
+      "frames": 3,
+      "role": "air",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        106.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.53865,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": true,
+      "wired": true,
+      "sheetSize": [
+        594,
+        192
+      ],
+      "astc6x6Bytes": 50688
+    },
+    {
+      "slot": "Door",
+      "file": "CatA_Door.png",
+      "sourceClip": "16b_celebrate",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19
+      ],
+      "frames": 8,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        106.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.53865,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1584,
+        192
+      ],
+      "astc6x6Bytes": 135168,
+      "note": "level complete (celebrate)"
+    },
+    {
+      "slot": "DoorEnter",
+      "file": "CatA_DoorEnter.png",
+      "sourceClip": "14_door_enter",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        9,
+        11,
+        13,
+        15,
+        17,
+        19,
+        21,
+        23
+      ],
+      "frames": 8,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        228,
+        192
+      ],
+      "pivotPx": [
+        140.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.61689,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": false,
+      "sheetSize": [
+        1824,
+        192
+      ],
+      "astc6x6Bytes": 155648,
+      "note": "imported, not wired; walks out past the right edge (clipped, reported)"
+    }
+  ]
+}

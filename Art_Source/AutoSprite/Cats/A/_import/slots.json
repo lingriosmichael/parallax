@@ -1,0 +1,329 @@
+{
+  "ticket": "PAX-A08 \u00a72 (slots) and \u00a73 (Stage 0); frames picked 2026-09-30 from each sidecar's `suggest` range",
+  "cell": 256,
+  "roles": {
+    "ground": "the lowest paw across the clip on the shared paw row; the clip's median torso centre on the pivot x",
+    "air": "each frame's body centre (eroded silhouette centroid) where Walk's body centre sits",
+    "climb": "the clip's median body centre on the collider centre, no rotation"
+  },
+  "slots": [
+    {
+      "slot": "Idle",
+      "clip": "01_idle",
+      "loop": {
+        "start": 19,
+        "length": 30,
+        "target": 10
+      },
+      "role": "ground",
+      "note": "loop re-picked 2026-09-30: f19-48 at stride 3 is the only window in the re-cut that passes the loop check (about 1.5 source breathing cycles)"
+    },
+    {
+      "slot": "IdleLook",
+      "clip": "17_look_around",
+      "frames": [
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20
+      ],
+      "role": "ground"
+    },
+    {
+      "slot": "IdleEar",
+      "clip": "12b_fidget_ear",
+      "frames": [
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19
+      ],
+      "role": "ground"
+    },
+    {
+      "slot": "IdleSit",
+      "clip": "12c_fidget_sit",
+      "frames": [
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        19,
+        24
+      ],
+      "role": "ground",
+      "note": "ends seated; V07 holds the last frame"
+    },
+    {
+      "slot": "Walk",
+      "clip": "03_walk",
+      "loop": {
+        "start": 25,
+        "length": 22,
+        "target": 11
+      },
+      "role": "ground"
+    },
+    {
+      "slot": "Run",
+      "clip": "02_run",
+      "loop": {
+        "start": 45,
+        "length": 10,
+        "target": 10
+      },
+      "role": "ground"
+    },
+    {
+      "slot": "Turn",
+      "clip": "18_turn",
+      "frames": [
+        12,
+        14,
+        16
+      ],
+      "role": "ground"
+    },
+    {
+      "slot": "TakeOff",
+      "clip": "04_jump_rise",
+      "frames": [
+        6,
+        9
+      ],
+      "role": "ground",
+      "note": "crouch and push"
+    },
+    {
+      "slot": "Rise",
+      "clip": "04_jump_rise",
+      "frames": [
+        12,
+        15,
+        18
+      ],
+      "role": "air"
+    },
+    {
+      "slot": "Apex",
+      "clip": "05_jump_apex",
+      "frames": [
+        13,
+        17
+      ],
+      "role": "air"
+    },
+    {
+      "slot": "Fall",
+      "clip": "06_jump_fall",
+      "frames": [
+        4,
+        12,
+        20
+      ],
+      "role": "air"
+    },
+    {
+      "slot": "Land",
+      "clip": "07_land",
+      "frames": [
+        9,
+        12,
+        16
+      ],
+      "role": "ground",
+      "note": "crouch and recover"
+    },
+    {
+      "slot": "HardLand",
+      "clip": "19_hard_land",
+      "frames": [
+        7,
+        9,
+        11,
+        13
+      ],
+      "role": "ground"
+    },
+    {
+      "slot": "Death",
+      "clip": "20_death_generic",
+      "frames": [
+        9,
+        10,
+        11,
+        12,
+        14,
+        16
+      ],
+      "role": "ground",
+      "note": "ends on the held FRIGHTENED pose"
+    },
+    {
+      "slot": "Death_Pit",
+      "clip": "13f_death_pit",
+      "frames": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12
+      ],
+      "role": "ground",
+      "scaleFromFrame": 2,
+      "note": "drawn smaller: scaled so its standing body height matches Idle frame 0"
+    },
+    {
+      "slot": "Death_Spiked",
+      "clip": "13a_death_spiked",
+      "frames": [
+        13,
+        14,
+        17,
+        19,
+        21,
+        24
+      ],
+      "role": "ground"
+    },
+    {
+      "slot": "Death_Crushed",
+      "clip": "13b_death_crushed",
+      "frames": [
+        9,
+        11,
+        13,
+        15,
+        17,
+        19
+      ],
+      "role": "ground",
+      "note": "runs off both cell edges (clipped, reported)"
+    },
+    {
+      "slot": "Death_Zapped",
+      "clip": "13c_death_zapped",
+      "frames": [
+        5,
+        7,
+        9,
+        11,
+        13,
+        15
+      ],
+      "role": "ground"
+    },
+    {
+      "slot": "Death_Arrow",
+      "clip": "13e_death_arrow",
+      "frames": [
+        9,
+        11,
+        12,
+        13,
+        15,
+        17
+      ],
+      "role": "ground"
+    },
+    {
+      "slot": "Respawn",
+      "clip": "15_respawn",
+      "frames": [
+        4,
+        9,
+        14,
+        19
+      ],
+      "role": "ground"
+    },
+    {
+      "slot": "Flip",
+      "clip": "21_gravity_twist",
+      "frames": [
+        7,
+        9,
+        10,
+        12
+      ],
+      "role": "air",
+      "note": "the tucked roll only; code rotates the root"
+    },
+    {
+      "slot": "Climb",
+      "clip": "08_vine_climb_up",
+      "loop": {
+        "start": 24,
+        "length": 25,
+        "target": 25
+      },
+      "role": "climb",
+      "vine": true,
+      "note": "25-frame loop (developer, 2026-09-30); the 5-frame loop is kept only as a preview"
+    },
+    {
+      "slot": "Hang",
+      "clip": "10_vine_hang",
+      "frames": [
+        14
+      ],
+      "role": "climb",
+      "vine": true
+    },
+    {
+      "slot": "Leap",
+      "clip": "11_vine_leap",
+      "frames": [
+        10,
+        15,
+        20
+      ],
+      "role": "air",
+      "vine": true
+    },
+    {
+      "slot": "Door",
+      "clip": "16b_celebrate",
+      "frames": [
+        5,
+        7,
+        9,
+        11,
+        13,
+        15,
+        17,
+        19
+      ],
+      "role": "ground",
+      "note": "level complete (celebrate)"
+    },
+    {
+      "slot": "DoorEnter",
+      "clip": "14_door_enter",
+      "frames": [
+        9,
+        11,
+        13,
+        15,
+        17,
+        19,
+        21,
+        23
+      ],
+      "role": "ground",
+      "wired": false,
+      "note": "imported, not wired; walks out past the right edge (clipped, reported)"
+    }
+  ]
+}
