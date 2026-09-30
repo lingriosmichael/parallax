@@ -44,6 +44,8 @@ namespace Parallax.Gameplay.Rooms
             if (body == null || box == null || observers == null || Reality == null || (UsesOverlapSource && !IsPeriodic && trigger == null) || (kind == MovingTrapKind.Solid && crushDepth <= 0f && crushConfig == null))
             { Debug.LogError($"MovingTrap '{name}': missing required body, box, observers, reality, overlap trigger, or crush config.", this); enabled = false; return; }
             body.bodyType = RigidbodyType2D.Kinematic; start = body.position;
+            // PAX-A14: drawn between its tick poses, like the cat, so a floor moving at 50 Hz doesn't judder on a 60 Hz screen.
+            body.interpolation = RigidbodyInterpolation2D.Interpolate;
             filter = new ContactFilter2D { useLayerMask = true, layerMask = Reality.PhysicsMask, useTriggers = false };
         }
 

@@ -109,7 +109,7 @@ namespace Parallax.Tests.EditMode
         const string ManifestPath = "Art_Source/AutoSprite/Cats/A/_import/manifest.json";
         const string CatPlayerPath = "Assets/_Game/Gameplay/Player/Cat_Player.prefab";
 
-        [Serializable] sealed class Slot { public string slot; public int frames; public bool wired; }
+        [Serializable] sealed class Slot { public string slot; public int frames; public bool wired; public string bridgeFor; }
         [Serializable] sealed class Manifest { public float ppu; public Slot[] slots; }
 
         static Manifest Load() => JsonUtility.FromJson<Manifest>(File.ReadAllText(Path.Combine(Path.GetDirectoryName(Application.dataPath), ManifestPath)));
@@ -141,7 +141,7 @@ namespace Parallax.Tests.EditMode
         static float JumpPp(CatClip a, int i, CatClip b, int j) => (a.PoseCentroid(i) - b.PoseCentroid(j)).magnitude * PhonePxPerUnit;
 
         // Walk↔Run switch at the matching foot position: each gait hands over only on its switch frames, into the other gait's
-        // leg-matched frame. The body height still differs (art), so the jump is bounded, not removed.
+        // leg-matched frame. PAX-A14: with Run drawn at Walk's size (its torso length), every switch is under 4 phone px.
         [TestCase(CatAnimState.Walk, CatAnimState.Run)]
         [TestCase(CatAnimState.Run, CatAnimState.Walk)]
         public void GaitSwitch_HasFootMatchedFrames_IntoTheOtherGait(CatAnimState from, CatAnimState to)
@@ -156,7 +156,7 @@ namespace Parallax.Tests.EditMode
                 switches++;
                 int j = a.SwitchTarget(i);
                 Assert.That(j, Is.InRange(0, b.Count - 1), $"{from}[{i}] -> {to}[{j}]");
-                Assert.LessOrEqual(JumpPp(a, i, b, j), 9f, $"{from}[{i}] -> {to}[{j}] centroid jump (phone px)");
+                Assert.LessOrEqual(JumpPp(a, i, b, j), 4f, $"{from}[{i}] -> {to}[{j}] centroid jump (phone px)");
             }
             Assert.Less(switches, a.Count, "a switch frame set, not every frame");
         }
@@ -178,20 +178,41 @@ namespace Parallax.Tests.EditMode
             }
         }
 
-        // A landing enters on the frame matching the fall's last pose: Land 2 after a normal fall (6 phone px, against 15 for
-        // Land 0); after a long one, HardLand's impact crouch (1; its frame 0, a tall pre-impact stand, isn't an entry).
-        [TestCase(CatAnimState.Land, 2, 6.5f)]
-        [TestCase(CatAnimState.HardLand, 1, 19f)]
-        public void Landing_EntersOnTheFrameMatchingTheFall(CatAnimState landing, int expected, float limitPp)
+        // A landing enters on the frame matching the fall's last pose, among the landing's entry frames. PAX-A14: each landing
+        // starts on its contact frame (the crouch with its legs part extended), then compresses into the crouch: Land [contact,
+        // Land 0-2], HardLand [0, contact, 1-3]. One frame splits the 15-19 phone px compression: measured 8.7 then 6.7 (Land),
+        // 11.7-12.2 (from Fall 2 / Fall 0) then 7.9 (HardLand).
+        [TestCase(CatAnimState.Land, 0, 9f, 7f)]
+        [TestCase(CatAnimState.HardLand, 1, 12.5f, 8f)]
+        public void Landing_EntersOnTheContactFrame_ThenCompresses(CatAnimState landing, int contact, float intoPp, float onPp)
         {
             CatClipSet set = PrefabClips();
             CatClip fall = set.ForState(CatAnimState.Fall), land = set.ForState(landing);
             for (int i = 0; i < fall.Count; i++)
             {
                 int j = land.ClosestPose(fall.PoseCentroid(i), 1, 1);
-                Assert.AreEqual(expected, j, $"Fall[{i}] -> {landing}");
-                Assert.LessOrEqual(JumpPp(fall, i, land, j), limitPp, $"Fall[{i}] -> {landing}[{j}] (phone px)");
+                Assert.AreEqual(contact, j, $"Fall[{i}] -> {landing}");
+                Assert.LessOrEqual(JumpPp(fall, i, land, j), intoPp, $"Fall[{i}] -> {landing}[{j}] (phone px)");
             }
+            Assert.LessOrEqual(JumpPp(land, contact, land, contact + 1), onPp, $"{landing}[{contact}] -> [{contact + 1}] (phone px)");
+        }
+
+        // PAX-A14 target 3: the gravity flip's roll, 4 drawn cels and 4 turned in-betweens, steps under 4 phone px a frame.
+        [Test]
+        public void TheFlipRoll_StepsUnder4PhonePx_AFrame()
+        {
+            CatClip flip = PrefabClips().ForState(CatAnimState.Flip);
+            Assert.AreEqual(8, flip.Count, "Flip = 4 drawn cels + 4 in-betweens");
+            for (int i = 0; i + 1 < flip.Count; i++) Assert.LessOrEqual(JumpPp(flip, i, flip, i + 1), 4f, $"Flip[{i}] -> [{i + 1}] (phone px)");
+        }
+
+        // HardLand recovers through Land on Land's crouch (1), never its contact frame.
+        [Test]
+        public void HardLandsRecovery_EntersLandsCrouch_NotItsContactFrame()
+        {
+            CatClipSet set = PrefabClips();
+            CatClip hard = set.ForState(CatAnimState.HardLand), land = set.ForState(CatAnimState.Land);
+            Assert.AreEqual(1, land.ClosestPose(hard.PoseCentroid(hard.Count - 1), 1, 1));
         }
 
         [Test]
@@ -210,10 +231,12 @@ namespace Parallax.Tests.EditMode
                 SerializedProperty c = clips.GetArrayElementAtIndex(i);
                 found[c.FindPropertyRelative("slot").stringValue] = c.FindPropertyRelative("frames").arraySize;
             }
+            Slot[] bridges = Load().slots.Where(b => !string.IsNullOrEmpty(b.bridgeFor)).ToArray();
             foreach (Slot s in Wired())
             {
                 Assert.IsTrue(found.ContainsKey(s.slot), $"the prefab's clip table has no {s.slot}");
-                Assert.AreEqual(s.frames, found[s.slot], $"{s.slot} frame count");
+                int expected = s.frames + bridges.Where(b => b.bridgeFor == s.slot).Sum(b => b.frames);   // PAX-A14: its bridge frames too
+                Assert.AreEqual(expected, found[s.slot], $"{s.slot} frame count");
             }
         }
 

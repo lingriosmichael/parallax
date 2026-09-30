@@ -19,7 +19,7 @@ namespace Parallax.Tests.EditMode
         const string SheetFolder = "Assets/_Game/Art/Cats/CatA/";
         const string CatPlayerPath = "Assets/_Game/Gameplay/Player/Cat_Player.prefab";
 
-        [Serializable] sealed class Slot { public string slot; public string file; public int frames; public int[] cell; public float[] pivotNormalized; public int[] sheetSize; }
+        [Serializable] sealed class Slot { public string slot; public string file; public int frames; public int[] cell; public float[] pivotNormalized; public int[] sheetSize; public string bridgeFor; }
         [Serializable] sealed class Manifest { public float ppu; public Slot[] slots; }
 
         static Manifest Load()
@@ -123,10 +123,14 @@ namespace Parallax.Tests.EditMode
             }
         }
 
+        // PAX-A14: the 26 A08 slots, plus the 3 bridge sheets whose frames play inside another clip (LandContact,
+        // HardLandContact, FlipRoll).
         [Test]
-        public void TheManifest_HasAllTwentySixSlots()
+        public void TheManifest_HasAllTwentySixSlots_AndA14sThreeBridgeSheets()
         {
-            Assert.AreEqual(26, Load().slots.Length);
+            Slot[] slots = Load().slots;
+            Assert.AreEqual(26, slots.Count(s => string.IsNullOrEmpty(s.bridgeFor)));
+            CollectionAssert.AreEquivalent(new[] { "LandContact", "HardLandContact", "FlipRoll" }, slots.Where(s => !string.IsNullOrEmpty(s.bridgeFor)).Select(s => s.slot));
         }
 
         [Test]

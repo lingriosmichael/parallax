@@ -171,10 +171,10 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 198
+        width: 228
         height: 192
       alignment: 9
-      pivot: {x: 0.53359, y: 0.06055}
+      pivot: {x: 0.5511, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -191,12 +191,12 @@ TextureImporter:
       name: CatA_Run_01
       rect:
         serializedVersion: 2
-        x: 198
+        x: 228
         y: 0
-        width: 198
+        width: 228
         height: 192
       alignment: 9
-      pivot: {x: 0.53359, y: 0.06055}
+      pivot: {x: 0.5511, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -213,12 +213,12 @@ TextureImporter:
       name: CatA_Run_02
       rect:
         serializedVersion: 2
-        x: 396
+        x: 456
         y: 0
-        width: 198
+        width: 228
         height: 192
       alignment: 9
-      pivot: {x: 0.53359, y: 0.06055}
+      pivot: {x: 0.5511, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -235,12 +235,12 @@ TextureImporter:
       name: CatA_Run_03
       rect:
         serializedVersion: 2
-        x: 594
+        x: 684
         y: 0
-        width: 198
+        width: 228
         height: 192
       alignment: 9
-      pivot: {x: 0.53359, y: 0.06055}
+      pivot: {x: 0.5511, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -257,12 +257,12 @@ TextureImporter:
       name: CatA_Run_04
       rect:
         serializedVersion: 2
-        x: 792
+        x: 912
         y: 0
-        width: 198
+        width: 228
         height: 192
       alignment: 9
-      pivot: {x: 0.53359, y: 0.06055}
+      pivot: {x: 0.5511, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -279,12 +279,12 @@ TextureImporter:
       name: CatA_Run_05
       rect:
         serializedVersion: 2
-        x: 990
+        x: 1140
         y: 0
-        width: 198
+        width: 228
         height: 192
       alignment: 9
-      pivot: {x: 0.53359, y: 0.06055}
+      pivot: {x: 0.5511, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -301,12 +301,12 @@ TextureImporter:
       name: CatA_Run_06
       rect:
         serializedVersion: 2
-        x: 1188
+        x: 1368
         y: 0
-        width: 198
+        width: 228
         height: 192
       alignment: 9
-      pivot: {x: 0.53359, y: 0.06055}
+      pivot: {x: 0.5511, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -323,12 +323,12 @@ TextureImporter:
       name: CatA_Run_07
       rect:
         serializedVersion: 2
-        x: 1386
+        x: 1596
         y: 0
-        width: 198
+        width: 228
         height: 192
       alignment: 9
-      pivot: {x: 0.53359, y: 0.06055}
+      pivot: {x: 0.5511, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -345,12 +345,12 @@ TextureImporter:
       name: CatA_Run_08
       rect:
         serializedVersion: 2
-        x: 1584
+        x: 1824
         y: 0
-        width: 198
+        width: 228
         height: 192
       alignment: 9
-      pivot: {x: 0.53359, y: 0.06055}
+      pivot: {x: 0.5511, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -367,12 +367,12 @@ TextureImporter:
       name: CatA_Run_09
       rect:
         serializedVersion: 2
-        x: 1782
+        x: 2052
         y: 0
-        width: 198
+        width: 228
         height: 192
       alignment: 9
-      pivot: {x: 0.53359, y: 0.06055}
+      pivot: {x: 0.5511, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []

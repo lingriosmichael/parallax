@@ -27,6 +27,7 @@ namespace Parallax.Editor.Art
         public const float FootSlidePhonePx = 3f;       // a planted paw drifts at most this from plant to lift
         public const float PosePopPhonePx = 3f;         // centroid jump at a sprite change, beyond the root's motion
         public const float PoseBoxPhonePx = 6f;         // bounding-box edge jump (reported, not pass/fail)
+        public const float CarriedJitterPhonePx = 0.5f; // PAX-A14: a still cat on a moving floor: its and the floor's judder, and its move against the floor, per frame
         public const float RayMarginUnits = 0.5f;       // the surface search reaches this far past the column's lowest pixel
         public const int BodyErosionSpritePx = 5;       // item 3: a body centre is the drawn pixels' centroid after this erosion (A08's radius 7 at source scale)
         public const float ClimbBodyOffsetSpritePx = 6f; // item 3: on the vine, the body centre lies within this of the collider centre (the lift taken out)
@@ -173,6 +174,7 @@ namespace Parallax.Editor.Art
         public float AirThreshold = float.PositiveInfinity, AirGraceDrop;   // item 2
         public float ClimbStill, LeapMin = float.PositiveInfinity, LeapMax = float.PositiveInfinity; public int MinStateFrames = 1;   // item 3
         public int SwitchWaitFrames;   // the longest wait for a Walk→Run switch frame at the run threshold (ruled 2026-09-30)
+        public int RunSwitchWaitFrames;   // PAX-A14: the mirror, the longest wait for a Run→Walk switch frame at the run-exit threshold
         public const float DropTolerance = 0.005f;   // units: the drawn root's interpolation against the presenter's own reading
         public const int LagFrames = 2;   // interpolation shows the body up to one tick (1.2 frames) late: this many frames of lag are allowed
     }
@@ -190,6 +192,9 @@ namespace Parallax.Editor.Art
         public float CarrierOffsetPhonePx;       // item 2: this frame's move of the Visual's pivot beyond the root's (the TakeOff anchor)
         public float ClimbBodyOffsetSpritePx = -1f;   // item 3: on the vine (a Climb or Hang frame), the body centre's distance from the collider centre; -1 otherwise
         public float ClimbLiftUnits;             // item 3: how far the Visual is drawn off its rest pose on that frame (the lift at a vine's foot)
+        public bool Carried;                     // PAX-A14: a moving Carry floor carried the cat on the tick shown (CatMotor2D.CarrierVelocity)
+        public Vector2 CarrierVelocity;          // PAX-A14: that floor's velocity on the tick shown
+        public Vector2 FloorDrawn;               // PAX-A14: where the floor under the cat is drawn on this frame (its interpolated body pose)
         public string Image;
     }
 
@@ -212,6 +217,8 @@ namespace Parallax.Editor.Art
         public int ApexOutsideFrames;
         // Item 3: consecutive frames on the vine without a vine state, Hang while moving, Climb while still.
         public int OffVineStateFrames, HangMovingFrames, ClimbStillFrames;
+        // PAX-A14: consecutive frames a still cat on a moving floor shows Walk or Run.
+        public int CarriedWalkFrames;
         public bool PrevPrevJumped;
         public CaptureSpeeds Speeds;
         public bool Air(CatAnimState s) => s == CatAnimState.Rise || s == CatAnimState.Apex || s == CatAnimState.Fall;

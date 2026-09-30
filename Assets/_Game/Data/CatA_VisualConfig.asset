@@ -12,13 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f317456a6101349be83b3ad485fdee18, type: 3}
   m_Name: CatA_VisualConfig
   m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Presentation.CatVisualConfig
-  cellSize: 256
   minFps: 2
   maxFps: 18
   referenceSpeed: 6
-  idleSpeedThreshold: 0.15
-  walkExit: 0.1
-  airThreshold: 1
+  idleSpeedThreshold: 0.6
+  walkExit: 0.5
+  airThreshold: 2
   landDuration: 0.12
   flipHysteresis: 0.05
   velocitySmoothingTime: 0.08
@@ -26,5 +25,18 @@ MonoBehaviour:
   echoAlpha: 0.5
   outlineWidth: 1.5
   groundOffset: 0
+  motorConfig: {fileID: 11400000, guid: 1c8d4ec4dd7da4a2fa5f8beeb63fe3d4, type: 2}
+  runFraction: 0.6
+  runExitFraction: 0.52
+  snapAcceleration: 20
+  minStateFrames: 2
+  hardLandDistance: 2.75
+  airGraceDrop: 0.03
+  groundSinkTolerance: 0.01
+  speedLeadTolerance: 0.5
+  turnHoldTime: 0.016666668
+  fidgetDelay: 3
+  climbStillSpeed: 0.02
+  leapSpeedFraction: 0.5
   outlineColorA: {r: 1, g: 0.75, b: 0.3, a: 1}
   outlineColorB: {r: 0.35, g: 0.85, b: 1, a: 1}

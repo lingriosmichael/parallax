@@ -159,10 +159,10 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 198
+        width: 264
         height: 204
       alignment: 9
-      pivot: {x: 0.52854, y: 0.06189}
+      pivot: {x: 0.39641, y: 0.06189}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -179,12 +179,12 @@ TextureImporter:
       name: CatA_Death_Spiked_01
       rect:
         serializedVersion: 2
-        x: 198
+        x: 264
         y: 0
-        width: 198
+        width: 264
         height: 204
       alignment: 9
-      pivot: {x: 0.52854, y: 0.06189}
+      pivot: {x: 0.39641, y: 0.06189}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -201,12 +201,12 @@ TextureImporter:
       name: CatA_Death_Spiked_02
       rect:
         serializedVersion: 2
-        x: 396
+        x: 528
         y: 0
-        width: 198
+        width: 264
         height: 204
       alignment: 9
-      pivot: {x: 0.52854, y: 0.06189}
+      pivot: {x: 0.39641, y: 0.06189}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -223,12 +223,12 @@ TextureImporter:
       name: CatA_Death_Spiked_03
       rect:
         serializedVersion: 2
-        x: 594
+        x: 792
         y: 0
-        width: 198
+        width: 264
         height: 204
       alignment: 9
-      pivot: {x: 0.52854, y: 0.06189}
+      pivot: {x: 0.39641, y: 0.06189}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -245,12 +245,12 @@ TextureImporter:
       name: CatA_Death_Spiked_04
       rect:
         serializedVersion: 2
-        x: 792
+        x: 1056
         y: 0
-        width: 198
+        width: 264
         height: 204
       alignment: 9
-      pivot: {x: 0.52854, y: 0.06189}
+      pivot: {x: 0.39641, y: 0.06189}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -267,12 +267,12 @@ TextureImporter:
       name: CatA_Death_Spiked_05
       rect:
         serializedVersion: 2
-        x: 990
+        x: 1320
         y: 0
-        width: 198
+        width: 264
         height: 204
       alignment: 9
-      pivot: {x: 0.52854, y: 0.06189}
+      pivot: {x: 0.39641, y: 0.06189}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []

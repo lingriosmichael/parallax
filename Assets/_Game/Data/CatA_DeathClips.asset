@@ -1,0 +1,171 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e5e1015215564c0799798586b6bd8bd, type: 3}
+  m_Name: CatA_DeathClips
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Presentation.CatDeathClipTable
+  entries:
+  - kind: 0
+    clip:
+      slot: Death
+      state: 11
+      frames:
+      - {fileID: -428627585, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      - {fileID: -326350190, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      - {fileID: 200087863, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      - {fileID: -2053964452, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      - {fileID: -1654626305, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      - {fileID: -206392020, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.05310171, y: 0.43289077}
+      - {x: 0.01227214, y: 0.4471339}
+      - {x: 0.0035496822, y: 0.46526963}
+      - {x: 0.005143683, y: 0.46279573}
+      - {x: 0.00642506, y: 0.46086368}
+      - {x: 0.0061919084, y: 0.4607643}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+  - kind: 1
+    clip:
+      slot: Death_Pit
+      state: 11
+      frames:
+      - {fileID: -36655855, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      - {fileID: 601375681, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      - {fileID: 1722588489, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      - {fileID: 1180907809, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      - {fileID: 590088736, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      - {fileID: -2130035431, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.019881051, y: 0.44340244}
+      - {x: 0.011978215, y: 0.5057853}
+      - {x: 0.03622472, y: 0.5559493}
+      - {x: 0.049809363, y: 0.5721339}
+      - {x: 0.06790598, y: 0.5430918}
+      - {x: 0.080245726, y: 0.47704354}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+  - kind: 2
+    clip:
+      slot: Death_Spiked
+      state: 11
+      frames:
+      - {fileID: 600810279, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: -513402790, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: 491175074, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: 705115065, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: -43727612, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: -1955256013, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.4077233, y: 0.63351816}
+      - {x: 0.40453365, y: 0.651451}
+      - {x: 0.44439328, y: 0.27730727}
+      - {x: 0.43821445, y: 0.19073766}
+      - {x: 0.43707314, y: 0.17304854}
+      - {x: 0.43732217, y: 0.17308025}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+  - kind: 3
+    clip:
+      slot: Death_Crushed
+      state: 11
+      frames:
+      - {fileID: 212313328, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      - {fileID: -2143488246, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      - {fileID: 78257831, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      - {fileID: 334877004, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      - {fileID: 60433974, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      - {fileID: -2045450031, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.020756964, y: 0.36727303}
+      - {x: -0.023147, y: 0.18942668}
+      - {x: -0.05848812, y: 0.15363643}
+      - {x: -0.07130721, y: 0.1434033}
+      - {x: 0.030804645, y: 0.106211886}
+      - {x: 0.03577642, y: 0.1060098}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+  - kind: 4
+    clip:
+      slot: Death_Zapped
+      state: 11
+      frames:
+      - {fileID: 945398310, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      - {fileID: -1390063189, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      - {fileID: -773526299, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      - {fileID: -1442019301, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      - {fileID: 1723370292, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      - {fileID: 877165694, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.048272163, y: 0.43817344}
+      - {x: -0.028419591, y: 0.47326377}
+      - {x: -0.029658888, y: 0.47510138}
+      - {x: -0.014220392, y: 0.46781957}
+      - {x: -0.022436162, y: 0.45673}
+      - {x: -0.023152318, y: 0.45581132}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+  - kind: 5
+    clip:
+      slot: Death_Arrow
+      state: 11
+      frames:
+      - {fileID: 399707736, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: -586110761, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: -2139104012, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: -856183213, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: 635296554, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: -1321777265, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.045622714, y: 0.37264842}
+      - {x: -0.0034068413, y: 0.6833561}
+      - {x: 0.004693604, y: 0.7698752}
+      - {x: 0.0122827655, y: 0.7673532}
+      - {x: -0.012702026, y: 0.2675647}
+      - {x: 0.015558596, y: 0.21512154}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 

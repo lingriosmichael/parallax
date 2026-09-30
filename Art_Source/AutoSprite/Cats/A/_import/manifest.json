@@ -1,5 +1,5 @@
 {
-  "ticket": "PAX-A08 Stage 0",
+  "ticket": "PAX-A08 Stage 0; PAX-A14 consistency",
   "scaleRule": "option B: standing body height on Idle frame 0 = 0.56 u",
   "baseCell": 192,
   "sourceCell": 256,
@@ -26,7 +26,7 @@
   ],
   "colourBleedPx": 12,
   "facingCheck": {
-    "worstMarginUnits": 0.012,
+    "worstMarginUnits": 0.047,
     "passes": true,
     "frames": [
       {
@@ -285,120 +285,120 @@
         "slot": "Run",
         "frame": 0,
         "right": {
-          "nose": 0.026,
-          "tail": 0.209
+          "nose": 0.11,
+          "tail": 0.342
         },
         "left": {
-          "nose": 0.026,
-          "tail": 0.209
+          "nose": 0.11,
+          "tail": 0.342
         }
       },
       {
         "slot": "Run",
         "frame": 1,
         "right": {
-          "nose": 0.04,
-          "tail": 0.195
+          "nose": 0.13,
+          "tail": 0.328
         },
         "left": {
-          "nose": 0.04,
-          "tail": 0.195
+          "nose": 0.13,
+          "tail": 0.328
         }
       },
       {
         "slot": "Run",
         "frame": 2,
         "right": {
-          "nose": 0.047,
-          "tail": 0.202
+          "nose": 0.144,
+          "tail": 0.335
         },
         "left": {
-          "nose": 0.047,
-          "tail": 0.202
+          "nose": 0.144,
+          "tail": 0.335
         }
       },
       {
         "slot": "Run",
         "frame": 3,
         "right": {
-          "nose": 0.054,
-          "tail": 0.216
+          "nose": 0.151,
+          "tail": 0.356
         },
         "left": {
-          "nose": 0.054,
-          "tail": 0.216
+          "nose": 0.151,
+          "tail": 0.356
         }
       },
       {
         "slot": "Run",
         "frame": 4,
         "right": {
-          "nose": 0.082,
-          "tail": 0.223
+          "nose": 0.186,
+          "tail": 0.363
         },
         "left": {
-          "nose": 0.082,
-          "tail": 0.223
+          "nose": 0.186,
+          "tail": 0.363
         }
       },
       {
         "slot": "Run",
         "frame": 5,
         "right": {
-          "nose": 0.047,
-          "tail": 0.202
+          "nose": 0.137,
+          "tail": 0.342
         },
         "left": {
-          "nose": 0.047,
-          "tail": 0.202
+          "nose": 0.137,
+          "tail": 0.342
         }
       },
       {
         "slot": "Run",
         "frame": 6,
         "right": {
-          "nose": 0.033,
-          "tail": 0.195
+          "nose": 0.123,
+          "tail": 0.328
         },
         "left": {
-          "nose": 0.033,
-          "tail": 0.195
+          "nose": 0.123,
+          "tail": 0.328
         }
       },
       {
         "slot": "Run",
         "frame": 7,
         "right": {
-          "nose": 0.026,
-          "tail": 0.188
+          "nose": 0.11,
+          "tail": 0.314
         },
         "left": {
-          "nose": 0.026,
-          "tail": 0.188
+          "nose": 0.11,
+          "tail": 0.314
         }
       },
       {
         "slot": "Run",
         "frame": 8,
         "right": {
-          "nose": 0.012,
-          "tail": 0.174
+          "nose": 0.103,
+          "tail": 0.307
         },
         "left": {
-          "nose": 0.012,
-          "tail": 0.174
+          "nose": 0.103,
+          "tail": 0.307
         }
       },
       {
         "slot": "Run",
         "frame": 9,
         "right": {
-          "nose": 0.012,
-          "tail": 0.209
+          "nose": 0.103,
+          "tail": 0.342
         },
         "left": {
-          "nose": 0.012,
-          "tail": 0.209
+          "nose": 0.103,
+          "tail": 0.342
         }
       }
     ]
@@ -437,11 +437,52 @@
       "cycleSecondsFull": 1.786
     }
   },
+  "consistency": {
+    "ticket": "PAX-A14 \u00a73 A",
+    "styleReference": "Walk",
+    "bodyHeightMedianPx": {
+      "Idle": 81.0,
+      "Walk": 81.0,
+      "Run": 76.0
+    },
+    "bodyHeightSpread": 0.0617,
+    "styleMatched": [
+      "Idle",
+      "IdleLook",
+      "IdleEar",
+      "IdleSit",
+      "Run",
+      "Turn",
+      "TakeOff",
+      "Rise",
+      "Apex",
+      "Fall",
+      "Land",
+      "HardLand",
+      "Death",
+      "Death_Pit",
+      "Death_Spiked",
+      "Death_Crushed",
+      "Death_Arrow",
+      "Respawn",
+      "Flip",
+      "Climb",
+      "Hang",
+      "Leap",
+      "Door",
+      "DoorEnter",
+      "LandContact",
+      "HardLandContact",
+      "FlipRoll"
+    ],
+    "specksRemoved": 1420,
+    "detachedIslands": 0
+  },
   "memoryASTC": {
     "block": "6x6",
-    "colourMB": 2.76,
-    "normalsMB": 2.76,
-    "totalMB": 5.52,
+    "colourMB": 2.91,
+    "normalsMB": 2.91,
+    "totalMB": 5.83,
     "climbSheetWithNormalsMB": 1.0
   },
   "onScreen": {
@@ -495,6 +536,9 @@
         1920,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 76,
+      "detachedIslands": 0,
       "astc6x6Bytes": 163840,
       "loopStride": 3,
       "loopSource": [
@@ -548,6 +592,9 @@
         1584,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 62,
+      "detachedIslands": 0,
       "astc6x6Bytes": 135168
     },
     {
@@ -589,6 +636,9 @@
         1536,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 45,
+      "detachedIslands": 0,
       "astc6x6Bytes": 131072
     },
     {
@@ -630,6 +680,9 @@
         1584,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 48,
+      "detachedIslands": 0,
       "astc6x6Bytes": 135168,
       "note": "ends seated; V07 holds the last frame"
     },
@@ -675,6 +728,9 @@
         2112,
         192
       ],
+      "styleMatched": false,
+      "specksRemoved": 90,
+      "detachedIslands": 0,
       "astc6x6Bytes": 180224,
       "loopStride": 2,
       "loopSource": [
@@ -708,17 +764,17 @@
       "frames": 10,
       "role": "ground",
       "loop": true,
-      "scale": 1.0,
+      "scale": 1.1831,
       "cell": [
-        198,
+        228,
         192
       ],
       "pivotPx": [
-        105.652,
+        125.652,
         180.375
       ],
       "pivotNormalized": [
-        0.53359,
+        0.5511,
         0.06055
       ],
       "clippedPx": 0,
@@ -726,21 +782,26 @@
       "vineKeyed": false,
       "wired": true,
       "sheetSize": [
-        1980,
+        2280,
         192
       ],
-      "astc6x6Bytes": 168960,
+      "styleMatched": true,
+      "specksRemoved": 11,
+      "detachedIslands": 0,
+      "astc6x6Bytes": 194560,
       "loopStride": 1,
       "loopSource": [
         45,
         54
       ],
-      "loopCloseIoU": 0.676,
+      "loopCloseIoU": 0.679,
       "loopStepIoU": [
-        0.56,
-        0.715
+        0.563,
+        0.712
       ],
-      "loopFlag": false
+      "loopFlag": false,
+      "scaleRule": "torso length = Walk's",
+      "note": "PAX-A14: drawn about 20% small (head 27 px vs Walk's 33; torso 81.5 vs 100 px at the sheet); scaled to Walk's torso length"
     },
     {
       "slot": "Turn",
@@ -776,6 +837,9 @@
         576,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 18,
+      "detachedIslands": 0,
       "astc6x6Bytes": 49152
     },
     {
@@ -811,6 +875,9 @@
         384,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 8,
+      "detachedIslands": 0,
       "astc6x6Bytes": 32768,
       "note": "crouch and push"
     },
@@ -848,6 +915,9 @@
         612,
         216
       ],
+      "styleMatched": true,
+      "specksRemoved": 13,
+      "detachedIslands": 0,
       "astc6x6Bytes": 58752
     },
     {
@@ -883,6 +953,9 @@
         396,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 18,
+      "detachedIslands": 0,
       "astc6x6Bytes": 33792
     },
     {
@@ -919,6 +992,9 @@
         576,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 18,
+      "detachedIslands": 0,
       "astc6x6Bytes": 49152
     },
     {
@@ -955,6 +1031,9 @@
         594,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 25,
+      "detachedIslands": 0,
       "astc6x6Bytes": 50688,
       "note": "crouch and recover"
     },
@@ -993,6 +1072,9 @@
         792,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 39,
+      "detachedIslands": 0,
       "astc6x6Bytes": 67584
     },
     {
@@ -1032,6 +1114,9 @@
         1188,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 148,
+      "detachedIslands": 0,
       "astc6x6Bytes": 101376,
       "note": "ends on the held FRIGHTENED pose"
     },
@@ -1072,6 +1157,9 @@
         1188,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 10,
+      "detachedIslands": 0,
       "astc6x6Bytes": 101376,
       "note": "drawn smaller: scaled so its standing body height matches Idle frame 0"
     },
@@ -1093,7 +1181,7 @@
       "loop": false,
       "scale": 1.0,
       "cell": [
-        198,
+        264,
         204
       ],
       "pivotPx": [
@@ -1101,7 +1189,7 @@
         191.375
       ],
       "pivotNormalized": [
-        0.52854,
+        0.39641,
         0.06189
       ],
       "clippedPx": 0,
@@ -1109,10 +1197,16 @@
       "vineKeyed": false,
       "wired": true,
       "sheetSize": [
-        1188,
+        1584,
         204
       ],
-      "astc6x6Bytes": 107712
+      "styleMatched": true,
+      "specksRemoved": 55,
+      "detachedIslands": 0,
+      "astc6x6Bytes": 143616,
+      "reachUnits": 0.44,
+      "reachShiftUnits": 0.44,
+      "note": "PAX-A14: the upright frames stood 0.44 u short of the spikes (Trap Lab room 0: spike edge x 5.00, cat root 4.56 at the kill); re-registered so frame 0's paws meet that edge"
     },
     {
       "slot": "Death_Crushed",
@@ -1151,6 +1245,9 @@
         1188,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 27,
+      "detachedIslands": 0,
       "astc6x6Bytes": 101376,
       "note": "runs off both cell edges (clipped, reported)"
     },
@@ -1191,7 +1288,11 @@
         1152,
         192
       ],
-      "astc6x6Bytes": 98304
+      "styleMatched": false,
+      "specksRemoved": 242,
+      "detachedIslands": 0,
+      "astc6x6Bytes": 98304,
+      "note": "PAX-A14: style match off: matched to Walk, the electric glow turned into a grey smudge (reads worse; \u00a78)"
     },
     {
       "slot": "Death_Arrow",
@@ -1230,6 +1331,9 @@
         1224,
         198
       ],
+      "styleMatched": true,
+      "specksRemoved": 53,
+      "detachedIslands": 0,
       "astc6x6Bytes": 107712
     },
     {
@@ -1267,6 +1371,9 @@
         768,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 27,
+      "detachedIslands": 0,
       "astc6x6Bytes": 65536
     },
     {
@@ -1304,6 +1411,9 @@
         768,
         204
       ],
+      "styleMatched": true,
+      "specksRemoved": 19,
+      "detachedIslands": 0,
       "astc6x6Bytes": 69632,
       "note": "the tucked roll only; code rotates the root"
     },
@@ -1363,6 +1473,9 @@
         4800,
         246
       ],
+      "styleMatched": true,
+      "specksRemoved": 175,
+      "detachedIslands": 0,
       "astc6x6Bytes": 524800,
       "loopStride": 1,
       "loopSource": [
@@ -1409,6 +1522,9 @@
         192,
         228
       ],
+      "styleMatched": true,
+      "specksRemoved": 8,
+      "detachedIslands": 0,
       "astc6x6Bytes": 19456
     },
     {
@@ -1445,6 +1561,9 @@
         594,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 21,
+      "detachedIslands": 0,
       "astc6x6Bytes": 50688
     },
     {
@@ -1486,6 +1605,9 @@
         1584,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 74,
+      "detachedIslands": 0,
       "astc6x6Bytes": 135168,
       "note": "level complete (celebrate)"
     },
@@ -1528,8 +1650,151 @@
         1824,
         192
       ],
+      "styleMatched": true,
+      "specksRemoved": 41,
+      "detachedIslands": 0,
       "astc6x6Bytes": 155648,
       "note": "imported, not wired; walks out past the right edge (clipped, reported)"
+    },
+    {
+      "slot": "LandContact",
+      "file": "CatA_LandContact.png",
+      "bridgeFor": "Land",
+      "bridgePositions": [
+        0
+      ],
+      "kind": "contact",
+      "sourceClip": "07_land",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        9,
+        12,
+        16
+      ],
+      "frames": 1,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        106.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.53865,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": false,
+      "sheetSize": [
+        198,
+        192
+      ],
+      "astc6x6Bytes": 16896,
+      "styleMatched": true,
+      "specksRemoved": 12,
+      "detachedIslands": 0,
+      "note": "PAX-A14 target 2: Land 0's crouch raised 20 sheet px over its paws (legs over the lowest 55 px): the fall's contact, then the compression. Land = [contact, Land 0-2]"
+    },
+    {
+      "slot": "HardLandContact",
+      "file": "CatA_HardLandContact.png",
+      "bridgeFor": "HardLand",
+      "bridgePositions": [
+        1
+      ],
+      "kind": "contact",
+      "sourceClip": "19_hard_land",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        7,
+        9,
+        11,
+        13
+      ],
+      "frames": 1,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        198,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.52854,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": false,
+      "sheetSize": [
+        198,
+        192
+      ],
+      "astc6x6Bytes": 16896,
+      "styleMatched": true,
+      "specksRemoved": 14,
+      "detachedIslands": 0,
+      "note": "PAX-A14 target 2: HardLand 1's impact crouch raised 28 sheet px. HardLand = [0, contact, 1-3]"
+    },
+    {
+      "slot": "FlipRoll",
+      "file": "CatA_FlipRoll.png",
+      "bridgeFor": "Flip",
+      "bridgePositions": [
+        1,
+        2,
+        4,
+        6
+      ],
+      "kind": "roll",
+      "sourceClip": "21_gravity_twist",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        7,
+        9,
+        10,
+        12
+      ],
+      "frames": 4,
+      "role": "air",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": false,
+      "sheetSize": [
+        768,
+        192
+      ],
+      "astc6x6Bytes": 65536,
+      "styleMatched": true,
+      "specksRemoved": 23,
+      "detachedIslands": 0,
+      "note": "PAX-A14 target 3: roll cels turned between the drawn ones (-102, -45, -57 degrees): two between cels 0 and 1, one between 1-2 and 2-3. Flip = [0, r, r, 1, r, 2, r, 3]"
     }
   ]
 }

@@ -179,6 +179,11 @@ namespace Parallax.Editor.Art
                 float standY = cam.y;
                 float maxWriteBack = 0f;
                 bool finished = false;
+                // PAX-A14: the room's other bodies as the player loop draws them: interpolated between their last two tick poses
+                // when their Rigidbody2D interpolates (a MovingTrap's), else at their tick pose.
+                Rigidbody2D[] others = Object.FindObjectsByType<Rigidbody2D>(FindObjectsSortMode.None).Where(b => b != rig.Body).ToArray();
+                var otherPrev = others.Select(b => b.position).ToArray();
+                var otherCur = others.Select(b => b.position).ToArray();
                 for (int n = 0; !finished; n++)
                 {
                     // Unity's player loop runs the first FixedUpdate in the first frame: tick k's physics time is (k - 1) ticks,
@@ -189,6 +194,7 @@ namespace Parallax.Editor.Art
                     {
                         // The body's exact pose back before physics runs again (§11 R14).
                         root.SetPositionAndRotation(tickPosition, tickRotation);
+                        for (int k = 0; k < others.Length; k++) if (others[k] != null) others[k].transform.position = new Vector3(otherCur[k].x, otherCur[k].y, others[k].transform.position.z);
                         Physics2D.SyncTransforms();
                         if (!runner.Next(rig, out CatCommand command)) { finished = true; break; }
                         rig.Step(command);
@@ -198,6 +204,7 @@ namespace Parallax.Editor.Art
                         prevPos = curPos; prevRot = curRot;
                         curPos = rig.Body.position; curRot = rig.Body.rotation;
                         tickPosition = root.position; tickRotation = root.rotation;
+                        for (int k = 0; k < others.Length; k++) if (others[k] != null) { otherPrev[k] = otherCur[k]; otherCur[k] = others[k].position; }
                         maxWriteBack = Mathf.Max(maxWriteBack, ((Vector2)tickPosition - curPos).magnitude);
                     }
                     if (finished) break;
@@ -205,8 +212,17 @@ namespace Parallax.Editor.Art
                     // The frame: the interpolated pose, the presenter, the room's art, then the measurements and the render.
                     float a = CatCaptureMath.InterpolationAlpha(loopTime, rig.Tick, tickLength);
                     CatCaptureMath.InterpolatedPose(prevPos, prevRot, curPos, curRot, a, InterpolationTeleportUnits, out Vector2 pos, out float rot);
+                    // PAX-A14 (measured in play mode): a tick whose carry wrote the body's position drops its interpolation, so
+                    // the player loop draws that tick's pose.
+                    if (rig.Cat.CarryShift != Vector2.zero) { pos = curPos; rot = curRot; }
                     root.SetPositionAndRotation(new Vector3(pos.x, pos.y, tickPosition.z), Quaternion.Euler(0f, 0f, rot));
-                    rig.Presenter.Present(frameDt);
+                    for (int k = 0; k < others.Length; k++)
+                        if (others[k] != null)
+                        {
+                            Vector2 drawn = others[k].interpolation == RigidbodyInterpolation2D.Interpolate ? Vector2.Lerp(otherPrev[k], otherCur[k], a) : otherCur[k];
+                            others[k].transform.position = new Vector3(drawn.x, drawn.y, others[k].transform.position.z);
+                        }
+                    rig.Presenter.Present(frameDt, a);
                     TrapShots.ApplyArt();
 
                     Vector2 down = rig.Gravity.Direction;
@@ -214,6 +230,10 @@ namespace Parallax.Editor.Art
                     FrameRow row = Row(rig, runner, n, t, down, centre);
                     row.M = CatCaptureMeasure.Measure(alpha, rig.BodyRenderer, down, centre, filter, rig.CatCollider);
                     row.Paw = rig.BodyRenderer.transform.position;
+                    row.CarrierVelocity = rig.Cat.CarrierVelocity;
+                    row.Carried = row.CarrierVelocity != Vector2.zero;
+                    Rigidbody2D floor = rig.Cat.GroundCollider != null ? rig.Cat.GroundCollider.attachedRigidbody : null;
+                    row.FloorDrawn = floor != null ? (Vector2)floor.transform.position : Vector2.zero;
                     row.Sunk = Sunk(rig, centre, down);
                     if (rig.Cat.IsClimbing && CatClimbMeasure.VineClip(row.Clip))
                     {
@@ -244,6 +264,7 @@ namespace Parallax.Editor.Art
                     jsonl.Append(Jsonl(row)).Append('\n');
                 }
                 root.SetPositionAndRotation(tickPosition, tickRotation);
+                for (int k = 0; k < others.Length; k++) if (others[k] != null) others[k].transform.position = new Vector3(otherCur[k].x, otherCur[k].y, others[k].transform.position.z);
                 if (maxWriteBack > 1e-5f) Debug.LogWarning($"CAPTURE: {scenario.Name}: the transform after Simulate differs from the body by {maxWriteBack} u.");
             }
             finally

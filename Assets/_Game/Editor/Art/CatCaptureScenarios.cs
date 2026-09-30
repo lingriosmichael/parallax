@@ -353,6 +353,9 @@ namespace Parallax.Editor.Art
                 new Hold(0f, 0.5f, "stand"),
             };
             // Room 0: walking right into SourceSpikes' trigger (x 4.75-5.25) reveals the spikes under the cat (x 5-7).
+            // PAX-A14: Trap Lab room 12's Mover (Carry, x 6-9, 9 u out at 5 u/s from room tick 80, a 30-tick hold, back): the
+            // cat stands on it, no input, through the whole ride.
+            yield return new CaptureScenario { Name = "carry_stand_down", Description = "Trap Lab room 12: stand still on the Mover through its ride out and back", Room = _ => TrapLabLayout.Rooms[12], StartX = 7.5f, Steps = _ => new List<CaptureStep> { new Hold(0f, 6.2f, "stand on the Mover through its ride") } };
             yield return new CaptureScenario { Name = "death_spiked_down", Description = "Trap Lab room 0: walk into the hidden spikes (Spiked)", Room = _ => TrapLabLayout.Rooms[0], StartX = 3f, ExpectDeath = true, Steps = _ => DieThenMove("walk into the spikes", 0.4f) };
             // Room 1: standing between FixedPillar (right edge x 22.5) and the Crusher's trigger (x 21.8-24.8): it slides 3 u left.
             yield return new CaptureScenario { Name = "death_crushed_down", Description = "Trap Lab room 1: the crusher pins the cat against the pillar (Crushed)", Room = _ => TrapLabLayout.Rooms[1], StartX = 23.4f, ExpectDeath = true, Steps = _ => DieThenMove("stand in the crusher's path", 0f) };

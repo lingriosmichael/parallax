@@ -32,8 +32,9 @@ namespace Parallax.Editor.Art
             // PAX-V07 item 1: the ground rows.
             new StateRule("turn-off-ground", "Turn shown on a frame the motor isn't grounded (no Turn in the air)",
                 c => !c.Excluded && c.Row.State == CatAnimState.Turn && (!c.OnGround || c.Row.Climbing)),
-            new StateRule("run-below-exit", "Run shown on the ground below runExitFraction x MaxSpeed (the drawn speed) for more than 2 frames",
-                c => !c.Excluded && c.RunSlowFrames > CaptureSpeeds.LagFrames),
+            // PAX-A14 (developer, 2026-09-30): the mirror of walk-above-run: Run waits for one of its switch frames to hand back.
+            new StateRule("run-below-exit", "Run shown on the ground below runExitFraction x MaxSpeed (the drawn speed) for more than the wait for a switch frame plus 2 frames",
+                c => !c.Excluded && c.RunSlowFrames > CaptureSpeeds.LagFrames + (c.Speeds != null ? c.Speeds.RunSwitchWaitFrames : 0)),
             // Walk waits for a switch frame where the paws of both gaits match (ruled 2026-09-30): up to the longest run of Walk
             // frames between two switch frames (CaptureSpeeds.SwitchWaitFrames at the run threshold) on top of the lag.
             new StateRule("walk-above-run", "Walk shown on the ground at or above runFraction x MaxSpeed (the drawn speed) for more than the wait for a switch frame plus 2 frames",
@@ -45,6 +46,9 @@ namespace Parallax.Editor.Art
                 c => !c.Excluded && c.Prev != null && c.Next != null && !c.Next.Holding && !c.Next.Frozen
                      && c.Row.Clip != c.Prev.Clip && c.Row.Clip != c.Next.Clip
                      && !(c.Row.State == CatAnimState.Respawn && Mathf.Abs(c.Next.VAlong) > 0f)),
+            // PAX-A14: a cat standing still on a moving floor stands; the floor's motion isn't its own.
+            new StateRule("walk-while-carried", "Walk or Run shown while a moving floor carries the cat and it has no speed of its own, for more than 2 frames",
+                c => !c.Excluded && c.CarriedWalkFrames > CaptureSpeeds.LagFrames),
             new StateRule("facing-late", "on the ground, moving against the facing above walkEnter for longer than the Turn clip plus the lag",
                 c => !c.Excluded && c.Speeds != null && c.AgainstFacingFrames > Mathf.CeilToInt(c.Speeds.TurnSeconds * CatCapture.FrameRate) + CaptureSpeeds.LagFrames),
             new StateRule("climb-without-climbing", "Climb or Hang shown while the motor isn't climbing",
@@ -187,6 +191,28 @@ namespace Parallax.Editor.Art
                 .Bool("pass", vineOver.Count == 0).Close();
             if (vine.Count > 0) line.Append($" | vine body max {vine.Max(r => r.ClimbBodyOffsetSpritePx):F1}sp ({vineOver.Count} over), lift max {vine.Max(r => r.ClimbLiftUnits):F2}u");
 
+            // --- a still cat on a moving floor (PAX-A14), frame to frame at the floor's steady speed: the drawn cat's and the drawn
+            // floor's judder (each frame's move against speed x 1/60 s) and the cat's move against the floor ---
+            float jitter = 0f, catJudder = 0f, floorJudder = 0f; int carried = 0;
+            float pp = CaptureThresholds.PhonePixelsPerUnit, frameDt = 1f / CatCapture.FrameRate;
+            for (int i = 1; i < rows.Count; i++)
+            {
+                FrameRow a = rows[i - 1], b = rows[i];
+                if (!(a.Carried && b.Carried && (a.CarrierVelocity - b.CarrierVelocity).sqrMagnitude < 1e-4f && Mathf.Abs(a.VAlong) < 1e-3f && Mathf.Abs(b.VAlong) < 1e-3f
+                      && a.Grounded && b.Grounded)) continue;
+                carried++;
+                Vector2 step = b.CarrierVelocity * frameDt;
+                catJudder = Mathf.Max(catJudder, (b.Paw - a.Paw - step).magnitude * pp);
+                floorJudder = Mathf.Max(floorJudder, (b.FloorDrawn - a.FloorDrawn - step).magnitude * pp);
+                jitter = Mathf.Max(jitter, ((b.Paw - b.FloorDrawn) - (a.Paw - a.FloorDrawn)).magnitude * pp);
+            }
+            float limit = CaptureThresholds.CarriedJitterPhonePx;
+            bool carriedPass = jitter <= limit && catJudder <= limit && floorJudder <= limit;
+            pass &= carriedPass;
+            j.Key("carried").Open().Num("threshold_phone_px", limit).Num("frame_pairs", carried).Num("max_jitter_phone_px", jitter)
+                .Num("max_cat_judder_phone_px", catJudder).Num("max_floor_judder_phone_px", floorJudder).Bool("pass", carriedPass).Close();
+            if (carried > 0) line.Append($" | carried: against the floor {jitter:F2}pp, cat judder {catJudder:F2}pp, floor judder {floorJudder:F2}pp over {carried} frames");
+
             // --- state vs motor ---
             var broken = StateRules(rows, speeds);
             bool rulesPass = broken.All(b => b.Value.Count == 0);
@@ -277,6 +303,7 @@ namespace Parallax.Editor.Art
                 c.RunSlowFrames = speeds != null && ground && r.State == CatAnimState.Run && drawn < speeds.RunExit ? c.RunSlowFrames + 1 : 0;
                 c.WalkFastFrames = speeds != null && ground && r.State == CatAnimState.Walk && drawn >= speeds.RunEnter ? c.WalkFastFrames + 1 : 0;
                 c.AgainstFacingFrames = speeds != null && ground && speed > speeds.WalkEnter && (r.VAlong > 0f ? 1 : -1) != r.Facing ? c.AgainstFacingFrames + 1 : 0;
+                c.CarriedWalkFrames = ground && r.Carried && speed < 1e-3f && (r.State == CatAnimState.Walk || r.State == CatAnimState.Run) ? c.CarriedWalkFrames + 1 : 0;
                 // Item 3: on the vine, judged on the drawn speed along it.
                 bool vineState = r.State == CatAnimState.Climb || r.State == CatAnimState.Hang;
                 bool moving = speeds != null && Mathf.Abs(drawnGravity) > speeds.ClimbStill;

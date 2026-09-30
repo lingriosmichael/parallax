@@ -1,5 +1,5 @@
 {
-  "ticket": "PAX-A08 \u00a72 (slots) and \u00a73 (Stage 0); frames picked 2026-09-30 from each sidecar's `suggest` range",
+  "ticket": "PAX-A08 \u00a72 (slots) and \u00a73 (Stage 0); frames picked 2026-09-30 from each sidecar's `suggest` range; PAX-A14 \u00a73 A (style, torso scale, reach, specks) 2026-09-30",
   "cell": 256,
   "roles": {
     "ground": "the lowest paw across the clip on the shared paw row; the clip's median torso centre on the pivot x",
@@ -82,7 +82,9 @@
         "length": 10,
         "target": 10
       },
-      "role": "ground"
+      "role": "ground",
+      "scaleByTorso": "Walk",
+      "note": "PAX-A14: drawn about 20% small (head 27 px vs Walk's 33; torso 81.5 vs 100 px at the sheet); scaled to Walk's torso length"
     },
     {
       "slot": "Turn",
@@ -195,7 +197,10 @@
         21,
         24
       ],
-      "role": "ground"
+      "role": "ground",
+      "reachUnits": 0.44,
+      "reachFrame": 0,
+      "note": "PAX-A14: the upright frames stood 0.44 u short of the spikes (Trap Lab room 0: spike edge x 5.00, cat root 4.56 at the kill); re-registered so frame 0's paws meet that edge"
     },
     {
       "slot": "Death_Crushed",
@@ -222,7 +227,9 @@
         13,
         15
       ],
-      "role": "ground"
+      "role": "ground",
+      "style": false,
+      "note": "PAX-A14: style match off: matched to Walk, the electric glow turned into a grey smudge (reads worse; \u00a78)"
     },
     {
       "slot": "Death_Arrow",
@@ -324,6 +331,64 @@
       "role": "ground",
       "wired": false,
       "note": "imported, not wired; walks out past the right edge (clipped, reported)"
+    }
+  ],
+  "consistency": {
+    "style": "every clip's luma distribution (opaque pixels) mapped onto Walk's, RGB scaled per pixel (hue kept, alpha untouched); \"style\": false opts a slot out",
+    "scaleByTorso": "the clip scaled so its median torso length (the silhouette eroded by 10 px) equals the named clip's",
+    "reachUnits": "the clip shifted along the facing so frame reachFrame's lowest 20 source px end this far ahead of the pivot",
+    "specks": "detached islands with no pixel at alpha 0.5 are removed from every final frame"
+  },
+  "bridges": [
+    {
+      "slot": "LandContact",
+      "bridgeFor": "Land",
+      "kind": "contact",
+      "frame": 0,
+      "raiseUnits": 0.1396,
+      "legUnits": 0.3838,
+      "positions": [
+        0
+      ],
+      "note": "PAX-A14 target 2: Land 0's crouch raised 20 sheet px over its paws (legs over the lowest 55 px): the fall's contact, then the compression. Land = [contact, Land 0-2]"
+    },
+    {
+      "slot": "HardLandContact",
+      "bridgeFor": "HardLand",
+      "kind": "contact",
+      "frame": 1,
+      "raiseUnits": 0.1954,
+      "legUnits": 0.3838,
+      "positions": [
+        1
+      ],
+      "note": "PAX-A14 target 2: HardLand 1's impact crouch raised 28 sheet px. HardLand = [0, contact, 1-3]"
+    },
+    {
+      "slot": "FlipRoll",
+      "bridgeFor": "Flip",
+      "kind": "roll",
+      "between": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "positions": [
+        1,
+        2,
+        4,
+        6
+      ],
+      "note": "PAX-A14 target 3: roll cels turned between the drawn ones (-102, -45, -57 degrees): two between cels 0 and 1, one between 1-2 and 2-3. Flip = [0, r, r, 1, r, 2, r, 3]"
     }
   ]
 }

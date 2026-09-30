@@ -2,6 +2,7 @@ using Parallax.Core;
 using Parallax.Gameplay.Player;
 using Parallax.Gameplay.Reality;
 using Parallax.Gameplay.Observers;
+using Parallax.Gameplay.Rooms;
 using UnityEngine;
 
 namespace Parallax.Gameplay.Presentation
@@ -30,9 +31,9 @@ namespace Parallax.Gameplay.Presentation
         CatAnimStateMachine stateMachine;
 
         bool initialized;
-        // Visual's authored pose (the paw row at the collider's bottom). The presenter never moves it (ruled 2026-09-30: art
-        // defects aren't hidden in code); item 3: the climb frames are drawn vertical and registered on the collider, so
-        // Visual keeps this pose on the vine too (no interim 90° climb pose).
+        // Visual's authored pose (the paw row at the collider's bottom). The presenter never moves it to hide art (ruled
+        // 2026-09-30); item 3: the climb frames are registered on the collider, so Visual keeps this pose on the vine too.
+        // PAX-A14: the one offset is interpolation's, on a tick a moving floor's carry wrote the body's position (CarryDrawn).
         Vector3 restLocalPosition;
         Collider2D bodyCollider;
         Vector2 lastWorldPosition;
@@ -49,6 +50,10 @@ namespace Parallax.Gameplay.Presentation
         float lastBodyAlong;
         bool stopping = true;
         bool airStateEnding;
+        // PAX-A14: the Carry floor the cat stands on (its collider and drawn transform) and where it was drawn last frame.
+        Collider2D floorGround;
+        Transform carryFloor;
+        Vector2 carryFloorAt;
 
         void Awake()
         {
@@ -143,27 +148,31 @@ namespace Parallax.Gameplay.Presentation
                 smoothedVelocity = Vector2.zero;
                 return;
             }
-            Present(Time.deltaTime);
+            Present(Time.deltaTime, Mathf.Clamp01((Time.time - Time.fixedTime) / TickTime.SecondsPerTick));
         }
 
         /// <summary>PAX-V07 (§11 R9): one presentation frame of `dt` seconds. LateUpdate calls it while the body renderer is
         /// visible; the capture harness and EditMode tests call it directly. Reads the motor and its transform, writes only
         /// Visual. Does nothing before Awake has run (or after Awake disabled the presenter).</summary>
-        public void Present(float dt)
+        public void Present(float dt) => Present(dt, 1f);
+
+        /// <summary>One presentation frame, `interpolation` of the way (0..1) from the last tick's pose to this one's (as
+        /// Rigidbody2D interpolation draws it).</summary>
+        public void Present(float dt, float interpolation)
         {
             if (stateMachine == null) return;
 
-            Vector2 currentPosition = motionRoot.position;
+            Vector2 currentPosition = CarryDrawn(interpolation);
             if (!initialized)
             {
                 lastWorldPosition = currentPosition;
                 initialized = true;
             }
 
-            Vector2 delta = currentPosition - lastWorldPosition;
+            // PAX-A14: the cat's own motion: what a moving floor carried it (the floor's drawn move) isn't walking.
+            Vector2 delta = currentPosition - lastWorldPosition - CarryFloorMoved();
+            bool teleported = (currentPosition - lastWorldPosition).magnitude >= config.TeleportDistance;
             lastWorldPosition = currentPosition;
-
-            bool teleported = delta.magnitude >= config.TeleportDistance;
             Vector2 measuredVelocity = !teleported && dt > 0f
                 ? delta / dt
                 : Vector2.zero;
@@ -262,6 +271,35 @@ namespace Parallax.Gameplay.Presentation
         {
             if (next == CatAnimState.Hang) UpdateSprite(next, clips.ForState(CatAnimState.Hang), 0f, 0f, dt, byDistance: false);
             else UpdateSprite(CatAnimState.Climb, clips.ForState(CatAnimState.Climb), 0f, climbed, dt, byDistance: true);
+        }
+
+        // PAX-A14 (measured in play mode): a carry that writes the body's position drops Rigidbody2D interpolation for that tick,
+        // so the root shows the tick's pose, a 50-on-60 judder. Visual is drawn where interpolation would have put it,
+        // `interpolation` of the way through the tick's move; the drawn root is returned.
+        Vector2 CarryDrawn(float interpolation)
+        {
+            Vector2 root = motionRoot.position, move = body != null ? body.position - motor.StepStartPosition : Vector2.zero;
+            Vector2 back = motor.CarryShift != Vector2.zero && move.magnitude < config.TeleportDistance ? -(1f - interpolation) * move : Vector2.zero;
+            transform.localPosition = restLocalPosition + (transform.parent != null ? transform.parent.InverseTransformVector(back) : (Vector3)back);
+            return root + back;
+        }
+
+        // PAX-A14: how far the Carry floor under the cat moved on screen since the last frame (zero on any other ground, and on
+        // the frame the cat reaches a floor). Interpolated like the drawn cat, so a still rider's own motion is zero.
+        Vector2 CarryFloorMoved()
+        {
+            Collider2D ground = motor.IsGrounded ? motor.GroundCollider : null;
+            if (ground != floorGround)
+            {
+                floorGround = ground;
+                carryFloor = ground != null && ground.TryGetComponent(out MovingTrap trap) && trap.Motion == SurfaceMotion.Carry ? ground.transform : null;
+                carryFloorAt = carryFloor != null ? (Vector2)carryFloor.position : Vector2.zero;
+                return Vector2.zero;
+            }
+            if (carryFloor == null) return Vector2.zero;
+            Vector2 at = carryFloor.position, moved = at - carryFloorAt;
+            carryFloorAt = at;
+            return moved;
         }
 
         // D-034: the presenter owns Visual's facing; the state machine decides it (a ground reversal flips at Turn's end).

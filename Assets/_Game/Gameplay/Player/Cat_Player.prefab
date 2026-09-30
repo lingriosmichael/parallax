@@ -242,6 +242,7 @@ GameObject:
   - component: {fileID: 4873193962058543826}
   - component: {fileID: 4730088555036735516}
   - component: {fileID: 2648971521934743084}
+  - component: {fileID: 6642481349442126384}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -339,39 +340,692 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 8539e4fa74c514689ac207c889603612, type: 2}
   bodyRenderer: {fileID: 4730088555036735516}
   outlineRenderer: {fileID: 4787466439438444801}
-  idleClip:
-    frames:
-    - {fileID: -1416057457, guid: f344cd884216244be9478509f8c0442c, type: 3}
-    fps: 7
-    loop: 1
-  walkClip:
-    frames:
-    - {fileID: -1154884260, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-    - {fileID: 1937713398, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-    - {fileID: -459493734, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-    - {fileID: -2138857646, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-    - {fileID: -1708634071, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-    - {fileID: -915545832, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-    - {fileID: 27547995, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-    - {fileID: -610704779, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-    - {fileID: 1586847735, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-    - {fileID: 636831742, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
-    fps: 10
-    loop: 1
-  riseClip:
-    frames:
-    - {fileID: -771626471, guid: 5e5cdb6a23ca64ecf9ddcd8a454f40e9, type: 3}
-    fps: 12
-    loop: 0
-  fallClip:
-    frames:
-    - {fileID: -283901381, guid: 5b44d4b0a92914f858d828203cc542ad, type: 3}
-    fps: 12
-    loop: 0
-  landClip:
-    frames:
-    - {fileID: 1160843105, guid: e29e7310b3e62426a9aa23f8a30682ce, type: 3}
-    fps: 12
-    loop: 0
+  clips:
+    clips:
+    - slot: Idle
+      state: 0
+      frames:
+      - {fileID: -1416057457, guid: f344cd884216244be9478509f8c0442c, type: 3}
+      - {fileID: 769653541, guid: f344cd884216244be9478509f8c0442c, type: 3}
+      - {fileID: 1054074318, guid: f344cd884216244be9478509f8c0442c, type: 3}
+      - {fileID: 1064432450, guid: f344cd884216244be9478509f8c0442c, type: 3}
+      - {fileID: 878500901, guid: f344cd884216244be9478509f8c0442c, type: 3}
+      - {fileID: -1396115165, guid: f344cd884216244be9478509f8c0442c, type: 3}
+      - {fileID: 1452665284, guid: f344cd884216244be9478509f8c0442c, type: 3}
+      - {fileID: 807397293, guid: f344cd884216244be9478509f8c0442c, type: 3}
+      - {fileID: -1944715445, guid: f344cd884216244be9478509f8c0442c, type: 3}
+      - {fileID: 953650599, guid: f344cd884216244be9478509f8c0442c, type: 3}
+      fps: 7
+      loop: 1
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.0052299467, y: 0.40804872}
+      - {x: -0.0061917114, y: 0.4066739}
+      - {x: -0.0064993408, y: 0.40596518}
+      - {x: -0.0068804165, y: 0.40490535}
+      - {x: -0.007106882, y: 0.40412503}
+      - {x: -0.006808554, y: 0.40401912}
+      - {x: -0.0073218467, y: 0.40444797}
+      - {x: -0.0076251915, y: 0.40492252}
+      - {x: -0.006458109, y: 0.40652272}
+      - {x: -0.005989791, y: 0.4072885}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: IdleLook
+      state: 17
+      frames:
+      - {fileID: 323050877, guid: 4ab0a4fca67154452975258fc2472d50, type: 3}
+      - {fileID: -325904325, guid: 4ab0a4fca67154452975258fc2472d50, type: 3}
+      - {fileID: -1613742922, guid: 4ab0a4fca67154452975258fc2472d50, type: 3}
+      - {fileID: 1333281838, guid: 4ab0a4fca67154452975258fc2472d50, type: 3}
+      - {fileID: 1634186660, guid: 4ab0a4fca67154452975258fc2472d50, type: 3}
+      - {fileID: -994709526, guid: 4ab0a4fca67154452975258fc2472d50, type: 3}
+      - {fileID: -1052470657, guid: 4ab0a4fca67154452975258fc2472d50, type: 3}
+      - {fileID: -1980051904, guid: 4ab0a4fca67154452975258fc2472d50, type: 3}
+      fps: 12
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.000102205435, y: 0.41298378}
+      - {x: 0.000830088, y: 0.41212898}
+      - {x: -0.006235388, y: 0.39720327}
+      - {x: -0.013334507, y: 0.4021449}
+      - {x: -0.01662451, y: 0.4035188}
+      - {x: -0.015735103, y: 0.40318114}
+      - {x: -0.008142517, y: 0.40111306}
+      - {x: -0.0024397394, y: 0.39836612}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: IdleEar
+      state: 17
+      frames:
+      - {fileID: -20597970, guid: 173eedf6fbcc742e28d7dc7802a8c682, type: 3}
+      - {fileID: 2050869177, guid: 173eedf6fbcc742e28d7dc7802a8c682, type: 3}
+      - {fileID: -181411559, guid: 173eedf6fbcc742e28d7dc7802a8c682, type: 3}
+      - {fileID: -1185402153, guid: 173eedf6fbcc742e28d7dc7802a8c682, type: 3}
+      - {fileID: 987633616, guid: 173eedf6fbcc742e28d7dc7802a8c682, type: 3}
+      - {fileID: -165855934, guid: 173eedf6fbcc742e28d7dc7802a8c682, type: 3}
+      - {fileID: -1532799170, guid: 173eedf6fbcc742e28d7dc7802a8c682, type: 3}
+      - {fileID: 954369162, guid: 173eedf6fbcc742e28d7dc7802a8c682, type: 3}
+      fps: 12
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.00078011636, y: 0.40970472}
+      - {x: -0.0034187753, y: 0.40715373}
+      - {x: -0.008150304, y: 0.406437}
+      - {x: -0.00349966, y: 0.411694}
+      - {x: -0.0026100494, y: 0.41281793}
+      - {x: -0.0034540838, y: 0.41180095}
+      - {x: -0.008270493, y: 0.4046577}
+      - {x: -0.002483847, y: 0.4080606}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: IdleSit
+      state: 17
+      frames:
+      - {fileID: -1748275373, guid: 0c57c7eef41774184892bbd046bd42cf, type: 3}
+      - {fileID: 1496653483, guid: 0c57c7eef41774184892bbd046bd42cf, type: 3}
+      - {fileID: -420176800, guid: 0c57c7eef41774184892bbd046bd42cf, type: 3}
+      - {fileID: -1928375229, guid: 0c57c7eef41774184892bbd046bd42cf, type: 3}
+      - {fileID: -1264001482, guid: 0c57c7eef41774184892bbd046bd42cf, type: 3}
+      - {fileID: 172087217, guid: 0c57c7eef41774184892bbd046bd42cf, type: 3}
+      - {fileID: -1764566175, guid: 0c57c7eef41774184892bbd046bd42cf, type: 3}
+      - {fileID: -1007407529, guid: 0c57c7eef41774184892bbd046bd42cf, type: 3}
+      fps: 12
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.038002264, y: 0.4836216}
+      - {x: 0.06027262, y: 0.47701976}
+      - {x: 0.046789285, y: 0.43063176}
+      - {x: 0.04009772, y: 0.3912785}
+      - {x: 0.032996044, y: 0.39006975}
+      - {x: 0.026119217, y: 0.41038314}
+      - {x: 0.023968237, y: 0.41177934}
+      - {x: 0.023384525, y: 0.411652}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Walk
+      state: 1
+      frames:
+      - {fileID: -1154884260, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+      - {fileID: 1937713398, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+      - {fileID: -459493734, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+      - {fileID: -2138857646, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+      - {fileID: -1708634071, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+      - {fileID: -915545832, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+      - {fileID: 27547995, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+      - {fileID: -610704779, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+      - {fileID: 1586847735, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+      - {fileID: 636831742, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+      - {fileID: 1014592579, guid: ad0e5a487c0d34dcda389f6336ecd846, type: 3}
+      fps: 10
+      loop: 1
+      strideUnits:
+      - 0.0837383
+      - 0.052336436
+      - 0.0837383
+      - 0.05059189
+      - 0.08199375
+      - 0.052336436
+      - 0.069781914
+      - 0.04884734
+      - 0.06629282
+      - 0.052336436
+      - 0.08199375
+      poseCentroids:
+      - {x: -0.02958041, y: 0.418169}
+      - {x: -0.03008442, y: 0.40479213}
+      - {x: -0.0254968, y: 0.40037093}
+      - {x: -0.014657472, y: 0.4092109}
+      - {x: -0.017296232, y: 0.41664585}
+      - {x: -0.025528, y: 0.41415483}
+      - {x: -0.033403646, y: 0.415775}
+      - {x: -0.030657899, y: 0.40044478}
+      - {x: -0.025471075, y: 0.40148354}
+      - {x: -0.008388383, y: 0.4197187}
+      - {x: -0.018747488, y: 0.41873622}
+      entryFrames: 0100000007000000
+      stanceFrames: 0100000007000000
+      landEntryFrames: 0100000007000000
+      switchFrames: 000000000100000003000000040000000500000008000000090000000a000000
+      switchTargets: 0600000001000000050000000600000006000000050000000500000006000000
+    - slot: Run
+      state: 6
+      frames:
+      - {fileID: 1154441922, guid: 923a793200f23464d9dc181f66ba4e22, type: 3}
+      - {fileID: 304500596, guid: 923a793200f23464d9dc181f66ba4e22, type: 3}
+      - {fileID: -2127238369, guid: 923a793200f23464d9dc181f66ba4e22, type: 3}
+      - {fileID: 934835280, guid: 923a793200f23464d9dc181f66ba4e22, type: 3}
+      - {fileID: -2114853347, guid: 923a793200f23464d9dc181f66ba4e22, type: 3}
+      - {fileID: -1316899621, guid: 923a793200f23464d9dc181f66ba4e22, type: 3}
+      - {fileID: 1488224183, guid: 923a793200f23464d9dc181f66ba4e22, type: 3}
+      - {fileID: 1954558007, guid: 923a793200f23464d9dc181f66ba4e22, type: 3}
+      - {fileID: 545474860, guid: 923a793200f23464d9dc181f66ba4e22, type: 3}
+      - {fileID: 226385481, guid: 923a793200f23464d9dc181f66ba4e22, type: 3}
+      fps: 10
+      loop: 1
+      strideUnits:
+      - 0.13704792
+      - 0.16511796
+      - 0.17337386
+      - 0.13622232
+      - 0.2352931
+      - 0.1135186
+      - 0.14035027
+      - 0.08668693
+      - 0.03715154
+      - 0.14860617
+      poseCentroids:
+      - {x: 0.029497802, y: 0.38594335}
+      - {x: -0.00021479631, y: 0.3672006}
+      - {x: -0.003574442, y: 0.36360997}
+      - {x: -0.0015802457, y: 0.35929045}
+      - {x: 0.0049117114, y: 0.36312723}
+      - {x: -0.0057946574, y: 0.37520805}
+      - {x: -0.008304979, y: 0.3841726}
+      - {x: 0.001630781, y: 0.39938995}
+      - {x: 0.0139956735, y: 0.41146877}
+      - {x: 0.029311638, y: 0.4041889}
+      entryFrames: 0100000002000000
+      stanceFrames: 
+      landEntryFrames: 04000000
+      switchFrames: 010000000500000006000000
+      switchTargets: 01000000030000000a000000
+    - slot: Turn
+      state: 7
+      frames:
+      - {fileID: 1017967130, guid: 6c247cb92e4f74824ac3bd781e601de6, type: 3}
+      - {fileID: 1850347151, guid: 6c247cb92e4f74824ac3bd781e601de6, type: 3}
+      - {fileID: -720018098, guid: 6c247cb92e4f74824ac3bd781e601de6, type: 3}
+      fps: 30
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.028387725, y: 0.40094554}
+      - {x: -0.008425408, y: 0.3501314}
+      - {x: -0.03022313, y: 0.3716939}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: TakeOff
+      state: 8
+      frames:
+      - {fileID: -1847343188, guid: ebdb8aa2257a4435194d8a7889fc7800, type: 3}
+      - {fileID: 1691557541, guid: ebdb8aa2257a4435194d8a7889fc7800, type: 3}
+      fps: 60
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.018368635, y: 0.4079219}
+      - {x: -0.03128427, y: 0.44286656}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Rise
+      state: 2
+      frames:
+      - {fileID: -771626471, guid: 5e5cdb6a23ca64ecf9ddcd8a454f40e9, type: 3}
+      - {fileID: 1865193679, guid: 5e5cdb6a23ca64ecf9ddcd8a454f40e9, type: 3}
+      - {fileID: -1272870927, guid: 5e5cdb6a23ca64ecf9ddcd8a454f40e9, type: 3}
+      fps: 12
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.07129371, y: 0.33829954}
+      - {x: -0.072080605, y: 0.33637595}
+      - {x: -0.068105854, y: 0.34426063}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Apex
+      state: 9
+      frames:
+      - {fileID: 79526870, guid: 7dfbae34acdee4e8689d82beee8fd4ea, type: 3}
+      - {fileID: -1432905433, guid: 7dfbae34acdee4e8689d82beee8fd4ea, type: 3}
+      fps: 12
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.04772554, y: 0.39390236}
+      - {x: -0.056275018, y: 0.40463263}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Fall
+      state: 3
+      frames:
+      - {fileID: -283901381, guid: 5b44d4b0a92914f858d828203cc542ad, type: 3}
+      - {fileID: 1512046211, guid: 5b44d4b0a92914f858d828203cc542ad, type: 3}
+      - {fileID: -1602510634, guid: 5b44d4b0a92914f858d828203cc542ad, type: 3}
+      fps: 12
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.041255865, y: 0.4605688}
+      - {x: -0.032731015, y: 0.46167797}
+      - {x: -0.030135687, y: 0.45998928}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Land
+      state: 4
+      frames:
+      - {fileID: -2031281286, guid: b63337b138177432ab8810d004ba46fd, type: 3}
+      - {fileID: 1160843105, guid: e29e7310b3e62426a9aa23f8a30682ce, type: 3}
+      - {fileID: 1742829812, guid: e29e7310b3e62426a9aa23f8a30682ce, type: 3}
+      - {fileID: 1485819137, guid: e29e7310b3e62426a9aa23f8a30682ce, type: 3}
+      fps: 15
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.03643167, y: 0.35121658}
+      - {x: -0.023815276, y: 0.26895946}
+      - {x: 0.019128546, y: 0.31156337}
+      - {x: -0.006710399, y: 0.3892023}
+      entryFrames: 0000000001000000
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: HardLand
+      state: 10
+      frames:
+      - {fileID: -35522852, guid: d10095835042e4c85bc323718e2dfcbd, type: 3}
+      - {fileID: 1344379889, guid: 910c0c3952cce4c14bd14f320c2fe38a, type: 3}
+      - {fileID: 576579667, guid: d10095835042e4c85bc323718e2dfcbd, type: 3}
+      - {fileID: -519609869, guid: d10095835042e4c85bc323718e2dfcbd, type: 3}
+      - {fileID: 1832112098, guid: d10095835042e4c85bc323718e2dfcbd, type: 3}
+      fps: 12
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.10318925, y: 0.3876948}
+      - {x: 0.030993309, y: 0.3266706}
+      - {x: 0.013241721, y: 0.22950217}
+      - {x: 0.06540303, y: 0.19384246}
+      - {x: 0.061411463, y: 0.21059458}
+      entryFrames: 01000000020000000300000004000000
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Death
+      state: 11
+      frames:
+      - {fileID: -428627585, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      - {fileID: -326350190, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      - {fileID: 200087863, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      - {fileID: -2053964452, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      - {fileID: -1654626305, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      - {fileID: -206392020, guid: e8435d90e27eb471ea98b2ba19251d3d, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.05310171, y: 0.43289077}
+      - {x: 0.01227214, y: 0.4471339}
+      - {x: 0.0035496822, y: 0.46526963}
+      - {x: 0.005143683, y: 0.46279573}
+      - {x: 0.00642506, y: 0.46086368}
+      - {x: 0.0061919084, y: 0.4607643}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Death_Pit
+      state: 11
+      frames:
+      - {fileID: -36655855, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      - {fileID: 601375681, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      - {fileID: 1722588489, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      - {fileID: 1180907809, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      - {fileID: 590088736, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      - {fileID: -2130035431, guid: 783e6bf33f7474ab4a132b971d5e743b, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.019881051, y: 0.44340244}
+      - {x: 0.011978215, y: 0.5057853}
+      - {x: 0.03622472, y: 0.5559493}
+      - {x: 0.049809363, y: 0.5721339}
+      - {x: 0.06790598, y: 0.5430918}
+      - {x: 0.080245726, y: 0.47704354}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Death_Spiked
+      state: 11
+      frames:
+      - {fileID: 600810279, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: -513402790, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: 491175074, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: 705115065, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: -43727612, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: -1955256013, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.4077233, y: 0.63351816}
+      - {x: 0.40453365, y: 0.651451}
+      - {x: 0.44439328, y: 0.27730727}
+      - {x: 0.43821445, y: 0.19073766}
+      - {x: 0.43707314, y: 0.17304854}
+      - {x: 0.43732217, y: 0.17308025}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Death_Crushed
+      state: 11
+      frames:
+      - {fileID: 212313328, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      - {fileID: -2143488246, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      - {fileID: 78257831, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      - {fileID: 334877004, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      - {fileID: 60433974, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      - {fileID: -2045450031, guid: a3744680366f843958fe1c8d285496ba, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.020756964, y: 0.36727303}
+      - {x: -0.023147, y: 0.18942668}
+      - {x: -0.05848812, y: 0.15363643}
+      - {x: -0.07130721, y: 0.1434033}
+      - {x: 0.030804645, y: 0.106211886}
+      - {x: 0.03577642, y: 0.1060098}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Death_Zapped
+      state: 11
+      frames:
+      - {fileID: 945398310, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      - {fileID: -1390063189, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      - {fileID: -773526299, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      - {fileID: -1442019301, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      - {fileID: 1723370292, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      - {fileID: 877165694, guid: c8e99392a78ba4c4099a90da1b145e60, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.048272163, y: 0.43817344}
+      - {x: -0.028419591, y: 0.47326377}
+      - {x: -0.029658888, y: 0.47510138}
+      - {x: -0.014220392, y: 0.46781957}
+      - {x: -0.022436162, y: 0.45673}
+      - {x: -0.023152318, y: 0.45581132}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Death_Arrow
+      state: 11
+      frames:
+      - {fileID: 399707736, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: -586110761, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: -2139104012, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: -856183213, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: 635296554, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: -1321777265, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.045622714, y: 0.37264842}
+      - {x: -0.0034068413, y: 0.6833561}
+      - {x: 0.004693604, y: 0.7698752}
+      - {x: 0.0122827655, y: 0.7673532}
+      - {x: -0.012702026, y: 0.2675647}
+      - {x: 0.015558596, y: 0.21512154}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Respawn
+      state: 12
+      frames:
+      - {fileID: 1283735219, guid: 9e8c4b42cf8134342b6eca0282ff9dea, type: 3}
+      - {fileID: 1486771351, guid: 9e8c4b42cf8134342b6eca0282ff9dea, type: 3}
+      - {fileID: 2071947641, guid: 9e8c4b42cf8134342b6eca0282ff9dea, type: 3}
+      - {fileID: -1328245990, guid: 9e8c4b42cf8134342b6eca0282ff9dea, type: 3}
+      fps: 20
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.0041110227, y: 0.41220313}
+      - {x: -0.0049534976, y: 0.41208068}
+      - {x: -0.006571702, y: 0.4106424}
+      - {x: -0.0068652853, y: 0.41098323}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Flip
+      state: 13
+      frames:
+      - {fileID: 1410831197, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
+      - {fileID: 969618047, guid: 9567685f8614d445d90fbe54692f77a0, type: 3}
+      - {fileID: 1830681964, guid: 9567685f8614d445d90fbe54692f77a0, type: 3}
+      - {fileID: 1029338024, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
+      - {fileID: 325891750, guid: 9567685f8614d445d90fbe54692f77a0, type: 3}
+      - {fileID: -1649872245, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
+      - {fileID: 818368210, guid: 9567685f8614d445d90fbe54692f77a0, type: 3}
+      - {fileID: 672375911, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
+      fps: 24
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.03835016, y: 0.4442874}
+      - {x: 0.003185181, y: 0.45550716}
+      - {x: 0.040072437, y: 0.4711551}
+      - {x: 0.08035104, y: 0.48189685}
+      - {x: 0.0913029, y: 0.46101755}
+      - {x: 0.103395425, y: 0.43495542}
+      - {x: 0.09738243, y: 0.3979663}
+      - {x: 0.09035399, y: 0.36109987}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Climb
+      state: 5
+      frames:
+      - {fileID: 717022148, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 949652992, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: -171854386, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 845876411, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: -201095639, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 590978878, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: -1500663907, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: -1050752815, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 406598358, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: -1748968661, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 5454462823923631830, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: -1095522907583740060, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: -6284555700845014977, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: -4644439502057805452, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 6849402253404776639, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 3830265574750756062, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 7742841292223687411, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 7692866242721459465, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 8050481149943468833, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 4148944573732501990, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: -4985214099032884995, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: -6284690998270994187, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 8083301371648918926, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 67747626804537839, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      - {fileID: 2303793646597333246, guid: 4ff5b769222dd47f39b4f55fb7a9338e, type: 3}
+      fps: 21
+      loop: 1
+      strideUnits:
+      - 0.01570093
+      - 0.029657314
+      - 0.019190026
+      - 0.017445479
+      - 0.012211835
+      - 0.02442367
+      - 0.020934574
+      - 0.020934574
+      - 0.017445479
+      - 0.03140186
+      - 0.017445479
+      - 0.019190026
+      - 0.017445479
+      - 0.046056062
+      - 0.022679122
+      - 0.026168218
+      - 0.021632394
+      - 0.042566966
+      - 0.018143298
+      - 0.01570093
+      - 0.017445479
+      - 0.027912766
+      - 0.011165107
+      - 0.009769468
+      - 0.03140186
+      poseCentroids:
+      - {x: -0.0042092027, y: 0.22134814}
+      - {x: -0.006555662, y: 0.22329624}
+      - {x: -0.00948046, y: 0.21158546}
+      - {x: -0.010294415, y: 0.20256959}
+      - {x: -0.009474117, y: 0.19180731}
+      - {x: -0.007872855, y: 0.18215121}
+      - {x: -0.0038292422, y: 0.1729766}
+      - {x: -0.003116174, y: 0.17499709}
+      - {x: 0.0011081895, y: 0.18060736}
+      - {x: 0.00029890134, y: 0.18493608}
+      - {x: 0.00057775865, y: 0.20462278}
+      - {x: 0.0016739868, y: 0.21271408}
+      - {x: 0.0048480374, y: 0.2269856}
+      - {x: 0.0059063397, y: 0.23159568}
+      - {x: 0.006918678, y: 0.22490099}
+      - {x: 0.008176587, y: 0.21791546}
+      - {x: 0.0072292686, y: 0.21320376}
+      - {x: 0.009076611, y: 0.20279582}
+      - {x: 0.011034081, y: 0.18411481}
+      - {x: 0.01220297, y: 0.18121906}
+      - {x: 0.010768973, y: 0.18368497}
+      - {x: 0.0052592065, y: 0.18604639}
+      - {x: 0.0002694819, y: 0.2006999}
+      - {x: -0.0012272522, y: 0.20646122}
+      - {x: -0.0027769837, y: 0.21440798}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Hang
+      state: 14
+      frames:
+      - {fileID: 2057251878, guid: 8e72ac5a7b6db4cb1a03f86bf107c1bc, type: 3}
+      fps: 1
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.00912355, y: 0.2218455}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Leap
+      state: 15
+      frames:
+      - {fileID: 647956196, guid: f1d3b134ed0c14e11b71fe1493374fc3, type: 3}
+      - {fileID: -222939169, guid: f1d3b134ed0c14e11b71fe1493374fc3, type: 3}
+      - {fileID: -1015031711, guid: f1d3b134ed0c14e11b71fe1493374fc3, type: 3}
+      fps: 9
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.012440527, y: 0.46262547}
+      - {x: -0.06803846, y: 0.44550034}
+      - {x: -0.058821652, y: 0.40879324}
+      entryFrames: 01000000
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Door
+      state: 16
+      frames:
+      - {fileID: 1638089497, guid: e2df95a3ed0cb408eaf9276a4679531d, type: 3}
+      - {fileID: 2049679213, guid: e2df95a3ed0cb408eaf9276a4679531d, type: 3}
+      - {fileID: 841133242, guid: e2df95a3ed0cb408eaf9276a4679531d, type: 3}
+      - {fileID: 1616062250, guid: e2df95a3ed0cb408eaf9276a4679531d, type: 3}
+      - {fileID: 692330206, guid: e2df95a3ed0cb408eaf9276a4679531d, type: 3}
+      - {fileID: -489309151, guid: e2df95a3ed0cb408eaf9276a4679531d, type: 3}
+      - {fileID: 861863636, guid: e2df95a3ed0cb408eaf9276a4679531d, type: 3}
+      - {fileID: 2036538307, guid: e2df95a3ed0cb408eaf9276a4679531d, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.0049542673, y: 0.5321164}
+      - {x: 0.0036297138, y: 0.61177844}
+      - {x: 0.021366462, y: 0.41627502}
+      - {x: 0.005090673, y: 0.42808115}
+      - {x: 0.0032701255, y: 0.45051703}
+      - {x: 0.0048252987, y: 0.45245624}
+      - {x: 0.008507479, y: 0.45470613}
+      - {x: 0.008611427, y: 0.45417193}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+  deathClips: {fileID: 11400000, guid: 70262d70ca4584aed83d5aa9e93b2d57, type: 2}
+  signals: {fileID: 6642481349442126384}
   motor: {fileID: -6960851939468905688}
   observer: {fileID: 0}
+--- !u!114 &6642481349442126384
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8746479637745861922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 206e2201dad8b4079a0e71cb1ddc6e3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Presentation.CatPresentationSignals
+  motor: {fileID: -6960851939468905688}

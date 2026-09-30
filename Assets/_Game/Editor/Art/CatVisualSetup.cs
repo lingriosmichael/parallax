@@ -53,7 +53,8 @@ namespace Parallax.Editor.Art
         }
 
         // Strides (PAX-V07 item 1): how far a planted paw moves back from each frame to the next, in sprite px at the
-        // manifest's PPU (143.3036), measured on the imported sheets: each frame's contact pixels (its lowest opaque row,
+        // manifest's PPU (143.3036), measured on the imported sheets drawn at scale 1 (PAX-A14: the setup multiplies them by
+        // the slot's manifest `scale`, so Run's, drawn 1.18x since A14, scale with its legs): each frame's contact pixels (its lowest opaque row,
         // alpha >= 0.5, what stands on the ground) clustered into paws (gaps over 3 px split them) and matched to the next
         // frame's (a planted paw moves 0-30 px back); the step is the median of the matched paws. Where no paw is planted
         // on both frames (Walk 10 -> 0: the fore paw lifts as the hind paw lands beside it; Run 0 -> 1), the step comes from
@@ -74,17 +75,21 @@ namespace Parallax.Editor.Art
 
         // Item 2 (see the air notes below; declared before Rows, which reads them during static initialization).
         static readonly int[] RunTouchDown = { 4 };
-        // HardLand enters on its impact crouch or later (final critic): frame 0 is a tall pre-impact stand, the best centroid
-        // match after a fall but a stiff pop-up on screen. The landing's pose match picks among these (ruled 2026-09-30).
-        static readonly int[] HardLandEntry = { 1, 2, 3 };
+        // PAX-A14 target 2: each landing starts on its contact frame (a bridge sheet: the crouch with its legs part extended),
+        // then compresses into the crouch. Land = [contact, Land 0-2]: a fall enters on the contact (8.7 phone px from Fall 2;
+        // Land 2, the stand, 6.0 px away, is no longer an entry), HardLand's recovery on Land 0 (8.3 px; the contact is 13.7).
+        // HardLand = [0, contact, 1-3]: its frame 0, a tall pre-impact stand, stays out (final critic: a stiff pop-up).
+        static readonly int[] LandEntry = { 0, 1 };
+        static readonly int[] HardLandEntry = { 1, 2, 3, 4 };
 
-        // Walk↔Run switch frames (ruled 2026-09-30: switch at the matching foot position). Measured on the sheets: the overlap
-        // of the legs (the silhouette's lowest 45 px, both frames aligned at the shared pivot) between every Walk and Run frame.
-        // The best-matching pairs, all above 0.43: Walk 3/4/9/10 -> Run 5 (0.45 / 0.48 / 0.44 / 0.49), and Run 5/6 -> Walk 10
-        // (0.49 / 0.44), Run 3 -> Walk 3 (0.43). Every other pair is 0.19-0.42. The body still drops or rises 7.7-8.8 phone px
-        // at the switch: Run's body is drawn about 12 px lower than Walk's (NEEDED_ASSETS: Walk↔Run bridge frames).
-        static readonly int[] WalkSwitch = { 3, 4, 9, 10 }, WalkSwitchToRun = { 5, 5, 5, 5 };
-        static readonly int[] RunSwitch = { 3, 5, 6 }, RunSwitchToWalk = { 3, 10, 10 };
+        // Walk↔Run switch frames (ruled 2026-09-30: switch at the matching foot position). Measured on the sheets
+        // (cat_inbetween.leg_overlap): the overlap of the legs (the silhouette's lowest 45 px, both frames aligned at the shared
+        // pivot) between every Walk and Run frame; each frame's best partner where it overlaps at least 0.40. PAX-A14: with Run
+        // drawn at Walk's size (its torso length), the body no longer drops at the switch; every switch below moves the
+        // centroid 2.6-3.8 phone px (it was 7.7-8.8). Walk 0/1/3/4/5/8/9/10 -> Run 6/1/5/6/6/5/5/6 (0.44 / 0.40 / 0.49 / 0.43 /
+        // 0.44 / 0.43 / 0.43 / 0.44); Run 1/5/6 -> Walk 1/3/10 (0.40 / 0.49 / 0.44). Every other Run frame's best is 0.21-0.37.
+        static readonly int[] WalkSwitch = { 0, 1, 3, 4, 5, 8, 9, 10 }, WalkSwitchToRun = { 6, 1, 5, 6, 6, 5, 5, 6 };
+        static readonly int[] RunSwitch = { 1, 5, 6 }, RunSwitchToWalk = { 1, 3, 10 };
 
         // Climb (PAX-V07 item 3): the 25-frame loop (§11 R7) is drawn climbing in place, so the body's climb over each frame
         // is how far a gripping paw moves down the cell to the next frame. Measured on the imported sheet: the vine-side fore
@@ -114,7 +119,7 @@ namespace Parallax.Editor.Art
             new ClipRow("Rise", CatAnimState.Rise, 12f, false),
             new ClipRow("Apex", CatAnimState.Apex, 12f, false),
             new ClipRow("Fall", CatAnimState.Fall, 12f, false),
-            new ClipRow("Land", CatAnimState.Land, LandFps, false),
+            new ClipRow("Land", CatAnimState.Land, LandFps, false, entry: LandEntry),
             new ClipRow("HardLand", CatAnimState.HardLand, HardLandFps, false, entry: HardLandEntry),
             new ClipRow("Death", CatAnimState.Death, 10f, false),
             new ClipRow("Death_Pit", CatAnimState.Death, 10f, false),
@@ -123,7 +128,8 @@ namespace Parallax.Editor.Art
             new ClipRow("Death_Zapped", CatAnimState.Death, 10f, false),
             new ClipRow("Death_Arrow", CatAnimState.Death, 10f, false),
             new ClipRow("Respawn", CatAnimState.Respawn, 20f, false),
-            new ClipRow("Flip", CatAnimState.Flip, 12f, false),
+            // PAX-A14 target 3: 4 drawn roll cels and 4 turned in-betweens (the FlipRoll bridge sheet) at 24 fps: still 0.33 s.
+            new ClipRow("Flip", CatAnimState.Flip, 24f, false),
             // Climb is played by the distance climbed (its strides; the fps is unused); Hang is one frame.
             new ClipRow("Climb", CatAnimState.Climb, 21f, true, ClimbStridePx),
             new ClipRow("Hang", CatAnimState.Hang, 1f, false),
@@ -160,9 +166,9 @@ namespace Parallax.Editor.Art
         //   Rise 0's hind legs (0.25 u below the paws) clear the floor.
         // - airThreshold 2 u/s: the apex band lasts 4 / 30 = 0.13 s (8 frames), long enough for the Apex stretch to read
         //   between Rise and Fall; Rise and Fall each run ~0.26 s, their 3 frames following the velocity.
-        // - Land 3 frames at 15 fps, HardLand 4 at 12 fps; each enters on its frame matching the fall's last pose (ruled
-        //   2026-09-30; after a normal fall that is Land 2, 6 phone px from Fall 2, against 15 for Land 0) and plays to its end.
-        //   HardLand recovers through Land, entered on Land's frame matching HardLand's last pose.
+        // - Land 4 frames at 15 fps, HardLand 5 at 12 fps (each with its PAX-A14 contact frame); each enters on its entry frame
+        //   matching the fall's last pose (ruled 2026-09-30; the contact frame, see LandEntry) and plays to its end. HardLand
+        //   recovers through Land, entered on Land's entry frame matching HardLand's last pose (Land 0).
         // - §3 (ruled 2026-09-30): any movement input cancels the landing on the same frame; a cat moving on at touchdown goes
         //   straight into its gait. speedLeadTolerance 0.5 u/s: the motor changes the body's speed by 1.2 u/s (accelerating) or
         //   1.6 u/s (braking) in one tick; the drawn speed trails by up to a tick, so a body slower than drawn by more than 0.5
@@ -292,7 +298,7 @@ namespace Parallax.Editor.Art
                 : $"CatVisualSetup: {string.Join("; ", changes)}.");
         }
 
-        [Serializable] sealed class ManifestSlot { public string slot; public string file; public int frames; public int[] cell; public float[] pivotNormalized; public bool wired; }
+        [Serializable] sealed class ManifestSlot { public string slot; public string file; public int frames; public int[] cell; public float[] pivotNormalized; public bool wired; public float scale = 1f; public string bridgeFor; public int[] bridgePositions; }
         [Serializable] sealed class Manifest { public float ppu; public ManifestSlot[] slots; }
 
         static Manifest LoadManifest()
@@ -322,14 +328,38 @@ namespace Parallax.Editor.Art
             foreach (ClipRow row in Rows)
             {
                 ManifestSlot slot = SlotOf(manifest, row.Slot);
-                string prefix = slot != null ? Path.GetFileNameWithoutExtension(slot.file) + "_" : "";
-                result[row.Slot] = slot == null ? new Sprite[0] : AssetDatabase.LoadAllAssetsAtPath(SheetPath(slot))
-                    .OfType<Sprite>()
-                    .Where(sprite => sprite.name.StartsWith(prefix, StringComparison.Ordinal))
-                    .OrderBy(sprite => sprite.name, StringComparer.Ordinal)
-                    .ToArray();
+                result[row.Slot] = slot == null ? new Sprite[0] : WithBridges(manifest, row.Slot, SheetSprites(slot));
             }
             return result;
+        }
+
+        static Sprite[] SheetSprites(ManifestSlot slot)
+        {
+            string prefix = Path.GetFileNameWithoutExtension(slot.file) + "_";
+            return AssetDatabase.LoadAllAssetsAtPath(SheetPath(slot)).OfType<Sprite>()
+                .Where(sprite => sprite.name.StartsWith(prefix, StringComparison.Ordinal))
+                .OrderBy(sprite => sprite.name, StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        static ManifestSlot[] BridgesOf(Manifest manifest, string slot) => manifest.slots.Where(s => s.bridgeFor == slot).ToArray();
+
+        // PAX-A14 §3 B: a clip's bridge frames live on their own sheets (manifest `bridgeFor`); each goes in at its
+        // `bridgePositions` in the combined clip, the clip's own frames fill the rest in order. A gap (a bad position) stays
+        // null, and ValidateSheets reports it.
+        static Sprite[] WithBridges(Manifest manifest, string slot, Sprite[] own)
+        {
+            ManifestSlot[] bridges = BridgesOf(manifest, slot);
+            if (bridges.Length == 0) return own;
+            var combined = new Sprite[own.Length + bridges.Sum(b => b.bridgePositions?.Length ?? 0)];
+            foreach (ManifestSlot b in bridges)
+            {
+                Sprite[] frames = SheetSprites(b);
+                for (int i = 0; b.bridgePositions != null && i < b.bridgePositions.Length && i < frames.Length; i++)
+                    if (b.bridgePositions[i] >= 0 && b.bridgePositions[i] < combined.Length) combined[b.bridgePositions[i]] = frames[i];
+            }
+            for (int i = 0, k = 0; i < combined.Length && k < own.Length; i++) if (combined[i] == null) combined[i] = own[k++];
+            return combined;
         }
 
         // A08's rule (manifest `pivotRule`): every sheet has its own cell, and one world pivot (the paw row) placed in each
@@ -352,54 +382,77 @@ namespace Parallax.Editor.Art
                     valid = false;
                     continue;
                 }
-                var importer = AssetImporter.GetAtPath(SheetPath(slot)) as TextureImporter;
+                bool sheets = ValidateSheet(slot, manifest.ppu);
+                foreach (ManifestSlot bridge in BridgesOf(manifest, row.Slot)) sheets &= ValidateSheet(bridge, manifest.ppu);
+                valid &= sheets;
+                if (!sheets) continue;
                 Sprite[] frames = framesBySlot[row.Slot];
-                if (importer == null || frames.Length != slot.frames)
+                if (frames.Any(f => f == null))
                 {
-                    Debug.LogError($"CatVisualSetup: {row.Slot} has {frames.Length} imported sprites at '{SheetPath(slot)}', the manifest {slot.frames}.");
-                    valid = false;
-                    continue;
-                }
-                if (Mathf.Abs(importer.spritePixelsPerUnit - manifest.ppu) > 0.01f)
-                {
-                    Debug.LogError($"CatVisualSetup: {row.Slot} PPU {importer.spritePixelsPerUnit} != the manifest's {manifest.ppu}.");
+                    Debug.LogError($"CatVisualSetup: {row.Slot}'s bridge positions leave a gap in its {frames.Length} frames.");
                     valid = false;
                 }
-                if (row.StridePx != null && row.StridePx.Length != slot.frames)
+                if (row.StridePx != null && row.StridePx.Length != frames.Length)
                 {
-                    Debug.LogError($"CatVisualSetup: {row.Slot} has {row.StridePx.Length} strides for {slot.frames} frames.");
+                    Debug.LogError($"CatVisualSetup: {row.Slot} has {row.StridePx.Length} strides for {frames.Length} frames.");
                     valid = false;
                 }
-                var pivot = new Vector2(slot.pivotNormalized[0], slot.pivotNormalized[1]);
-                foreach (Sprite frame in frames)
+            }
+            return valid;
+        }
+
+        // One sheet against its manifest entry: the sprite count, the PPU, and every sprite's cell and pivot.
+        static bool ValidateSheet(ManifestSlot slot, float ppu)
+        {
+            var importer = AssetImporter.GetAtPath(SheetPath(slot)) as TextureImporter;
+            Sprite[] frames = SheetSprites(slot);
+            if (importer == null || frames.Length != slot.frames)
+            {
+                Debug.LogError($"CatVisualSetup: {slot.slot} has {frames.Length} imported sprites at '{SheetPath(slot)}', the manifest {slot.frames}.");
+                return false;
+            }
+            bool valid = true;
+            if (Mathf.Abs(importer.spritePixelsPerUnit - ppu) > 0.01f)
+            {
+                Debug.LogError($"CatVisualSetup: {slot.slot} PPU {importer.spritePixelsPerUnit} != the manifest's {ppu}.");
+                valid = false;
+            }
+            var pivot = new Vector2(slot.pivotNormalized[0], slot.pivotNormalized[1]);
+            foreach (Sprite frame in frames)
+            {
+                Vector2 framePivot = new(frame.pivot.x / frame.rect.width, frame.pivot.y / frame.rect.height);
+                if (!Mathf.Approximately(frame.rect.width, slot.cell[0]) || !Mathf.Approximately(frame.rect.height, slot.cell[1])
+                    || Vector2.Distance(framePivot, pivot) > 0.002f)
                 {
-                    Vector2 framePivot = new(frame.pivot.x / frame.rect.width, frame.pivot.y / frame.rect.height);
-                    if (!Mathf.Approximately(frame.rect.width, slot.cell[0]) || !Mathf.Approximately(frame.rect.height, slot.cell[1])
-                        || Vector2.Distance(framePivot, pivot) > 0.002f)
-                    {
-                        Debug.LogError($"CatVisualSetup: '{frame.name}' isn't the manifest's {slot.cell[0]}x{slot.cell[1]} cell with pivot {pivot}.");
-                        valid = false;
-                    }
+                    Debug.LogError($"CatVisualSetup: '{frame.name}' isn't the manifest's {slot.cell[0]}x{slot.cell[1]} cell with pivot {pivot}.");
+                    valid = false;
                 }
             }
             return valid;
         }
 
         // Each frame's silhouette centroid (alpha >= 0.5, as the capture checks count a pixel drawn), relative to the pivot,
-        // in world units at facing +1: read from the sheet PNG on disk, so the importer needs no Read/Write.
+        // in world units at facing +1: read from each frame's sheet PNG on disk (PAX-A14: a clip's bridge frames come from
+        // their own sheets), so the importer needs no Read/Write.
         static Vector2[] PoseCentroids(Sprite[] frames)
         {
             var result = new Vector2[frames.Length];
             if (frames.Length == 0) return result;
-            string path = AssetDatabase.GetAssetPath(frames[0].texture);
             var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
             try
             {
-                if (!tex.LoadImage(File.ReadAllBytes(path))) throw new InvalidOperationException($"can't read '{path}'");
-                Color32[] pixels = tex.GetPixels32();
-                float scale = tex.width / (float)frames[0].texture.width;
+                string loaded = null;
+                Color32[] pixels = null;
                 for (int f = 0; f < frames.Length; f++)
                 {
+                    string path = AssetDatabase.GetAssetPath(frames[f].texture);
+                    if (path != loaded)
+                    {
+                        if (!tex.LoadImage(File.ReadAllBytes(path))) throw new InvalidOperationException($"can't read '{path}'");
+                        pixels = tex.GetPixels32();
+                        loaded = path;
+                    }
+                    float scale = tex.width / (float)frames[f].texture.width;
                     Rect r = frames[f].rect;
                     int x0 = Mathf.RoundToInt(r.x * scale), y0 = Mathf.RoundToInt(r.y * scale), w = Mathf.RoundToInt(r.width * scale), h = Mathf.RoundToInt(r.height * scale);
                     double sx = 0, sy = 0; int n = 0;
@@ -444,7 +497,8 @@ namespace Parallax.Editor.Art
                     for (int k = 0; k < frames.Length; k++) sprites.GetArrayElementAtIndex(k).objectReferenceValue = frames[k];
                     changed = true;
                 }
-                float[] strides = row.StridePx != null ? row.StridePx.Select(px => px / manifest.ppu).ToArray() : new float[0];
+                float drawn = SlotOf(manifest, row.Slot).scale;   // PAX-A14: strides were measured at scale 1
+                float[] strides = row.StridePx != null ? row.StridePx.Select(px => px * drawn / manifest.ppu).ToArray() : new float[0];
                 changed |= SetFloats(clip.FindPropertyRelative("strideUnits"), strides);
                 changed |= SetInts(clip.FindPropertyRelative("entryFrames"), row.Entry);
                 changed |= SetInts(clip.FindPropertyRelative("stanceFrames"), row.Stance);

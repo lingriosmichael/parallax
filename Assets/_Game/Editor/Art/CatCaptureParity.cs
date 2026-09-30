@@ -77,6 +77,24 @@ namespace Parallax.Editor.Art
             return null;
         }
 
+        static int SwitchWait(SerializedProperty clip, float speed)
+        {
+            SerializedProperty strides = clip.FindPropertyRelative("strideUnits"), switches = clip.FindPropertyRelative("switchFrames");
+            var at = new List<int>();
+            for (int k = 0; k < switches.arraySize; k++) at.Add(switches.GetArrayElementAtIndex(k).intValue);
+            at.Sort();
+            float longest = 0f;
+            int n = strides.arraySize;
+            for (int k = 0; k < at.Count && n > 0; k++)
+            {
+                int f = at[k], to = at[(k + 1) % at.Count], steps = 0;
+                float d = 0f;
+                do { d += strides.GetArrayElementAtIndex(f).floatValue; f = (f + 1) % n; } while (f != to && ++steps < n);
+                longest = Mathf.Max(longest, d);
+            }
+            return speed > 0f && !float.IsInfinity(speed) ? Mathf.CeilToInt(longest / speed * CatCapture.FrameRate) : 0;
+        }
+
         static bool GroundState(string state) => state == "Idle" || state == "Walk" || state == "Run" || state == "Turn";
 
         // The presenter's thresholds, from its config and its Turn clip (serialized data; the presenter's fields are private).
@@ -100,22 +118,11 @@ namespace Parallax.Editor.Art
             for (int i = 0; clips != null && i < clips.arraySize; i++)
             {
                 SerializedProperty c = clips.GetArrayElementAtIndex(i);
-                if (c.FindPropertyRelative("slot").stringValue != "Walk") continue;
-                // The longest stretch of Walk between two switch frames (cyclic), in frames at the run threshold.
-                SerializedProperty strides = c.FindPropertyRelative("strideUnits"), switches = c.FindPropertyRelative("switchFrames");
-                var at = new List<int>();
-                for (int k = 0; k < switches.arraySize; k++) at.Add(switches.GetArrayElementAtIndex(k).intValue);
-                at.Sort();
-                float longest = 0f;
-                int n = strides.arraySize;
-                for (int k = 0; k < at.Count && n > 0; k++)
-                {
-                    int f = at[k], to = at[(k + 1) % at.Count], steps = 0;
-                    float d = 0f;
-                    do { d += strides.GetArrayElementAtIndex(f).floatValue; f = (f + 1) % n; } while (f != to && ++steps < n);
-                    longest = Mathf.Max(longest, d);
-                }
-                if (speeds.RunEnter > 0f && !float.IsInfinity(speeds.RunEnter)) speeds.SwitchWaitFrames = Mathf.CeilToInt(longest / speeds.RunEnter * CatCapture.FrameRate);
+                string slot = c.FindPropertyRelative("slot").stringValue;
+                // The longest stretch of a gait between two of its switch frames (cyclic), in frames at the threshold it
+                // switches at: Walk -> Run at the run threshold; PAX-A14, the mirror: Run -> Walk at the run-exit threshold.
+                if (slot == "Walk") speeds.SwitchWaitFrames = SwitchWait(c, speeds.RunEnter);
+                else if (slot == "Run") speeds.RunSwitchWaitFrames = SwitchWait(c, speeds.RunExit);
             }
             // Turn holds its flip frame for turnHoldTime (ruled 2026-09-30); the Turn clip isn't played.
             if (config != null) speeds.TurnSeconds = config.TurnHoldTime;

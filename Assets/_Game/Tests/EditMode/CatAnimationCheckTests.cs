@@ -40,13 +40,16 @@ namespace Parallax.Tests.EditMode
 
         static readonly string[] Flip = { "flip_stand_down", "flip_walk_down", "flip_jump_down" };
 
+        // PAX-A14: a cat standing still on a moving floor (Trap Lab room 12's Mover).
+        static readonly string[] Carry = { "carry_stand_down" };
+
         // The rooms the developer plays by hand (Trap Lab 0-3 and L001), both gravities where the capture has them.
         static readonly string[] Rooms = { "traplab0_walk_down", "traplab3_walk_up", "L001_solution_down", "traplab2_pit_down" };
 
         // Scenarios with a death hold: one per death kind (the pit, spikes, the crusher, an arrow, the storm cloud).
         static readonly string[] Deaths = { "traplab2_pit_down", "death_spiked_down", "death_crushed_down", "death_arrow_down", "death_zapped_down" };
 
-        static IEnumerable<string> All => Ground.Concat(Air).Concat(Climb).Concat(Flip).Concat(Rooms).Concat(Deaths.Skip(1));
+        static IEnumerable<string> All => Ground.Concat(Air).Concat(Climb).Concat(Flip).Concat(Carry).Concat(Rooms).Concat(Deaths.Skip(1));
         static IEnumerable<string> Moving => All.Where(n => n != "ground_idle_down" && n != "ground_idle_up");
 
         [Serializable] sealed class Paws { public int frames_checked; public int frames_over; public float max_depth_sprite_px; public int[] first_frames_over; }
@@ -56,7 +59,8 @@ namespace Parallax.Tests.EditMode
         [Serializable] sealed class Span { public int first; public int last; public int held_frame_at; }
         [Serializable] sealed class Hold { public int holds; public Span[] spans; public bool pass; }
         [Serializable] sealed class Door { public int first_frame = -1; public string last_clip; public int last_clip_frame; public bool pass; }
-        [Serializable] sealed class Checks { public string scenario; public bool completed; public Paws paws_in_floor; public Slide foot_slide; public Rules state_vs_motor; public Hold hold_timing; public Door door; }
+        [Serializable] sealed class Carried { public int frame_pairs; public float max_jitter_phone_px, max_cat_judder_phone_px, max_floor_judder_phone_px; public bool pass; }
+        [Serializable] sealed class Checks { public string scenario; public bool completed; public Paws paws_in_floor; public Slide foot_slide; public Rules state_vs_motor; public Hold hold_timing; public Door door; public Carried carried; }
 
         static Dictionary<string, Checks> results;
 
@@ -109,6 +113,21 @@ namespace Parallax.Tests.EditMode
             Assert.IsTrue(c.completed, "L001's solution didn't complete");
             Assert.NotNull(c.door, "no door check");
             Assert.IsTrue(c.door.pass, $"Door from frame {c.door.first_frame}, last clip {c.door.last_clip}[{c.door.last_clip_frame}]");
+        }
+
+        // PAX-A14 (L017's Slide_4 report): a cat standing on a moving floor rides it smoothly: at the floor's steady speed the drawn
+        // cat and the drawn floor each move speed x 1/60 s every frame (no 50-on-60 judder), and the cat stays put on the floor.
+        // The floor's body interpolates, and the presenter draws the cat where interpolation would, though the carry's position
+        // write drops it (measured in play mode, 2026-09-30).
+        [TestCaseSource(nameof(Carry))]
+        public void ACarriedCat_StandsStillOnItsFloor_WithoutShaking(string scenario)
+        {
+            Carried c = Of(scenario).carried;
+            Assert.NotNull(c, "no carried check");
+            Assert.Greater(c.frame_pairs, 100, "the cat wasn't carried standing still");
+            Assert.LessOrEqual(c.max_cat_judder_phone_px, 0.5f, "the drawn cat's judder at the floor's steady speed (phone px)");
+            Assert.LessOrEqual(c.max_floor_judder_phone_px, 0.5f, "the drawn floor's judder at its steady speed (phone px)");
+            Assert.LessOrEqual(c.max_jitter_phone_px, 0.5f, "the drawn cat against the drawn floor, frame to frame (phone px)");
         }
 
         [TestCaseSource(nameof(Deaths))]

@@ -33,6 +33,12 @@ namespace Parallax.Gameplay.Player
         public Collider2D GroundCollider { get; private set; }
         /// <summary>PAX-093 (D-095): true on the step a grounded cat jumped (not a leap off a vine).</summary>
         public bool JumpedThisStep { get; private set; }
+        /// <summary>PAX-A14 (presentation only, read by CatVisualPresenter): this step's Carry floor velocity (zero when no
+        /// floor carried the cat), the position ApplyCarry wrote (zero when none: a position write drops Rigidbody2D
+        /// interpolation for the step), and the body's position when the step began. Written only; never read by motion.</summary>
+        public Vector2 CarrierVelocity { get; private set; }
+        public Vector2 CarryShift { get; private set; }
+        public Vector2 StepStartPosition { get; private set; }
         public bool IsFrozen { get; private set; }
         public bool IsClimbing => climber != null && climber.IsClimbing;
         public ClimbVine ClimbedVine => climber?.Vine;
@@ -102,8 +108,10 @@ namespace Parallax.Gameplay.Player
             Vector2 down = gravity.Direction, right = new(-down.y, down.x);
             Vector2 carry = MovingFloorMath.Carry(displacement, down);
             float along = Vector2.Dot(carry, right), away = Vector2.Dot(carry, down);
+            CarrierVelocity = displacement / dt;
             if (JumpedThisStep) { body.linearVelocity += right * (along / dt); return; }
             body.position += right * along;
+            CarryShift = right * along;
             Vector2 v = body.linearVelocity;
             float fall = Vector2.Dot(v, down);
             if (away > 0f && fall < away / dt) body.linearVelocity = v + down * (away / dt - fall);
@@ -152,6 +160,8 @@ namespace Parallax.Gameplay.Player
             // driver upstream (so no source's latched edges leak past the hold) but discarded
             // here; velocity/rotation/gravity stay exactly as Freeze() left them.
             JumpedThisStep = false;
+            CarrierVelocity = CarryShift = Vector2.zero;
+            if (body != null) StepStartPosition = body.position;
             if (IsFrozen) return;
 
             SetCommand(input);

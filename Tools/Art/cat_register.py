@@ -28,6 +28,8 @@ from cat_frames import (ALPHA_FLOOR, BLEED_PX, CATS, CELL, COLLIDER_H, COLLIDER_
                         normal_frames, pick_loop_count, place, png_bytes, scale_frame, sheet_image, slot_indices,
                         astc_bytes, bleed, cell_for, downscale, touches_edge)
 from cat_review import build_review  # noqa: E402
+from cat_consistency import detached_islands, drop_specks, luma_quantiles, match_style, reach, torso_scale  # noqa: E402
+from cat_inbetween import contact_frame, roll_inbetweens  # noqa: E402
 
 
 # ---------- the whole set ----------
@@ -37,6 +39,8 @@ CELL_SCALE = FINAL_CELL / CELL      # 0.75
 NOSE_BACK_UNITS = 0.06              # the shared pivot sits 0.06 u behind the torso centre, so the collider stays inside the nose
 WORK_PAD = CELL                     # the working canvas has a whole source cell of room on every side, so nothing is clipped
 ASTC_BLOCK = 6
+STYLE_REFERENCE = "Walk"            # PAX-A14 §3 A: every clip's tones are matched to Walk's (slot "style": false opts out)
+REACH_BAND_PX = 20                  # PAX-A14: a death clip's reach is measured on its lowest 20 source px (about 0.1 u)
 
 
 def load_sources(spec):
@@ -69,12 +73,24 @@ def register(preview_climb_loop=5):
     pivot_x = torso_cx - NOSE_BACK_UNITS * ppu_src
     paw_row = max(measure_body(f)["pawRow"] for f in sources["Idle"]["frames"])
 
+    # PAX-A14 §3 A: style first (each clip's luma distribution onto Walk's; alpha untouched), then scale: a standing
+    # frame's body height (option B, "scaleFromFrame") or the torso length against another clip ("scaleByTorso": Run's
+    # gallop is drawn low, so its body height can't be the rule).
+    style_ref = luma_quantiles(sources[STYLE_REFERENCE]["frames"])
+    for name, src in sources.items():
+        src["styled"] = name != STYLE_REFERENCE and slots[name].get("style", True)
+        if src["styled"]:
+            q = luma_quantiles(src["frames"])
+            src["frames"] = [match_style(f, q, style_ref) for f in src["frames"]]
     scales = {}
     for name, src in sources.items():
         factor = 1.0
         if "scaleFromFrame" in slots[name]:
             ref, _ = clip_frames(slots[name]["clip"], [slots[name]["scaleFromFrame"]])
             factor = idle0["bodyHeightPx"] / measure_body(cleanup(ref[0]))["bodyHeightPx"]
+        elif "scaleByTorso" in slots[name]:
+            factor = torso_scale(sources[slots[name]["scaleByTorso"]]["frames"], src["frames"])
+        if factor != 1.0:
             src["frames"] = [scale_frame(f, factor) for f in src["frames"]]
         scales[name] = factor
 
@@ -88,11 +104,22 @@ def register(preview_climb_loop=5):
         torso_target = wx + NOSE_BACK_UNITS * ppu_src
         frames, rep = place(sources[name]["frames"], slots[name]["role"], torso_target, wy, air_target, climb_target,
                             (work, work))
+        if "reachUnits" in slots[name]:
+            # PAX-A14 §3 A.4: re-registered along the facing so the reach frame's lowest band ends `reachUnits` ahead of
+            # the pivot (the death clip's paws meet what killed the cat).
+            k = slots[name].get("reachFrame", 0)
+            dx = int(round((slots[name]["reachUnits"] - reach(frames[k], wx, ppu_src, REACH_BAND_PX)) * ppu_src))
+            frames = [shift_into_cell(f, dx, 0, (work, work))[0] for f in frames]
+            rep["reachShiftUnits"] = round(dx / ppu_src, 3)
         placed[name], reports[name] = frames, rep
         if name == "Walk":
             cs = [body_centre(f) for f in frames]
             air_target = (float(np.median([c[0] for c in cs])), float(np.median([c[1] for c in cs])))
             climb_target = (wx, wy + 0.5 - COLLIDER_H / 2.0 * ppu_src)
+
+    # PAX-A14 §3 B: the bridge frames, made from the registered frames (own sheet per seam, a slot with `bridgeFor`).
+    for b in spec.get("bridges", []):
+        placed[b["slot"]] = bridge_frames(b, placed[b["bridgeFor"]], wy, ppu_src)
 
     # Scale to the 192 px base and crop each sheet to its cell around the shared world pivot.
     ppu = ppu_src * CELL_SCALE
@@ -103,7 +130,9 @@ def register(preview_climb_loop=5):
         small = [downscale(f, CELL_SCALE) for f in frames]
         ox, oy, w, h = cell_for(small, pivot, base_pivot, FINAL_CELL, block=ASTC_BLOCK)
         cropped = [f[oy:oy + h, ox:ox + w] for f in small]
-        sheets[name] = {"frames": cropped, "pivot": (pivot[0] - ox, pivot[1] - oy), "cell": (w, h)}
+        specks = sum(detached_islands(f) for f in cropped)
+        cropped = [drop_specks(f) for f in cropped]      # PAX-A14 §3 A.3: detached fur fringe, never drawn
+        sheets[name] = {"frames": cropped, "pivot": (pivot[0] - ox, pivot[1] - oy), "cell": (w, h), "specksRemoved": specks}
 
     files, slot_manifest = {}, []
     for s in spec["slots"]:
@@ -122,6 +151,8 @@ def register(preview_climb_loop=5):
             "pivotNormalized": [round(sh["pivot"][0] / w, 5), round(1.0 - sh["pivot"][1] / h, 5)],
             "clippedPx": reports[name]["clippedPx"], "sourceCutAtCellEdge": sources[name]["edgeTouch"],
             "vineKeyed": bool(s.get("vine")), "wired": s.get("wired", True), "sheetSize": [colour.width, colour.height],
+            "styleMatched": sources[name]["styled"], "specksRemoved": sh["specksRemoved"],
+            "detachedIslands": sum(detached_islands(f) for f in frames),
             "astc6x6Bytes": astc_bytes(colour.width, colour.height, ASTC_BLOCK),
         }
         if "loop" in s:
@@ -129,13 +160,55 @@ def register(preview_climb_loop=5):
             entry["loopStride"] = lp["length"] // pick_loop_count(lp["length"], lp["target"])
             entry["loopSource"] = [lp["start"], lp["start"] + lp["length"] - 1]
             entry.update(loop_check(frames))
+        if "reachShiftUnits" in reports[name]:
+            entry["reachUnits"] = s["reachUnits"]
+            entry["reachShiftUnits"] = reports[name]["reachShiftUnits"]
+        if "scaleByTorso" in s:
+            entry["scaleRule"] = f"torso length = {s['scaleByTorso']}'s"
         if "note" in s:
             entry["note"] = s["note"]
         slot_manifest.append(entry)
 
+    for b in spec.get("bridges", []):
+        host = next(e for e in slot_manifest if e["slot"] == b["bridgeFor"])
+        slot_manifest.append(bridge_entry(b, host, sheets[b["slot"]], files))
+
     return spec, files, sheets, slot_manifest, {"idle0": idle0, "ppu": ppu, "ppuSource": ppu_src, "torsoCX": torso_cx,
                                                 "pivotXSource": pivot_x, "pawRow": paw_row,
                                                 "idleFrame0Source": sources["Idle"]["indices"][0]}
+
+
+def bridge_frames(b, host, paw_row, ppu_src):
+    """PAX-A14 §3 B: a bridge's frames from its host clip's registered frames (source scale, the working canvas).
+    - contact: the host's frame `frame` raised `raiseUnits` over its planted paws, its legs part extended over `legUnits`;
+    - roll: for each [k, n] in `between`, n cels turned and moved evenly from host frame k to frame k + 1."""
+    if b["kind"] == "contact":
+        return [contact_frame(host[b["frame"]], paw_row, b["raiseUnits"] * ppu_src, b["legUnits"] * ppu_src)]
+    if b["kind"] == "roll":
+        return [f for k, n in b["between"] for f in roll_inbetweens(host[k], host[k + 1], n)]
+    raise ValueError(f"unknown bridge kind '{b['kind']}'")
+
+
+def bridge_entry(b, host, sheet, files):
+    """A bridge's manifest entry: imported like any sheet, not wired on its own (its frames play inside `bridgeFor`'s
+    clip, at `bridgePositions` in the combined clip)."""
+    frames = sheet["frames"]
+    colour, normal = sheet_image([bleed(f) for f in frames]), sheet_image(normal_frames(frames))
+    files[f"sheets/CatA_{b['slot']}.png"] = png_bytes(colour)
+    files[f"sheets/CatA_{b['slot']}_n.png"] = png_bytes(normal)
+    w, h = sheet["cell"]
+    if len(b["positions"]) != len(frames):
+        raise ValueError(f"{b['slot']}: {len(frames)} frames for {len(b['positions'])} positions")
+    return {
+        "slot": b["slot"], "file": f"CatA_{b['slot']}.png", "bridgeFor": b["bridgeFor"], "bridgePositions": b["positions"],
+        "kind": b["kind"], "sourceClip": host["sourceClip"], "sourceSheet": host["sourceSheet"],
+        "sourceFrames": host["sourceFrames"], "frames": len(frames), "role": host["role"], "loop": False,
+        "scale": host["scale"], "cell": [w, h], "pivotPx": [round(sheet["pivot"][0], 3), round(sheet["pivot"][1], 3)],
+        "pivotNormalized": [round(sheet["pivot"][0] / w, 5), round(1.0 - sheet["pivot"][1] / h, 5)], "clippedPx": 0,
+        "sourceCutAtCellEdge": False, "vineKeyed": False, "wired": False, "sheetSize": [colour.width, colour.height],
+        "astc6x6Bytes": astc_bytes(colour.width, colour.height, ASTC_BLOCK), "styleMatched": host["styleMatched"],
+        "specksRemoved": sheet["specksRemoved"], "detachedIslands": sum(detached_islands(f) for f in frames),
+        "note": b["note"]}
 
 
 def loop_check(frames):
@@ -158,6 +231,16 @@ def facing_check(sheets, ppu):
                          "left": {k: round(v, 3) for k, v in l.items()}})
     worst = min(min(r["right"]["nose"], r["right"]["tail"], r["left"]["nose"], r["left"]["tail"]) for r in rows)
     return rows, worst
+
+
+def consistency_report(sheets, slot_manifest):
+    """PAX-A14 §3 A's numbers: the median body height of Idle, Walk and Run (sheet px) and what the pass changed."""
+    heights = {n: float(np.median([measure_body(f)["bodyHeightPx"] for f in sheets[n]["frames"]])) for n in ("Idle", "Walk", "Run")}
+    return {"ticket": "PAX-A14 §3 A", "styleReference": STYLE_REFERENCE, "bodyHeightMedianPx": heights,
+            "bodyHeightSpread": round((max(heights.values()) - min(heights.values())) / heights["Idle"], 4),
+            "styleMatched": [e["slot"] for e in slot_manifest if e["styleMatched"]],
+            "specksRemoved": sum(e["specksRemoved"] for e in slot_manifest),
+            "detachedIslands": sum(e["detachedIslands"] for e in slot_manifest)}
 
 
 def memory_report(slot_manifest, sheets):
@@ -205,7 +288,7 @@ def main(argv):
         files[name] = gif
 
     manifest = {
-        "ticket": "PAX-A08 Stage 0", "scaleRule": "option B: standing body height on Idle frame 0 = 0.56 u",
+        "ticket": "PAX-A08 Stage 0; PAX-A14 consistency", "scaleRule": "option B: standing body height on Idle frame 0 = 0.56 u",
         "baseCell": FINAL_CELL, "sourceCell": CELL, "cellScale": CELL_SCALE,
         "idleFrame0Source": ref["idleFrame0Source"], "bodyHeightPxSource": idle0["bodyHeightPx"], "ppuSource": round(ref["ppuSource"], 4), "ppu": round(ppu, 4),
         "pawRowSource": ref["pawRow"], "backRowSource": idle0["backRow"], "backColumnsSource": idle0["backColumns"],
@@ -220,6 +303,7 @@ def main(argv):
                         "horizontal": {"units": 0.70, "where": "L020 Push_3 against Post_P"},
                         "fallingBlocks": "every falling block closes to 0.00 (a kill)"},
         "climbPreview": review["climb"],
+        "consistency": consistency_report(sheets, slot_manifest),
         "memoryASTC": memory_report(slot_manifest, sheets),
         "onScreen": camera_report(ppu),
         "slots": slot_manifest,
