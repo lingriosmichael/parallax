@@ -131,6 +131,8 @@ namespace Parallax.Tests.EditMode
                 Vector2 size = host.size;
                 host.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Art/RealityA/Environment/A_GAME_Platform_Fill.png");
                 host.drawMode = SpriteDrawMode.Tiled; host.size = size;
+                // PAX-A15: level hosts are world-tiled now; a plain sprite material makes this the host the test names.
+                host.sharedMaterial = AssetDatabase.LoadAssetAtPath<Material>("Packages/com.unity.render-pipelines.universal/Runtime/Materials/Sprite-Lit-Default.mat");
                 art.Reskin(HostSkin.Of(host));   // the disguise follows its host exactly, tiling from its own corner
                 Type validator = Type.GetType("Parallax.Editor.Art.TrapSkinValidator, Parallax.Editor");
                 object[] args = { "L002 patterned", dressed, 0 };

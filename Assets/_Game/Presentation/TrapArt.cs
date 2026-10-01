@@ -32,6 +32,8 @@ namespace Parallax.Presentation
         [SerializeField] SpriteRenderer[] greybox = new SpriteRenderer[0];
         [Tooltip("The name effect variants are seeded from (the element's name).")]
         [SerializeField] protected string seedName;
+        [Tooltip("D-101: how much bigger than its grey-box a body draws (art only; colliders unchanged). 1 = exactly the grey-box. Disguised floors stay at 1.")]
+        [SerializeField, Min(1f)] protected float bodyScale = 1f;
 
         readonly List<Body> bodies = new();
         readonly List<Effect> effects = new();
@@ -42,6 +44,7 @@ namespace Parallax.Presentation
         protected virtual bool NeedsTrap => true;
         protected int RoomTick => rooms != null ? rooms.RoomLifeTick : 0;
         protected string SeedName => seedName;
+        public float BodyScale => bodyScale;
 
         /// <summary>Ticks since the trap's latest fire, or -1 if it hasn't fired (or was reset).</summary>
         protected int TicksSinceFire => Trap == null || Trap.LatestFireTick < 0 ? -1 : RoomTick - Trap.LatestFireTick;

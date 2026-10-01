@@ -74,7 +74,7 @@ namespace Parallax.Editor.Levels
                 new Betrayal("T3b [NW]: a cat that lingers on the fourth step is run through by Spear_L", "Spear_L", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Spear_4_Shaft))", "linger on step 4", Release(), Until(Dead()))),
                 new Betrayal("T3c [OL]: a cat that hops onto Ledge_M instead of firing the next step falls to the foot of the shaft", "Pit_Foot", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Spear_7_Shaft))", "hop onto the ledge", Release(), Until(Still()), Hold(Right), Jump(), For(12), Release(), Until(Dead())), revealedBy: "Ledge_M"),
+                    Route.PrefixOf(solution, "Until(GroundedOn(Spear_5_Shaft))", "hop onto the ledge", Release(), Until(Still()), Hold(Right), Jump(), For(12), Release(), Until(Dead())), revealedBy: "Ledge_M"),
                 new Betrayal("T4 [BAIT]: a cat that stays on the shaft floor once the volley starts is swept by V1", "V1", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X>=25.9)", "stay past the Dip", Release(), Until(Dead()))),
                 new Betrayal("T4b [NW]: a cat that lingers on V3 is run through by Spear_K", "Spear_K", DeathCause.Hazard,

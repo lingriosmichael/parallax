@@ -109,8 +109,11 @@ namespace Parallax.Core.Cameras
         {
             public readonly float MaxViewHeight, LookAhead, LookAheadFlipDistance, SmoothTime, MaxSpeed;
             public readonly Vector2 DeadZoneHalfExtents;
-            public FollowParams(float maxViewHeight, float lookAhead, float lookAheadFlipDistance, Vector2 deadZoneHalfExtents, float smoothTime, float maxSpeed)
-            { MaxViewHeight = maxViewHeight; LookAhead = lookAhead; LookAheadFlipDistance = lookAheadFlipDistance; DeadZoneHalfExtents = deadZoneHalfExtents; SmoothTime = smoothTime; MaxSpeed = maxSpeed; }
+            /// <summary>D-104: follow mode tracks a point this far above the cat (0: the cat itself), so the walk line sits lower
+            /// in the view. Per level, never in fit mode.</summary>
+            public readonly float VerticalBias;
+            public FollowParams(float maxViewHeight, float lookAhead, float lookAheadFlipDistance, Vector2 deadZoneHalfExtents, float smoothTime, float maxSpeed, float verticalBias = 0f)
+            { MaxViewHeight = maxViewHeight; LookAhead = lookAhead; LookAheadFlipDistance = lookAheadFlipDistance; DeadZoneHalfExtents = deadZoneHalfExtents; SmoothTime = smoothTime; MaxSpeed = maxSpeed; VerticalBias = verticalBias; }
         }
 
         // PAX-076 (D-083): one level-camera step, moved verbatim out of LevelCameraFollow.Resolve (after D-084). Fit
@@ -134,7 +137,7 @@ namespace Parallax.Core.Cameras
                 state.LastDirection = direction;
                 bool verticalFollow = frameSize.y > viewHeight + 0.001f;
 
-                desired = ResolveFollowCentre(state.Centre, target, direction,
+                desired = ResolveFollowCentre(state.Centre, target + new Vector2(0f, p.VerticalBias), direction,
                     p.DeadZoneHalfExtents, p.LookAhead, halfView, frameCentre, frameMin, frameMax, verticalFollow);
             }
 

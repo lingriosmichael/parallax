@@ -22,6 +22,10 @@ namespace Parallax.Gameplay.Cameras
         // level's one room, ViewMargin), the same pattern D-059 already uses for RoomManager.bounds.
         [SerializeField] Vector2 frameCenter;
         [SerializeField] Vector2 frameSize;
+        // D-104: this level's camera (baked by the level build from LevelCameras): the view height (0: the config's
+        // MaxViewHeight) and the follow target's lift above the cat.
+        [SerializeField] float viewHeight;
+        [SerializeField] float verticalBias;
 
         Camera cam;
         Vector2 velocity;
@@ -110,7 +114,7 @@ namespace Parallax.Gameplay.Cameras
         Vector2 Resolve(Vector2 currentCentre, bool immediate)
         {
             var state = new CameraMath.FollowState { Centre = currentCentre, Velocity = velocity, AnchorX = directionAnchorX, LastDirection = lastDirection };
-            var p = new CameraMath.FollowParams(config.MaxViewHeight, config.LookAhead, config.LookAheadFlipDistance, config.DeadZoneHalfExtents, config.SmoothTime, config.MaxSpeed);
+            var p = new CameraMath.FollowParams(this.viewHeight > 0f ? this.viewHeight : config.MaxViewHeight, config.LookAhead, config.LookAheadFlipDistance, config.DeadZoneHalfExtents, config.SmoothTime, config.MaxSpeed, verticalBias);
             float viewHeight = CameraMath.Step(ref state, target.position, frameCenter, frameSize, cam.aspect, p, immediate, Time.deltaTime);
             cam.orthographicSize = viewHeight * 0.5f;
             velocity = state.Velocity;

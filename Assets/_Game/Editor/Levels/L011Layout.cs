@@ -43,6 +43,8 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Floor,"Ground",(12.75f,-2f),(15.5f,4f)),
                 E(SoloRoomElementKind.Wall,"G_East",(21f,1.925f+h*.5f),(1f,11.85f+h)),
                 E(SoloRoomElementKind.Wall,"Core_W",(5.5f,4.775f+h*.5f),(1f,7.15f+h)),
+                // PAX-A16 (D-100): Spear_1's mount, a low lintel under Core_W's east half (the walk passes under it, 0.7 high).
+                E(SoloRoomElementKind.Wall,"Mount_1",(5.76f,.95f),(.48f,.5f)),
                 // The gallery (x 6-21.5, top 11.25), the Curb at its east end, and the tunnel floor under Mast_W.
                 E(SoloRoomElementKind.Floor,"Gallery",(13.75f,8.1f+h),(15.5f,.5f)),
                 E(SoloRoomElementKind.Floor,"Tunnel_Floor",(22.5f,2.175f+h*.5f),(2f,12.35f+h)),
@@ -70,7 +72,7 @@ namespace Parallax.Editor.Levels
 
             // Foot. Walking west past x 9 fires Spear_1 from G_East, along the whole storey at jump height (and, chained,
             // Spear_Door by the door). The floor at the gap's edge gives way 55 ticks after a touch.
-            elements.Add(Spear("Spear_1", 20.75f, .9f, ArrowDirection.Left, 1f, 1.4f, (9f, 5.375f), (.4f, 10.75f), new SoloRoomTrapSettings(delayTicks:33)));
+            elements.Add(Spear("Spear_1", 5.75f, .9f, ArrowDirection.Left, 1f, 1.4f, (9f, 5.375f), (.4f, 10.75f), new SoloRoomTrapSettings(delayTicks:41)));
             elements.Add(Spear("Spear_Door", 12.25f, 16.45f+h, ArrowDirection.Left, 3.5f, 2.8f, default, default, new SoloRoomTrapSettings(delayTicks:1,triggerSource:TrapTriggerSource.Chain,chainSource:"Spear_1")));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Foot_C",(4.2f,-1.5f),(1.6f,3f),settings:new SoloRoomTrapSettings(delayTicks:55)));
             // Each later step fires when the cat jumps into its lane (the lane box is the trigger): the climb onto Spear_1
@@ -91,7 +93,7 @@ namespace Parallax.Editor.Levels
             // ledge in the open middle of the shaft between Spear_7 and the next lane, is a fake: the next step is the one
             // you fire, and the middle drops straight to the foot.
             elements.Add(Spear("Spear_L", .75f, 5.75f, ArrowDirection.Right, 5f, 1.4f, (2.875f, 5.75f), (4.25f, .4f), new SoloRoomTrapSettings(delayTicks:135)));
-            elements.Add(E(SoloRoomElementKind.FakePlatform,"Ledge_M",(3f,10.35f),(1.2f,.5f)));
+            elements.Add(E(SoloRoomElementKind.FakePlatform,"Ledge_M",(3f,7.45f),(1.2f,.5f)));
 
             // Crossing. Spear_G, from Core_WW behind the cat, sweeps the gallery at shin height and sticks against Curb_M.
             elements.Add(Spear("Spear_G", .75f, 8.65f+h, ArrowDirection.Right, 20.4f, 1.4f, (11.2f, 11.75f+h), (.4f, 6.8f), new SoloRoomTrapSettings(delayTicks:4)));

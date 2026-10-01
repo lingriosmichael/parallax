@@ -46,6 +46,11 @@ namespace Parallax.Editor.Art
                 else if (BuildKitElement(artRoot, roomRoot, room, e, t, rooms, config, layer, changes) is string name) built.Add(name);
             }
             built.Add(BuildDeath(artRoot, room, roomRoot, rooms, config, layer, changes));
+            // D-101: trap bodies draw BodyScale bigger. Disguises (collapsing floors, falling blocks, moving and shrinking floors)
+            // must cover exactly their trap (P10) and stay at 1, and so does a disguised launcher's projectile (it rests behind
+            // the host skin: 10% more would poke out past it before the reveal).
+            foreach (TrapArt art in artRoot.GetComponentsInChildren<TrapArt>(true))
+                TrapKitSetup.Write(art, changes, ("bodyScale", art is CollapsingFloorArt or SolidArt || art is ArrowArt { Disguised: true } ? 1f : config.BodyScale));
             foreach (Transform stale in artRoot.Cast<Transform>().Where(c => !built.Contains(c.name)).ToList())
             {
                 Object.DestroyImmediate(stale.gameObject);
@@ -78,14 +83,21 @@ namespace Parallax.Editor.Art
             for (int i = 0; i < columns * rows; i++)
             {
                 Rect r = TrapArtMath.ShardRect(local, cut, i, columns, rows);
+                // D-103: cut lines snapped to the 1/128 u grid from the floor's corner, so no seam pixel is half covered on the
+                // reveal tick (the background showed through mid-pixel seams). The floor's outer edges are unchanged.
+                float Snap(float v, float lo) => lo + Mathf.Round((v - lo) * 128f) / 128f;
+                r = Rect.MinMaxRect(Snap(r.xMin, local.xMin), Snap(r.yMin, local.yMin), Snap(r.xMax, local.xMin), Snap(r.yMax, local.yMin));
                 SpriteRenderer shard = Child(art, $"Shard_{i:00}", layer, changes);
                 skinLook.ApplyTo(shard, r.size);
-                shard.sortingOrder = greybox.sortingOrder + EffectOrder;
+                // PAX-A15 (approved 2026-10-01): at the floor's own order, so on the reveal tick its cap and edge trims stay on
+                // top (the frame matches the one before) and falling shards pass behind the cat.
+                shard.sortingOrder = greybox.sortingOrder;
                 shard.transform.localScale = Vector3.one;
                 shard.enabled = false;
                 shards.Add(shard); homes.Add(r.center); sizes.Add(r.size);
             }
             RemoveExtra(art, "Shard_", columns * rows, changes);
+            RemoveChild(art, "Backing", changes);
             SpriteRenderer[] dust = Effects(art, "Dust", config.DustPerFloor, config.Dust, config.TrapMaterial, greybox.sortingOrder + EffectOrder, layer, changes);
 
             TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", e.Name), ("skin", skin), ("greyboxVisual", greybox), ("size", e.Size));
@@ -295,6 +307,10 @@ namespace Parallax.Editor.Art
             p.FindPropertyRelative("DrawMode").enumValueIndex = (int)skin.DrawMode;
             p.FindPropertyRelative("SortingLayer").stringValue = skin.SortingLayer ?? "";
             p.FindPropertyRelative("TileOrigin").vector2Value = skin.TileOrigin;
+            // PAX-A15: a world-tiled host's tiling too, or the saved skin loses it and the presenter never resamples (a tell).
+            p.FindPropertyRelative("WorldTiled").boolValue = skin.WorldTiled;
+            p.FindPropertyRelative("Tile").vector2Value = skin.Tile;
+            p.FindPropertyRelative("UVRect").vector4Value = skin.UVRect;
             if (so.ApplyModifiedPropertiesWithoutUndo()) changes.Add("wrote " + target.name + "." + field);
         }
 

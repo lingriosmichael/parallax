@@ -1,0 +1,850 @@
+{
+  "worldPpu": 196.66666,
+  "halfPpu": 128.0,
+  "slots": [
+    {
+      "name": "ENV_ArchFringe",
+      "file": "ENV_ArchFringe.png",
+      "folder": "Kit",
+      "width": 3.4322,
+      "height": 0.9,
+      "kind": "strip"
+    },
+    {
+      "name": "ENV_ArchShade",
+      "file": "ENV_ArchShade.png",
+      "folder": "Kit",
+      "width": 10.561,
+      "height": 2.5983,
+      "kind": "strip"
+    },
+    {
+      "name": "ENV_BackWall",
+      "file": "ENV_BackWall.png",
+      "folder": "Backgrounds/Kit",
+      "width": 11.0625,
+      "height": 7.3281,
+      "kind": "band"
+    },
+    {
+      "name": "ENV_Banner_0",
+      "file": "ENV_Banner_0.png",
+      "folder": "Kit",
+      "width": 1.0017,
+      "height": 2.9034,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Banner_1",
+      "file": "ENV_Banner_1.png",
+      "folder": "Kit",
+      "width": 1.0017,
+      "height": 1.9017,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Cap",
+      "file": "ENV_Cap.png",
+      "folder": "Kit",
+      "width": 11.1254,
+      "height": 0.6814,
+      "kind": "strip",
+      "normal": true,
+      "above": 0.2593
+    },
+    {
+      "name": "ENV_CapWash",
+      "file": "ENV_CapWash.png",
+      "folder": "Kit",
+      "width": 11.1254,
+      "height": 1.3831,
+      "kind": "strip",
+      "normal": false,
+      "above": 0.0961
+    },
+    {
+      "name": "ENV_Chain",
+      "file": "ENV_Chain.png",
+      "folder": "Kit",
+      "width": 0.1322,
+      "height": 1.6271,
+      "kind": "vstrip"
+    },
+    {
+      "name": "ENV_Checkpoint",
+      "file": "ENV_Checkpoint.png",
+      "folder": "Kit",
+      "width": 1.5,
+      "height": 1.2203,
+      "kind": "object"
+    },
+    {
+      "name": "ENV_CheckpointLit",
+      "file": "ENV_CheckpointLit.png",
+      "folder": "Kit",
+      "width": 1.5,
+      "height": 1.2203,
+      "kind": "object"
+    },
+    {
+      "name": "ENV_Cloud_0",
+      "file": "ENV_Cloud_0.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 2.6797,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_Cloud_1",
+      "file": "ENV_Cloud_1.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 3.7578,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_Cloud_2",
+      "file": "ENV_Cloud_2.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 4.4766,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_CloudsFar",
+      "file": "ENV_CloudsFar.png",
+      "folder": "Backgrounds/Kit",
+      "width": 9.9688,
+      "height": 2.6797,
+      "kind": "band"
+    },
+    {
+      "name": "ENV_CloudsMid",
+      "file": "ENV_CloudsMid.png",
+      "folder": "Backgrounds/Kit",
+      "width": 9.9688,
+      "height": 3.7578,
+      "kind": "band"
+    },
+    {
+      "name": "ENV_CloudsNear",
+      "file": "ENV_CloudsNear.png",
+      "folder": "Backgrounds/Kit",
+      "width": 9.9688,
+      "height": 4.4766,
+      "kind": "band"
+    },
+    {
+      "name": "ENV_Door",
+      "file": "ENV_Door.png",
+      "folder": "Kit",
+      "width": 1.6983,
+      "height": 1.8407,
+      "kind": "object"
+    },
+    {
+      "name": "ENV_Drape_0",
+      "file": "ENV_Drape_0.png",
+      "folder": "Kit",
+      "width": 0.9,
+      "height": 0.9508,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Drape_1",
+      "file": "ENV_Drape_1.png",
+      "folder": "Kit",
+      "width": 0.9,
+      "height": 1.3017,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Drape_2",
+      "file": "ENV_Drape_2.png",
+      "folder": "Kit",
+      "width": 0.9,
+      "height": 1.6881,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Drape_3",
+      "file": "ENV_Drape_3.png",
+      "folder": "Kit",
+      "width": 0.5492,
+      "height": 1.1237,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Drape_4",
+      "file": "ENV_Drape_4.png",
+      "folder": "Kit",
+      "width": 0.5492,
+      "height": 1.1593,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Drape_5",
+      "file": "ENV_Drape_5.png",
+      "folder": "Kit",
+      "width": 0.5492,
+      "height": 1.3576,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_FG_Branch",
+      "file": "ENV_FG_Branch.png",
+      "folder": "Backgrounds/Kit",
+      "width": 4.0,
+      "height": 2.2656,
+      "kind": "foreground"
+    },
+    {
+      "name": "ENV_FG_Ferns",
+      "file": "ENV_FG_Ferns.png",
+      "folder": "Backgrounds/Kit",
+      "width": 4.0,
+      "height": 1.8672,
+      "kind": "foreground"
+    },
+    {
+      "name": "ENV_FG_Roots",
+      "file": "ENV_FG_Roots.png",
+      "folder": "Backgrounds/Kit",
+      "width": 4.0,
+      "height": 1.8281,
+      "kind": "foreground"
+    },
+    {
+      "name": "ENV_FG_Trunk",
+      "file": "ENV_FG_Trunk.png",
+      "folder": "Backgrounds/Kit",
+      "width": 4.0,
+      "height": 6.0,
+      "kind": "foreground"
+    },
+    {
+      "name": "ENV_FaceShade",
+      "file": "ENV_FaceShade.png",
+      "folder": "Kit",
+      "width": 0.0814,
+      "height": 1.6017,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FaceShadeSolid",
+      "file": "ENV_FaceShadeSolid.png",
+      "folder": "Kit",
+      "width": 0.0814,
+      "height": 0.0814,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FarCity",
+      "file": "ENV_FarCity.png",
+      "folder": "Backgrounds/Kit",
+      "width": 25.0,
+      "height": 5.9375,
+      "kind": "band"
+    },
+    {
+      "name": "ENV_FarCluster",
+      "file": "ENV_FarCluster.png",
+      "folder": "Backgrounds/Kit",
+      "width": 8.0234,
+      "height": 3.1016,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FarIsland_0",
+      "file": "ENV_FarIsland_0.png",
+      "folder": "Backgrounds/Kit",
+      "width": 2.3281,
+      "height": 2.6484,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FarIsland_1",
+      "file": "ENV_FarIsland_1.png",
+      "folder": "Backgrounds/Kit",
+      "width": 2.4844,
+      "height": 2.7734,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FarIsland_2",
+      "file": "ENV_FarIsland_2.png",
+      "folder": "Backgrounds/Kit",
+      "width": 2.0391,
+      "height": 2.9141,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FarIsland_3",
+      "file": "ENV_FarIsland_3.png",
+      "folder": "Backgrounds/Kit",
+      "width": 2.3438,
+      "height": 2.7422,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FarSpire_0",
+      "file": "ENV_FarSpire_0.png",
+      "folder": "Backgrounds/Kit",
+      "width": 1.8125,
+      "height": 6.6406,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FarSpire_1",
+      "file": "ENV_FarSpire_1.png",
+      "folder": "Backgrounds/Kit",
+      "width": 1.6406,
+      "height": 5.5547,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FarSpire_2",
+      "file": "ENV_FarSpire_2.png",
+      "folder": "Backgrounds/Kit",
+      "width": 5.8828,
+      "height": 3.875,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FarSpire_3",
+      "file": "ENV_FarSpire_3.png",
+      "folder": "Backgrounds/Kit",
+      "width": 1.2891,
+      "height": 2.8203,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_Fill_A",
+      "file": "ENV_Fill_A.png",
+      "folder": "Kit",
+      "width": 11.7356,
+      "height": 11.7356,
+      "kind": "fill",
+      "normal": true
+    },
+    {
+      "name": "ENV_Fill_A2",
+      "file": "ENV_Fill_A2.png",
+      "folder": "Kit",
+      "width": 11.7356,
+      "height": 11.7356,
+      "kind": "fill",
+      "normal": true
+    },
+    {
+      "name": "ENV_Fill_A3",
+      "file": "ENV_Fill_A3.png",
+      "folder": "Kit",
+      "width": 11.7356,
+      "height": 11.7356,
+      "kind": "fill",
+      "normal": true
+    },
+    {
+      "name": "ENV_Fog",
+      "file": "ENV_Fog.png",
+      "folder": "Backgrounds/Kit",
+      "width": 9.6562,
+      "height": 4.0156,
+      "kind": "band"
+    },
+    {
+      "name": "ENV_FrameBanner",
+      "file": "ENV_FrameBanner.png",
+      "folder": "Backgrounds/Kit",
+      "width": 5.5156,
+      "height": 5.3438,
+      "kind": "foreground"
+    },
+    {
+      "name": "ENV_FrameHang",
+      "file": "ENV_FrameHang.png",
+      "folder": "Backgrounds/Kit",
+      "width": 5.5078,
+      "height": 5.3438,
+      "kind": "foreground"
+    },
+    {
+      "name": "ENV_FrameL",
+      "file": "ENV_FrameL.png",
+      "folder": "Backgrounds/Kit",
+      "width": 7.3125,
+      "height": 2.9922,
+      "kind": "foreground"
+    },
+    {
+      "name": "ENV_FramePillar",
+      "file": "ENV_FramePillar.png",
+      "folder": "Backgrounds/Kit",
+      "width": 2.0938,
+      "height": 12.0,
+      "kind": "foreground"
+    },
+    {
+      "name": "ENV_FrameR",
+      "file": "ENV_FrameR.png",
+      "folder": "Backgrounds/Kit",
+      "width": 5.4609,
+      "height": 2.3047,
+      "kind": "foreground"
+    },
+    {
+      "name": "ENV_FrameTop",
+      "file": "ENV_FrameTop.png",
+      "folder": "Backgrounds/Kit",
+      "width": 18.75,
+      "height": 4.375,
+      "kind": "foreground"
+    },
+    {
+      "name": "ENV_Glow",
+      "file": "ENV_Glow.png",
+      "folder": "Kit",
+      "width": 1.3017,
+      "height": 1.3017,
+      "kind": "object"
+    },
+    {
+      "name": "ENV_Glyph_0",
+      "file": "ENV_Glyph_0.png",
+      "folder": "Kit",
+      "width": 1.3983,
+      "height": 1.1034,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Glyph_1",
+      "file": "ENV_Glyph_1.png",
+      "folder": "Kit",
+      "width": 1.3983,
+      "height": 1.1492,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Halo",
+      "file": "ENV_Halo.png",
+      "folder": "Kit",
+      "width": 1.3017,
+      "height": 1.3017,
+      "kind": "object"
+    },
+    {
+      "name": "ENV_Haze",
+      "file": "ENV_Haze.png",
+      "folder": "Backgrounds/Kit",
+      "width": 9.6562,
+      "height": 4.3828,
+      "kind": "band"
+    },
+    {
+      "name": "ENV_LipVines",
+      "file": "ENV_LipVines.png",
+      "folder": "Kit",
+      "width": 6.7983,
+      "height": 0.8492,
+      "kind": "strip"
+    },
+    {
+      "name": "ENV_MidAqueduct",
+      "file": "ENV_MidAqueduct.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 5.0156,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_MidArch_0",
+      "file": "ENV_MidArch_0.png",
+      "folder": "Backgrounds/Kit",
+      "width": 3.1484,
+      "height": 4.6484,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_MidArch_1",
+      "file": "ENV_MidArch_1.png",
+      "folder": "Backgrounds/Kit",
+      "width": 2.5078,
+      "height": 5.5,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_MidColonnade",
+      "file": "ENV_MidColonnade.png",
+      "folder": "Backgrounds/Kit",
+      "width": 6.7578,
+      "height": 4.9531,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_MidPillar",
+      "file": "ENV_MidPillar.png",
+      "folder": "Backgrounds/Kit",
+      "width": 4.4922,
+      "height": 8.6328,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_MidRuins",
+      "file": "ENV_MidRuins.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 5.4688,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_MidTowers",
+      "file": "ENV_MidTowers.png",
+      "folder": "Backgrounds/Kit",
+      "width": 4.4922,
+      "height": 7.0547,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_MidTree_0",
+      "file": "ENV_MidTree_0.png",
+      "folder": "Backgrounds/Kit",
+      "width": 4.9141,
+      "height": 7.4219,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_MidTree_1",
+      "file": "ENV_MidTree_1.png",
+      "folder": "Backgrounds/Kit",
+      "width": 5.5859,
+      "height": 6.875,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_Mist",
+      "file": "ENV_Mist.png",
+      "folder": "Backgrounds/Kit",
+      "width": 11.2031,
+      "height": 7.0312,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_Moss_0",
+      "file": "ENV_Moss_0.png",
+      "folder": "Kit",
+      "width": 1.0983,
+      "height": 0.4678,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Moss_1",
+      "file": "ENV_Moss_1.png",
+      "folder": "Kit",
+      "width": 1.0983,
+      "height": 0.3763,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Moss_2",
+      "file": "ENV_Moss_2.png",
+      "folder": "Kit",
+      "width": 1.0983,
+      "height": 0.4068,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Mote",
+      "file": "ENV_Mote.png",
+      "folder": "Backgrounds/Kit",
+      "width": 0.25,
+      "height": 0.25,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_Post",
+      "file": "ENV_Post.png",
+      "folder": "Kit",
+      "width": 1.0017,
+      "height": 11.1254,
+      "kind": "vstrip",
+      "normal": true
+    },
+    {
+      "name": "ENV_PostBase",
+      "file": "ENV_PostBase.png",
+      "folder": "Kit",
+      "width": 1.2508,
+      "height": 0.3814,
+      "kind": "object",
+      "normal": true
+    },
+    {
+      "name": "ENV_PostCap",
+      "file": "ENV_PostCap.png",
+      "folder": "Kit",
+      "width": 1.5,
+      "height": 0.6,
+      "kind": "object",
+      "normal": true
+    },
+    {
+      "name": "ENV_Ray",
+      "file": "ENV_Ray.png",
+      "folder": "Backgrounds/Kit",
+      "width": 8.75,
+      "height": 12.6172,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_Rubble_0",
+      "file": "ENV_Rubble_0.png",
+      "folder": "Kit",
+      "width": 1.3983,
+      "height": 0.5542,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Rubble_1",
+      "file": "ENV_Rubble_1.png",
+      "folder": "Kit",
+      "width": 1.3983,
+      "height": 0.5237,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_RuinWall",
+      "file": "ENV_RuinWall.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 7.3281,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_Shaft",
+      "file": "ENV_Shaft.png",
+      "folder": "Backgrounds/Kit",
+      "width": 8.0,
+      "height": 11.8672,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_Side",
+      "file": "ENV_Side.png",
+      "folder": "Kit",
+      "width": 0.422,
+      "height": 11.1254,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.1056
+    },
+    {
+      "name": "ENV_SkyFade",
+      "file": "ENV_SkyFade.png",
+      "folder": "Backgrounds/Kit",
+      "width": 0.0625,
+      "height": 2.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_SkyPlate",
+      "file": "ENV_SkyPlate.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_Sky_Dawn",
+      "file": "ENV_Sky_Dawn.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_Sky_Dusk",
+      "file": "ENV_Sky_Dusk.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_Sky_Ember",
+      "file": "ENV_Sky_Ember.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_Sky_Gold",
+      "file": "ENV_Sky_Gold.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_Sky_Jade",
+      "file": "ENV_Sky_Jade.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_Sky_Mist",
+      "file": "ENV_Sky_Mist.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_Sky_Moon",
+      "file": "ENV_Sky_Moon.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_Sky_Noon",
+      "file": "ENV_Sky_Noon.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_Sky_Rose",
+      "file": "ENV_Sky_Rose.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_Sky_Storm",
+      "file": "ENV_Sky_Storm.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
+      "name": "ENV_Slab",
+      "file": "ENV_Slab.png",
+      "folder": "Kit",
+      "width": 11.1254,
+      "height": 1.0678,
+      "kind": "strip",
+      "normal": true,
+      "above": 0.2186
+    },
+    {
+      "name": "ENV_SlabEnd",
+      "file": "ENV_SlabEnd.png",
+      "folder": "Kit",
+      "width": 0.6,
+      "height": 1.0678,
+      "kind": "end",
+      "normal": true,
+      "above": 0.2186
+    },
+    {
+      "name": "ENV_SlimPost",
+      "file": "ENV_SlimPost.png",
+      "folder": "Kit",
+      "width": 0.4983,
+      "height": 11.1254,
+      "kind": "vstrip",
+      "normal": true
+    },
+    {
+      "name": "ENV_Sun",
+      "file": "ENV_Sun.png",
+      "folder": "Backgrounds/Kit",
+      "width": 5.0,
+      "height": 5.0,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_ThickUnder",
+      "file": "ENV_ThickUnder.png",
+      "folder": "Kit",
+      "width": 11.7356,
+      "height": 2.0339,
+      "kind": "strip",
+      "normal": false
+    },
+    {
+      "name": "ENV_Under",
+      "file": "ENV_Under.png",
+      "folder": "Kit",
+      "width": 11.1254,
+      "height": 0.3102,
+      "kind": "strip",
+      "normal": true,
+      "below": 0.0102
+    },
+    {
+      "name": "ENV_VineAnchor",
+      "file": "ENV_VineAnchor.png",
+      "folder": "Kit",
+      "width": 1.0729,
+      "height": 1.7898,
+      "kind": "object"
+    },
+    {
+      "name": "ENV_VineMid",
+      "file": "ENV_VineMid.png",
+      "folder": "Kit",
+      "width": 0.6,
+      "height": 3.8797,
+      "kind": "vstrip"
+    },
+    {
+      "name": "ENV_VineTip",
+      "file": "ENV_VineTip.png",
+      "folder": "Kit",
+      "width": 0.6508,
+      "height": 1.3271,
+      "kind": "object"
+    },
+    {
+      "name": "ENV_Water",
+      "file": "ENV_Water.png",
+      "folder": "Kit",
+      "width": 3.1475,
+      "height": 0.8237,
+      "kind": "strip"
+    },
+    {
+      "name": "ENV_WaterPlane",
+      "file": "ENV_WaterPlane.png",
+      "folder": "Backgrounds/Kit",
+      "width": 11.5625,
+      "height": 2.9297,
+      "kind": "band"
+    },
+    {
+      "name": "ENV_Waterfall",
+      "file": "ENV_Waterfall.png",
+      "folder": "Backgrounds/Kit",
+      "width": 3.2969,
+      "height": 10.5938,
+      "kind": "vband"
+    },
+    {
+      "name": "ENV_White",
+      "file": "ENV_White.png",
+      "folder": "Backgrounds/Kit",
+      "width": 0.0625,
+      "height": 0.0625,
+      "kind": "sky"
+    }
+  ]
+}

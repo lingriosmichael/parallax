@@ -82,7 +82,7 @@ namespace Parallax.Presentation
                 }
                 else
                 {
-                    DrawFitted(launcherArt, launcherSprite, launcherSize);
+                    DrawFitted(launcherArt, launcherSprite, launcherSize * bodyScale);
                     launcherArt.color = Color.Lerp(Color.white, TellWarm, pulse * 0.8f);
                 }
             }
@@ -93,7 +93,7 @@ namespace Parallax.Presentation
                 if (show)
                 {
                     slot.transform.position = new Vector3(greyboxLauncher.transform.position.x, greyboxLauncher.transform.position.y, slot.transform.position.z);
-                    DrawFitted(slot, launcherSprite, launcherSize);
+                    DrawFitted(slot, launcherSprite, launcherSize * bodyScale);
                     slot.color = Color.Lerp(Color.white, TellWarm, pulse * 0.8f);
                 }
             }
@@ -110,7 +110,7 @@ namespace Parallax.Presentation
             {
                 if (Mirror(arrowArt, greyboxArrow))
                 {
-                    DrawFitted(arrowArt, arrowSprite, new Vector2(arrowSize.x * ArrowFill, arrowSize.y));
+                    DrawFitted(arrowArt, arrowSprite, new Vector2(arrowSize.x * ArrowFill, arrowSize.y) * bodyScale);
                     arrowArt.transform.position += new Vector3(shiver, 0f, 0f);
                 }
             }
@@ -149,11 +149,12 @@ namespace Parallax.Presentation
             bool shown = Mirror(arrowArt, greyboxArrow);
             if (shaftArt != null) Mirror(shaftArt, greyboxArrow);
             if (!shown) return;
-            float sign = FacesLeft ? -1f : 1f, thick = arrowSize.y * 0.85f;
-            float headLen = Mathf.Min(arrowSize.x * 0.45f, thick * 2.2f), shaftLen = arrowSize.x * 0.98f - headLen;
+            Vector2 size = arrowSize * bodyScale;   // D-101
+            float sign = FacesLeft ? -1f : 1f, thick = size.y * 0.85f;
+            float headLen = Mathf.Min(size.x * 0.45f, thick * 2.2f), shaftLen = size.x * 0.98f - headLen;
             Vector3 centre = greyboxArrow.transform.position + new Vector3(0f, shiver, 0f);
             DrawFitted(arrowArt, spearHeadSprite, new Vector2(headLen, thick));
-            arrowArt.transform.position = centre + new Vector3(sign * (arrowSize.x * 0.49f - headLen * 0.5f), 0f, 0f);
+            arrowArt.transform.position = centre + new Vector3(sign * (size.x * 0.49f - headLen * 0.5f), 0f, 0f);
             if (shaftArt == null) return;
             shaftArt.sprite = spearShaftSprite;
             if (trapMaterial != null) shaftArt.sharedMaterial = trapMaterial;
@@ -163,7 +164,7 @@ namespace Parallax.Presentation
             shaftArt.flipX = FacesLeft;
             shaftArt.color = Color.white;
             shaftArt.size = new Vector2(shaftLen, thick);
-            shaftArt.transform.position = centre + new Vector3(-sign * (arrowSize.x * 0.49f - shaftLen * 0.5f), 0f, 0f);
+            shaftArt.transform.position = centre + new Vector3(-sign * (size.x * 0.49f - shaftLen * 0.5f), 0f, 0f);
         }
 
         // The head: the projectile's leading end, where the glint and the impact dust sit.

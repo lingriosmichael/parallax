@@ -37,6 +37,9 @@ namespace Parallax.Presentation
         public string[] Placeholders = new string[0];
         [Tooltip("The kit's defaults version; PARALLAX/Art/Import Trap Kit applies new count defaults once when it rises.")]
         public int KitVersion;
+        [Header("Size (D-101)")]
+        [Tooltip("Trap bodies draw this much bigger than their grey-box, around it (art only; hitboxes unchanged). Disguised floors stay exact.")]
+        [Min(1f)] public float BodyScale = 1.1f;
         [Header("Counts")]
         [Min(0)] public int ShardRows = 2;
         [Min(0)] public int DustPerFloor = 4;

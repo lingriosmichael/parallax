@@ -175,11 +175,19 @@ namespace Parallax.Tests.EditMode
             }
         }
 
+        // D-104: the fit-mode branch, under a 16 u view (the fixture's frame, 16 x 10, never fits a shipped level's zoomed
+        // view): 15 wide, so the frame fits at 4:3.
         [Test]
         public void AFitModeRoom_PassesTrivially()
         {
             var errors = new List<string>();
-            List<object> results = Tell("Fixture", Fixture("CameraTellRoom", 18f, 16f, 6f), Fixture("CameraTellRoutes"), errors);
+            var wide = UnityEngine.Object.Instantiate(Camera());
+            var so = new SerializedObject(wide);
+            so.FindProperty("maxViewHeight").floatValue = 16f;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            List<object> results;
+            try { results = ((IEnumerable)Invoke(Validator, "CameraTell", session, "Fixture", Fixture("CameraTellRoom", 15f, 13f, 6f), Fixture("CameraTellRoutes"), wide, errors)).Cast<object>().ToList(); }
+            finally { UnityEngine.Object.DestroyImmediate(wide); }
             TestContext.Out.WriteLine(Table(results));
             Assert.AreEqual(3, results.Count);
             Assert.IsTrue(results.All(r => (bool)F(r, "Fit")));

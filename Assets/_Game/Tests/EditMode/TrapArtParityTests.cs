@@ -18,7 +18,8 @@ namespace Parallax.Tests.EditMode
     // PAX-A13 (§9.1, §11 R4/R5): art parity on every level's declared routes (the solution and every betrayal), tick by
     // tick, through the route harness (ReplayOptions.AfterTick). After each tick every trap's art is applied (as the
     // game's LateUpdate would) and checked:
-    //  - a body is drawn exactly when its grey-box renderer is enabled, inside the grey-box's bounds (1 px at 128 px/unit);
+    //  - a body is drawn exactly when its grey-box renderer is enabled, inside the grey-box's bounds (1 px at 128 px/unit),
+    //    grown by (BodyScale - 1) of its size on each side (D-101);
     //  - an effect is drawn only while the event it shows is happening, read from trap state (a crumble after its floor is
     //    gone, a glint in the arrow's tell, splinters after it stopped, the geyser's tell in its tell and its burst while
     //    erupting, a block's landing dust once it has landed, a mover's dust while it moves, a door's scrape while it moves,
@@ -232,8 +233,9 @@ namespace Parallax.Tests.EditMode
                     bool greybox = Shown(b.Greybox), drawn = Shown(b.Art) && b.Art.sprite != null;
                     if (greybox != drawn) { Fail(tick, $"{art.name}: body {(b.Art != null ? b.Art.name : "null")} drawn {drawn}, grey-box {(b.Greybox != null ? b.Greybox.name : "null")} shown {greybox}"); continue; }
                     if (!drawn) continue;
+                    // D-101: a body may draw past its grey-box by (BodyScale - 1) of the grey-box's size on each side.
                     Bounds limit = b.Greybox.bounds;
-                    limit.Expand(2f * TrapArtMath.BoundsTolerance);
+                    limit.Expand(2f * (art.BodyScale - 1f) * limit.size + Vector3.one * (2f * TrapArtMath.BoundsTolerance));
                     Bounds a = b.Art.bounds;
                     if (!limit.Contains(a.min) || !limit.Contains(a.max)) Fail(tick, $"{art.name}: body {b.Art.name} {a} outside its grey-box {b.Greybox.bounds}");
                 }

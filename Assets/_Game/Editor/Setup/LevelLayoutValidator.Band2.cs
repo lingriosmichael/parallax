@@ -192,23 +192,30 @@ namespace Parallax.Editor.Setup
         // (or, once it has vanished, the bounds it was last drawn at) overlap the view in all 24 camera cases.
         public static Func<int, int, bool> InView16x9(ReplayResult replay, SoloRoomDefinition room, LevelCameraConfig camera)
         {
+            string id = Parallax.Editor.Levels.LevelLooks.LevelOf(room);
+            return InView16x9With(replay, room, camera, Parallax.Editor.Levels.LevelCameras.ViewHeight(id, camera), Parallax.Editor.Levels.LevelCameras.Bias(id));
+        }
+
+        /// <summary>D-104: with an explicit view height and lift (the level's camera).</summary>
+        public static Func<int, int, bool> InView16x9With(ReplayResult replay, SoloRoomDefinition room, LevelCameraConfig camera, float viewHeight, float bias)
+        {
             const float aspect = 16f / 9f;
+            CameraMath.FollowParams p = Follow(camera, viewHeight, bias);
             Bounds frameBounds = SoloRoomBuilder.ComputeRoomBounds(room, camera.ViewMargin);
             Vector2 frameCentre = (Vector2)frameBounds.center - room.Origin, frameSize = frameBounds.size;
-            if (CameraMath.IsFitMode(frameSize, camera.MaxViewHeight, aspect)) return (i, e) => true;
+            if (CameraMath.IsFitMode(frameSize, p.MaxViewHeight, aspect)) return (i, e) => true;
             var views = new List<Rect[]>();
             foreach (int fps in CameraTellFramesPerSecond)
             foreach (float phase in CameraTellPhases)
             foreach (float direction in CameraTellStartDirections)
-                views.Add(ViewPerRecord(replay, frameCentre, frameSize, aspect, camera, fps, phase, direction));
+                views.Add(ViewPerRecord(replay, frameCentre, frameSize, aspect, p, fps, phase, direction));
             return (i, e) => ChangeBounds(replay.Records, e, i, out Rect b) && views.All(v => b.Overlaps(v[i]));
         }
 
         // OnScreenLead's camera loop (the level camera's Start, then one CameraMath.Step per rendered frame), keeping the
         // view of the latest frame rendered at or before each record's tick.
-        static Rect[] ViewPerRecord(ReplayResult replay, Vector2 frameCentre, Vector2 frameSize, float aspect, LevelCameraConfig camera, int framesPerSecond, float phase, float startDirection)
+        static Rect[] ViewPerRecord(ReplayResult replay, Vector2 frameCentre, Vector2 frameSize, float aspect, CameraMath.FollowParams p, int framesPerSecond, float phase, float startDirection)
         {
-            var p = new CameraMath.FollowParams(camera.MaxViewHeight, camera.LookAhead, camera.LookAheadFlipDistance, camera.DeadZoneHalfExtents, camera.SmoothTime, camera.MaxSpeed);
             List<TickRecord> records = replay.Records;
             var views = new Rect[records.Count];
             Vector2 start = new(records[0].CatX, records[0].CatY);

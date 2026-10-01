@@ -2525,3 +2525,96 @@ the grey-box did; the troll room still betrays exactly as validated.
 **Tests:** `TrapArtBuildTests` (colliders and harness renderers identical with and without the art; every trap and bare
 hazard has art; `ValidateTrapSkins`), `TrapArtParityTests`, `TrapArtRevealFrameTests`, `TrapArtBudgetTests`,
 `TrapArtMathTests`.
+
+### D-100 · 2026-10-01 · Accepted (the developer's ruling, PAX-A16 §3.0)
+**Decision:** The level camera shows a fixed 1.2× zoom. It amends D-071's constants (item 4) and leaves its rules alone.
+- `MaxViewHeight` is 16 ÷ 1.2 = 13.33. Every shipped level's frame is taller or wider than that at every aspect, so every
+  level is in follow mode. Fit mode stays in the code, but no level reaches it.
+- `LookAhead` is 1.5 (was 2.5) and the dead zone is (1, 1.6) (was (2, 1.6)). At the narrower view these keep D-083's
+  reveals on screen at 4:3, 16:9 and 20:9.
+- `ViewMargin`, `smoothTime` and `maxSpeed` are unchanged.
+- The values are written by `PARALLAX/Setup/Levels/Environment Stack` (`EnvironmentStackSetup.ApplyCameraZoom`), never
+  by hand.
+
+**Layout changes this ruling needed** (the smallest that pass every validator):
+- **L011:** `Spear_1` fires from a mount under `Core_W` (x 5.75), over the gap, delay 41. `Ledge_M` sits one storey lower
+  (y 7.45), between `Spear_5` and `Spear_6`, so its fall to the foot stays in view.
+- **L018:** `Post_W`, `Spear_S`'s host, hangs under `SB_W` at x 4.95.
+- **Fixtures:** `CameraTellRoom`'s fit-mode room is 15 wide, and `Band2RouteResultsTests` re-pins L011 and L018.
+
+**Why:** the developer asked for the concept art's framing: the cat larger, the room's outside out of view (2026-10-01,
+"1.2x zoom as the fixed state, much like in the concept art").
+
+**Accepted side effect:** the door is often off screen when a level starts. The camera brings it into view as the cat
+moves.
+
+### D-101 · 2026-10-01 · Accepted (the developer's ruling, PAX-A16 round 3)
+**Decision:** Trap art draws 10% bigger than the trap; hitboxes, routes and timing are unchanged. It amends PAX-A13's
+parity rule ("a body sits inside its grey-box's bounds").
+- A trap body may draw past its grey-box by (`TrapArtConfig.BodyScale` − 1) of the grey-box's size on each side.
+  `BodyScale` is 1.1. It's never offset, and never shown earlier or later than the grey-box.
+- Bigger: spikes (each tooth, base on its host), arrows and spears with their launchers, geyser vents and columns
+  (wider, never longer), the storm cloud and its target, flip glyphs, and the inverter.
+- Exact (1.0): every disguise, because P10 needs it to cover exactly its trap: collapsing floors and fake platforms,
+  falling blocks, moving and shrinking floors, and a disguised launcher's host skin and its projectile (which rests
+  behind the host skin; 10% more would poke out before the reveal, caught by `TrapArtRevealFrameTests`).
+- `TrapArtParityTests` checks the grown bounds. `TrapSkinValidator` is unchanged (the disguises are exact).
+
+**Why:** the developer asked for every trap 10% bigger and chose art only (2026-10-01). Danger then reads slightly
+beyond the kill zone, never less.
+
+### D-102 · 2026-10-01 · Accepted (the developer's ruling, PAX-A16 round 3)
+**Decision:** The level camera's fixed zoom is 1.8× (`MaxViewHeight` 16 ÷ 1.8 = 8.89). It amends D-100's zoom.
+D-100's look-ahead and dead zone stay until the camera-tell validators are re-run. The foreground frame scales with the
+view height, so it keeps its share of the screen.
+
+**Why:** the developer compared a capture with the concept art (2026-10-01, "nowhere close"). In the concept the cat is
+about 1/7 of the screen height, and at 1.2× it was about 1/17. The developer chose 1.8× as the compromise that keeps a
+room readable ahead of the cat.
+
+**Open:** D-083's reveal-on-screen checks (`CameraTellTests`, `Band1LevelTests`, `Band2LevelTests`, Trap Lab rooms 6–10)
+haven't been re-run at 1.8×. They run after the developer approves the look, and any level that fails gets the smallest
+layout change, as D-100's did.
+
+### D-103 · 2026-10-02 · Accepted (the developer approved the gauntlet's Phase 1 look on L002)
+**Decision:** The environment follows the gauntlet's rules (PAX-A16, the developer's brief of 2026-10-01). These amend
+PAX-A15's §2.2–2.4 rules:
+- **Textures:** layers are imported at 128 px/u (finer than a 20:9 phone at D-102's 1.8× view), the play layer and its
+  fills at 196.667. Every environment texture and the dressing atlas are mipmapped and bilinear.
+- **The play layer:** the painterly A_GAME stone replaces the ENV-10/11/12/14 tiles (rejected in the triage). Fills blend
+  two stones through a seamless noise mask (about 11.7 u before a repeat). No dressing is baked into a tiled strip.
+- **Dressing:** tufts, ivy and roots are placed one by one from a seeded hash, the same rule for real and disguised blocks
+  (P10). Tufts draw behind the stone and every trap and avoid only the door and checkpoints. Ivy and drapes avoid
+  everything the player must see, but never an invisible trigger (a bare patch over a trigger would mark the trap).
+  Rubble, banners and glyphs keep PAX-A15's keep-out.
+- **The background:** whole pieces placed once (clouds, far skyline, the level's signature), never a tiled band, with
+  haze gradients between depths and a palette per level (`LevelPalettes`). The sky and the far haze still cover every view.
+  Painted mid pieces are never scaled. Haze gradients and the water strip are exempt.
+- **Readability:** pits fall into a dark void with a warm glow at the lip; block ends are broken stone with a sunlit rim.
+
+**Why:** the developer's gauntlet brief (no tiling, no crunchy resampling, depth and light from code). Phase 1 brought L002
+from 5.6 to 7.8 on the critic's scorecard, and the developer approved the look on 2026-10-02.
+
+### D-104 · 2026-10-02 · Accepted (the developer's camera ruling of 2026-10-02; D-102 measured)
+**Decision:** Each level has its own camera, in `LevelCameras` (Editor), baked onto its `LevelCameraFollow` by the level
+build. The camera tell, escape and chaos validators read the same table, so the game and its checks agree.
+- **Zoom:** D-102's 1.8× where every camera rule passes (D-083's tell, D-097's escape, D-093's chaos), else the largest of
+  1.5× and 1.2× that does. Measured by replaying every route through the game code at each zoom:
+  - 1.8×: L001, L002, L003, L006, L007, L010, L013.
+  - 1.5×: L008, L012, L014, L018, L020.
+  - 1.2×: L004, L005, L009, L011, L015, L016, L017, L019.
+
+  Trap Lab rooms 3, 6 and 12 validate at 1.5×. The lab's own camera doesn't read the table, and room 11 isn't listed: its
+  camera tell isn't tested.
+- **Lift:** the follow target sits 1.5 u above the cat (`CameraMath.FollowParams.VerticalBias`, follow mode only) where
+  every hazard on the solution route stays as visible as before (the developer's rule). This applies to L001, L003, L005,
+  L009 and L015, on the room auditor's ruling: a pit under a trap floor is read from its opening (the floor covers its kill
+  plane), while an open pit's kill plane counts. The lift breaks D-083 in L008, L012 and L016, and hides a hazard in the
+  rest.
+- The fit-mode test runs under a 16 u view (no shipped level's frame fits a zoomed view).
+
+**Why:** at 1.8× everywhere, 13 levels failed D-083 or D-093. A per-level zoom keeps every gameplay rule without layout
+changes; the alternative was layout edits in about 13 levels.
+
+**Open (test gap, the auditor's):** no validator holds the lift's rule. A check per lifted level should count only ticks
+where an element can kill and isn't covered by a trap floor (open-pit planes counted).

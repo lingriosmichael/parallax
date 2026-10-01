@@ -39,6 +39,8 @@ namespace Parallax.Editor.Setup
         // PAX-090 (D-091): a passed gate lights its section's checkpoint marker (the existing checkpoint art), drawn standing
         // on the checkpoint, MarkerHeight tall, dim until RoomManager lights it.
         internal const string CheckpointSpritePath = "Assets/_Game/Art/RealityA/Environment/A_OBJ_Checkpoint.png";
+        // PAX-A15 (ruling 5): ENV-25's idle stones, when the environment kit is on.
+        internal const string KitCheckpointSpritePath = "Assets/_Game/Art/RealityA/Environment/Kit/ENV_Checkpoint.png";
         const float MarkerHeight = 1.2f;
         const int MarkerSortingOrder = -1;
         static readonly Color MarkerDim = new(.45f, .45f, .5f, .8f);
@@ -191,7 +193,15 @@ namespace Parallax.Editor.Setup
             BuildGeometry(roomRoot, root, "Wall_Left", room.Origin + new Vector2(-.5f, 2f), new Vector2(1f, 12f), changes);
             BuildGeometry(roomRoot, root, "Wall_Right", room.Origin + new Vector2(room.Width + .5f, 2f), new Vector2(1f, 12f), changes);
             BuildCheckpointSections(roomRoot, root, room, rooms, config, changes);
-            if (buildArt) Parallax.Editor.Art.TrapArtSetup.BuildArt(roomRoot, root, room, rooms, changes);
+            // PAX-A15 §2.4: the room's stone is part of every build, with or without the trap art, so the elements' renderers
+            // are the same in both (PAX-A13 R5); the trap art then copies it into every disguised trap (P10), and the
+            // trims and dressing go over real and disguised solids alike.
+            bool kit = SoloRoomSkin.Enabled;
+            if (kit) SoloRoomSkin.SkinFill(roomRoot, root, room, changes);
+            if (!buildArt) return;
+            Parallax.Editor.Art.TrapArtSetup.BuildArt(roomRoot, root, room, rooms, changes);
+            if (kit) SoloRoomSkin.BuildTrims(roomRoot, root, room, changes);
+            else SoloRoomSkin.Remove(roomRoot, changes);
         }
 
         // PAX-090 (D-091): each section's marker (not for section 0), and the room's RoomSectionEntry list on the RoomManager,
@@ -228,7 +238,7 @@ namespace Parallax.Editor.Setup
         static SpriteRenderer BuildMarker(Transform roomRoot, RealityRoot root, CheckpointSection section, Vector2 paw, List<string> changes)
         {
             Transform t = SetupUtility.EnsureChild(roomRoot, section.MarkerName, root.gameObject.layer, changes);
-            Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(CheckpointSpritePath);
+            Sprite sprite = (SoloRoomSkin.Enabled ? AssetDatabase.LoadAssetAtPath<Sprite>(KitCheckpointSpritePath) : null) ?? AssetDatabase.LoadAssetAtPath<Sprite>(CheckpointSpritePath);
             SpriteRenderer marker;
             float scale = 1f, bottom = -MarkerHeight * .5f;
             if (sprite == null)

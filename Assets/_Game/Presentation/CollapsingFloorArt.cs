@@ -26,6 +26,7 @@ namespace Parallax.Presentation
         [SerializeField] SpriteRenderer[] dust = new SpriteRenderer[0];
         [SerializeField] Vector2 size;
 
+
         public override RoomTrap Trap => trap;
         public HostSkin HostSkin => hostSkin;
         public SpriteRenderer Skin => skin;
@@ -34,6 +35,7 @@ namespace Parallax.Presentation
         {
             hostSkin = newSkin;
             newSkin.ApplyTo(skin, size);
+
             for (int i = 0; i < shards.Length; i++) if (shards[i] != null) newSkin.ApplyTo(shards[i], ShardSize(i));
         }
 
@@ -42,6 +44,7 @@ namespace Parallax.Presentation
         protected override void CollectEffects(List<Effect> into)
         {
             foreach (SpriteRenderer s in shards) into.Add(new Effect("shard", s));
+
             foreach (SpriteRenderer d in dust) into.Add(new Effect("crumble", d));
         }
 
@@ -54,6 +57,7 @@ namespace Parallax.Presentation
             if (hostSkin.WorldTiled) hostSkin.SetSampling(skin, skin.transform.position, skin.transform.lossyScale);
             int s = TicksSinceFire;
             bool crumbling = !Shows(greyboxVisual) && s >= 0 && s < TrapArtMath.CrumbleTicks;
+
             uint seed = TrapArtMath.Seed(SeedName, trap.LatestFireTick);
             for (int i = 0; i < shards.Length; i++)
             {

@@ -32,7 +32,7 @@ namespace Parallax.Presentation
         {
             Vector2 centre = greyboxZone != null ? (Vector2)greyboxZone.transform.position : (Vector2)transform.position;
             float side = Mathf.Min(zoneSize.x, zoneSize.y) * 0.9f;
-            if (ring != null && Mirror(ring, greyboxZone)) Fit(ring, glyphRing, new Vector2(side, side));
+            if (ring != null && Mirror(ring, greyboxZone)) Fit(ring, glyphRing, new Vector2(side, side) * bodyScale);
             // Motes: slow drift inside the zone, on render ticks (ambient, D-094 allows); a pure function of the room clock.
             for (int i = 0; i < motes.Length; i++)
             {

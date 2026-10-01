@@ -48,7 +48,7 @@ namespace Parallax.Presentation
 
             if (Mirror(cloud, greyboxCloud))
             {
-                Fit(cloud, cloudSprite, cloudSize * 0.96f);
+                Fit(cloud, cloudSprite, cloudSize * 0.96f * bodyScale);
                 float churn = phase == StormCloudPhase.Charge ? 0.5f + 0.5f * Mathf.Sin(inCycle * 1.4f) : 0f;
                 cloud.color = phase switch
                 {
@@ -61,7 +61,7 @@ namespace Parallax.Presentation
             if (Mirror(target, greyboxTarget))
             {
                 target.sprite = targetSprite; target.drawMode = SpriteDrawMode.Sliced; target.transform.localScale = Vector3.one;
-                target.size = greyboxTarget.size;
+                target.size = greyboxTarget.size * bodyScale;
                 Color c = target.color; c.a = 0.35f + 0.25f * Mathf.Sin(inCycle * 0.9f); target.color = c;
             }
 
@@ -83,7 +83,7 @@ namespace Parallax.Presentation
                 Transform t = bolt[i].transform;
                 t.SetPositionAndRotation(new Vector3((a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f, t.position.z), Quaternion.Euler(0f, 0f, Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg - 90f));
                 float native = bolt[i].sprite != null ? bolt[i].sprite.bounds.size.y : 1f;
-                t.localScale = new Vector3(1.1f, d.magnitude / native * 1.02f, 1f);
+                t.localScale = new Vector3(1.1f * bodyScale, d.magnitude / native * 1.02f, 1f);
             }
 
             bool charging = phase == StormCloudPhase.Charge && greyboxCloud != null;

@@ -37,12 +37,12 @@ namespace Parallax.Presentation
             float side = Mathf.Min(zoneSize.x, zoneSize.y);
             if (orb != null && Mirror(orb, greyboxOrb))
             {
-                Fit(orb, orbSprite, new Vector2(side, side));
+                Fit(orb, orbSprite, new Vector2(side, side) * bodyScale);
                 float breathe = 0.92f + 0.08f * Mathf.Sin(RoomTick * 0.08f);
                 orb.transform.localScale *= breathe;
             }
-            if (Mirror(ring, greyboxRing)) Fit(ring, ringSprite, ringSize);
-            if (Mirror(mark, greyboxMark)) Fit(mark, markSprite, markSize);
+            if (Mirror(ring, greyboxRing)) Fit(ring, ringSprite, ringSize * bodyScale);
+            if (Mirror(mark, greyboxMark)) Fit(mark, markSprite, markSize * bodyScale);
             int s = TicksSinceFire;
             bool on = orb != null && s >= 0 && s < TrapArtMath.InverterFlareTicks;
             Vector2 at = greyboxOrb != null ? (Vector2)greyboxOrb.transform.position : (Vector2)transform.position;

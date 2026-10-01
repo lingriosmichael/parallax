@@ -77,7 +77,7 @@ namespace Parallax.Editor.Setup
 
         // A flat room with one arrow firing left at the cat. The arrow fires when the cat crosses triggerX; its
         // launcher sits at launcherX. Wide (60) with the launcher far ahead of the trigger, the reveal is off screen
-        // in follow mode; with the trigger moved near the launcher, it's on screen; narrow (18), the room is fit mode.
+        // in follow mode; with the trigger moved near the launcher, it's on screen; narrow (15), the room is fit mode.
         public static SoloRoomDefinition CameraTellRoom(float width, float launcherX, float triggerX)
         {
             var arrow = new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left, .3f, 1f, unitsPerTick: .36f), new SoloRoomTrapSettings(delayTicks: 0));

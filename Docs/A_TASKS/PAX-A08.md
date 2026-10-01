@@ -5,10 +5,10 @@
 check (§10, YOU) and the device check of the rim (§11).
 PAX-A13 is committed (2026-09-30), so this ticket can start. It replaces the earlier A08 text. The clips already exist
 (generated 2026-09-29, see `Art_Source/AutoSprite/Cats/HANDOVER.md`), so this ticket no longer generates anything: it
-registers, imports and reports. PAX-A11 stays absorbed (climb). The seamless vine (old item 15) is **not** in A08: it
-gets its own ticket after PAX-V07 and PAX-V07b. It is no longer blocked, since A13 is committed.
-**Order:** this ticket's Stage 0 (offline) → Stage 1 (import) → the developer's review → PAX-V07 → PAX-V07b → the
-seamless vine. One ticket at a time.
+registers, imports and reports. PAX-A11 stays absorbed (climb). The seamless vine (old item 15) is **not** in A08: it is
+folded into PAX-A15 §2.6 (developer, 2026-10-01).
+**Order:** this ticket's Stage 0 (offline) → Stage 1 (import) → the developer's review → PAX-V07 → PAX-V07b (the
+seamless vine moved to PAX-A15 §2.6). One ticket at a time.
 **Phase 1 size:** Lite.
 **Depends on:**
 - PAX-A13, committed 2026-09-30 (`trap_process.normal_map`, a clean `Tools/Art/`).
@@ -266,7 +266,7 @@ values, the ones A02 records: **196.667** for gameplay art and **98.333** for ba
 - Any `CatAnimState` or presenter change (PAX-V07).
 - The collider, motor, routes or levels.
 - Cat B (a copy of this ticket after V07).
-- The seamless vine.
+- The seamless vine (PAX-A15 §2.6).
 - Generating new clips.
 
 ## 9. Stop conditions

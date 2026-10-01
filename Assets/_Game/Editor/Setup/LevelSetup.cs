@@ -255,7 +255,10 @@ namespace Parallax.Editor.Setup
                 Vector2 worldCentre = root.ToWorld(new Vector2(contentFrame.center.x, contentFrame.center.y));
                 var worldFrame = new Bounds(worldCentre, contentFrame.size);
                 LevelCameraBuilder.BakeFrame(camera, worldFrame, changes);
+                LevelCameraBuilder.BakeLevelCamera(camera, Parallax.Editor.Levels.LevelLooks.LevelOf(layout), changes);
                 LevelCameraBuilder.SetBackgroundVerticalPosition(root, worldFrame, changes);
+                // PAX-A15 §2.3: the level's background stack and grade, from its recipe (no-op without LevelLookConfig).
+                EnvironmentStackSetup.Build(root, camera.GetComponent<Camera>(), worldFrame, Parallax.Editor.Levels.LevelLooks.LevelOf(layout), layout, changes);
             }
 
             ObserverContext observer = observers.Get(Parallax.Core.ObserverId.A);

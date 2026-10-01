@@ -2,7 +2,7 @@
 
 **Status:** Parked 2026-09-30 (polish, to revisit after the environment pass). Was: Approved 2026-09-30 (the developer's decisions: plays on respawn at 5, 10, 15… deaths in the same room, both
 numbers in the config, any movement cancels it on the same frame).
-**Order:** after PAX-V07; the seamless vine follows it.
+**Order:** after PAX-V07. (The seamless vine, once planned to follow it, is in PAX-A15 §2.6.)
 **Phase 1 size:** None (small and mechanical).
 **Depends on:**
 - PAX-V07: the Respawn state, `CatPresentationSignals`, the clip set.

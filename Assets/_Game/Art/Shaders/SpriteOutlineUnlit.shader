@@ -5,6 +5,7 @@ Shader "PARALLAX/SpriteOutlineUnlit"
         _MainTex ("Sprite Texture", 2D) = "white" {}
         _OutlineColor ("Outline Color", Color) = (1, 1, 1, 1)
         _OutlineWidth ("Outline Width (texels)", Float) = 1.5
+        _RimTop ("Rim from above (0 even outline, 1 top only)", Range(0, 1)) = 0
     }
 
     SubShader
@@ -53,6 +54,7 @@ Shader "PARALLAX/SpriteOutlineUnlit"
             CBUFFER_START(UnityPerMaterial)
                 float4 _OutlineColor;
                 float _OutlineWidth;
+                float _RimTop;
             CBUFFER_END
 
             Varyings Vert(Attributes IN)
@@ -94,7 +96,11 @@ Shader "PARALLAX/SpriteOutlineUnlit"
                     return half4(0, 0, 0, 0);
                 }
 
-                return half4(_OutlineColor.rgb * IN.color.rgb, _OutlineColor.a * IN.color.a);
+                // PAX-A16 gauntlet: a rim lit from above. Where the body lies below this pixel (its top edge) the rim is full; elsewhere
+                // it fades to (1 - _RimTop) of it, so the outline stays all round for readability but reads as backlight.
+                float below = max(SampleAlpha(IN.uv + float2(0, -texel.y)), max(SampleAlpha(IN.uv + float2(texel.x, -texel.y)), SampleAlpha(IN.uv + float2(-texel.x, -texel.y))));
+                float rim = lerp(1.0, below > 0.05 ? 1.0 : 0.0, _RimTop);
+                return half4(_OutlineColor.rgb * IN.color.rgb, _OutlineColor.a * IN.color.a * rim);
             }
             ENDHLSL
         }

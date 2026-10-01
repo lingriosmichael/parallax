@@ -36,13 +36,14 @@ namespace Parallax.Presentation
                 if (trapMaterial != null && body.sharedMaterial != trapMaterial) body.sharedMaterial = trapMaterial;
                 body.drawMode = SpriteDrawMode.Tiled;   // before the scale: switching draw mode rewrites a SpriteRenderer's scale
                 body.tileMode = SpriteTileMode.Continuous;
-                body.transform.localScale = Vector3.one;
+                // D-101: each tooth bodyScale bigger, the strip as wide as the grey-box, taller by bodyScale.
+                body.transform.localScale = new Vector3(bodyScale, bodyScale, 1f);
                 body.flipY = pointsDown;
                 Vector2 size = greyboxBody.size;
                 float rise = rises && s >= 0 ? Mathf.Clamp01((s + 1f) / RiseTicks) : 1f;
-                body.size = new Vector2(size.x, size.y * rise);
+                body.size = new Vector2(size.x / bodyScale, size.y * rise);
                 // Anchored at its base: the host side (the bottom, or the top for spikes hanging from a ceiling).
-                float shift = (1f - rise) * size.y * 0.5f * (pointsDown ? 1f : -1f);
+                float shift = (rise * bodyScale - 1f) * size.y * 0.5f * (pointsDown ? -1f : 1f);
                 body.transform.position += new Vector3(0f, shift, 0f);
             }
             Vector2 at = greyboxBody != null ? (Vector2)greyboxBody.transform.position : (Vector2)transform.position;

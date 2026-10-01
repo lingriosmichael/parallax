@@ -51,6 +51,7 @@ namespace Parallax.Editor.Setup
 
         static SpriteRenderer[] BuildVineSegments(Transform vine, RealityRoot root, Vector2 size, List<string> changes)
         {
+            if (SoloRoomSkin.Enabled && BuildSeamlessVine(vine, root, size, changes) is SpriteRenderer[] seamless) return seamless;
             Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(VineSpritePath);
             if (sprite == null) Debug.LogError($"TrapKitSetup: no vine sprite at '{VineSpritePath}'; '{vine.name}' uses a placeholder colour.", vine);
             // Placeholder: one greybox segment the size of the box.
@@ -81,9 +82,54 @@ namespace Parallax.Editor.Setup
                 if (r != null && !r.enabled) { r.enabled = true; changes.Add("showed " + t.name); }
                 renderers[i] = r;
             }
-            // A shorter vine than last time: drop the segments it no longer has.
+            DropSegmentsFrom(vine, count, changes);
+            return renderers;
+        }
+
+        // A shorter vine than last time: drop the segments it no longer has.
+        static void DropSegmentsFrom(Transform vine, int count, List<string> changes)
+        {
             for (int i = count; vine.Find("Segment_" + i) != null; i++)
             { Object.DestroyImmediate(vine.Find("Segment_" + i).gameObject); changes.Add("removed " + vine.name + ".Segment_" + i); }
+        }
+
+        /// <summary>PAX-A15 §2.6 (PAX-A08's old item 15): the seamless vine from ENV-18, bottom to top: Segment_0 the tip,
+        /// Segment_1 the middle drawn Tiled (the kit sprite is Full Rect), Segment_2 the anchor, all centred on the grab
+        /// box, the anchor's top at the box's top. A vine under 3 u shrinks its anchor and tip to fit. Null when the kit's
+        /// vine sprites are missing (the stacked A02 vine is used).</summary>
+        static SpriteRenderer[] BuildSeamlessVine(Transform vine, RealityRoot root, Vector2 size, List<string> changes)
+        {
+            Sprite tip = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_VineTip"), mid = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_VineMid"), anchor = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_VineAnchor");
+            if (tip == null || mid == null || anchor == null) return null;
+            float k = Mathf.Min(1f, size.y / 3.2f);
+            float half = size.y * .5f, tipH = tip.bounds.size.y * k, anchorH = anchor.bounds.size.y * k;
+            float midBottom = -half + tipH * 0.6f, midTop = half - anchorH * 0.5f;
+            var parts = new (Sprite sprite, Vector2 centre, Vector2 drawSize, bool tiled)[]
+            {
+                (tip, new Vector2(0f, -half + tipH * .5f), tip.bounds.size * k, false),
+                (mid, new Vector2(0f, (midBottom + midTop) * .5f), new Vector2(mid.bounds.size.x, Mathf.Max(0.1f, midTop - midBottom)), true),
+                (anchor, new Vector2(0f, half - anchorH * .5f), anchor.bounds.size * k, false),
+            };
+            string layer = RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay);
+            var renderers = new SpriteRenderer[parts.Length];
+            for (int i = 0; i < parts.Length; i++)
+            {
+                Transform t = SetupUtility.EnsureChild(vine, "Segment_" + i, root.gameObject.layer, changes);
+                SetupUtility.SetLocalPosition(t, parts[i].centre, changes);
+                SpriteRenderer r = SetupUtility.Ensure<SpriteRenderer>(t.gameObject, changes);
+                if (r.sprite != parts[i].sprite) { r.sprite = parts[i].sprite; changes.Add("set " + t.name + ".sprite"); }
+                SpriteDrawMode mode = parts[i].tiled ? SpriteDrawMode.Tiled : SpriteDrawMode.Simple;
+                if (r.drawMode != mode) { r.drawMode = mode; changes.Add("set " + t.name + ".drawMode"); }
+                // Scale after the draw mode: switching Simple/Tiled rewrites the transform's scale.
+                Vector3 scale = parts[i].tiled ? Vector3.one : new Vector3(k, k, 1f);
+                if (parts[i].tiled && r.size != parts[i].drawSize) { r.size = parts[i].drawSize; changes.Add("set " + t.name + ".size"); }
+                if (t.localScale != scale) { t.localScale = scale; changes.Add("set " + t.name + ".localScale"); }
+                if (r.sortingLayerName != layer) { r.sortingLayerName = layer; changes.Add("set " + t.name + ".sortingLayer"); }
+                if (r.sortingOrder != VineSortingOrder) { r.sortingOrder = VineSortingOrder; changes.Add("set " + t.name + ".sortingOrder"); }
+                if (!r.enabled) { r.enabled = true; changes.Add("showed " + t.name); }
+                renderers[i] = r;
+            }
+            DropSegmentsFrom(vine, parts.Length, changes);
             return renderers;
         }
     }

@@ -65,7 +65,7 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Ceiling,"Roof_5",(7.35f,CoverY),(.9f,CoverH)),
                 // Sky A (tops 4.6): SL_1, the landing (SL_2, SL_3 and Drop_3 are traps); Post_W, Spear_S's host on Wall_L.
                 E(SoloRoomElementKind.Floor,"SL_1",(16.2f,SkyTop - .25f),(2f,.5f)),
-                E(SoloRoomElementKind.Wall,"Post_W",(.2f,SkyTop + .35f),(.4f,.7f)),
+                E(SoloRoomElementKind.Wall,"Post_W",(4.95f,(SkyTop + SkyBTop - .5f) * .5f),(.4f,SkyBTop - .5f - SkyTop)),
                 // The vine through the cloud's band, standing on Ground_W1; its top 0.6 above Sky B.
                 E(SoloRoomElementKind.Vine,"V_6",(1.6f,(SkyBTop + .6f) * .5f),(.6f,SkyBTop + .6f)),
                 // Sky B (7.4): SB_W (x 4-10), the gap (10-12) under Lintel_D and G_D, SB_E (12-16.8) with Step_B, G_B's vent
@@ -100,7 +100,7 @@ namespace Parallax.Editor.Levels
 
             // Sky. Spear_S (disguised, in Post_W) along Sky A at shin height to Wall_R, set off by the cut at x 15.2-15.4 on
             // SL_1 (west of the checkpoint, so a respawned cat stands clear of it).
-            elements.Add(Spear("Spear_S", .2f, SkyTop + .3f, ArrowDirection.Right, 32f, 1.4f, (15.3f, 5.75f), (.2f, 2.3f), new SoloRoomTrapSettings(delayTicks:0), tell: 24, disguised: true, launcherWidth: .4f));
+            elements.Add(Spear("Spear_S", 5f, SkyTop + .3f, ArrowDirection.Right, 32f, 1.4f, (15.3f, 5.75f), (.2f, 2.3f), new SoloRoomTrapSettings(delayTicks:0), tell: 24, disguised: true, launcherWidth: .4f));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"SL_2",(12.4f,SkyTop - .25f),(2f,.5f),settings:new SoloRoomTrapSettings(delayTicks:12)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_4",(12.1f,.15f),(1.6f,.3f),
                 settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"SL_2")));

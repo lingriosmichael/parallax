@@ -62,10 +62,19 @@ namespace Parallax.Editor.Setup
             return errors;
         }
 
-        public static List<CameraTellResult> CameraTell(RouteSession session, string levelId, SoloRoomDefinition room, RoomRoutes routes, LevelCameraConfig camera, List<string> errors)
+        /// <summary>D-104: the level's own camera (LevelCameras: its view height and lift), as the level build bakes it.</summary>
+        public static List<CameraTellResult> CameraTell(RouteSession session, string levelId, SoloRoomDefinition room, RoomRoutes routes, LevelCameraConfig camera, List<string> errors) =>
+            CameraTellWith(session, levelId, room, routes, camera, Parallax.Editor.Levels.LevelCameras.ViewHeight(levelId, camera), Parallax.Editor.Levels.LevelCameras.Bias(levelId), errors);
+
+        static CameraMath.FollowParams Follow(LevelCameraConfig camera, float viewHeight, float bias) =>
+            new(viewHeight, camera.LookAhead, camera.LookAheadFlipDistance, camera.DeadZoneHalfExtents, camera.SmoothTime, camera.MaxSpeed, bias);
+
+        /// <summary>D-104: with an explicit view height and lift (the measurement of a candidate camera).</summary>
+        public static List<CameraTellResult> CameraTellWith(RouteSession session, string levelId, SoloRoomDefinition room, RoomRoutes routes, LevelCameraConfig camera, float viewHeight, float bias, List<string> errors)
         {
             var results = new List<CameraTellResult>();
             if (camera == null) { errors.Add($"{levelId}: no LevelCameraConfig ({LevelCameraConfigPath}); the camera tell rule is undefined."); return results; }
+            CameraMath.FollowParams p = Follow(camera, viewHeight, bias);
             Bounds frameBounds = SoloRoomBuilder.ComputeRoomBounds(room, camera.ViewMargin);
             Vector2 frameCentre = (Vector2)frameBounds.center - room.Origin, frameSize = frameBounds.size;
 
@@ -77,14 +86,14 @@ namespace Parallax.Editor.Setup
                 // A betrayal that doesn't die or never reveals is the route rule's error (D-079); nothing to see here.
                 if (replay.Kill == null || lead.FirstVisibleTick < 0) continue;
                 int end = lead.FirstVisibleTick + lead.Lead;
-                if (betrayal.Escape != null) { EscapeTell(session, levelId, room, betrayal, lead.Lead, frameCentre, frameSize, camera, results, errors); continue; }
+                if (betrayal.Escape != null) { EscapeTell(session, levelId, room, betrayal, lead.Lead, frameCentre, frameSize, p, results, errors); continue; }
                 int element = replay.Elements.IndexOf(betrayal.RevealedBy);
                 for (int a = 0; a < CameraTellAspects.Length; a++)
                 {
                     var result = new CameraTellResult { Betrayal = betrayal.Name, RevealedBy = betrayal.RevealedBy, Aspect = CameraTellAspectNames[a], Reveal = lead.FirstVisibleTick, End = end, Lead = lead.Lead };
-                    result.Fit = CameraMath.IsFitMode(frameSize, camera.MaxViewHeight, CameraTellAspects[a]);
+                    result.Fit = CameraMath.IsFitMode(frameSize, p.MaxViewHeight, CameraTellAspects[a]);
                     if (result.Fit) result.OnScreenLead = lead.Lead;
-                    else WorstOnScreenLead(replay, element, lead.FirstVisibleTick, end, frameCentre, frameSize, CameraTellAspects[a], camera, result);
+                    else WorstOnScreenLead(replay, element, lead.FirstVisibleTick, end, frameCentre, frameSize, CameraTellAspects[a], p, result);
                     results.Add(result);
                     if (!result.Passed) errors.Add($"{levelId}: betrayal '{betrayal.Name}': {result} is below {RevealLeadTicks} ticks on screen (D-083 camera tell rule).");
                 }
@@ -98,7 +107,7 @@ namespace Parallax.Editor.Setup
         // must be on screen at every tick from the reveal through the last escape tick, a span of at least WindowTicks; the
         // worst of the 24 camera cases counts, at every aspect.
         static void EscapeTell(RouteSession session, string levelId, SoloRoomDefinition room, Betrayal betrayal, int maxDelay, Vector2 frameCentre, Vector2 frameSize,
-            LevelCameraConfig camera, List<CameraTellResult> results, List<string> errors)
+            CameraMath.FollowParams camera, List<CameraTellResult> results, List<string> errors)
         {
             ReplayResult last = null;
             int reveal = -1, lastD = -1;
@@ -135,7 +144,7 @@ namespace Parallax.Editor.Setup
             }
         }
 
-        static void WorstOnScreenLead(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect, LevelCameraConfig camera, CameraTellResult result)
+        static void WorstOnScreenLead(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect, CameraMath.FollowParams camera, CameraTellResult result)
         {
             result.OnScreenLead = int.MaxValue;
             foreach (int fps in CameraTellFramesPerSecond)
@@ -154,14 +163,17 @@ namespace Parallax.Editor.Setup
         // Phase H device check).
         public static int OnScreenLead(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect,
             LevelCameraConfig camera, int framesPerSecond, float phase, float startDirection) =>
+            OnScreen(replay, element, reveal, end, frameCentre, frameSize, aspect, Follow(camera, camera.MaxViewHeight, 0f), framesPerSecond, phase, startDirection, false);
+
+        static int OnScreenLead(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect,
+            CameraMath.FollowParams camera, int framesPerSecond, float phase, float startDirection) =>
             OnScreen(replay, element, reveal, end, frameCentre, frameSize, aspect, camera, framesPerSecond, phase, startDirection, false);
 
         // fromReveal false: D-083's on-screen lead (the run that reaches the end). True (D-097): the ticks the element stays
         // on screen from the reveal, up to the end, stopping at the first tick it's off screen.
         static int OnScreen(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect,
-            LevelCameraConfig camera, int framesPerSecond, float phase, float startDirection, bool fromReveal)
+            CameraMath.FollowParams p, int framesPerSecond, float phase, float startDirection, bool fromReveal)
         {
-            var p = new CameraMath.FollowParams(camera.MaxViewHeight, camera.LookAhead, camera.LookAheadFlipDistance, camera.DeadZoneHalfExtents, camera.SmoothTime, camera.MaxSpeed);
             List<TickRecord> records = replay.Records;
             // PAX-083: the loop below stops at records.Count, so a replay shorter than the lead's end would read as on
             // screen up to the end and overstate the lead. Fail instead.

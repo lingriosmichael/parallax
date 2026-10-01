@@ -115,3 +115,19 @@ Units: pp = phone px at 80 px/u; sp = sprite px at PPU 143.3.
       - the tail tip enters walls the cat stands against;
       - Rise 0's hind legs (0.25 u below the paws) can meet a step behind a cat jumping up.
     - A08 accepted the ear case. Listed so the rest isn't forgotten.
+
+## Environment (PAX-A15)
+
+The kit is in (`Docs/Art/A02_asset_manifest.md`, "Environment kit"). What the first pass showed is still missing:
+
+- **Low foreground pieces.** The foreground may cover only solid ground at a frame edge (§3 of PAX-A15), and with the
+  camera's travel that leaves a strip about 1.5 u tall over the ground block. ENV-26's ferns and roots (2.4 u) fit in only a
+  few levels, and the branch and the trunk fit in none. Wanted: three or four wide, ground-hugging silhouettes (roots,
+  fern fronds, a fallen block with moss), about 4:1, transparent.
+- **A paler back wall.** ENV-32 came out as dark as the platform stone; `env_kit.py` bakes it 60% toward a warm haze so
+  the black cat and the platforms read against it. A version painted pale and hazy (far-distance stone, low contrast) would
+  keep more of its detail.
+- **Corner pieces for the new cap.** ENV-10d's ends and corners don't line up with the cap and wall-face strips, so
+  corners are the two strips meeting. Ends cut to the cap's height (0.46 u band, mossy top course) would finish them.
+- **Unused so far:** ENV-01 (the sky is a gradient made in code), ENV-24's closed frame, ENV-25's crossed stones (the
+  marker lights by colour), ENV-10c's upper strip.

@@ -57,7 +57,7 @@ namespace Parallax.Presentation
             GeyserPhase phase = trap.Phase;
             if (Mirror(ventArt, greyboxVent))
             {
-                FitVent(ventArt, ventSprite, ventSize);
+                FitVent(ventArt, ventSprite, ventSize * bodyScale);
                 // The vent warms through the tell and the eruption, as the grey-box vent turns its tell colour; pulsing in the tell.
                 float warm = phase == GeyserPhase.Tell ? 0.55f + 0.35f * Mathf.Sin(Mathf.Max(0, s) * 0.7f) : phase == GeyserPhase.Erupt ? 0.6f : 0f;
                 ventArt.color = Color.Lerp(Color.white, new Color(1f, 0.62f, 0.3f, 1f), warm);
@@ -70,7 +70,7 @@ namespace Parallax.Presentation
                 int k = Mathf.Max(0, intoErupt) % columnFrames.Length;
                 columnArt.sprite = columnFrames[(columnFrames.Length - k) % columnFrames.Length];
                 columnArt.flipY = direction == GeyserDirection.Down;
-                columnArt.size = greyboxColumn.size;
+                columnArt.size = new Vector2(greyboxColumn.size.x * bodyScale, greyboxColumn.size.y);   // D-101: wider, never longer
             }
 
             Vector2 push = Push;

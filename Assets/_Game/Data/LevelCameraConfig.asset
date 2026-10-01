@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: LevelCameraConfig
   m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Cameras.LevelCameraConfig
   viewMargin: 0.5
-  maxViewHeight: 16
-  lookAhead: 2.5
-  deadZoneHalfExtents: {x: 2, y: 1.6}
+  maxViewHeight: 8.888889
+  lookAhead: 1.5
+  lookAheadFlipDistance: 0.1
+  deadZoneHalfExtents: {x: 1, y: 1.6}
   smoothTime: 0.18
   maxSpeed: 40

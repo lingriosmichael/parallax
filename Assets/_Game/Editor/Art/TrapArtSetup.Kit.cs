@@ -142,7 +142,29 @@ namespace Parallax.Editor.Art
                 ("glyphRing", config.GlyphRing), ("pulse", pulse), ("zoneSize", e.Size));
             SetupUtility.SetArray(presenter, "greybox", visible ? new Object[] { zone } : new Object[0], changes);
             SetupUtility.SetArray(presenter, "motes", motes.Cast<Object>().ToArray(), changes);
+            BuildFlipHalo(ring, layer, changes);
             return art.name;
+        }
+
+        /// <summary>PAX-A15 (A3): a dark soft backing behind a visible flip's glyph ring, so the gold ring reads against a gold
+        /// sky. A child of the ring (it takes the ring's fitted scale), shown exactly when the ring is (ShownWith). Only with
+        /// the environment kit on; the ring's own art and the trap are unchanged.</summary>
+        static void BuildFlipHalo(SpriteRenderer ring, int layer, List<string> changes)
+        {
+            if (ring == null) return;
+            var look = AssetDatabase.LoadAssetAtPath<Parallax.Editor.Levels.LevelLookConfig>(Parallax.Editor.Levels.LevelLookConfig.AssetPath);
+            Sprite halo = SoloRoomSkin.Enabled ? EnvironmentKit.Sprite("ENV_Halo") : null;
+            if (halo == null || look == null || ring.sprite == null) { RemoveChild(ring.transform, "Halo", changes); return; }
+            SpriteRenderer backing = Child(ring.transform, "Halo", layer, changes);
+            backing.sprite = halo; backing.sharedMaterial = EnvironmentKit.UnlitMaterial; backing.drawMode = SpriteDrawMode.Simple;
+            backing.sortingOrder = ring.sortingOrder - 1;
+            backing.color = new Color(1f, 1f, 1f, look.FlipHaloAlpha);
+            float k = ring.sprite.bounds.size.x * look.FlipHaloScale / halo.bounds.size.x;
+            backing.transform.localScale = new Vector3(k, k, 1f);
+            ShownWith follow = SetupUtility.Ensure<ShownWith>(backing.gameObject, changes);
+            TrapKitSetup.Write(follow, changes, ("owner", ring));
+            SetupUtility.SetArray(follow, "renderers", new Object[] { backing }, changes);
+            follow.Apply();
         }
 
         // ---------- the inverter ----------

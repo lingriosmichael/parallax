@@ -101,7 +101,10 @@ namespace Parallax.Editor.Setup
 
         static void BuildDoorArt(Transform door, SpriteRenderer greybox, RealityRoot root, Vector2 doorSize, List<string> changes)
         {
-            Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(DoorArtPath);
+            // PAX-A15 (ruling 5, Phase 1 answer 2): with the environment kit on, the door is ENV-24's lit frame (centre
+            // pivot) with a warm glow behind it; otherwise the A_Door_Exit art (bottom pivot) as before.
+            Sprite kitSprite = SoloRoomSkin.Enabled ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Door") : null;
+            Sprite sprite = kitSprite != null ? kitSprite : AssetDatabase.LoadAssetAtPath<Sprite>(DoorArtPath);
             if (sprite == null)
             {
                 Debug.LogError($"RoomSetup: door art not found at {DoorArtPath}; {door.name} keeps its greybox.");
@@ -109,7 +112,9 @@ namespace Parallax.Editor.Setup
             }
 
             Transform art = SetupUtility.EnsureChild(door, "Art", door.gameObject.layer, changes);
-            SetupUtility.SetLocalPosition(art, new Vector2(0f, -doorSize.y * 0.5f), changes);
+            float lift = kitSprite != null ? -sprite.bounds.min.y : 0f;
+            SetupUtility.SetLocalPosition(art, new Vector2(0f, -doorSize.y * 0.5f + lift), changes);
+            BuildDoorGlow(art, kitSprite != null, root, changes);
             var renderer = SetupUtility.Ensure<SpriteRenderer>(art.gameObject, changes);
             if (renderer.sprite != sprite)
             {
@@ -133,6 +138,38 @@ namespace Parallax.Editor.Setup
                 greybox.enabled = false;
                 changes.Add("disabled " + door.name + " greybox");
             }
+        }
+
+        // PAX-A15 (A6): a soft warm glow behind the lit door (the glow layer is reserved for the door, a crossed
+        // checkpoint and trap tells), unlit so the grade's light never dims it.
+        static void BuildDoorGlow(Transform art, bool on, RealityRoot root, List<string> changes)
+        {
+            var look = AssetDatabase.LoadAssetAtPath<Parallax.Editor.Levels.LevelLookConfig>(Parallax.Editor.Levels.LevelLookConfig.AssetPath);
+            bool ready = on && look != null;
+            // A soft dark pocket behind the door, then a warm glow around its opening: the lit doorway pops (A6).
+            DoorBacking(art, "Shade", ready ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Halo") : null, ready ? look.DoorShadeSize : 0f, new Color(1f, 1f, 1f, ready ? look.DoorShadeAlpha : 0f), DoorArtSortingOrder - 2, root, changes);
+            DoorBacking(art, "Glow", ready ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Glow") : null, ready ? look.DoorGlowSize : 0f, new Color(1f, 0.86f, 0.58f, ready ? look.DoorGlowAlpha : 0f), DoorArtSortingOrder - 1, root, changes);
+        }
+
+        static void DoorBacking(Transform art, string name, Sprite sprite, float size, Color color, int order, RealityRoot root, List<string> changes)
+        {
+            Transform existing = art.Find(name);
+            if (sprite == null)
+            {
+                if (existing != null) { Object.DestroyImmediate(existing.gameObject); changes.Add("removed " + art.parent.name + " door " + name); }
+                return;
+            }
+            Transform t = SetupUtility.EnsureChild(art, name, art.gameObject.layer, changes);
+            SetupUtility.SetLocalPosition(t, Vector2.zero, changes);
+            float scale = size / sprite.bounds.size.x;
+            if (t.localScale != new Vector3(scale, scale, 1f)) { t.localScale = new Vector3(scale, scale, 1f); changes.Add("set " + art.parent.name + " " + name + " scale"); }
+            var r = SetupUtility.Ensure<SpriteRenderer>(t.gameObject, changes);
+            r.sprite = sprite;
+            // PAX-A16 §3.1: the glow is additive (HDR, so it blooms); the pocket stays a plain soft shade.
+            r.sharedMaterial = name == "Glow" && EnvironmentStackSetup.GlowMaterial != null ? EnvironmentStackSetup.GlowMaterial : Parallax.Editor.Art.EnvironmentKit.UnlitMaterial;
+            r.color = color;
+            r.sortingLayerName = RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay);
+            r.sortingOrder = order;
         }
 
         static void SetInt(Object target, string name, int value, List<string> changes)

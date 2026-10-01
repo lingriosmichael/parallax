@@ -39,6 +39,19 @@ namespace Parallax.Editor.Setup
             changes.Add("baked " + camera.name + " camera frame");
         }
 
+        /// <summary>D-104: the level's own camera (LevelCameras), baked onto its LevelCameraFollow (0/0 for an unlisted level).</summary>
+        public static void BakeLevelCamera(LevelCameraFollow camera, string levelId, List<string> changes)
+        {
+            var serialized = new SerializedObject(camera);
+            SerializedProperty height = serialized.FindProperty("viewHeight"), bias = serialized.FindProperty("verticalBias");
+            bool listed = levelId != null && Parallax.Editor.Levels.LevelCameras.ById.ContainsKey(levelId);
+            float h = listed ? Parallax.Editor.Levels.LevelCameras.ViewHeight(levelId, null) : 0f, b = Parallax.Editor.Levels.LevelCameras.Bias(levelId);
+            if (Mathf.Approximately(height.floatValue, h) && Mathf.Approximately(bias.floatValue, b)) return;
+            height.floatValue = h; bias.floatValue = b;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            changes.Add($"baked {camera.name} view {h:0.##} (0 = config), lift {b}");
+        }
+
         // §2.3: regeneration only repositions the background/foreground layers vertically to the
         // baked frame. Horizontal placement and the tiled layers' height/tileOffsetY are set once
         // in the template by LevelCameraSetup, not here.
