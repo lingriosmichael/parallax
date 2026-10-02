@@ -319,7 +319,7 @@ namespace Parallax.Editor.Setup
             int order = c.Config.GetLayer("Foreground").Order + 5;
             // The frame's scales were set at D-100's 13.33 u view; it keeps its share of the screen at any zoom (D-102).
             float vk = c.Travel.ViewHeight / (16f / 1.2f);
-            if (corner != null)
+            if (corner != null && c.Config.FrameCornerScale > 0f)
             {
                 float k = c.Config.FrameCornerScale * vk;
                 Vector2 size = (Vector2)corner.bounds.size * k;

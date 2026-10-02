@@ -275,7 +275,39 @@ def bodies(emit, load_rgba, luminance_alpha, clean_alpha, trim, fit, resize, gri
             else:
                 emit(name, out, tiled=tiled, normal=normal, placeholder=key)
 
-    body("TRAP-04_spike_strip", "Bodies/TRAP-04_spike_strip", lambda s: tile_height(whole_periods(clean_alpha(trim(load_rgba(s)))), 45), ph_spike_strip, tiled=True)
+    def blades(a):
+        """PAX-A16 gauntlet (the developer: "spikes need to be longer and clearer"; then "spikes are grey, make them black, it's
+        more noticeable"): the strip's blades only, no stone base (it blended into the floor), near-black iron (value 0.07-0.15,
+        just above the black-shading flag) with a pale lit edge on the right and top and a faint grey rim, so they read as
+        black on a bright sky and still show their shape on dark stone. The base's collar row is kept as a 3 px dark seat."""
+        opaque = a[..., 3] > 0.5
+        cover = opaque.mean(axis=1)
+        base = int(np.argmax(cover > 0.85))          # the first row where the stone base spans the strip
+        out = a[:base + 3].copy()
+        # Solid blades: the painted source has semi-clear pits inside each blade; close them (a dilate then an erode of the
+        # silhouette) so the rim only runs around the outside.
+        sil = Image.fromarray(((out[..., 3] > 0.35) * 255).astype(np.uint8), "L").filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))
+        out[..., 3] = np.maximum(out[..., 3], np.asarray(sil).astype(np.float32) / 255)
+        rgb, alpha = out[..., :3], out[..., 3]
+        lum = (rgb * np.array([0.3, 0.55, 0.15], np.float32)).sum(-1, keepdims=True)
+        # Black iron: the painted shading kept as a faint value change inside the near-black.
+        l = (lum - lum.min()) / max(1e-4, float(lum.max() - lum.min()))
+        l = np.asarray(Image.fromarray((l[..., 0] * 255).astype(np.uint8), "L").filter(ImageFilter.GaussianBlur(1.6))).astype(np.float32)[..., None] / 255
+        out[..., :3] = np.clip((0.07 + 0.08 * l) * np.array([1.0, 0.97, 0.95], np.float32), 0, 1)
+        # The lit edge: where alpha falls off to the right of or above a blade pixel (light from the right and above).
+        right = np.zeros_like(alpha); right[:, :-2] = alpha[:, 2:]
+        above = np.zeros_like(alpha); above[2:] = alpha[:-2]
+        edge = np.clip(alpha - np.minimum(right, above), 0, 1)[..., None]
+        out[..., :3] = out[..., :3] * (1 - edge * 0.7) + np.array([0.62, 0.6, 0.58], np.float32) * edge * 0.7
+        # A faint grey rim (1-2 px) around the silhouette, so a black blade keeps its outline on dark stone.
+        im = Image.fromarray((alpha * 255).astype(np.uint8), "L").filter(ImageFilter.MaxFilter(3))
+        ring = np.clip(np.asarray(im).astype(np.float32) / 255 - alpha, 0, 1)
+        out[..., :3] = np.where(ring[..., None] > 0, np.array([0.26, 0.25, 0.25], np.float32), out[..., :3])
+        out[..., 3] = np.maximum(alpha, ring * 0.7)
+        out[-3:, :, :3] = np.array([0.08, 0.07, 0.07], np.float32); out[-3:, :, 3] = 1.0
+        return out
+
+    body("TRAP-04_spike_strip", "Bodies/TRAP-04_spike_strip", lambda s: tile_height(blades(whole_periods(clean_alpha(trim(load_rgba(s))))), 45), ph_spike_strip, tiled=True)
     body("TRAP-05_spear", "Bodies/TRAP-05_spear_head", lambda s: fit(clean_alpha(np.ascontiguousarray(pieces(clean_alpha(load_rgba(s)), 3)[0][:, ::-1])), 0.75, 0.34), ph_spear_head)   # the v1 image points left; the kit faces right
     body("TRAP-05_spear", "Bodies/TRAP-05_spear_shaft", lambda s: tile_height(straight_run(clean_alpha(pieces(clean_alpha(load_rgba(s)), 3)[1])), 44), ph_spear_shaft, tiled=True)
     body("TRAP-06_inverter_orb", "Bodies/TRAP-06_inverter_orb", lambda s: fit(trim(luminance_alpha(load_rgba(s))), 0.6, 0.6), ph_orb)

@@ -40,6 +40,8 @@ namespace Parallax.Presentation
         [Header("Size (D-101)")]
         [Tooltip("Trap bodies draw this much bigger than their grey-box, around it (art only; hitboxes unchanged). Disguised floors stay exact.")]
         [Min(1f)] public float BodyScale = 1.1f;
+        [Tooltip("Gauntlet (the developer: \"spikes need to be longer\"): spikes draw this many times their grey-box's height, from their base outward (art only; the hitbox is unchanged).")]
+        [Min(1f)] public float SpikeHeightScale = 1.8f;
         [Header("Counts")]
         [Min(0)] public int ShardRows = 2;
         [Min(0)] public int DustPerFloor = 4;

@@ -45,6 +45,9 @@ namespace Parallax.Presentation
         protected int RoomTick => rooms != null ? rooms.RoomLifeTick : 0;
         protected string SeedName => seedName;
         public float BodyScale => bodyScale;
+        /// <summary>How far past its grey-box a body may draw, as a fraction of the grey-box's size on each axis (D-101; a
+        /// spike's height grows further, D-105).</summary>
+        public virtual Vector2 BodyGrowth => new(bodyScale - 1f, bodyScale - 1f);
 
         /// <summary>Ticks since the trap's latest fire, or -1 if it hasn't fired (or was reset).</summary>
         protected int TicksSinceFire => Trap == null || Trap.LatestFireTick < 0 ? -1 : RoomTick - Trap.LatestFireTick;

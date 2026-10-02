@@ -183,7 +183,8 @@ namespace Parallax.Editor.Setup
                 var r = new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size);
                 // The pit's lip: the lower of the floors at its two sides (a tall neighbour must not pull the void up the sky).
                 float top = solids.Where(s => s.Rect.yMax > r.yMax && s.Rect.yMin < r.yMax + 0.5f && (Mathf.Abs(s.Rect.xMax - r.xMin) < 0.3f || Mathf.Abs(s.Rect.xMin - r.xMax) < 0.3f)).Select(s => s.Rect.yMax).DefaultIfEmpty(r.yMax + 2f).Min();
-                float fadeTop = top - 0.1f, fadeH = 0.9f, bottom = c.Frame.min.y - 1f;
+                // Down to the pit's own floor (its kill plane), never past it into open air below a raised floor (L012).
+                float fadeTop = top - 0.1f, fadeH = 0.9f, bottom = r.yMin;
                 void Quad(string name, Sprite s, float y0, float y1)
                 {
                     var go = new GameObject(name);

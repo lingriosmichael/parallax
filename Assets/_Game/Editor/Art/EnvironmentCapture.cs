@@ -159,6 +159,26 @@ namespace Parallax.Editor.Art
             m.clearFraction43 = Coverage(cam, follow, 1440, Path.Combine(output, id + "_43.png"));
             var so = new SerializedObject(follow);
             Vector2 fc = so.FindProperty("frameCenter").vector2Value, fs = so.FindProperty("frameSize").vector2Value;
+            // Gauntlet Phase 2: a mid-level shot at the phone's frame. The cat stands on the walkable top nearest the frame's
+            // middle and the level camera snaps to it, as it would there in play.
+            if (LevelLayouts.ById.TryGetValue(id, out SoloRoomDefinition midRoom) && so.FindProperty("target").objectReferenceValue is Transform cat)
+            {
+                var tops = SoloRoomSkin.WalkableTops(midRoom);
+                if (tops.Count > 0)
+                {
+                    SoloRoomSkin.Edge best = tops.OrderBy(t => Mathf.Abs(Mathf.Clamp(fc.x, t.From + 0.5f, t.To - 0.5f) - fc.x) + 0.02f * Mathf.Abs(t.Line - fc.y)).First();
+                    float x = Mathf.Clamp(fc.x, best.From + 0.5f, best.To - 0.5f);
+                    Vector3 home = cat.position;
+                    cat.position = new Vector3(x, best.Line + 0.3f, cat.position.z);
+                    SetTarget(cam, W, H);
+                    follow.SnapToTarget();
+                    UpdateParallax();
+                    Texture2D mid = Render(cam);
+                    Save(mid, Path.Combine(output, id + "_mid.png"));
+                    Object.DestroyImmediate(mid);
+                    cat.position = home;
+                }
+            }
             follow.enabled = false;
             SetTarget(cam, W, H);
             cam.orthographicSize = Mathf.Max(fs.y, fs.x / (W / (float)H)) * 0.5f;

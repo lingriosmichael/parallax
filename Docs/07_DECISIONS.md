@@ -2619,6 +2619,28 @@ changes; the alternative was layout edits in about 13 levels.
 **Open (test gap, the auditor's):** no validator holds the lift's rule. A check per lifted level should count only ticks
 where an element can kill and isn't covered by a trap floor (open-pit planes counted).
 
+### D-105 · 2026-10-02 · Accepted (the developer's play-test notes, Phase 2)
+**Decision:** Three readability changes, all art only (no collider, trigger, route or timing changes):
+- **Spikes:** the strip is blades only, without the stone base that blended into the floor: near-black iron (value
+  0.07–0.15; the developer: "spikes are grey, make them black, it's more noticeable") with a pale lit edge and a faint grey
+  rim, so they read on bright skies and keep their shape on dark stone. They draw `TrapArtConfig.SpikeHeightScale` (1.8) times
+  their hitbox's height, from their base outward. The hitbox is unchanged, so the drawn tips reach past the kill zone
+  (the forgiving direction, as D-101). Only thin strips (grey-box ≤ `SpikeArt.MaxStripHeight`, 0.5 u) are lengthened;
+  a taller box, such as a sweep waiting inside a post, keeps its height so it never pokes out of its host. Every spike
+  body is one row of blades tiled across and stretched to its drawn height, never a second, cut-off row.
+  `TrapArt.BodyGrowth` gives the parity test each body's allowance.
+- **Foreground:** the view-pinned, blurred corner foliage is gone (it moved with the camera and could cover a trap), and
+  so are the foreground corner ferns and roots (`ENV_FG_Ferns`, `ENV_FG_Roots`; the developer: "these front ferns
+  everywhere, I don't like it"). Nothing is drawn in front of the play layer.
+  Sharp fern clumps (ENV-26) are fixed in the world at the foot of tall block faces, at least 1 u under the walk line,
+  clear of everything the player must see, with the same rule for real and disguised blocks (P10). Their dense lower
+  leaves fade into the stone, so a clump never reads as a dark box.
+- **Doors:** superseded by D-106 (the developer: the platform must be real geometry, not art).
+
+**Why:** the developer's play-test (2026-10-02): "spikes need to be longer and clearer"; "I don't like that the front
+ferns move with the camera… they could cover a trap… make sure they don't look blurry"; "exits just hanging in the air
+don't make sense… keep the door on a platform."
+
 ### D-106 · 2026-10-02 · Accepted (PAX-099, the developer's play-test and Phase 1 rulings)
 **Decision:** KIT-11. Angled and repeating arrows, every floor pattern from level 3, and doors on platforms.
 - **Angled arrows** (amends D-078 "horizontal only"). An arrow, never a spear, may fly at 0°, ±30°, ±45° or ±60° from

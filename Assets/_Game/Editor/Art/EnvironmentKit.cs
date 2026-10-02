@@ -95,6 +95,7 @@ namespace Parallax.Editor.Art
             "ENV_Rubble_0", "ENV_Rubble_1", "ENV_Glyph_0", "ENV_Glyph_1", "ENV_Door", "ENV_Checkpoint", "ENV_CheckpointLit",
             "ENV_Glow", "ENV_Halo", "ENV_SlabEnd", "ENV_PostCap", "ENV_PostBase", "ENV_VineAnchor", "ENV_VineTip", "ENV_VineMid",
             "ENV_Drape_3", "ENV_Drape_4", "ENV_Drape_5",   // gauntlet round 9: more ivy shapes (same atlas, so they batch)
+            "ENV_Fern_0", "ENV_Fern_1", "ENV_Fern_2",      // gauntlet: foot ferns, fixed in the world
         };
 
         public static string MaterialPath(string kind) => $"{MaterialFolder}/ENV_{kind}.mat";

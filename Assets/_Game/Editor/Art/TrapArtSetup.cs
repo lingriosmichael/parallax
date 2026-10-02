@@ -50,7 +50,10 @@ namespace Parallax.Editor.Art
             // must cover exactly their trap (P10) and stay at 1, and so does a disguised launcher's projectile (it rests behind
             // the host skin: 10% more would poke out past it before the reveal).
             foreach (TrapArt art in artRoot.GetComponentsInChildren<TrapArt>(true))
+            {
                 TrapKitSetup.Write(art, changes, ("bodyScale", art is CollapsingFloorArt or SolidArt || art is ArrowArt { Disguised: true } ? 1f : config.BodyScale));
+                if (art is SpikeArt) TrapKitSetup.Write(art, changes, ("heightScale", config.SpikeHeightScale));
+            }
             foreach (Transform stale in artRoot.Cast<Transform>().Where(c => !built.Contains(c.name)).ToList())
             {
                 Object.DestroyImmediate(stale.gameObject);

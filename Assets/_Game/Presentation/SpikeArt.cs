@@ -20,6 +20,16 @@ namespace Parallax.Presentation
         [SerializeField] Material trapMaterial;
         [SerializeField] bool pointsDown, rises;
         [SerializeField] SpriteRenderer[] grit = new SpriteRenderer[0];
+        [Tooltip("D-105: the drawn height as a multiple of the grey-box's (from the base outward); the hitbox is unchanged.")]
+        [SerializeField, Min(1f)] float heightScale = 1f;
+
+        /// <summary>D-105: only a thin strip (a floor's or a ceiling's spikes) is drawn longer; a taller grey-box, like a sweep
+        /// that waits inside a post, already reads as long blades, and lengthening it would push it out of its host.</summary>
+        public const float MaxStripHeight = 0.5f;
+
+        float HeightScale => greyboxBody != null && greyboxBody.size.y > MaxStripHeight ? 1f : heightScale;
+
+        public override Vector2 BodyGrowth => new(bodyScale - 1f, bodyScale * HeightScale - 1f);
 
         public override RoomTrap Trap => trap;
         protected override bool NeedsTrap => false;
@@ -37,13 +47,17 @@ namespace Parallax.Presentation
                 body.drawMode = SpriteDrawMode.Tiled;   // before the scale: switching draw mode rewrites a SpriteRenderer's scale
                 body.tileMode = SpriteTileMode.Continuous;
                 // D-101: each tooth bodyScale bigger, the strip as wide as the grey-box, taller by bodyScale.
-                body.transform.localScale = new Vector3(bodyScale, bodyScale, 1f);
+                // Tiled across only: one row of blades, stretched to the drawn height, so a tall grey-box never stacks a
+                // second, cut-off row and a short one never loses its tips.
                 body.flipY = pointsDown;
                 Vector2 size = greyboxBody.size;
                 float rise = rises && s >= 0 ? Mathf.Clamp01((s + 1f) / RiseTicks) : 1f;
-                body.size = new Vector2(size.x / bodyScale, size.y * rise);
+                float drawn = size.y * rise * bodyScale * HeightScale;
+                float row = strip != null ? strip.bounds.size.y : size.y;
+                body.transform.localScale = new Vector3(bodyScale, drawn / row, 1f);
+                body.size = new Vector2(size.x / bodyScale, row);
                 // Anchored at its base: the host side (the bottom, or the top for spikes hanging from a ceiling).
-                float shift = (rise * bodyScale - 1f) * size.y * 0.5f * (pointsDown ? -1f : 1f);
+                float shift = (drawn - size.y) * 0.5f * (pointsDown ? -1f : 1f);
                 body.transform.position += new Vector3(0f, shift, 0f);
             }
             Vector2 at = greyboxBody != null ? (Vector2)greyboxBody.transform.position : (Vector2)transform.position;

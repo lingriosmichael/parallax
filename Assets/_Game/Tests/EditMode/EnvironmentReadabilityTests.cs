@@ -31,7 +31,7 @@ namespace Parallax.Tests.EditMode
         static readonly Type Looks = Type.GetType("Parallax.Editor.Levels.LevelLooks, Parallax.Editor");
         static readonly Type TravelType = Type.GetType("Parallax.Editor.Setup.EnvironmentStackSetup+Travel, Parallax.Editor");
         static readonly IDictionary Layouts = (IDictionary)Type.GetType("Parallax.Editor.Levels.LevelLayouts, Parallax.Editor").GetField("ById").GetValue(null);
-        static readonly string[] Dressing = { "Moss", "Drape", "Banner", "Glyph", "Rubble" };
+        static readonly string[] Dressing = { "Moss", "Drape", "Ivy", "Fern", "Banner", "Glyph", "Rubble" };
 
         static IEnumerable<string> LevelIds() => Enumerable.Range(1, 20).Select(n => "L" + n.ToString("000"));
 
@@ -123,7 +123,7 @@ namespace Parallax.Tests.EditMode
             foreach (SpriteRenderer r in rootA.GetComponentsInChildren<SpriteRenderer>(true).Where(r => Dressing.Any(d => r.name.StartsWith(d)) && InEnv(r.transform)))
             {
                 var box = new Rect(r.bounds.min, r.bounds.size);
-                List<Rect> zones = r.name.StartsWith("Moss_") ? tuftKeepOut : r.name.StartsWith("Drape_") || r.name.StartsWith("Ivy_") ? visibleKeepOut : keepOut;
+                List<Rect> zones = r.name.StartsWith("Moss_") ? tuftKeepOut : r.name.StartsWith("Drape_") || r.name.StartsWith("Ivy_") || r.name.StartsWith("Fern_") ? visibleKeepOut : keepOut;
                 if (zones.Any(k => k.Overlaps(box))) failures.Add($"{id}: dressing {r.name} in a keep-out zone");
             }
 

@@ -13,7 +13,7 @@ namespace Parallax.Editor.Levels
         public const string AssetPath = "Assets/_Game/Data/LevelLookConfig.asset";
         public const float MaxFarScale = 1.5f;
         /// <summary>PAX-A16: bumped when the defaults change; the setup menu resets an older asset to them.</summary>
-        public const int CurrentVersion = 22;
+        public const int CurrentVersion = 23;
 
         [System.Serializable]
         public sealed class Grade
@@ -74,7 +74,7 @@ namespace Parallax.Editor.Levels
         [Tooltip("Dust motes alive at once.")]
         public int Motes = 90;
         [Tooltip("The foreground frame: corner scale and the top curtain's scale (of their sprites), at a 13.33 u view (scaled with the view).")]
-        public float FrameCornerScale = 1.7f;
+        public float FrameCornerScale = 0f;   // gauntlet: off (view-pinned ferns moved with the camera and could cover a trap; foot ferns in the world replace them)
         public float FrameTopScale = 0.16f;
         [Tooltip("Round 3: the hanging roots (top left) and banner (top right) pinned to the view, as a fraction of their painted size.")]
         public float FrameHangScale = 0.75f;

@@ -263,18 +263,8 @@ namespace Parallax.Editor.Setup
                 if (piece.Span > 0f) { r.drawMode = SpriteDrawMode.Tiled; r.transform.localScale = Vector3.one; r.size = size; }
             }
 
-            // 07 Foreground: ferns and roots at the frame's lower corners, over solid ground only (never the room's air).
-            AddForeground("ENV_FG_Ferns", worldFrame.min.x, false);
-            AddForeground("ENV_FG_Roots", worldFrame.max.x, true);
-            void AddForeground(string slot, float edgeX, bool right)
-            {
-                Sprite sprite = EnvironmentKit.Sprite(slot);
-                if (sprite == null || !room.HasValue) return;
-                Vector2 size = sprite.bounds.size;
-                var centre = new Vector2(edgeX + (right ? -size.x * 0.5f + 0.4f : size.x * 0.5f - 0.4f), worldFrame.min.y + size.y * 0.5f - 0.2f);
-                if (!ForegroundClear(new Rect(centre - size * 0.5f, size), config.GetLayer("Foreground").Speed, room.Value, travel)) { changes.Add($"left out {slot} (it would cover the room's air)"); return; }
-                Place(Layer("Foreground"), slot, slot, centre, Vector2.one, Tint("Foreground"), Order("Foreground"), Front, right);
-            }
+            // 07 Foreground: none (gauntlet, the developer 2026-10-02: "these front ferns everywhere, I don't like it"). The
+            // corner ferns and roots (ENV_FG_Ferns, ENV_FG_Roots) are no longer placed; the frame's lower corners stay clear.
 
             // PAX-A16: light, atmosphere, the frame, the outside and the supports (EnvironmentStackSetup.Tiers.cs).
             BuildTiers(new TierContext

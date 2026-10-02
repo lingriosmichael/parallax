@@ -319,6 +319,30 @@
       "kind": "piece"
     },
     {
+      "name": "ENV_Fern_0",
+      "file": "ENV_Fern_0.png",
+      "folder": "Kit",
+      "width": 1.5,
+      "height": 2.3746,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Fern_1",
+      "file": "ENV_Fern_1.png",
+      "folder": "Kit",
+      "width": 1.5,
+      "height": 1.439,
+      "kind": "dressing"
+    },
+    {
+      "name": "ENV_Fern_2",
+      "file": "ENV_Fern_2.png",
+      "folder": "Kit",
+      "width": 1.5,
+      "height": 2.4712,
+      "kind": "dressing"
+    },
+    {
       "name": "ENV_Fill_A",
       "file": "ENV_Fill_A.png",
       "folder": "Kit",

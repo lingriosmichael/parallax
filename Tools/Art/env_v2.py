@@ -258,6 +258,30 @@ def build(ek, load, put, play, layers):
             blk = cv
         put(play, key, blk, W, kind="object", normal=True)
 
+    # ---------- foot ferns (the developer: front foliage fixed in the world, not blurry): ENV-26's fern band, sharp, cut
+    # into three clumps at its emptiest columns, at the play layer's PPU, a little into shade (near the camera, low) ----------
+    fg = load("ENV-26")
+    top_piece = ek.split_pieces(fg, threshold=0.3, gap=4)[0]
+    band = fg[ek.FG_CUT:top_piece[3]]
+    cols = band[..., 3].mean(axis=0)
+    w = band.shape[1]
+    cuts = [int(np.argmin(cols[int(w * f) - 60:int(w * f) + 60]) + int(w * f) - 60) for f in (1 / 3, 2 / 3)]
+    for i, (x0, x1) in enumerate(zip([0] + cuts, cuts + [w])):
+        piece = ek.tp.trim(band[:, x0:x1], 0.05)
+        piece[..., :3] *= np.array([0.78, 0.82, 0.74], np.float32)
+        # The band's lower half is a solid mass of dark leaves cut square at the bottom and the sides (it read as a dark box
+        # on the wall): it fades out downward into the stone, and its sides fade only where it is dense, so the leaves on
+        # top keep their crisp silhouettes.
+        ph, pw = piece.shape[:2]
+        v = np.linspace(0, 1, ph, dtype=np.float32)[:, None]
+        def ease(t0, t1, t):
+            t = np.clip((t - t0) / (t1 - t0), 0, 1)
+            return t * t * (3 - 2 * t)
+        sides = feather_sides(np.ones((1, pw, 4), np.float32), 0.2)[..., 3]
+        piece[..., 3] *= (1 - ease(0.5, 0.97, v)) * (1 - ease(0.3, 0.75, v) * (1 - sides))
+        piece = ek.tp.trim(piece, 0.05)
+        put(play, f"ENV_Fern_{i}", ek.fit_width(piece, round(1.5 * W)), W, kind="dressing")
+
     # ---------- three more ivy shapes: the drapes' halves (round 9: the same three curtains read as repeats) ----------
     k = 0
     for d in drapes:

@@ -175,7 +175,7 @@ MonoBehaviour:
   DoorShadeAlpha: 0.55
   FlipHaloScale: 1.35
   FlipHaloAlpha: 1
-  Version: 22
+  Version: 23
   BodyTint: {r: 0.9, g: 0.87, b: 0.82, a: 1}
   CapBoost: {r: 0.98, g: 0.92, b: 0.84, a: 1}
   OutsideTint: {r: 0.3, g: 0.31, b: 0.37, a: 1}
@@ -186,7 +186,7 @@ MonoBehaviour:
   SunHaloScale: 3.2
   SunHaloIntensity: 1.3
   Motes: 90
-  FrameCornerScale: 1.7
+  FrameCornerScale: 0
   FrameTopScale: 0.16
   FrameHangScale: 0.75
   FramePillarScale: 0

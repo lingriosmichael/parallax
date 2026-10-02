@@ -79,6 +79,26 @@ namespace Parallax.Editor.Setup
                         if (ClearOfVisible(Box(centre, new Vector2(w, h)))) place(e.Owner, $"Ivy_{Idx(e)}_{i}", slot, centre, new Vector2(Hash(e.Owner.Name, 435 + i) < 0.5f ? -w : w, h), ZDrape + AtlasNudge(slot));
                     }
                 }
+                // Gauntlet (the developer: front ferns fixed in the world, never over a trap, not blurry): sharp fern clumps at
+                // the foot of a tall block's face, well below its walk line (their tops at least 1 u under it), clear of
+                // everything the player must see; the same rule for real and disguised blocks (P10).
+                if (e.Owner.Shape == Shape.Block && e.Owner.Rect.height >= 2.4f)
+                {
+                    Rect b = e.Owner.Rect;
+                    float x = e.From + 0.4f * Hash(e.Owner.Name, 600);
+                    for (int i = 0; x < e.To && i < 30; i++)
+                    {
+                        string slot = "ENV_Fern_" + (int)(Hash(e.Owner.Name, 610 + i) * 3f);
+                        EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
+                        if (def == null) { x += 1f; continue; }
+                        float w = def.width * (0.7f + 0.5f * Hash(e.Owner.Name, 620 + i)), h = Mathf.Min(def.height * w / def.width, b.height - 1f);
+                        if (h < 0.4f) break;
+                        var centre = new Vector2(x + w * 0.5f, b.yMin + h * 0.5f - 0.05f);
+                        x += w * (0.55f + 0.5f * Hash(e.Owner.Name, 630 + i)) + (Hash(e.Owner.Name, 640 + i) < 0.3f ? 0.6f + Hash(e.Owner.Name, 650 + i) : 0f);
+                        if (centre.x + w * 0.5f > e.To) continue;
+                        if (ClearOfVisible(Box(centre, new Vector2(w, h)))) place(e.Owner, $"Fern_{Idx(e)}_{i}", slot, centre, new Vector2(Hash(e.Owner.Name, 660 + i) < 0.5f ? -w : w, h), ZPanel);
+                    }
+                }
                 if (dress.Rubble && e.Length >= 3f && rubbleCount < MaxRubble)
                 {
                     string slot = "ENV_Rubble_" + (int)(Hash(e.Owner.Name, 90) * 2f);

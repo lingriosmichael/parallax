@@ -233,9 +233,10 @@ namespace Parallax.Tests.EditMode
                     bool greybox = Shown(b.Greybox), drawn = Shown(b.Art) && b.Art.sprite != null;
                     if (greybox != drawn) { Fail(tick, $"{art.name}: body {(b.Art != null ? b.Art.name : "null")} drawn {drawn}, grey-box {(b.Greybox != null ? b.Greybox.name : "null")} shown {greybox}"); continue; }
                     if (!drawn) continue;
-                    // D-101: a body may draw past its grey-box by (BodyScale - 1) of the grey-box's size on each side.
+                    // D-101/D-105: a body may draw past its grey-box by its BodyGrowth (a fraction of the grey-box's size) on each side.
                     Bounds limit = b.Greybox.bounds;
-                    limit.Expand(2f * (art.BodyScale - 1f) * limit.size + Vector3.one * (2f * TrapArtMath.BoundsTolerance));
+                    Vector2 g = art.BodyGrowth;
+                    limit.Expand(2f * Vector3.Scale(new Vector3(g.x, g.y, 0f), limit.size) + Vector3.one * (2f * TrapArtMath.BoundsTolerance));
                     Bounds a = b.Art.bounds;
                     if (!limit.Contains(a.min) || !limit.Contains(a.max)) Fail(tick, $"{art.name}: body {b.Art.name} {a} outside its grey-box {b.Greybox.bounds}");
                 }
