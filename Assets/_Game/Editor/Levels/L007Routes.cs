@@ -1,3 +1,4 @@
+using System.Linq;
 using Parallax.Core;
 using Parallax.Editor.Routes;
 using static Parallax.Editor.Routes.R;
@@ -11,9 +12,16 @@ namespace Parallax.Editor.Levels
     // wall past its storey is a dead end.
     static class L007Routes
     {
+        // From Tread_RC (it sinks 30 ticks after a landing: PAX-100, D-106) up the wall steps and left along S2 to the door.
+        static RouteStep[] AfterRC() => new[] {
+            Hold(Right), Until(XAtLeast(28.9f)), Release(), Until(Still()),
+            Hold(Right), Jump(), Until(GroundedOn("Tread_RD")), Release(), Until(Still()),
+            Hold(Left), Jump(), Until(GroundedOn("Tread_RE")), Release(), Until(Still()),
+            Hold(Left), Jump(), Until(GroundedOn("S2_Main")), Until(RoomComplete()) };
+
         public static RoomRoutes Build()
         {
-            var solution = new Route("L007 solution",
+            var solution = new Route("L007 solution", new Route("L007 solution",
                 // Left along the ground: jump the floor that drops, and run on off the one that lands you.
                 Hold(Left), Until(Fired("Spikes_1")), Until(XAtMost(27.2f)), Jump(), Until(Airborne()), Until(Grounded()),
                 // Up the left tower to S1.
@@ -30,11 +38,8 @@ namespace Parallax.Editor.Levels
                 // Up the right tower (L3's left tower, mirrored) and on up the wall steps, and left along S2 to the door.
                 Hold(Left), Until(XAtMost(29.2f)), Release().Timed(TimedMode.Shift), Until(Still()),
                 Hold(Right), Jump(), Until(GroundedOn("Tread_RB")), Release(), Until(Still()),
-                Hold(Left), Jump(), Until(GroundedOn("Tread_RC")), Release(), Until(Still()),
-                Hold(Right), Until(XAtLeast(28.9f)), Release(), Until(Still()),
-                Hold(Right), Jump(), Until(GroundedOn("Tread_RD")), Release(), Until(Still()),
-                Hold(Left), Jump(), Until(GroundedOn("Tread_RE")), Release(), Until(Still()),
-                Hold(Left), Jump(), Until(GroundedOn("S2_Main")), Until(RoomComplete()));
+                Hold(Left), Jump(), Until(GroundedOn("Tread_RC")), Release(), Until(Still()))
+                .Steps.Concat(AfterRC()).ToArray());
 
             return new RoomRoutes(solution,
                 new Betrayal("T1: the floor one step ahead drops a cat that runs on", "Spikes_1", DeathCause.Hazard,
@@ -54,7 +59,11 @@ namespace Parallax.Editor.Levels
                 new Betrayal("Dead end: the left tower's rhythm goes on at the wall", "Spikes_D", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Tread_LC))", "keep the rhythm", Release(), Until(Still()), Hold(Left), Jump(), Until(Dead())), revealedBy: "Tread_LD"),
                 new Betrayal("Dead end: the tower's rhythm goes on past S2", "Spikes_F", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Tread_RE))", "keep climbing", Release(), Until(Still()), Hold(Right), Jump(), Until(Dead())), revealedBy: "Tread_RF"));
+                    Route.PrefixOf(solution, "Until(GroundedOn(Tread_RE))", "keep climbing", Release(), Until(Still()), Hold(Right), Jump(), Until(Dead())), revealedBy: "Tread_RF"),
+                // PAX-100 (D-106): the sinking tread. A cat that waits on it rides it down and back up, then goes on.
+                Betrayal.Recovers("T7: a cat that waits on Tread_RC sinks with it, rides it back up and goes on", "Tread_RC",
+                    new Route("wait on the tread", Route.PrefixOf(solution, "Until(GroundedOn(Tread_RC))", "wait on the tread",
+                        Release(), Until(Still()), Until(Moving("Tread_RC")), Until(Home("Tread_RC"))).Steps.Concat(AfterRC()).ToArray())));
         }
     }
 }

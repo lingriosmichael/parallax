@@ -38,7 +38,9 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Wall,"Pillar_A",(31.75f,5.8f),(.5f,1.6f)),
                 E(SoloRoomElementKind.Wall,"Pillar_B",(31.75f,13f),(.5f,2f)),
                 // The small slabs over the floating flips.
-                E(SoloRoomElementKind.Floor,"Slab_D",(6.35f,10.25f),(4.7f,.5f)),
+                // PAX-100 item 0: Slab_D reaches back to x 1.5 (it began at 4), so a cat that jumps into Flip_D1 moving left meets
+                // its spikes too, instead of rising past its end to the roof by the door (the bypass PAX-099 found).
+                E(SoloRoomElementKind.Floor,"Slab_D",(5.1f,10.25f),(7.2f,.5f)),
                 E(SoloRoomElementKind.Floor,"Slab_1",(12.6f,10.25f),(5.2f,.5f)),
             };
             var flip = new SoloRoomTrapSettings(gravityMode:GravityFlipMode.Flip,rearmOnExit:true,rendererEnabled:true);
@@ -52,21 +54,26 @@ namespace Parallax.Editor.Levels
                 new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,5.3f,31.5f,unitsPerTick:.36f,disguised:true),new SoloRoomTrapSettings(delayTicks:45))));
             // T3: spikes on S1.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_3",(21.75f,5.15f),(1.5f,.3f),(19.75f,11f),(.5f,12f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            // T4: the floor flip at S1's right end is the way up; it fires an arrow along the roof from the pillar behind the
-            // cat walking back upside down (jump it). The arrow stops at the stub, which the cat then hops.
+            // T4: the floor flip at S1's right end is the way up. An arrow runs along the roof from the pillar behind the cat
+            // walking back upside down; it stops at the stub, which the cat then hops.
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_4",(29f,6f),(1f,2f),settings:flip));
-            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_4",(31.75f,13.7f),(.5f,.4f),(29f,9.5f),(1f,9f),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,13.7f,23f,unitsPerTick:.36f,disguised:true),new SoloRoomTrapSettings(delayTicks:58))));
+            // PAX-100 (D-106): Arrow_4 repeats, every 170 ticks, on the room's clock (no trigger): wait on S1 short of the floor
+            // flip for a shot to stop at the stub, then go up and walk the roof back before the next.
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_4",(31.75f,13.7f),(.5f,.4f),settings:new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Left,13.7f,23f,unitsPerTick:.36f,disguised:true),
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:170,phaseTicks:0,cooldownTicks:60))));
             // T5: the roof where the hop over the stub lands gives way under a cat that stops.
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Roof_5",(19.75f,15.5f),(2.5f,3f),settings:new SoloRoomTrapSettings(delayTicks:28)));
             // Dead ends, both "straight up to the door": a flip floating in front of the start, onto spikes under the slab
             // over it; and the ledge by the wall behind the start, "the first step up", which gives way onto spikes on S1 under
             // it (its trigger is the space over it).
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_D1",(5f,7.8f),(1.5f,2f),settings:flip));
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D1",(6.475f,9.85f),(4.45f,.3f),(6.475f,7.5f),(4.45f,5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D1",(5.1f,9.85f),(7.2f,.3f),(5.1f,7.5f),(7.2f,5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D2",(.75f,5.15f),(1.5f,.3f),(.75f,10.125f),(1.5f,7.75f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Ledge_D2",(.75f,6f),(1.5f,.5f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_D2",delayTicks:1)));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(3f,13.25f),(.6f,1.5f)));
+            // PAX-099 (D-106): the door stands on a ledge, so it never hangs in the air.
+            elements.Add(E(SoloRoomElementKind.Floor,"Door_Ledge",(3f,12.25f),(1f,.5f)));
             var jumps = new[] {
                 J("Spikes_3",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,20.3f,23.2f,5f,5f,3f,.3f),
             };

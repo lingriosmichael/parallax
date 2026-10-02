@@ -36,6 +36,8 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Ceiling,"Ceiling",(16f,CeilingY + .5f),(32f,1f)),
                 E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(22f,BedTop),(0f,0f)),
                 E(SoloRoomElementKind.Door,"Door",(2.5f,CeilingY - .75f),(.6f,1.5f)),
+                // PAX-099 (D-106): the door stands on a ledge, so it never hangs in the air.
+                E(SoloRoomElementKind.Floor,"Door_Ledge",(2.5f,CeilingY - 1.75f),(1f,.5f)),
                 // The floor (top 0): Floor_W (x 0-29) with Post_E (x 25.8-26.2, 1.4 tall), the Dip (29-32, top -0.5).
                 E(SoloRoomElementKind.Floor,"Floor_W",(14.5f,-.5f),(29f,1f)),
                 E(SoloRoomElementKind.Floor,"Dip",(30.5f,-1f),(3f,1f)),
@@ -73,6 +75,13 @@ namespace Parallax.Editor.Levels
                 settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Lip_2")));
             // The gap's column (x 29-32, floor to ceiling) sends Arrow_3, 41 ticks later, from Post_E east at jump height over the
             // Dip into Wall_R: over a cat standing in the Dip, through one jumping out of it.
+            // T3b (PAX-101, D-106): the Bed's underside shoots at the floor. The honest launcher sits in Bed_E's west face under
+            // Bed_8's end (x 20, y 9-9.5, the step of Recess_8), embedded in the Bed so nothing hangs in the underside walk; it fires
+            // down-left at -45 degrees when the cat, walking the floor west, reaches x 16.8 (its cut spans the floor band, 0-9.5),
+            // and the arrow stops in the floor at x 10.8, where a cat that walks on is (ticks 44-47 of the fire). Stop at once, let
+            // it land, walk on through it.
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_U",(20.25f,9.2f),(.5f,.4f),(16.05f,4.75f),(.5f,9.5f),
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,9.2f,10.8f,angleDegrees:-45f),new SoloRoomTrapSettings(delayTicks:0))));
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_3",(26f,1.2f),(.4f,.4f),(30.5f,(CeilingY - .5f) * .5f),(3f,CeilingY + .5f),
                 new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,1.2f,32f,unitsPerTick:.36f,tellTicks:8,disguised:true),new SoloRoomTrapSettings(delayTicks:41))));
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_VA",(8f,7.6f),(1f,1f),settings:up));
@@ -107,7 +116,7 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_S2",(11.5f,BedTop + 1f),(1f,2f),settings:up));
 
             var sections = new[] {
-                CheckpointSection.Start("Bed", new Vector2(22f, BedTop), new[] { "Lip_2", "Spikes_2", "Arrow_3", "Flip_VA", "Flip_VB", "Tile_6", "V_A", "V_B", "V_D", "Spikes_X" }),
+                CheckpointSection.Start("Bed", new Vector2(22f, BedTop), new[] { "Lip_2", "Spikes_2", "Arrow_3", "Arrow_U", "Flip_VA", "Flip_VB", "Tile_6", "V_A", "V_B", "V_D", "Spikes_X" }),
                 new CheckpointSection("Underside", new Vector2(4f, BedBottom), new Rect(4.4f, BedBottom - 4f, .2f, 4f), new[] { "V_7", "Flip_H7", "Spikes_7", "V_8", "Spikes_8" }, gravityUp: true),
                 new CheckpointSection("Sky", new Vector2(30.5f, CeilingY), new Rect(29f, 14f, 3f, .2f),
                     new[] { "Spikes_C", "Flip_S0", "Spikes_H", "Spikes_S1", "Spikes_S4", "Block_S3", "Spikes_S5", "Flip_S2" }, gravityUp: true),

@@ -12,11 +12,13 @@ namespace Parallax.Editor.Setup
         // ---------- PAX-093 (D-095): floors that move ----------
         // A mover is a Periodic MovingTrap Solid; a slide-away moves sideways once (Once or Rearm); a drop-and-return floor
         // drops and rises back (Rearm, move/hold/return); a push wall is a Solid with Pushes; a shrinking floor is its own kind.
-        // Part of ValidateKit. Q1: in levels numbered 14+ and Trap Lab room 12 a sideways Solid declares Carry or Slip. Q4: a
+        // Part of ValidateKit. Q1: in levels numbered 3+ (PAX-099; 14+ before) and Trap Lab room 12 a sideways Solid declares Carry or Slip. Q4: a
         // repeating Solid's cooldown covers its move + hold + return. Q5: a shrinker's settings. Q6: a push path ends against its
         // named crush partner or in open space. D-056 (3): a Solid's swept path overlaps no fixed geometry (touching is
-        // allowed). D-065: movers, shrinkers and push walls are levels 11+; slide-away and drop-and-return are allowed in 1-10.
-        internal const int ExplicitSurfaceMotionFromLevel = 14;
+        // allowed). D-106 (PAX-099, amends D-095 (3)): every pattern is allowed from level 3; movers, shrinkers and push walls
+        // stay out of levels 1-2 (slide-away and drop-and-return are allowed there, as before).
+        internal const int ExplicitSurfaceMotionFromLevel = 3;
+        internal const int FloorPatternsFromLevel = 3;
         internal const string MovingFloorLabRoom = "TrapLab12";
 
         static bool IsMovingSolid(SoloRoomElement e) => e.Kind == SoloRoomElementKind.MovingTrap && e.Settings.MovingKind == MovingTrapKind.Solid;
@@ -30,7 +32,7 @@ namespace Parallax.Editor.Setup
             if (solids.Length == 0 && shrinkers.Length == 0) return errors;
             int number = levels != null ? LevelNumber(levels, levelId) : 0;
             bool explicitMotion = number >= ExplicitSurfaceMotionFromLevel || levelId == MovingFloorLabRoom;
-            bool easyBand = number > 0 && number <= EasyBandLastLevel;
+            bool firstLevels = number > 0 && number < FloorPatternsFromLevel;
             SoloRoomElement[] fixedSolids = room.Elements.Where(IsFixedSolid).ToArray();
 
             foreach (SoloRoomElement e in solids)
@@ -48,9 +50,9 @@ namespace Parallax.Editor.Setup
                     if (Overlap(swept, Box(f, Vector2.zero)) > eps)
                         errors.Add($"{levelId}: {e.Name}'s swept path {Describe(swept)} runs into {f.Name}; a moving Solid's path overlaps no fixed geometry (D-056 (3)).");
                 if (s.Floor.Pushes) CheckPushPath(levelId, room, e, fixedSolids, errors);
-                if (!easyBand) continue;
-                if (s.RepeatMode == TrapRepeatMode.Periodic) errors.Add($"{levelId}: mover '{e.Name}' in level {number}; movers are for levels {EasyBandLastLevel + 1}+ only (D-095).");
-                if (s.Floor.Pushes) errors.Add($"{levelId}: push wall '{e.Name}' in level {number}; push walls are for levels {EasyBandLastLevel + 1}+ only (D-095).");
+                if (!firstLevels) continue;
+                if (s.RepeatMode == TrapRepeatMode.Periodic) errors.Add($"{levelId}: mover '{e.Name}' in level {number}; movers are for levels {FloorPatternsFromLevel}+ only (D-106).");
+                if (s.Floor.Pushes) errors.Add($"{levelId}: push wall '{e.Name}' in level {number}; push walls are for levels {FloorPatternsFromLevel}+ only (D-106).");
             }
 
             foreach (SoloRoomElement e in shrinkers)
@@ -63,7 +65,7 @@ namespace Parallax.Editor.Setup
                     if (k.MinWidth < 0f || k.MinWidth >= e.Size.x - eps)
                         errors.Add($"{levelId}: {e.Name}'s minimum width {k.MinWidth:F2} is outside [0, its width {e.Size.x:F2}); a shrinking floor shrinks (D-095 Q5).");
                 }
-                if (easyBand) errors.Add($"{levelId}: shrinking floor '{e.Name}' in level {number}; shrinking floors are for levels {EasyBandLastLevel + 1}+ only (D-095).");
+                if (firstLevels) errors.Add($"{levelId}: shrinking floor '{e.Name}' in level {number}; shrinking floors are for levels {FloorPatternsFromLevel}+ only (D-106).");
             }
             return errors;
         }

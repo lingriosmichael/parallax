@@ -22,8 +22,8 @@ namespace Parallax.Editor.Levels
     //    Inv_6 flips the controls, the Cloud wakes over the Top's east half. Leap onto the Top before the snap; crossing the
     //    Spine's top drops Block_7a and Block_7b behind the cat, closing the way back. Mirrored, keep moving west out of the
     //    cloud's reach; wait out the flip; on over Shrink_8 (don't stop on it) and the vent to V_L.
-    //  - Last (section 2, the Loft): the door backs away east off the Loft, down into G_9's column (Retreat_10): don't
-    //    chase it off the edge; drop back, stand on the vent and ride the next eruption into it.
+    //  - Last (section 2, the Loft): the door drops through the Loft onto Door_Ledge under its east end (Retreat_10): don't
+    //    chase it off the edge; drop back, stand on the vent, ride the next eruption and steer west onto the ledge into it.
     //  - Dead ends: G_9 on the way west (it throws the cat up short of the Loft; it comes down and goes on) and Roof_N, a
     //    shelter from the cloud (a strike passes; the cat goes on). Both recover.
     static class L020Layout
@@ -106,10 +106,13 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_8",(14.5f,BasinY + .15f),(5f,.3f),(14.5f,(BasinY + CeilingY) * .5f),(5f,CeilingY - BasinY),
                 new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.Geyser,"G_9",(11.5f,TopY - .15f),(1f,.3f),settings:Geyser(150, 85)));
-            // Retreat_10: the cut on the Loft at x 4.8-5.2 backs the door east off the Loft, down into G_9's column, over 10
-            // ticks, to y 18.3-19.8: above a jump from the vent (18.17), below every walk or run off the Loft's end where it
-            // crosses the column, inside the eruption's reach. The Loft is above that reach, so G_9 never puts a cat on it.
-            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat_10",(5f,(LoftY + CeilingY) * .5f),(.4f,CeilingY - LoftY),settings:new SoloRoomTrapSettings(moveTicks:10,offset:new Vector2(4f,19.05f - LoftY - .75f))));
+            // Retreat_10: the cut on the Loft at x 4.8-5.2 drops the door through the Loft over 10 ticks onto Door_Ledge under
+            // the Loft's east end (PAX-099, D-106: a door stands on something; a ledge under the old pose in G_9's column would
+            // block the ride into it). The door's top (21) is under the Loft (22); a jump from Top_W tops out at 18.16, under
+            // the ledge; the eruption's apex (about 20.8) is under the Loft west of x 10, so a cat that steers west off it lands
+            // on the ledge, into the door. A cat that drops off the Loft's end and steers back passes east of the ledge.
+            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat_10",(5f,(LoftY + CeilingY) * .5f),(.4f,CeilingY - LoftY),settings:new SoloRoomTrapSettings(moveTicks:10,offset:new Vector2(.4f,-3f))));
+            elements.Add(E(SoloRoomElementKind.Floor,"Door_Ledge",(7.9f,19.25f),(1f,.5f)));
 
             var sections = new[] {
                 CheckpointSection.Start("Out", new Vector2(16.2f, MidY), new[] { "Arrow_1", "Gate_1", "Push_3", "Spikes_2", "Collapse_2", "Spear_4a", "Spear_4b", "Spear_4c" }),

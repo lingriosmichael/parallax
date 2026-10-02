@@ -160,7 +160,7 @@ namespace Parallax.Tests.EditMode
         public void ADisguisedArrowInTheEnvelope_WithoutADyingRoute_IsRejected()
         {
             Type arrowLane = EditorType("ArrowLane");
-            object lane = arrowLane.GetConstructors().First(c => c.GetParameters().Length == 9).Invoke(new object[] { ArrowDirection.Left, 4.5f, 5.2f, .8f, .16f, .3f, 6, true, false });
+            object lane = arrowLane.GetConstructors().First(c => c.GetParameters().Length == 10).Invoke(new object[] { ArrowDirection.Left, 4.5f, 5.2f, .8f, .16f, .3f, 6, true, false, 0f });
             ConstructorInfo withLane = EditorType("SoloRoomTrapSettings").GetConstructors().Single(c => c.GetParameters().Length == 2 && c.GetParameters()[0].ParameterType == arrowLane);
             object settings = withLane.Invoke(new[] { lane, Timing(TrapRepeatMode.Once, 1, 0) });
             object room = WithExtra(Room8(), Element("Arrow", "Hidden_Arrow", new Vector2(19.75f, 4.5f), new Vector2(.5f, .4f), new Vector2(15f, 3.5f), new Vector2(.5f, 7f), settings));

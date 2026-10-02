@@ -61,7 +61,28 @@ namespace Parallax.Editor.Setup
             errors.AddRange(ValidatePrecision(levelId, room, config, gravityStrength, thresholds));
             errors.AddRange(ValidateBand(levelId, room, LoadLevelList()));
             errors.AddRange(ValidateBaitGaps(levelId, room, config, gravityStrength));
+            if (LevelNumber(LoadLevelList(), levelId) > 0) errors.AddRange(ValidateDoorStands(levelId, room));
 
+            return errors;
+        }
+
+        // PAX-099 (D-106): a level's door stands on a platform, never in the air (the developer: "exits just hanging in the air
+        // don't make sense"): at its authored pose, and at its retreated pose if it backs away, a fixed solid's top is the door's
+        // bottom and covers the door's whole width. Levels only (the Trap Lab and the frozen rooms are not checked).
+        public static List<string> ValidateDoorStands(string levelId, SoloRoomDefinition room)
+        {
+            const float eps = 1e-4f;
+            var errors = new List<string>();
+            SoloRoomElement? doorOpt = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Door).Cast<SoloRoomElement?>().FirstOrDefault();
+            if (!doorOpt.HasValue) return errors;
+            Rect door = Box(doorOpt.Value, Vector2.zero);
+            var poses = new List<(string name, Rect box)> { ("its authored pose", door) };
+            SoloRoomElement? retreatOpt = room.Elements.Where(e => e.Kind == SoloRoomElementKind.DoorRetreat).Cast<SoloRoomElement?>().FirstOrDefault();
+            if (retreatOpt.HasValue) { Rect moved = door; moved.position += retreatOpt.Value.Settings.Offset; poses.Add(("its retreated pose", moved)); }
+            Rect[] solids = room.Elements.Where(IsFixedSolid).Select(e => Box(e, Vector2.zero)).ToArray();
+            foreach ((string name, Rect box) in poses)
+                if (!solids.Any(r => Mathf.Abs(r.yMax - box.yMin) < eps && r.xMin <= box.xMin + eps && r.xMax >= box.xMax - eps))
+                    errors.Add($"{levelId}: the door at {name} {Describe(box)} doesn't stand on a fixed solid (D-106).");
             return errors;
         }
 

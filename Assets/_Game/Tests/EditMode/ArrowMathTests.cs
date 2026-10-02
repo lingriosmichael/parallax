@@ -199,6 +199,123 @@ namespace Parallax.Tests.EditMode
             finally { Object.DestroyImmediate(cat); }
         }
 
+        // ---------- PAX-099 (D-106): angled arrows ----------
+
+        [TestCase(ArrowDirection.Right, 45f)] [TestCase(ArrowDirection.Right, -30f)] [TestCase(ArrowDirection.Left, 60f)] [TestCase(ArrowDirection.Left, -45f)]
+        public void AngledPose_FollowsTheTurnedLane_AndTheTipStopsAtLaneEndX(ArrowDirection direction, float angle)
+        {
+            var mouth = new Vector2(8f, 3f);
+            float sign = direction == ArrowDirection.Right ? 1f : -1f, a = angle * Mathf.Deg2Rad;
+            float end = mouth.x + sign * 4f;
+            float travel = ArrowMath.Travel(mouth.x, end, L, angle);
+            Assert.AreEqual(4f / Mathf.Cos(a) - L, travel, 1e-4f, "travel = the turned lane's length less the arrow");
+            Vector2 d = ArrowMath.Direction(direction, angle);
+            Assert.AreEqual(1f, d.magnitude, 1e-5f);
+            Assert.AreEqual(sign * Mathf.Cos(a), d.x, 1e-5f);
+            Assert.AreEqual(Mathf.Sin(a), d.y, 1e-5f, "positive angles point to world up on either side");
+            int n = ArrowMath.FlightTicks(travel, V);
+            Vector2 stop = ArrowMath.Centre(mouth, d, L, ArrowMath.Offset(T + n + 3, T, V, travel)) + d * (L * .5f);
+            Assert.AreEqual(end, stop.x, 1e-4f, "the stopped tip is at x = LaneEndX");
+            Assert.AreEqual(mouth.y + 4f * Mathf.Tan(a), stop.y, 1e-4f, "on the lane line");
+            Assert.AreEqual(ArrowMath.Centre(mouth, d, L, ArrowMath.Offset(0, T, V, travel)), ArrowMath.Centre(mouth, d, L, ArrowMath.Offset(T, T, V, travel)), "the first lethal pose is the tell pose");
+            float box = ArrowMath.BoxAngle(direction, angle);
+            Vector2 axis = Quaternion.Euler(0f, 0f, box) * Vector3.right;
+            Assert.AreEqual(1f, Mathf.Abs(Vector2.Dot(axis, d)), 1e-5f, "the turned box lies along the fire direction");
+        }
+
+        [Test]
+        public void AtZeroDegrees_TheAngledFunctions_AreD078s()
+        {
+            Assert.AreEqual(ArrowMath.Travel(8f, 14f, L), ArrowMath.Travel(8f, 14f, L, 0f));
+            Assert.AreEqual(new Vector2(-1f, 0f), ArrowMath.Direction(ArrowDirection.Left, 0f));
+            CatMotorConfig config = RealConfig();
+            float run = config.MaxSpeed * TickTime.SecondsPerTick;
+            Assert.AreEqual(ArrowMath.MaxUnitsPerTick(L, config.ColliderSize, run), ArrowMath.MaxUnitsPerTick(L, config.ColliderSize, run, .4f, 0f));
+            foreach (float angle in new[] { 0f, 30f, -30f, 45f, -45f, 60f, -60f }) Assert.IsTrue(ArrowMath.IsAllowedAngle(angle), $"{angle} is allowed");
+            foreach (float angle in new[] { 15f, 90f, -90f, 44f }) Assert.IsFalse(ArrowMath.IsAllowedAngle(angle), $"{angle} is not");
+        }
+
+        [TestCase(30f, .632f)] [TestCase(45f, .505f)] [TestCase(60f, .427f)]
+        public void AngledCap_WithTheRealConfig(float angle, float expected)
+        {
+            CatMotorConfig config = RealConfig();
+            Assert.AreEqual(expected, ArrowMath.MaxUnitsPerTick(L, config.ColliderSize, config.MaxSpeed * TickTime.SecondsPerTick, Vertical(config), angle), 1e-3f);
+            Assert.AreEqual(expected, ArrowMath.MaxUnitsPerTick(L, config.ColliderSize, config.MaxSpeed * TickTime.SecondsPerTick, Vertical(config), -angle), 1e-3f, "the sign doesn't change the cap");
+        }
+
+        // The developer's ruling (PAX-099 Phase 2): the brute-force sweep. At the cap, for every cat velocity in the motor's
+        // envelope (run either way, vertical up to the larger of the jump launch and the fall cap, so sideways crossings of the
+        // lane's thin axis are in it), every straight path across the arrow and every phase: if no tick overlaps, the cat's core
+        // (the capsule's centre segment) never touched the arrow in between. What can be missed is a graze of the capsule's
+        // round rim, never a crossing (D-078's accepted graze).
+        [TestCase(ArrowDirection.Right, 30f)] [TestCase(ArrowDirection.Right, -30f)] [TestCase(ArrowDirection.Left, 30f)]
+        [TestCase(ArrowDirection.Right, 45f)] [TestCase(ArrowDirection.Right, -45f)] [TestCase(ArrowDirection.Left, -45f)]
+        [TestCase(ArrowDirection.Right, 60f)] [TestCase(ArrowDirection.Right, -60f)] [TestCase(ArrowDirection.Left, 60f)]
+        public void AtTheAngledCap_TheCatsCoreNeverCrossesAnArrowBetweenTicks(ArrowDirection direction, float angle)
+        {
+            CatMotorConfig config = RealConfig();
+            float run = config.MaxSpeed * TickTime.SecondsPerTick, vertical = Vertical(config);
+            float v = ArrowMath.MaxUnitsPerTick(L, config.ColliderSize, run, vertical, angle);
+            Vector2 d = ArrowMath.Direction(direction, angle);
+            float radius = config.ColliderSize.y * .5f, half = (config.ColliderSize.x - config.ColliderSize.y) * .5f;
+            int paths = 0, misses = 0;
+            float closest = float.PositiveInfinity;
+            for (int ix = 0; ix < 7; ix++)
+            for (int iy = 0; iy < 9; iy++)
+            {
+                var c = new Vector2(Mathf.Lerp(-run, run, ix / 6f), Mathf.Lerp(-vertical, vertical, iy / 8f));
+                Vector2 rel = c - v * d;   // the cat relative to the arrow, per tick
+                if (rel.sqrMagnitude < 1e-8f) continue;
+                Vector2 across = new Vector2(-rel.y, rel.x).normalized;
+                for (int io = 0; io <= 40; io++)
+                for (int ip = 0; ip < 5; ip++)
+                {
+                    Vector2 at = across * Mathf.Lerp(-1.3f, 1.3f, io / 40f);
+                    float phase = ip / 5f;
+                    paths++;
+                    bool hit = false;
+                    for (int k = -15; k <= 15 && !hit; k++) hit = CoreDistance(at + rel * (k - phase), d, half) <= radius;
+                    if (hit) continue;
+                    misses++;
+                    float min = MinOver(t => CoreDistance(at + rel * (t - phase), d, half), -15f, 15f);
+                    closest = Mathf.Min(closest, min);
+                    Assert.Greater(min, 1e-3f, $"at v {v:F3}, cat velocity {c}, offset {io}, phase {phase:F2}: the core crossed the arrow unseen");
+                }
+            }
+            Assert.Greater(paths, 10000);
+            TestContext.WriteLine($"{direction} {angle}: cap {v:F3}, {misses} of {paths} paths miss every tick, the closest core {closest:F3} u from the arrow");
+        }
+
+        static float Vertical(CatMotorConfig config)
+        {
+            GameObject cat = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Game/Gameplay/Player/Cat_Player.prefab");
+            float gravity = cat.GetComponent<GravityReceiver>().Strength;
+            Assert.Greater(gravity, 0f);
+            return Mathf.Max(JumpMath.SpeedForHeight(config.JumpHeight, gravity), config.MaxFallSpeed) * TickTime.SecondsPerTick;
+        }
+
+        // The distance from the capsule's centre segment (centre p, half-length `half` along x) to the arrow box (centred at the
+        // origin, L x H, along d): convex in the segment parameter, so a ternary search finds it.
+        static float CoreDistance(Vector2 p, Vector2 d, float half) =>
+            MinOver(s => BoxDistance(p + new Vector2(s, 0f), d), -half, half);
+
+        static float BoxDistance(Vector2 q, Vector2 d)
+        {
+            float u = Vector2.Dot(q, d), w = Vector2.Dot(q, new Vector2(-d.y, d.x));
+            return new Vector2(Mathf.Max(Mathf.Abs(u) - L * .5f, 0f), Mathf.Max(Mathf.Abs(w) - H * .5f, 0f)).magnitude;
+        }
+
+        // A convex function's minimum on [a, b].
+        static float MinOver(System.Func<float, float> f, float a, float b)
+        {
+            for (int i = 0; i < 40; i++)
+            {
+                float m1 = a + (b - a) / 3f, m2 = b - (b - a) / 3f;
+                if (f(m1) <= f(m2)) b = m2; else a = m1;
+            }
+            return f((a + b) * .5f);
+        }
+
         // The arrow flies right from far left of the cat; the cat runs left. Each tick pairs the
         // arrow's pose at k with the cat's pose at k - 1 (RoomManager's order). phase shifts the
         // arrow's start by a fraction of one relative step.

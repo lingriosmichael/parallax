@@ -4,13 +4,15 @@ using UnityEngine;
 
 namespace Parallax.Gameplay.Rooms
 {
-    /// <summary>PAX-074 (D-078): a launcher that fires one arrow along a horizontal lane. The arrow is
+    /// <summary>PAX-074 (D-078): a launcher that fires one arrow along a lane. The arrow is
     /// a child sprite with no collider, placed each tick from ArrowMath (ticks since the fire); while
     /// lethal, that tick's pose is tested against the cat and a hit kills through RoomDeath. No
     /// physics moves it. The launcher's authored colour is its unfired look (the host's colour when
     /// disguised); it shows honestColor from the fire tick until reset or rearm.
     /// PAX-084 (D-086): a spear is this trap with `spear` set and a shaft collider on the arrow child. It fires
-    /// once, and from the tick after its stop its shaft is solid geometry the cat stands on and jumps from.</summary>
+    /// once, and from the tick after its stop its shaft is solid geometry the cat stands on and jumps from.
+    /// PAX-099 (D-106): an arrow (never a spear) may fly at an angle from horizontal, positive towards world up; its pose
+    /// and kill box turn with it, and it is harmless and non-solid once stopped.</summary>
     public sealed class ArrowTrap : RoomTrap
     {
         [SerializeField] ObserverSet observers;
@@ -18,6 +20,8 @@ namespace Parallax.Gameplay.Rooms
         [SerializeField] SpriteRenderer launcher;
         [SerializeField] SpriteRenderer arrow;
         [SerializeField] ArrowDirection direction;
+        [Tooltip("PAX-099 (D-106): degrees from horizontal, positive towards world up (0, ±30, ±45, ±60).")]
+        [SerializeField] float angleDegrees;
         [Tooltip("The mouth (launcher face on the fire side, at lane height), local to this launcher.")]
         [SerializeField] Vector2 mouth;
         [SerializeField] float travel;
@@ -40,6 +44,7 @@ namespace Parallax.Gameplay.Rooms
             if (spear && shaft == null) { Debug.LogError($"ArrowTrap '{name}': a spear needs its shaft collider.", this); enabled = false; return; }
             filter = new ContactFilter2D { useLayerMask = true, layerMask = Reality.PhysicsMask, useTriggers = false };
             flightTicks = ArrowMath.FlightTicks(travel, unitsPerTick);
+            arrow.transform.localRotation = Quaternion.Euler(0f, 0f, KillAngle);
             unfiredColor = launcher.color;
             ShowUnfired();
         }
@@ -56,13 +61,14 @@ namespace Parallax.Gameplay.Rooms
             arrow.transform.localPosition = LocalPose(s);
             arrow.enabled = true;
             launcher.color = honestColor;
-            if (TryGetKillBox(out Bounds pose) && IsLocalHumanOverlapping(pose, observers, filter, results, out _)) { Death.Kill(Reality.Id, DeathCause.Hazard, this); return; }
+            if (TryGetKillBox(out Bounds pose) && IsLocalHumanOverlapping(pose, KillAngle, observers, filter, results, out _)) { Death.Kill(Reality.Id, DeathCause.Hazard, this); return; }
             if (spear && s >= ArrowMath.StuckCheckTick(tellTicks, flightTicks) && !shaft.enabled) shaft.enabled = true;
         }
 
         /// <summary>The box this tick's kill test uses, or false while the arrow is harmless. The route harness names
         /// killers through this same function (PAX-084 R3). A spear adds one check on stop + 1, before its shaft
-        /// switches on: the stop pose shrunk by ArrowMath.StuckShrink a side, so touching it isn't being inside it.</summary>
+        /// switches on: the stop pose shrunk by ArrowMath.StuckShrink a side, so touching it isn't being inside it.
+        /// PAX-099 (D-106): the box is unrotated; KillAngle turns it about its centre.</summary>
         public bool TryGetKillBox(out Bounds box)
         {
             box = default;
@@ -75,8 +81,12 @@ namespace Parallax.Gameplay.Rooms
             return true;
         }
 
-        Vector2 LocalPose(int s) =>
-            new(ArrowMath.CentreX(mouth.x, direction, arrowLength, ArrowMath.Offset(s, tellTicks, unitsPerTick, travel)), mouth.y);
+        /// <summary>PAX-099 (D-106): the kill box's rotation in degrees, 0 for a level arrow.</summary>
+        public float KillAngle => ArrowMath.BoxAngle(direction, angleDegrees);
+
+        Vector2 LocalPose(int s) => angleDegrees == 0f
+            ? new(ArrowMath.CentreX(mouth.x, direction, arrowLength, ArrowMath.Offset(s, tellTicks, unitsPerTick, travel)), mouth.y)
+            : ArrowMath.Centre(mouth, ArrowMath.Direction(direction, angleDegrees), arrowLength, ArrowMath.Offset(s, tellTicks, unitsPerTick, travel));
 
         void ShowUnfired()
         {

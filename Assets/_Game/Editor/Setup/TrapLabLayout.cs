@@ -62,7 +62,38 @@ namespace Parallax.Editor.Setup
             , Room11()
             // PAX-093 (D-095): the moving-floor room (TrapLabLayout.MovingFloors.cs).
             , Room12()
+            // PAX-099 (D-106): the angled-arrow room.
+            , Room13()
         };
+
+        // PAX-099 (D-106): the angled-arrow room, origin 614 (room 12 ends at 601; the same 13 u gap), width 32, a flat floor
+        // under a ceiling at 7. Left to right:
+        //  - ArrowD45: honest, in Tower_A (hanging from the ceiling, x 5.5-6.5, down to y 3), fires down-right at -45 degrees
+        //    when the cat reaches the cut at x 8 and stops in the floor at x 10. Stop past the cut and let it land; then walk on through it.
+        //  - ArrowU30: honest, Periodic (every 150 ticks), in the Stump (x 19.5-20.5, 0.6 high), fires up-left at +30 degrees
+        //    and stops in the ceiling at x 7.9. Its lane rises over the floor left of the Stump: wait for a shot, then hop.
+        //  - ArrowD60: disguised in Tower_B (x 27.5-28.5, down to y 3), fires down-left at -60 degrees when the cat reaches
+        //    the cut at x 24.25 and stops in the floor at x 25.48. Stop past the cut; then on to the door.
+        static SoloRoomDefinition Room13()
+        {
+            float d60 = 27.5f - 3.5f / Mathf.Tan(60f * Mathf.Deg2Rad), u30 = 19.5f - 6.7f / Mathf.Tan(30f * Mathf.Deg2Rad);
+            var elements = new[] {
+                E(SoloRoomElementKind.Ceiling,"Ceiling",(16f,7.5f),(32f,1f)),
+                E(SoloRoomElementKind.Floor,"Floor",(16f,-.5f),(32f,1f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint",(2f,0),(0,0)),
+                E(SoloRoomElementKind.Wall,"Tower_A",(6f,5f),(1f,4f)),
+                E(SoloRoomElementKind.Wall,"Stump",(20f,.3f),(1f,.6f)),
+                E(SoloRoomElementKind.Wall,"Tower_B",(28f,5f),(1f,4f)),
+                E(SoloRoomElementKind.Arrow,"ArrowD45",(6.25f,3.5f),(.5f,.4f),(8f,3.5f),(.5f,7f),
+                    new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,3.5f,10f,angleDegrees:-45f),new SoloRoomTrapSettings(delayTicks:0))),
+                E(SoloRoomElementKind.Arrow,"ArrowU30",(19.75f,.3f),(.5f,.4f),settings:new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,.3f,u30,unitsPerTick:.36f,angleDegrees:30f),
+                    new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:40,cooldownTicks:60))),
+                E(SoloRoomElementKind.Arrow,"ArrowD60",(27.75f,3.5f),(.5f,.4f),(24.25f,3.5f),(.5f,7f),
+                    new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,3.5f,d60,disguised:true,angleDegrees:-60f),new SoloRoomTrapSettings(delayTicks:0))),
+                E(SoloRoomElementKind.Door,"Door",(30.5f,.75f),(.6f,1.5f)),
+            };
+            return new SoloRoomDefinition(13, 614f, 32f, elements, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
+        }
 
         // One valid route: Start_Floor -> Up_1 -> Up_2 -> Exit_Perch (door). Betrayals: Stone_A (fake, looks like the
         // start floor going on) and Thin_Collapse (the stone between Up_1 and Up_2) drop the cat into the pit;

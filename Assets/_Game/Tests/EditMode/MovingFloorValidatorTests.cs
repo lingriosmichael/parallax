@@ -11,10 +11,10 @@ using static Parallax.Tests.EditMode.RouteTestApi;
 namespace Parallax.Tests.EditMode
 {
     // PAX-093 (D-095): LevelLayoutValidator.ValidateMovingFloors on MovingFloorFixtures' rooms. Q1: a sideways MovingTrap Solid
-    // in a level numbered 14+ or Trap Lab room 12 declares Carry or Slip. Q4: a drop-and-return floor's cooldown covers its
+    // in a level numbered 3+ (PAX-099, D-106; 14+ before) or Trap Lab room 12 declares Carry or Slip. Q4: a drop-and-return floor's cooldown covers its
     // motion. Q5: a shrinker's settings. Q6: a push path ends against its named partner or in open space. D-056 (3): a Solid's
-    // swept path overlaps no fixed geometry. D-065: movers, shrinkers and push walls are levels 11+; slide-away and
-    // drop-and-return floors are allowed in levels 1-10.
+    // swept path overlaps no fixed geometry. D-106 (amends D-095 (3)): every pattern from level 3; movers, shrinkers and push
+    // walls stay out of levels 1-2, where slide-away and drop-and-return floors are allowed.
     public sealed class MovingFloorValidatorTests
     {
         static readonly Type Validator = Type.GetType("Parallax.Editor.Setup.LevelLayoutValidator, Parallax.Editor");
@@ -56,11 +56,12 @@ namespace Parallax.Tests.EditMode
         public void ASidewaysMover_DeclaringItsMotion_PassesInTrapLabRoom12(string motion) => AssertNone(Rule("TrapLab12", Room("SidewaysMover", M(motion))));
 
         [Test] public void ASidewaysMover_LeftLegacy_IsRejectedInTrapLabRoom12() => AssertMentions(Rule("TrapLab12", Room("SidewaysMover", M("Legacy"))), "SurfaceMotion");
-        [Test] public void ASidewaysMover_LeftLegacy_IsRejectedInLevel14_AndAllowedInLevel13()
+        [Test] public void ASidewaysMover_LeftLegacy_IsRejectedInLevel3_AndAllowedInLevel2()
         {
             LevelListConfig levels = FourteenLevels();
+            AssertMentions(Rule("M03", Room("SidewaysMover", M("Legacy")), levels), "SurfaceMotion");
             AssertMentions(Rule("M14", Room("SidewaysMover", M("Legacy")), levels), "SurfaceMotion");
-            AssertNone(Rule("M13", Room("SidewaysMover", M("Legacy")), levels));
+            CollectionAssert.IsEmpty(Rule("M02", Room("SidewaysMover", M("Legacy")), levels).Where(e => e.Contains("SurfaceMotion")));
         }
 
         [Test] public void ASidewaysMover_LeftLegacy_IsAllowedElsewhereInTheLab() => AssertNone(Rule("TrapLab4", Room("SidewaysMover", M("Legacy"))));
@@ -91,12 +92,24 @@ namespace Parallax.Tests.EditMode
 
         [Test] public void AMoverWhoseSweptPathRunsIntoAWall_IsRejected() => AssertMentions(Rule("TrapLab12", Room("MoverIntoAWall")), "Block");
 
-        // ---------- D-065 ----------
+        // ---------- D-106 (amends D-065 / D-095 (3)) ----------
 
         [TestCase("BandMover", "mover")] [TestCase("BandShrinker", "shrinking floor")] [TestCase("BandPushWall", "push wall")]
-        public void InALevel1To10_TheHardPatterns_AreRejected(string fixture, string what) => AssertMentions(Rule("L005", Room(fixture)), what);
+        public void InLevels1And2_TheHardPatterns_AreRejected(string fixture, string what)
+        {
+            LevelListConfig levels = FourteenLevels();
+            AssertMentions(Rule("M01", Room(fixture), levels), what);
+            AssertMentions(Rule("M02", Room(fixture), levels), what);
+        }
+
+        [TestCase("BandMover")] [TestCase("BandShrinker")] [TestCase("BandPushWall")] [TestCase("BandSlideAway")] [TestCase("BandDropAndReturn")]
+        public void FromLevel3_EveryPattern_IsAllowed(string fixture)
+        {
+            AssertNone(Rule("M03", Room(fixture), FourteenLevels()));
+            AssertNone(Rule("L005", Room(fixture)));
+        }
 
         [TestCase("BandSlideAway")] [TestCase("BandDropAndReturn")]
-        public void InALevel1To10_SlideAwayAndDropAndReturn_AreAllowed(string fixture) => AssertNone(Rule("L005", Room(fixture)));
+        public void InLevels1And2_SlideAwayAndDropAndReturn_AreAllowed(string fixture) => AssertNone(Rule("M02", Room(fixture), FourteenLevels()));
     }
 }

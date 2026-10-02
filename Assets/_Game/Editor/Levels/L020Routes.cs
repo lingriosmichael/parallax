@@ -54,12 +54,12 @@ namespace Parallax.Editor.Levels
             Hold(Right), Jump().Timed(TimedMode.Shift), Until(Landed()), ReleaseClimb(),
         };
 
-        // Last: east along the Loft; the door backs away into G_9's column; stop; walk off the Loft's end, onto the vent;
-        // ride the next eruption into the door.
+        // Last: east along the Loft; the door drops through it onto Door_Ledge; stop; walk off the Loft's end, onto the vent;
+        // ride the next eruption and steer west onto the ledge, into the door (PAX-099, D-106).
         static RouteStep[] Last() => new[] {
             Until(XAtLeast(5f)), Release(), Until(Still()),
             Hold(Right), Until(XAtLeast(10.1f)), Release(), Until(GroundedOn("Top_W")), Hold(Right), Until(XAtLeast(11.4f)), Release(),
-            Until(Still()), Until(RoomComplete()),
+            Until(Still()), Until(Airborne()), Hold(Left).Timed(TimedMode.Shift), Until(RoomComplete()),
         };
 
         static RouteStep[] Cat(params RouteStep[][] parts) => parts.SelectMany(p => p).ToArray();
@@ -104,7 +104,11 @@ namespace Parallax.Editor.Levels
                     Detour("the geyser", BackPart, 16, 15, Until(XAtMost(11.7f)), Release(), Until(Still()), Until(Airborne()), Until(Grounded()))),
                 // Last.
                 new Betrayal("T9 [BAIT]: a cat that chases the door runs off the Loft into Shrink_8's well", "Spikes_8", DeathCause.Hazard,
-                    B("chase it", LastPart, 1, Until(Dead())), revealedBy: "Door"));
+                    B("chase it", LastPart, 1, Until(Dead())), revealedBy: "Door"),
+                // PAX-099 (D-106): a cat that walks off the Loft's end and steers back west at once passes east of Door_Ledge and the
+                // door, lands on Top_W, and goes on (the room auditor's open margin, about 0.5 u).
+                Betrayal.Recovers("Dead end D3 [LW]: a cat that drops off the Loft's end and steers back west misses Door_Ledge, lands on Top_W and goes on", "Door",
+                    Detour("steer back", LastPart, 5, 6, Hold(Left))));
         }
     }
 }

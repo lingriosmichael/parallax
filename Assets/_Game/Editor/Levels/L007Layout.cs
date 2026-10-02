@@ -37,7 +37,7 @@ namespace Parallax.Editor.Levels
                 // The right tower, from S1 to S2: L3's left tower mirrored, then wall steps on up.
                 E(SoloRoomElementKind.Floor,"Tread_RA",(28.95f,6f),(1.5f,.5f)),
                 E(SoloRoomElementKind.Floor,"Tread_RB",(31.25f,7.25f),(1.5f,.5f)),
-                E(SoloRoomElementKind.Floor,"Tread_RC",(28.95f,8.5f),(1.5f,.5f)),
+                // PAX-100 (D-106): Tread_RC sinks while stood on (below, with the traps).
                 E(SoloRoomElementKind.Floor,"Tread_RD",(31.5f,10f),(1f,.5f)),
                 E(SoloRoomElementKind.Floor,"Tread_RE",(28.95f,11.25f),(1.5f,.5f)),
                 // S2, from the door to x 25.3; its end section (x 25.3-27.5) gives way.
@@ -62,6 +62,11 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_6",(20.5f,.15f),(2f,.3f),(19.75f,7f),(3.5f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"S1_T6",(20.5f,4.5f),(2f,1f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_6",delayTicks:1)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_6b",(22.75f,5.15f),(2.5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_6",repeatMode:TrapRepeatMode.Rearm,cooldownTicks:60)));
+            // T7 (PAX-100, D-106): a tread that sinks. Tread_RC goes down 1.8 u, slowly, 30 ticks after a cat lands on it (its
+            // trigger is its top strip), stays down 40 ticks and comes back up, carrying a cat that stays: hop on and off before
+            // it goes; a cat that waits rides it down and back up (it recovers). Its path stays clear of Tread_RA below.
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Tread_RC",(28.95f,8.5f),(1.5f,.5f),(28.95f,9.03f),(1.5f,.56f),new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
+                new SoloRoomTrapSettings(delayTicks:30,offset:new Vector2(0f,-1.8f),moveTicks:60,holdTicks:40,returnTicks:60,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:170,movingKind:MovingTrapKind.Solid))));
             // T3 (L3, reversed): from Tread_RC, S2's end is the step L3 taught; it gives way onto spikes on S1. The wall
             // step (Tread_RD) is real.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_3",(24.75f,5.15f),(5.5f,.3f),(26.4f,12f),(2.2f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));

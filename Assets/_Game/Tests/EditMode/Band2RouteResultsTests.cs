@@ -38,14 +38,14 @@ namespace Parallax.Tests.EditMode
         [TestCase("L012", 1323, new[] { 31, 23, 37, 17, 51, 15, 33, 30, 31 },
             new[] { "Cat.Inverted=17", "Floor_1=14", "Floor_2=14", "Collapse_B=22", "Orb_A=55", "Spikes_D=28", "Block_E=7", "Collapse_F=19", "Cat.Inverted=912", "FakeFloor_D=25", "Cat.Inverted=1207", "Slot_Floor=8", "Spikes_D2=10" }, new string[0])]
         [TestCase("L013", 1613, new[] { 31, 28, 28, 28, 28, 36, 32, 34 },
-            new[] { "Ledge_2=25", "Spikes_A=13", "Block_C=10", "Spikes_P2=1087", "G_D=1265", "Ledge_5=12", "Spikes_G=13", "Spikes_C1=1331", "Spikes_C2=1410", "Spikes_D2=11" },
+            new[] { "Ledge_2=25", "Spikes_A=13", "Block_C=10", "Spikes_P2=37", "G_D=1265", "Ledge_5=12", "Spikes_G=13", "Spikes_C1=31", "Spikes_C2=60", "Spikes_D2=11" },
             new[] { "Alcove visible t1172, complete t1913" })]
         // PAX-060 (L014): built after PAX-093 and the vine-grab coverage fix (D-096); C1's trigger is its own column. Lip_1
         // gives way at the Top's edge (T1, its escape declared, D-097); Pit_1 and Pit_3 are honest pits; Spear_V2 crosses
         // V2's lane (T2c).
-        [TestCase("L014", 1133, new[] { 13, 51, 42, 26, 38, 51, 14, 21, 35, 35, 35, 26 },
-            new[] { "Lip_1=53", "V1=33", "Spikes_D2=29", "Spear_V2=22", "Block_T=13", "Spear_4=12", "Spear_L=16", "V5=35", "Shrink=86", "C2=9", "C1=19", "C3=30", "C4=30", "C5=30", "C6=30", "Spikes_8=153" },
-            new[] { "V_Up visible t389, complete t1192" })]
+        [TestCase("L014", 1175, new[] { 13, 51, 42, 26, 38, 51, 14, 21, 35, 35, 35, 26 },
+            new[] { "Lip_1=53", "V1=33", "Spikes_D2=29", "Spear_V2=22", "Block_T=13", "Arrow_V=6", "Spear_4=12", "Spear_L=16", "V5=35", "Shrink=86", "C2=9", "C1=19", "C3=30", "C4=30", "C5=30", "C6=30", "Spikes_8=153" },
+            new[] { "V_Up visible t389, complete t1234" })]
         // PAX-060 (L015): the storm cloud. The Run's dance waits out D3's return on bare platforms (locks at t874 and t974);
         // Arrow_9 fires once from a cut on P1; the finale's Spear_10 runs under Floor_F1.
         // 2026-09-29 (the developer's play, D-093 (4c)): every roof under a cloud is real, so L015's T4 (Fake_4) and
@@ -54,21 +54,22 @@ namespace Parallax.Tests.EditMode
             new[] { "Cloud=74", "Cloud=174", "Collapse_2=62", "Arrow_3=12", "Mover_M=146", "Spear_P=86", "Cloud=674", "Block_1=24", "Block_3=24", "Cloud=974", "D3=282", "D3=191", "Arrow_9=50", "Spear_10=36" },
             new[] { "Cloud visible t25, complete t1411", "Mover_M visible t2, complete t1411" })]
         // PAX-060 half B (L016-L020, as built and accepted pending play; D-093 (4b)).
-        [TestCase("L016", 1155, new[] { 26, 26, 26, 16, 44, 12 },
-            new[] { "Lip_2=42", "Arrow_3=8", "Spikes_X=107", "Tile_6=8", "Spikes_X=8", "Spikes_7=19", "Spikes_8=416", "Block_S3=23", "Spikes_S1=32", "Spikes_H=25", "Spikes_S5=145", "Spikes_C=75" },
+        [TestCase("L016", 1202, new[] { 26, 26, 26, 16, 44, 12 },
+            new[] { "Lip_2=42", "Arrow_3=8", "Arrow_U=6", "Spikes_X=108", "Tile_6=8", "Spikes_X=8", "Spikes_7=19", "Spikes_8=463", "Block_S3=23", "Spikes_S1=32", "Spikes_H=25", "Spikes_S5=145", "Spikes_C=75" },
             new string[0])]
         [TestCase("L017", 1152, new[] { 45, 51, 29, 12, 15 },
             new[] { "Spear_1=8", "Spikes_D1=10", "Block_2=19", "Collapse_3=58", "Slide_4=41", "Arrow_5a=16", "Block_6=21", "Spikes_5e=15", "Arrow_8=60" },
-            new[] { "Slide_4 visible t172, complete t1468" })]
+            new[] { "Sink_9 visible t927, complete t1340", "Slide_4 visible t172, complete t1468" })]
         [TestCase("L018", 1143, new[] { 26, 51, 30, 48, 49, 33 },
             new[] { "Arrow_2=40", "Cloud=174", "Fake_A=9", "Spear_S=24", "SL_2=27", "SL_3=27", "Cloud=474", "Spikes_3=22", "Cloud=574", "Collapse_V=74", "Block_T=14", "G_D=762", "Arrow_B=10", "TL_3=21", "Block_7=24", "Spikes_7=18", "G_C=988" },
             new[] { "Cloud visible t6, complete t1143" })]
         [TestCase("L019", 1142, new[] { 43, 43, 43, 27, 49, 51, 51, 51, 9, 51 },
             new[] { "Spear_4=8", "Sweeper_2=8", "Sweeper_3=8", "Sweeper_4=8", "Sweeper_H=8", "Cat.Inverted=21", "P2=32", "Cat.Inverted=188", "Mover_1=633", "Cat.Inverted=449", "Mover_2=1010", "Mover_2=1109", "Spear_9=12", "Floor_C=19" },
             new[] { "Mover_1 visible t2, complete t1342" })]
-        [TestCase("L020", 1143, new[] { 21, 51, 51, 33, 32, 38, 35, 34, 26 },
+        // PAX-099 (D-106): the door drops onto Door_Ledge and the ride steers west onto it (window 30); dead end D3 steers back.
+        [TestCase("L020", 1164, new[] { 21, 51, 51, 33, 32, 38, 35, 34, 26, 30 },
             new[] { "Arrow_1=8", "Push_3=153", "Collapse_2=29", "Spear_4a=8", "Spear_4b=8", "V_5=55", "Cat.Inverted=25", "Cloud=174", "Shrink_8=207", "Door=94" },
-            new[] { "Cloud visible t593, complete t1143", "G_9 visible t61, complete t1293" })]
+            new[] { "Cloud visible t593, complete t1164", "G_9 visible t61, complete t1314", "Door visible t969, complete t1314" })]
         // A level's whole route measurement runs inside its case, over NUnit's default 180 s for the larger levels (L014).
         [Timeout(600000)]
         public void RouteResults_AreAsBuilt(string id, int solutionTicks, int[] windows, string[] leads, string[] recoveries)

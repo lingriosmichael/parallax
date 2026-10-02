@@ -54,6 +54,10 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_D",(12.25f,12.75f),(1.5f,1.5f),settings:flip));
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_E",(2.5f,9f),(1f,2f),settings:flip));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(6.8f,14.25f),(.6f,1.5f)));
+            // PAX-099 (D-106): the door stands on a pad at each pose, so it never hangs in the air. Nothing stands under Roof_5
+            // (x 3-6, it gives way on a touch): a cat on a top there could jump into it (band 1's trap-floor headroom).
+            elements.Add(E(SoloRoomElementKind.Floor,"Door_Pad_R",(6.6f,13.25f),(1f,.5f)));
+            elements.Add(E(SoloRoomElementKind.Floor,"Door_Pad_L",(2.5f,13.25f),(1f,.5f)));
             elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(10.75f,11.5f),(.5f,7f),settings:new SoloRoomTrapSettings(moveTicks:30,offset:new Vector2(-4.3f,0f))));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Roof_5",(4.5f,16.5f),(3f,3f),settings:new SoloRoomTrapSettings()));
             var jumps = new[] {

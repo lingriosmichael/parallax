@@ -38,6 +38,8 @@ namespace Parallax.Editor.Levels
         static RouteStep[] Trunk() => new[] {
             Until(XAtLeast(22.6f)), Hold(Left), Until(XAtMost(22.2f)), Release(), Until(Stopped("Block_T")),
             Hold(Right).Timed(TimedMode.Shift), Hold(Down), Until(XAtLeast(22.8f)), Jump(), Until(On("V3", 28f)), Release(),
+            // PAX-101 (D-106): stop on V3 as Arrow_V fires, let it stick in Shaft_W, climb on down.
+            Until(Fired("Arrow_V")), ReleaseClimb(), Until(Moving("Arrow_V")), For(8), Until(Stopped("Arrow_V")), Hold(Down),
             Until(Fired("Spear_4")), Hold(Up), For(8), ReleaseClimb(), Until(Stopped("Spear_4")),
             Hold(Left), Jump().Timed(TimedMode.Shift), Until(GroundedOn("Spear_4_Shaft")),
             Until(GroundedOn("Trough")), Until(Since("Spear_L", 26)), Jump().Timed(TimedMode.Shift), Until(GroundedOn("Low")),
@@ -107,8 +109,10 @@ namespace Parallax.Editor.Levels
                         Hold(Up), Until(On("V_Up", 21f)), Release(), Until(Grounded()), ReleaseClimb(), Hold(Right) }).Concat(Untimed(Trunk())).Concat(Untimed(Canopy(false))).ToArray())),
                 new Betrayal("T2b [BAIT]: a cat that walks on under the Beam is crushed by Block_T", "Block_T", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X>=22.6)", "walk on", Until(Dead()))),
+                new Betrayal("T4b [W]: a cat that climbs straight on down V3 meets Arrow_V", "Arrow_V", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(on V3)", "climb straight on", Release(), Until(Dead()))),
                 new Betrayal("T4 [B]: a cat that climbs on down V3 into the lane is struck by Spear_4", "Spear_4", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(on V3)", "stay in the lane", Release(), Until(Dead()))),
+                    Route.PrefixOf(solution, "Until(Stopped(Arrow_V))", "stay in the lane", Hold(Down), Until(Dead()))),
                 new Betrayal("T4b [NJ]: a cat that jumps the Trough is struck by Spear_L", "Spear_L", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Spear_4_Shaft))", "jump the trough", Until(XAtMost(19.2f)), Jump(), Until(Grounded()), Release(), Until(Dead()))),
                 new Betrayal("T5 [NJ]: a cat that leaps from Shrink to the far vine falls into Pit_K when V5 snaps", "Pit_K", DeathCause.Hazard,

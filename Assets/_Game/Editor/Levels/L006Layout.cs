@@ -26,7 +26,7 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Floor,"Ground_1",(3.25f,-2f),(6.5f,4f)),
                 E(SoloRoomElementKind.Floor,"Ground_2",(14f,-2f),(11f,4f)),
                 E(SoloRoomElementKind.Floor,"Ground_3",(23.5f,-2f),(3f,4f)),
-                E(SoloRoomElementKind.Floor,"Ground_4",(29.75f,-2f),(4.5f,4f)),
+                E(SoloRoomElementKind.Floor,"Ground_4",(30.75f,-2f),(2.5f,4f)),
                 E(SoloRoomElementKind.Wall,"Post",(5.5f,.5f),(1f,1f)),
                 E(SoloRoomElementKind.Floor,"Lid",(27f,3.25f),(10f,.5f)),
             };
@@ -38,13 +38,17 @@ namespace Parallax.Editor.Levels
             // so a cat that stands where it landed is safe.
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Sweep_3",(5.5f,.4f),(1f,.8f),(3f,5f),(6f,10f),new SoloRoomTrapSettings(offset:new Vector2(-1.5f,0f),moveTicks:24,holdTicks:100,returnTicks:24,movingKind:MovingTrapKind.Hazard)));
             // T4: the landing past the post gives way under a cat that stops. T5: the next floor gives way under a cat
-            // that runs on (and it is where a cat stepping off S1's end lands). T6: the floor before the door isn't there.
+            // that runs on (and it is where a cat stepping off S1's end lands). T6 (PAX-100): the rider before the door, below.
             L001Layout.AddShaft(elements, 4, 6.5f, 8.5f);
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Floor_4",(7.5f,-1.5f),(2f,3f),settings:new SoloRoomTrapSettings(delayTicks:20)));
             L001Layout.AddShaft(elements, 5, 19.5f, 22f);
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Floor_5",(20.75f,-1.5f),(2.5f,3f),settings:new SoloRoomTrapSettings(delayTicks:4)));
-            L001Layout.AddShaft(elements, 6, 25f, 27.5f);
-            elements.Add(E(SoloRoomElementKind.FakePlatform,"Floor_6",(26.25f,-1.5f),(2.5f,3f)));
+            // PAX-100 (D-106): T6 is a rider now. Pit_6 (x 25-29.5) is wider than a jump; Ride_6 (1.5 u, carries the cat) shuttles
+            // 3 u across it on the rhythm (out over 60 ticks, 40 there, back over 60, every 200): wait for it at home, ride it,
+            // step off onto the door's floor. A cat that walks on while it's away falls into the pit.
+            L001Layout.AddShaft(elements, 6, 25f, 29.5f);
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Ride_6",(25.75f,-.25f),(1.5f,.5f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
+                new SoloRoomTrapSettings(offset:new Vector2(3f,0f),moveTicks:60,holdTicks:40,returnTicks:60,repeatMode:TrapRepeatMode.Periodic,periodTicks:200,phaseTicks:0,cooldownTicks:160,movingKind:MovingTrapKind.Solid))));
             // Dead end: the lid, "the way toward the door" off S1's end, has hidden spikes on top; a cat that jumps or runs
             // off S1's end lands on it. They show as the cat comes to S1's end (the way never goes there). A cat that steps off
             // drops onto Floor_5 instead.
@@ -52,9 +56,8 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Door,"Door",(31f,.75f),(.6f,1.5f)));
             var jumps = new[] {
                 J("Floor_5",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,19.3f,22.2f,0f,0f,3f,sourceName:"Ground_2",destinationName:"Ground_3"),
-                J("Floor_6",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,24.8f,27.7f,0f,0f,3f,sourceName:"Ground_3",destinationName:"Ground_4"),
             };
-            return new SoloRoomDefinition(0,0f,32f,elements.ToArray(),new[] { L001Layout.Shaft(4,6.5f,8.5f), L001Layout.Shaft(5,19.5f,22f), L001Layout.Shaft(6,25f,27.5f) },jumps);
+            return new SoloRoomDefinition(0,0f,32f,elements.ToArray(),new[] { L001Layout.Shaft(4,6.5f,8.5f), L001Layout.Shaft(5,19.5f,22f), L001Layout.Shaft(6,25f,29.5f) },jumps);
         }
     }
 }

@@ -18,9 +18,12 @@ namespace Parallax.Editor.Levels
                 // Down by the wall: landing sets off the sweep; stand still while it comes out and goes home, then over the post.
                 Release(), Until(Still()), Until(Moving("Sweep_3")), Until(Home("Sweep_3")),
                 Hold(Right).Timed(TimedMode.Hesitate), Until(XAtLeast(3.4f)), Jump(), Until(Airborne()), Until(Grounded()),
-                // Straight on over the two floors that aren't there.
+                // Straight on over the floor that isn't there; then (PAX-100, D-106) wait for Ride_6 to come home, board it,
+                // ride it across Pit_6 and step off onto the door's floor.
                 Until(XAtLeast(19.1f)), Jump(), Until(Airborne()), Until(Grounded()),
-                Until(XAtLeast(24.6f)), Jump(), Until(RoomComplete()));
+                Release(), Until(Still()), Until(Moving("Ride_6")), Until(Home("Ride_6")),
+                Hold(Right), Until(GroundedOn("Ride_6").And(XAtLeast(25.5f))), Release(), Until(Still()),
+                Until(XAtLeast(28.6f)), Hold(Right), Until(RoomComplete()));
 
             return new RoomRoutes(solution,
                 new Betrayal("T1: Spikes_1 are up under a cat that runs on", "Spikes_1", DeathCause.Hazard,
@@ -33,8 +36,8 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(X>=3.4)", "stop past the post", Jump(), Until(Airborne()), Until(Grounded()), Release(), Until(Dead())), revealedBy: "Floor_4"),
                 new Betrayal("T5: the next floor gives way under a cat that runs on", "Pit5_Hazard", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X>=19.1)", "run on", Until(Dead())), revealedBy: "Floor_5"),
-                new Betrayal("T6: the floor before the door drops a cat that runs on", "Pit6_Hazard", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=24.6)", "run on", Until(Dead())), revealedBy: "Floor_6"),
+                new Betrayal("T6: a cat that runs on without waiting for Ride_6 falls into Pit_6", "Pit6_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X>=19.1)", "run on", Jump(), Until(Airborne()), Until(Grounded()), Until(Dead())), revealedBy: "Ride_6"),
                 new Betrayal("Dead end: the jump off S1's end toward the door lands on the lid", "Spikes_L", DeathCause.Hazard,
                     new Route("toward the door", Hold(Right), Until(XAtLeast(19.3f)), Jump(), Until(Dead()))),
                 new Betrayal("Dead end: stepping off S1's end drops the cat onto Floor_5", "Pit5_Hazard", DeathCause.Hazard,

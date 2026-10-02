@@ -187,6 +187,10 @@ namespace Parallax.Editor.Routes
             int end = lead.KillTick;
             if (replay.ArrowFirstLethalTick.TryGetValue(betrayal.Killer, out int lethal) && lethal >= 0) { lead.FirstLethalTick = lethal; if (lethal < end) end = lethal; }
             lead.FirstVisibleTick = FirstVisibleChange(replay, betrayal.Route, betrayal.RevealedBy);
+            // PAX-099 (D-106): a repeating killer (one that fired again before the kill) is revealed by the shot that kills, not
+            // by its first one, which may have flown long before, anywhere on screen or off it.
+            int shot = KillingShotTick(replay, betrayal.Killer);
+            if (shot >= 0 && betrayal.RevealedBy == betrayal.Killer && shot > lead.FirstVisibleTick) lead.FirstVisibleTick = shot;
             if (lead.FirstVisibleTick >= 0) lead.Lead = end - lead.FirstVisibleTick;
             return lead;
         }
@@ -201,6 +205,21 @@ namespace Parallax.Editor.Routes
             else if (replay.Kill.Cause != betrayal.Cause) yield return $"{name} dies of {replay.Kill.Cause}, not {betrayal.Cause}.";
             if (lead.FirstVisibleTick < 0) yield return $"{name}: {betrayal.RevealedBy} never changes visibly before the kill.";
             else if (lead.Lead < LeadTicks) yield return $"{name}: lead {lead.Lead} ticks is below {LeadTicks} ({lead}).";
+        }
+
+        // PAX-099 (D-106): the harness tick on which the killer's last fire before the kill showed, if it had fired before that
+        // (a repeating trap); -1 for a trap that fired once, or never.
+        static int KillingShotTick(ReplayResult replay, string killer)
+        {
+            int e = replay.Elements.IndexOf(killer), k = replay.Records.Count - 1;
+            if (e < 0 || k < 1) return -1;
+            int last = replay.Records[k].FireTick[e];
+            if (last < 0) return -1;
+            int i = k;
+            while (i > 0 && replay.Records[i - 1].FireTick[e] == last) i--;
+            bool earlier = false;
+            for (int j = 0; j < i; j++) if (replay.Records[j].FireTick[e] >= 0) { earlier = true; break; }
+            return earlier ? replay.Records[i].Tick : -1;
         }
 
         // PAX-090 (D-091): for a Route.FromSection replay the betrayal starts at the rewind, so its reveal is the first change

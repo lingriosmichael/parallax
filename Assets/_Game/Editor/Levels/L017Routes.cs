@@ -70,6 +70,9 @@ namespace Parallax.Editor.Levels
                 new(name, Branch(parts, part, index, then).Concat(parts[part].Skip(rejoin)).Concat(parts.Skip(part + 1).SelectMany(p => p)).ToArray());
 
             return new RoomRoutes(solution,
+                // PAX-101 (D-106): the floor past Post_8 sinks under a cat that stops on it; it rides it down and back up.
+                Betrayal.Recovers("T9 [NW]: a cat that stops where the hop over Post_8 lands sinks with the floor, rides it back up and goes on", "Sink_9",
+                    Detour("stop on the sinking floor", BackPart, 8, 8, Release(), Until(Still()), Until(Moving("Sink_9")), Until(Home("Sink_9")), Hold(Left))),
                 // Out.
                 new Betrayal("T1 [NJ]: a cat that hops Crack_1 is run through by Spear_1", "Spear_1", DeathCause.Hazard,
                     B("hop the crack", OutPart, 1, Until(XAtLeast(5.9f)), Jump(), Until(Dead()))),

@@ -13,6 +13,7 @@ namespace Parallax.Editor.Levels
     // PAX-087 (D-089): Trap Lab room 9, the vine room.
     // PAX-088 (D-090): Trap Lab room 10, the storm cloud room.
     // PAX-090 (D-091): Trap Lab room 11, the checkpoint-section room.
+    // PAX-099 (D-106): Trap Lab room 13, the angled-arrow room.
     public static class TrapLabRoutes
     {
         public static RoomRoutes Room3()
@@ -222,6 +223,27 @@ namespace Parallax.Editor.Levels
         // run the Shrink bridge without stopping (its edge chases at 5 u/s); cross the cut at x 58, which sends Pusher back at
         // you, jump up onto Ledge_P and let it pass under; then on to the door. One betrayal per pattern; the second and third
         // sections' start from their gate (Route.FromSection).
+        public static RoomRoutes Room13()
+        {
+            var solution = new Route("Trap Lab room 13 solution",
+                // Past ArrowD45's cut, stop, and let it land; then walk on through it (a stopped arrow is harmless).
+                Hold(Right), Until(XAtLeast(7.3f)), Release(), Until(Still()), Until(Moving("ArrowD45")), For(8), Until(Stopped("ArrowD45")),
+                // Wait short of the Stump for a shot of ArrowU30 to stop in the ceiling, then hop the Stump.
+                Hold(Right), Until(XAtLeast(17.6f)), Release(), Until(Still()), Until(Moving("ArrowU30")), For(8), Until(Stopped("ArrowU30")),
+                Hold(Right).Timed(TimedMode.Hesitate), Until(XAtLeast(18.1f)), Jump(), Until(Airborne()), Until(Grounded()),
+                // Past ArrowD60's cut, stop, and let it land; then on to the door.
+                Until(XAtLeast(23.8f)), Release(), Until(Still()), Until(Moving("ArrowD60")), For(8), Until(Stopped("ArrowD60")),
+                Hold(Right), Until(RoomComplete()));
+
+            return new RoomRoutes(solution,
+                new Betrayal("ArrowD45 comes down on a cat that runs on past its cut", "ArrowD45", DeathCause.Hazard,
+                    new Route("run on", Hold(Right), Until(Dead()))),
+                new Betrayal("ArrowU30's next shot strikes a cat that walks up to the Stump", "ArrowU30", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Stopped(ArrowD45))", "walk up to the Stump", Hold(Right), Until(Dead()))),
+                new Betrayal("ArrowD60 comes down on a cat that runs on past its cut", "ArrowD60", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Grounded)", "run on", Until(Dead()))));
+        }
+
         public static RoomRoutes Room12()
         {
             var solution = new Route("Trap Lab room 12 solution",

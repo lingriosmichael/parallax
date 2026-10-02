@@ -91,6 +91,12 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Ceiling,"Beam",(24.6f,35.25f),(1.6f,8.5f)));
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_T",(24.6f,31.4f),(1.2f,.8f),(24.5f,33.75f),(3f,11.5f),new SoloRoomTrapSettings(delayTicks:6,unitsPerTick:.2f,travelDistance:3f)));
             elements.Add(E(SoloRoomElementKind.Vine,"V3",(28f,21.5f),(.6f,13.8f)));
+            // T4b (PAX-101, D-106): an arrow down the shaft. Its honest launcher, flush in Shaft_E's face, fires down-left at -30
+            // degrees when a cat climbing down V3 enters its trigger (which contains the lane, D-074: at y 25.9), and stops in
+            // Shaft_W's face. Slow (0.16 u/tick), it crosses the vine around ticks 19-31, at y 23.5-24.1, where a cat that climbs
+            // straight on is (4 u/s); a cat that stops when it fires is 1.4 u above it. Stop, let it stick, go on down.
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_V",(31.25f,25.5f),(.5f,.4f),(28.25f,23.925f),(5.7f,3.45f),
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,25.5f,25.5f,unitsPerTick:.16f,angleDegrees:-30f),new SoloRoomTrapSettings(delayTicks:0))));
             elements.Add(Spear("Spear_4", 31.25f, 16.8f, ArrowDirection.Left, 21f, 4f, (26f, 17.3f), (10f, 1.4f), new SoloRoomTrapSettings(delayTicks:0), tell: 12));
             // Spear_L sweeps the Low walk at body height from Low_E once the cat is on it, and sticks in Curb_L: the one place
             // below its lane is the Trough.
@@ -118,7 +124,7 @@ namespace Parallax.Editor.Levels
 
             var sections = new[] {
                 CheckpointSection.Start("Drop", new Vector2(22f, 40f), new[] { "Lip_1", "V1", "Spikes_V1", "V2", "Spear_V2", "Spikes_D2" }),
-                new CheckpointSection("Trunk", new Vector2(16f, 28f), new Rect(14.1f, 30f, 1f, .2f), new[] { "V_Up", "Block_T", "V3", "Spear_4", "Spear_L", "Shrink", "V4", "V5" }),
+                new CheckpointSection("Trunk", new Vector2(16f, 28f), new Rect(14.1f, 30f, 1f, .2f), new[] { "V_Up", "Block_T", "V3", "Arrow_V", "Spear_4", "Spear_L", "Shrink", "V4", "V5" }),
                 new CheckpointSection("Canopy", new Vector2(6.8f, 6f), new Rect(6.3f, 6.6f, 1f, .2f),
                     new[] { "C1", "C2", "C3", "C4", "C5", "C6", "Block_7", "Spikes_8" }),
             };

@@ -340,6 +340,7 @@ namespace Parallax.Editor.Routes
                     Climb = Mathf.RoundToInt(command.Climb), IsClimbing = Cat.IsClimbing,
                     FireTick = new int[Elements.Count + 2], Signature = new int[Elements.Count + 2],
                     RenderBounds = new Rect[Elements.Count + 2], Rendered = new bool[Elements.Count + 2],
+                    TurnedCorners = new Vector2[Elements.Count + 2][],
                 };
                 // PAX-076 (D-083) R3: what the camera tell rule reads.
                 Vector3 catPosition = Cat.transform.position;
@@ -358,6 +359,7 @@ namespace Parallax.Editor.Routes
                     r.FireTick[i] = Elements[i].Trap != null ? Elements[i].Trap.LatestFireTick : -1;
                     r.Signature[i] = Signature(Elements[i]);
                     r.Rendered[i] = RenderedBounds(Elements[i], Origin, out r.RenderBounds[i]);
+                    if (Elements[i].Arrow != null && Elements[i].Arrow.KillAngle != 0f) r.TurnedCorners[i] = RenderedCorners(Elements[i], Origin);
                 }
                 r.FireTick[Elements.Count] = -1;
                 r.Signature[Elements.Count] = r.GravityUp ? 1 : 0;
@@ -416,6 +418,21 @@ namespace Parallax.Editor.Routes
                 return any;
             }
 
+            // PAX-099 (D-106): each drawn renderer's four corners through its own transform, so a turned arrow is its
+            // turned box, not the axis-aligned box around it.
+            static Vector2[] RenderedCorners(Element e, Vector2 origin)
+            {
+                var corners = new List<Vector2>();
+                foreach (SpriteRenderer s in e.Renderers)
+                {
+                    if (s == null || !s.enabled || !s.gameObject.activeInHierarchy) continue;
+                    Bounds local = s.localBounds;
+                    foreach (Vector2 c in new[] { new Vector2(local.min.x, local.min.y), new Vector2(local.max.x, local.min.y), new Vector2(local.max.x, local.max.y), new Vector2(local.min.x, local.max.y) })
+                        corners.Add((Vector2)s.transform.TransformPoint(c) - origin);
+                }
+                return corners.ToArray();
+            }
+
             // R6: names the element(s) whose own kill test holds on the kill tick's poses (before physics).
             public List<string> Attribute()
             {
@@ -438,7 +455,7 @@ namespace Parallax.Editor.Routes
                     // PAX-084 (D-086) R3: only on the ticks the arrow's own kill test runs, through the same function
                     // (flight and stop ticks; a spear's stop + 1 check). A stopped arrow or a stuck spear is harmless.
                     else if (e.Arrow != null && e.Arrow.TryGetKillBox(out Bounds arrowBox))
-                        match = Overlaps(arrowBox);
+                        match = Overlaps(arrowBox, e.Arrow.KillAngle);   // PAX-099 (D-106): turned with an angled arrow
                     // PAX-088 (D-090) ruling C: the cloud's own strike test, on its body box (no physics query).
                     else if (e.StormCloud != null) match = e.StormCloud.StrikeHits(Body, CatCollider);
                     if (match) names.Add(e.Name);
@@ -446,19 +463,20 @@ namespace Parallax.Editor.Routes
                 return names;
             }
 
-            bool Overlaps(Bounds bounds)
+            bool Overlaps(Bounds bounds, float angleDegrees = 0f)
             {
-                int count = Physics2D.OverlapBox(bounds.center, bounds.size, 0f, filter, overlaps);
+                int count = Physics2D.OverlapBox(bounds.center, bounds.size, angleDegrees, filter, overlaps);
                 for (int i = 0; i < count; i++) if (overlaps[i] == CatCollider) return true;
                 return false;
             }
 
-            // R5: an arrow's first lethal tick is fire + tell (ArrowMath.IsLethal), in harness ticks.
+            // R5: an arrow's first lethal tick is fire + tell (ArrowMath.IsLethal), in harness ticks. PAX-099 (D-106): a repeating
+            // arrow's latest shot replaces the earlier one, so a kill is measured against the shot that made it.
             public void RecordArrowLethal(ReplayResult result, int tick)
             {
                 foreach (Element e in Elements)
                 {
-                    if (e.Arrow == null || e.Trap.LatestFireTick < 0 || result.ArrowFirstLethalTick.ContainsKey(e.Name)) continue;
+                    if (e.Arrow == null || e.Trap.LatestFireTick < 0) continue;
                     if (Rooms.RoomLifeTick - e.Trap.LatestFireTick == e.ArrowTell) result.ArrowFirstLethalTick[e.Name] = tick;
                 }
             }

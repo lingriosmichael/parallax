@@ -12,7 +12,7 @@ namespace Parallax.Presentation
     /// a repeating shaft) is drawn exactly where the grey-box projectile is, facing its lane: the sprites face right and are
     /// flipped for a left lane, and the trap material (Parallax/2D/Sprite-Lit-Flip) turns their normal maps with them. Over the
     /// declared tell the slot warms and a glint pulses at the head; on stopping, the projectile shivers inside its box and
-    /// puffs a little dust.</summary>
+    /// puffs a little dust. PAX-099 (D-106): an angled arrow's art takes the grey-box arrow's rotation (Mirror).</summary>
     public sealed class ArrowArt : TrapArt, IHostSkinned
     {
         // The art projectile is drawn a little short of the grey-box so its shiver stays inside the grey-box's bounds.
@@ -110,8 +110,13 @@ namespace Parallax.Presentation
             {
                 if (Mirror(arrowArt, greyboxArrow))
                 {
-                    DrawFitted(arrowArt, arrowSprite, new Vector2(arrowSize.x * ArrowFill, arrowSize.y) * bodyScale);
-                    arrowArt.transform.position += new Vector3(shiver, 0f, 0f);
+                    // PAX-099 (D-106): a turned arrow's back corners would swing behind the mouth, into its launcher (a disguised
+                    // launcher's reveal frame must not change); its back is trimmed by that much, its tip stays where it was.
+                    float tilt = Mathf.Abs(Mathf.Tan(arrowArt.transform.eulerAngles.z * Mathf.Deg2Rad));
+                    float back = Mathf.Max(0f, arrowSize.y * 0.5f * tilt - arrowSize.x * (1f - ArrowFill) * 0.5f);
+                    DrawFitted(arrowArt, arrowSprite, new Vector2(arrowSize.x * ArrowFill - back, arrowSize.y) * bodyScale);
+                    Vector3 forward = arrowArt.transform.right * (FacesLeft ? -1f : 1f);
+                    arrowArt.transform.position += forward * (back * bodyScale * 0.5f) + arrowArt.transform.right * shiver;   // along a turned lane too
                 }
             }
             else DrawSpear(shiver);
@@ -172,7 +177,8 @@ namespace Parallax.Presentation
         {
             Transform t = greyboxArrow != null ? greyboxArrow.transform : transform;
             float sign = FacesLeft ? -1f : 1f;
-            return (Vector2)t.position + new Vector2(sign * arrowSize.x * 0.5f * ArrowFill, 0f);
+            // PAX-099 (D-106): the grey-box arrow is turned for an angled lane; the head turns with it.
+            return (Vector2)t.position + (Vector2)(t.rotation * new Vector3(sign * arrowSize.x * 0.5f * ArrowFill, 0f, 0f));
         }
 
         /// <summary>The sprite fitted uniformly inside `box` units, facing the lane.</summary>

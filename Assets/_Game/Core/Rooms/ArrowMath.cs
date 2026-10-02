@@ -42,5 +42,47 @@ namespace Parallax.Core
         // tick is kept as margin.
         public static float MaxUnitsPerTick(float length, Vector2 colliderSize, float runPerTick) =>
             length + (colliderSize.x - colliderSize.y) - 2f * runPerTick;
+
+        // ---------- PAX-099 (D-106): angled arrows ----------
+
+        /// <summary>The angles an arrow may fire at, in degrees from horizontal, positive towards world up (gravity
+        /// doesn't change it).</summary>
+        public static readonly float[] AllowedAngles = { 0f, 30f, -30f, 45f, -45f, 60f, -60f };
+
+        public static bool IsAllowedAngle(float degrees)
+        {
+            foreach (float a in AllowedAngles) if (Mathf.Abs(a - degrees) < 1e-3f) return true;
+            return false;
+        }
+
+        /// <summary>The unit fire direction: horizontal component by the fire side, vertical by the angle (world up).</summary>
+        public static Vector2 Direction(ArrowDirection direction, float angleDegrees)
+        {
+            float a = angleDegrees * Mathf.Deg2Rad;
+            return angleDegrees == 0f ? new Vector2(Sign(direction), 0f) : new Vector2(Sign(direction) * Mathf.Cos(a), Mathf.Sin(a));
+        }
+
+        /// <summary>The arrow box's rotation in degrees (z): the box is symmetric, so a left-firing arrow at +a is the box
+        /// at -a.</summary>
+        public static float BoxAngle(ArrowDirection direction, float angleDegrees) => direction == ArrowDirection.Left ? -angleDegrees : angleDegrees;
+
+        /// <summary>Travel along an angled lane whose tip stops at x = laneEndX: the lane's horizontal run over cos a, less
+        /// the arrow's length. Equal to Travel at 0 degrees.</summary>
+        public static float Travel(float mouthX, float laneEndX, float length, float angleDegrees) =>
+            angleDegrees == 0f ? Travel(mouthX, laneEndX, length) : Mathf.Abs(laneEndX - mouthX) / Mathf.Cos(angleDegrees * Mathf.Deg2Rad) - length;
+
+        /// <summary>The arrow's centre, local to the launcher: from the mouth along the fire direction.</summary>
+        public static Vector2 Centre(Vector2 mouth, Vector2 fireDirection, float length, float offset) => mouth + fireDirection * (offset + length * .5f);
+
+        /// <summary>D-106's cap for an angled lane: D-078's rule along the lane, where a cat closes on the arrow at up to
+        /// run x cos a + vertical x |sin a| per tick (vertical = the larger of the jump launch and the fall cap). At 0
+        /// degrees with no vertical term it is D-078's. The EditMode sweep proves the cat's core never crosses an arrow
+        /// between ticks at this speed, from every direction, at every angle.</summary>
+        public static float MaxUnitsPerTick(float length, Vector2 colliderSize, float runPerTick, float verticalPerTick, float angleDegrees)
+        {
+            if (angleDegrees == 0f) return MaxUnitsPerTick(length, colliderSize, runPerTick);
+            float a = Mathf.Abs(angleDegrees) * Mathf.Deg2Rad;
+            return length + (colliderSize.x - colliderSize.y) - 2f * (runPerTick * Mathf.Cos(a) + verticalPerTick * Mathf.Sin(a));
+        }
     }
 }

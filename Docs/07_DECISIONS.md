@@ -2618,3 +2618,56 @@ changes; the alternative was layout edits in about 13 levels.
 
 **Open (test gap, the auditor's):** no validator holds the lift's rule. A check per lifted level should count only ticks
 where an element can kill and isn't covered by a trap floor (open-pit planes counted).
+
+### D-106 · 2026-10-02 · Accepted (PAX-099, the developer's play-test and Phase 1 rulings)
+**Decision:** KIT-11. Angled and repeating arrows, every floor pattern from level 3, and doors on platforms.
+- **Angled arrows** (amends D-078 "horizontal only"). An arrow, never a spear, may fly at 0°, ±30°, ±45° or ±60° from
+  horizontal (`ArrowLane.AngleDegrees`). The sign is world up, whatever the cat's gravity. The mouth stays on the
+  launcher's side face at `LaneY`; the tip stops where it reaches x = `LaneEndX`, on a fixed solid's face or at the room's
+  end. Pose, tell, flight and stop are D-078's, as a pure function of ticks along the turned lane. The kill test and the
+  harness's killer naming are the same `OverlapBox`, turned by the lane's angle (`ArrowTrap.KillAngle`). A stopped angled
+  arrow is harmless and non-solid: spears stay the only footholds.
+- **Speed cap.** D-078's rule along the lane, with the cat's closing speed along it:
+  `v ≤ L + (w − h) − 2·(run·cos a + vertical·|sin a|)`. Here `vertical` is the larger of the jump launch speed and the fall
+  cap (0.4 u/tick today), and at 0° the cap is D-078's exactly. With an 0.8 arrow, the caps are 0.63 (30°), 0.50 (45°)
+  and 0.43 (60°) u/tick. The EditMode sweep proves that at the cap the cat's core never crosses an arrow between ticks,
+  from any direction, including across the lane's thin axis. A graze of the capsule's round rim can still be missed,
+  as D-078 already accepts.
+- **Lane checks.**
+  - The turned lane, trimmed at each end by where its thickness meets the launcher face and the end face, crosses no
+    fixed solid (separating axes).
+  - The swept-path, door-clearance and frame checks use the axis-aligned box around the turned lane (conservative).
+  - Periodic slack measures the lane's crossing within the cat's band, not its whole length.
+  - A Periodic arrow's cooldown must be below its period (otherwise it would skip shots).
+- **Camera tell (D-083).** An angled arrow counts as on screen when a corner of its launcher or of its turned box is in
+  view (`TickRecord.TurnedCorners`), never by the sprite's axis-aligned box.
+- **Repeating arrows** need no kit change: Periodic and Rearm arrows have worked since D-078. Each level sets its own
+  `PeriodTicks`.
+- **Floor patterns from level 3** (amends D-095 (3) and D-065's split for floors). Movers, shrinkers and push walls are
+  allowed from level 3; levels 1–2 keep slide-away and drop-and-return only. From level 3, a sideways Solid declares
+  Carry or Slip (14+ before).
+- **Doors on platforms** (supersedes D-105's plinth). A level's door stands on a fixed solid whose top is its bottom
+  and covers its width, at its authored pose and at its retreated pose (`ValidateDoorStands`).
+  - L004: `Door_Pad_R` and `Door_Pad_L`, under each pose. Nothing stands under `Roof_5`, which gives way on a touch:
+    a long shelf there failed band 1's trap-floor headroom.
+  - L009: `Door_Ledge`.
+  - L010: `Pad_A` and `Pad_B`, with the retreat lengthened from 3.5 to 5 u so the last jump's arc clears `Pad_B`.
+  - L016: `Door_Ledge`.
+  - L020: the door no longer backs east into G_9's column (a ledge there would block the eruption ride into it). It
+    drops through the Loft onto `Door_Ledge` under the Loft's east end (`Retreat_10` offset (0.4, −3)), and the solution
+    rides the eruption and steers west onto the ledge. Dead end D3 proves that a cat dropping off the Loft's end and
+    steering back misses the ledge.
+
+- **Route checks for repeating killers** (the developer approved, 2026-10-02). A killer that fired before the shot that
+  kills is measured from that shot: its reveal is that shot's fire and its first lethal tick is that shot's
+  (`RouteValidator.Lead`, `RecordArrowLethal`). Single-shot traps are unchanged.
+- **Provisional until the developer's play-test** (2026-10-02). If any is rejected, the layout is changed, never a rule
+  relaxed:
+  - L010's camera (D-104 table) goes from zoom 1.8 to 1.2, and PAX-100's Drop_10 sinks at 0.1 u a tick (it dropped at
+    0.5). At 1.8, and still at 1.5, the floor just under the cat's feet left the frame within a tick of moving (D-083).
+  - L001's shelf is raised to top 1.30 (about +7% under it), the most band 1's reach allows; the shelf–ledge gap gets +10%.
+
+**Why:** the developer's play-test (2026-10-02): "arrows fire only once … fire multiple times at an interval … at
+multiple angles … the point is variety and certain amount of challenge"; "add moving platforms and moving floors … throw
+these around in levels 3–20"; "exits just hanging in the air doesn't make sense … keep it on a platform." Rulings: several
+angles from level 3; every floor pattern in 3–10; real platforms; two fixed pads for L010.

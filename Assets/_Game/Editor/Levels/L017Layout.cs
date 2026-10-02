@@ -59,7 +59,9 @@ namespace Parallax.Editor.Levels
                 // Post_W (x 0-0.4) hosts Spear_D; Post_8 (x 19-19.4, top 9.2) hosts Arrow_8; the Door_Ledge (x 4.5-8,
                 // 8.7-9.8) floats over UF_W, its underside above a standing cat.
                 E(SoloRoomElementKind.Floor,"UF_W",(5.5f,UpperY - .35f),(11f,.7f)),
-                E(SoloRoomElementKind.Floor,"UF_E",(20.3f,UpperY - .35f),(14.6f,.7f)),
+                // PAX-101 (D-106): the upper floor's east part in two, with Sink_9 (below) between them, past Post_8.
+                E(SoloRoomElementKind.Floor,"UF_E1",(14.25f,UpperY - .35f),(2.5f,.7f)),
+                E(SoloRoomElementKind.Floor,"UF_E",(22.8f,UpperY - .35f),(9.6f,.7f)),
                 E(SoloRoomElementKind.Wall,"Post_W",(.2f,UpperY + .8f),(.4f,1.6f)),
                 E(SoloRoomElementKind.Wall,"Post_8",(19.2f,UpperY + .6f),(.4f,1.2f)),
                 E(SoloRoomElementKind.Floor,"Door_Ledge",(6.25f,(8.7f + LedgeY) * .5f),(3.5f,LedgeY - 8.7f)),
@@ -107,13 +109,18 @@ namespace Parallax.Editor.Levels
                 settings:new SoloRoomTrapSettings(delayTicks:8,unitsPerTick:.36f,travelDistance:CeilingY - UpperY,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_5e")));
             // Crossing x 15 fires Arrow_8 out of Post_8 along the upper storey at jump height (over a standing cat) into the
             // Door_Ledge's east face; it tells for 60 ticks.
+            // T9 (PAX-101, D-106): the floor where the hop over Post_8 lands sinks while stood on. Sink_9 (x 15.5-18) goes 3 u
+            // down over 60 ticks, 30 ticks after a landing (its trigger is its top strip; a cat that walks on is off it in about
+            // 15), holds 40 and comes back, carrying a cat that stayed: it recovers, under Arrow_8's lane.
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Sink_9",(16.75f,UpperY - .35f),(2.5f,.7f),(16.75f,UpperY + .28f),(2.5f,.56f),new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
+                new SoloRoomTrapSettings(delayTicks:30,offset:new Vector2(0f,-3f),moveTicks:60,holdTicks:40,returnTicks:60,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:170,movingKind:MovingTrapKind.Solid))));
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_8",(19.2f,UpperY + .9f),(.4f,.4f),(15f,(UpperY + CeilingY) * .5f),(.4f,CeilingY - UpperY),
                 new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,UpperY + .9f,8f,unitsPerTick:.36f,tellTicks:60,disguised:true),new SoloRoomTrapSettings(delayTicks:0))));
 
             var sections = new[] {
                 CheckpointSection.Start("Out", new Vector2(2f, 0f), new[] { "Spear_D", "Spear_1", "Block_2", "Collapse_U", "Collapse_3", "Slide_4", "Spikes_D1" }),
                 new CheckpointSection("Far", new Vector2(25.9f, 0f), new Rect(25.4f, 0f, .2f, UpperBottom), new[] { "Arrow_5a", "V1", "V2", "V3", "V4", "V5" }),
-                new CheckpointSection("Back", new Vector2(24.8f, UpperY), new Rect(25.2f, UpperY, .2f, CeilingY - UpperY), new[] { "Spikes_5e", "Block_6", "Arrow_8" }),
+                new CheckpointSection("Back", new Vector2(24.8f, UpperY), new Rect(25.2f, UpperY, .2f, CeilingY - UpperY), new[] { "Spikes_5e", "Block_6", "Sink_9", "Arrow_8" }),
             };
             return new SoloRoomDefinition(0, 0f, 32f, elements.ToArray(), System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>(), null, null, null, sections);
         }

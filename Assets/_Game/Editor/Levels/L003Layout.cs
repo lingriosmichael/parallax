@@ -56,6 +56,13 @@ namespace Parallax.Editor.Levels
             // As with Tread_R4, the trigger is the space over the tread (its top to the roof), out of reach of a jump from below.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_B",(.5f,7.65f),(1f,.3f),(.5f,12.125f),(1f,3.75f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Tread_D",(.5f,10f),(1f,.5f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_B",delayTicks:1)));
+            // T3a (PAX-100, D-106): an arrow from above. A corbel hangs under S2 (x 20-21, down to y 7.5); its honest launcher
+            // fires down-left at -45 degrees when the cat, walking S1 left, comes to x 19.9, and the arrow stops in S1_B's top
+            // at x 17.1, where a cat that walks on is (it lands at ticks 15-17 of the fire). Stop at once, let it land, walk on
+            // through it (a stopped arrow is harmless). Its lane stays clear of S1_Mid (x 15.1-16.9).
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel",(20.5f,8.25f),(1f,1.5f)));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_S1",(20.25f,7.9f),(.5f,.4f),(19.15f,7f),(.5f,4f),
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,7.9f,17.1f,angleDegrees:-45f),new SoloRoomTrapSettings(delayTicks:0))));
             // T5: the bait: a block flush in the roof over S2.
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_5",(20f,14.5f),(1f,1f),(17.25f,12f),(.5f,4f),new SoloRoomTrapSettings(delayTicks:16,unitsPerTick:.36f,travelDistance:4f)));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(30.5f,10.75f),(.6f,1.5f)));

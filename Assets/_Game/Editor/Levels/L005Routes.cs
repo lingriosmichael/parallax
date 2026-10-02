@@ -15,6 +15,8 @@ namespace Parallax.Editor.Levels
         {
             var solution = new Route("L005 solution",
                 Hold(Left), Until(XAtMost(22.6f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
+                // PAX-100 (D-106): stop short of the corbel, let a drip land, and pass before the next.
+                Until(XAtMost(17.2f)), Release(), Until(Still()), Until(Moving("Arrow_Drip")), For(8), Until(Stopped("Arrow_Drip")), Hold(Left),
                 // Off S2's end, down to the low ledge, back left, and down to S1 off its left end.
                 Until(XAtMost(5.6f)), Until(Airborne()), Until(GroundedOn("Ledge_Lo")), Release(), Until(Still()),
                 Hold(Left), Until(GroundedOn("S1_A")),
@@ -27,8 +29,10 @@ namespace Parallax.Editor.Levels
             return new RoomRoutes(solution,
                 new Betrayal("T1: Arrow_A hits a cat that runs along S2", "Arrow_A", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Hold(Left)", "run on", Until(Dead()))),
+                new Betrayal("T1b: the corbel's next arrow hits a cat that stops under it", "Arrow_Drip", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Grounded)", "stop under the corbel", Until(XAtMost(14.8f)), Release(), Until(Dead()))),
                 new Betrayal("T2: Arrow_B hits a cat that jumps the gap to the high ledge", "Arrow_B", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Grounded)", "jump the gap", Until(XAtMost(6f)), Jump(), Until(Dead()))),
+                    Route.PrefixOf(solution, "Until(Stopped(Arrow_Drip))", "jump the gap", Hold(Left), Until(XAtMost(6f)), Jump(), Until(Dead()))),
                 new Betrayal("T3: the low ledge's right end gives way onto spikes", "Spikes_3b", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Ledge_Lo))", "go on to the right", Release(), Until(Still()), Hold(Right), Until(Dead())), revealedBy: "Ledge_Lo2"),
                 new Betrayal("T3: the low ledge's right end gives way under a cat that stops on it, onto the nook's spikes", "Spikes_3", DeathCause.Hazard,

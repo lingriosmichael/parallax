@@ -224,7 +224,9 @@ namespace Parallax.Tests.EditMode
                 Assert.Greater(trap.sortingOrder, hazard.sortingOrder, "the trap floor must draw over a pit's hazard");
                 Assert.Greater(trap.sortingOrder, floor.sortingOrder, "the trap floor must draw over the ground it fills");
             }
-            finally { UnityEngine.Object.DestroyImmediate(rootGo); }
+            // CLAUDE.md (PAX-075, R21/R22): built into the Test Runner's scene, which a later route session then refuses as unsaved;
+            // restore it (CatAnimationCheckTests' replays failed after this test in the full batch, 2026-10-02).
+            finally { UnityEngine.Object.DestroyImmediate(rootGo); CatDeathKindTagTests.RecreateUntitledScene(); }
         }
 
         static object Element(string kind, string name, Vector2 position, Vector2 size)

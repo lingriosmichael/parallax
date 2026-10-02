@@ -41,6 +41,13 @@ namespace Parallax.Editor.Levels
             // T1: an arrow along S2 at shin height, out of the pillar behind the cat, once it is well along S2.
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_A",(31.75f,10.3f),(.5f,.4f),(24.25f,12f),(.5f,4f),
                 new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,10.3f,.5f,unitsPerTick:.36f,disguised:true),new SoloRoomTrapSettings(delayTicks:0))));
+            // T1b (PAX-100, D-106): a repeating arrow. A corbel hangs from the roof over S2 (x 15.5-16.5, down to y 11.7, above
+            // Arrow_B's lane); its honest launcher fires down-left at -60 degrees every 110 ticks, onto S2 at x 14.3. Its lane
+            // crosses the cat's band only over about half a unit: count, then pass; a cat that stops under it is hit.
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel",(16f,12.85f),(1f,2.3f)));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_Drip",(15.75f,12f),(.5f,.4f),settings:new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Left,12f,15.5f - 2f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:110,phaseTicks:0,cooldownTicks:60))));
             // T2: an arrow across the gap to the high ledge, at jump height, when the cat reaches S2's end.
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_B",(.25f,11.5f),(.5f,.4f),(6f,12f),(1f,4f),
                 new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,11.5f,31.5f,unitsPerTick:.36f,disguised:true),new SoloRoomTrapSettings(delayTicks:0))));

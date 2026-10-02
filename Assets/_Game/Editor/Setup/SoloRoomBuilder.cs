@@ -332,7 +332,14 @@ namespace Parallax.Editor.Setup
             {
                 case SoloRoomElementKind.Floor: case SoloRoomElementKind.Ceiling: case SoloRoomElementKind.Wall: case SoloRoomElementKind.PitBottom: BuildGeometry(parent, root, e.Name, position, e.Size, changes); break;
                 case SoloRoomElementKind.Checkpoint: CheckpointSetup.BuildMarkerCore(parent, root, e.Name, checkpoints, observers, room.Id, position + Vector2.up * -config.ColliderBottom, Vector2.down, changes); break;
-                case SoloRoomElementKind.Door: RoomSetup.BuildDoorCore(parent, root, e.Name, rooms, room.Id, position, e.Size, new Color(.9f,.5f,1f,1f), -2, changes); break;
+                case SoloRoomElementKind.Door:
+                {
+                    RoomDoor door = RoomSetup.BuildDoorCore(parent, root, e.Name, rooms, room.Id, position, e.Size, new Color(.9f,.5f,1f,1f), -2, changes);
+                    // PAX-099 (D-106): doors stand on real platforms in the layout; remove the art-only plinth an earlier build left.
+                    Transform plinth = door.transform.Find("Plinth");
+                    if (plinth != null) { Object.DestroyImmediate(plinth.gameObject); changes.Add("removed " + e.Name + " plinth"); }
+                    break;
+                }
                 case SoloRoomElementKind.Hazard: HazardSetup.BuildHazardCore(parent, root, e.Name, death, observers, rooms, position, e.Size, Red, -2, changes, HazardKind(room, e.Name)); break;
                 case SoloRoomElementKind.CollapsingFloor: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildCollapsingFloorCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings.DelayTicks, TrapFloorSortingOrder, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.HiddenSpikes: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildHiddenSpikesCore(parent, root, e.Name, position, e.Size, Red, room.Id, rooms, death, observers, e.Settings.TriggerName, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings.RevealDelayTicks, -2, changes), e.Settings, parent, changes); break;
@@ -366,7 +373,10 @@ namespace Parallax.Editor.Setup
             float sign = ArrowMath.Sign(lane.Direction);
             Vector2 mouth = new(sign * e.Size.x * .5f, lane.LaneY - e.Position.y);
             Transform arrow = SetupUtility.EnsureChild(launcher, lane.Spear ? e.Name + "_Shaft" : "Arrow", root.gameObject.layer, changes);
-            SetupUtility.SetLocalPosition(arrow, mouth + new Vector2(sign * lane.Length * .5f, 0f), changes);
+            SetupUtility.SetLocalPosition(arrow, ArrowMath.Centre(mouth, ArrowMath.Direction(lane.Direction, lane.AngleDegrees), lane.Length, 0f), changes);
+            // PAX-099 (D-106): an angled arrow's box is turned (ArrowTrap sets the same rotation on Awake).
+            Quaternion turn = Quaternion.Euler(0f, 0f, ArrowMath.BoxAngle(lane.Direction, lane.AngleDegrees));
+            if (arrow.localRotation != turn) { arrow.localRotation = turn; changes.Add($"turned {arrow.name} to {lane.AngleDegrees:0} degrees"); }
             SpriteRenderer arrowVisual = SetupUtility.SetVisual(arrow.gameObject, root, new Vector2(lane.Length, lane.Thickness), Red, changes);
             SetSortingOrder(arrowVisual, 0, changes);
             BoxCollider2D shaft = lane.Spear ? BuildShaft(arrow, new Vector2(lane.Length, lane.Thickness), changes) : null;
@@ -376,7 +386,7 @@ namespace Parallax.Editor.Setup
 
             ArrowTrap trap = SetupUtility.Ensure<ArrowTrap>(launcher.gameObject, changes);
             TrapKitSetup.Write(trap, changes, ("rooms", rooms), ("roomDeath", death), ("observers", observers), ("roomId", room.Id), ("trigger", trigger),
-                ("launcher", launcherVisual), ("arrow", arrowVisual), ("direction", (int)lane.Direction), ("mouth", mouth),
+                ("launcher", launcherVisual), ("arrow", arrowVisual), ("direction", (int)lane.Direction), ("angleDegrees", lane.AngleDegrees), ("mouth", mouth),
                 ("travel", LevelLayoutValidator.ArrowTravel(e)), ("arrowLength", lane.Length), ("arrowThickness", lane.Thickness),
                 ("unitsPerTick", lane.UnitsPerTick), ("tellTicks", lane.TellTicks), ("delayTicks", e.Settings.DelayTicks),
                 ("spear", lane.Spear), ("shaft", shaft));

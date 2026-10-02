@@ -18,18 +18,56 @@ namespace Parallax.Editor.Setup
 
         internal static bool IsArrow(SoloRoomElement e) => e.Kind == SoloRoomElementKind.Arrow;
         internal static float ArrowMouthX(SoloRoomElement e) => e.Position.x + ArrowMath.Sign(e.Settings.Arrow.Direction) * e.Size.x * .5f;
-        internal static float ArrowTravel(SoloRoomElement e) => ArrowMath.Travel(ArrowMouthX(e), e.Settings.Arrow.LaneEndX, e.Settings.Arrow.Length);
+        internal static float ArrowTravel(SoloRoomElement e) => ArrowMath.Travel(ArrowMouthX(e), e.Settings.Arrow.LaneEndX, e.Settings.Arrow.Length, e.Settings.Arrow.AngleDegrees);
         internal static int ArrowFlightTicks(SoloRoomElement e) => ArrowMath.FlightTicks(ArrowTravel(e), e.Settings.Arrow.UnitsPerTick);
         // Tell plus every lethal tick: the arrow is stopped (harmless) from this many ticks after its fire.
         internal static int ArrowStopTick(SoloRoomElement e) => e.Settings.Arrow.TellTicks + ArrowFlightTicks(e) + 1;
 
-        // The lane box: from the mouth to the lane end, LaneY +/- Thickness / 2, in origin + room-local space.
+        // The lane box: from the mouth to the lane end, LaneY +/- Thickness / 2, in origin + room-local space. PAX-099
+        // (D-106): for an angled lane, the axis-aligned box around the turned lane (ArrowLaneCorners).
         internal static Rect ArrowLaneBox(SoloRoomElement e, Vector2 origin)
         {
             ArrowLane lane = e.Settings.Arrow;
             float mouth = ArrowMouthX(e);
-            return Rect.MinMaxRect(origin.x + Mathf.Min(mouth, lane.LaneEndX), origin.y + lane.LaneY - lane.Thickness * .5f,
-                origin.x + Mathf.Max(mouth, lane.LaneEndX), origin.y + lane.LaneY + lane.Thickness * .5f);
+            if (lane.AngleDegrees == 0f)
+                return Rect.MinMaxRect(origin.x + Mathf.Min(mouth, lane.LaneEndX), origin.y + lane.LaneY - lane.Thickness * .5f,
+                    origin.x + Mathf.Max(mouth, lane.LaneEndX), origin.y + lane.LaneY + lane.Thickness * .5f);
+            Vector2[] c = ArrowLaneCorners(e, origin, 0f);
+            return Rect.MinMaxRect(c.Min(p => p.x), c.Min(p => p.y), c.Max(p => p.x), c.Max(p => p.y));
+        }
+
+        // PAX-099 (D-106): the turned lane's corners, from the mouth to the tip's stop point, Thickness wide; `trim` cuts that
+        // much off each end along the lane (the blocked test trims the ends where the lane meets its launcher and its end face).
+        internal static Vector2[] ArrowLaneCorners(SoloRoomElement e, Vector2 origin, float trim)
+        {
+            ArrowLane lane = e.Settings.Arrow;
+            Vector2 d = ArrowMath.Direction(lane.Direction, lane.AngleDegrees), n = new Vector2(-d.y, d.x) * (lane.Thickness * .5f);
+            Vector2 start = origin + new Vector2(ArrowMouthX(e), lane.LaneY) + d * trim;
+            Vector2 end = origin + ArrowTipStop(e) - d * trim;
+            return new[] { start - n, end - n, end + n, start + n };
+        }
+
+        // The tip's centre where the arrow stops (room-local): x = LaneEndX on the lane line.
+        internal static Vector2 ArrowTipStop(SoloRoomElement e)
+        {
+            ArrowLane lane = e.Settings.Arrow;
+            float mouth = ArrowMouthX(e);
+            return new Vector2(lane.LaneEndX, lane.LaneY + (lane.LaneEndX - mouth) * ArrowMath.Sign(lane.Direction) * Mathf.Tan(lane.AngleDegrees * Mathf.Deg2Rad));
+        }
+
+        // Separating axes: a convex quad against an axis-aligned rect, strictly (touching is not overlapping, as Rect.Overlaps).
+        static bool QuadOverlapsRect(Vector2[] quad, Rect r)
+        {
+            if (quad.Max(p => p.x) <= r.xMin || quad.Min(p => p.x) >= r.xMax || quad.Max(p => p.y) <= r.yMin || quad.Min(p => p.y) >= r.yMax) return false;
+            Vector2[] rect = { new(r.xMin, r.yMin), new(r.xMax, r.yMin), new(r.xMax, r.yMax), new(r.xMin, r.yMax) };
+            for (int i = 0; i < 2; i++)
+            {
+                Vector2 edge = quad[i + 1] - quad[i], axis = new(-edge.y, edge.x);
+                float qMin = quad.Min(p => Vector2.Dot(p, axis)), qMax = quad.Max(p => Vector2.Dot(p, axis));
+                float rMin = rect.Min(p => Vector2.Dot(p, axis)), rMax = rect.Max(p => Vector2.Dot(p, axis));
+                if (qMax <= rMin || rMax <= qMin) return false;
+            }
+            return true;
         }
 
         // D-057: the tell is the arrow's visible lead.
@@ -42,7 +80,8 @@ namespace Parallax.Editor.Setup
             return errors;
         }
 
-        // No pass-through between ticks: v <= Length + (collider width - height) - 2 x run per tick.
+        // No pass-through between ticks: v <= Length + (collider width - height) - 2 x run per tick. PAX-099 (D-106): an angled
+        // lane closes at run x cos a + vertical x |sin a| (vertical = the larger of the jump launch and the fall cap).
         public static List<string> ValidateArrowSpeed(string levelId, SoloRoomDefinition room)
         {
             var errors = new List<string>();
@@ -54,7 +93,8 @@ namespace Parallax.Editor.Setup
             {
                 ArrowLane lane = e.Settings.Arrow;
                 if (lane.Length <= 0f || lane.Thickness <= 0f) { errors.Add($"{levelId}: {e.Name} arrow size {lane.Length:F2} x {lane.Thickness:F2} must be positive."); continue; }
-                float cap = ArrowMath.MaxUnitsPerTick(lane.Length, config.ColliderSize, config.MaxSpeed * TickTime.SecondsPerTick);
+                float vertical = Mathf.Max(JumpMath.SpeedForHeight(config.JumpHeight, GravityStrength()), config.MaxFallSpeed) * TickTime.SecondsPerTick;
+                float cap = ArrowMath.MaxUnitsPerTick(lane.Length, config.ColliderSize, config.MaxSpeed * TickTime.SecondsPerTick, vertical, lane.AngleDegrees);
                 if (lane.UnitsPerTick <= 0f || lane.UnitsPerTick > cap + tolerance)
                     errors.Add($"{levelId}: {e.Name} speed {lane.UnitsPerTick:F2} u/tick is outside (0, {cap:F2}], the tunnelling cap for a {lane.Length:F2} arrow.");
             }
@@ -73,6 +113,9 @@ namespace Parallax.Editor.Setup
             {
                 ArrowLane lane = e.Settings.Arrow;
                 if (!lane.IsConfigured) { errors.Add($"{levelId}: {e.Name} is an arrow with no ArrowLane."); continue; }
+                if (!ArrowMath.IsAllowedAngle(lane.AngleDegrees)) { errors.Add($"{levelId}: {e.Name} angle {lane.AngleDegrees:0.##} is not one of 0, ±30, ±45, ±60 (D-106)."); continue; }
+                if (lane.Spear && lane.AngleDegrees != 0f) { errors.Add($"{levelId}: {e.Name} is a spear at {lane.AngleDegrees:0.##} degrees; spears fly level (D-106)."); continue; }
+                if (lane.AngleDegrees != 0f) { CheckAngledLane(levelId, room, e, fixedSolids, minY, maxY, errors); continue; }
                 float mouth = ArrowMouthX(e), sign = ArrowMath.Sign(lane.Direction);
                 if ((lane.LaneEndX - mouth) * sign <= 0f || ArrowTravel(e) <= 0f)
                 { errors.Add($"{levelId}: {e.Name} lane end x {lane.LaneEndX:F2} is not beyond its mouth x {mouth:F2} by more than the arrow length."); continue; }
@@ -105,6 +148,49 @@ namespace Parallax.Editor.Setup
             return errors;
         }
 
+        // PAX-099 (D-106): an angled lane leaves its launcher's side face and its tip stops on a fixed solid's face (or the
+        // room's end). The turned lane, trimmed at both ends by where its thickness meets those faces, crosses no fixed solid;
+        // the swept-path and frame checks use the box around it.
+        static void CheckAngledLane(string levelId, SoloRoomDefinition room, SoloRoomElement e, SoloRoomElement[] fixedSolids, float minY, float maxY, List<string> errors)
+        {
+            const float eps = 1e-3f;
+            ArrowLane lane = e.Settings.Arrow;
+            float mouth = ArrowMouthX(e);
+            if ((lane.LaneEndX - mouth) * ArrowMath.Sign(lane.Direction) <= 0f || ArrowTravel(e) <= 0f)
+            { errors.Add($"{levelId}: {e.Name} lane end x {lane.LaneEndX:F2} is not beyond its mouth x {mouth:F2} by more than the arrow length."); return; }
+            Rect launcherBox = Box(e, Vector2.zero), laneBox = ArrowLaneBox(e, Vector2.zero);
+            if (!fixedSolids.Any(s => Box(s, Vector2.zero).Overlaps(launcherBox)))
+                errors.Add($"{levelId}: {e.Name} launcher {Describe(launcherBox)} is not hosted in fixed geometry.");
+
+            Vector2 tip = ArrowTipStop(e);
+            bool roomEnd = Mathf.Abs(tip.x) < eps || Mathf.Abs(tip.x - room.Width) < eps;
+            bool endFace = roomEnd || fixedSolids.Select(s => Box(s, Vector2.zero)).Any(r => DistanceToRect(tip, r) < eps);
+            if (!endFace) errors.Add($"{levelId}: {e.Name} lane's tip stops at ({tip.x:F2}, {tip.y:F2}), not on a fixed solid's end face.");
+
+            float a = Mathf.Abs(lane.AngleDegrees) * Mathf.Deg2Rad;
+            float trim = lane.Thickness * .5f * Mathf.Max(Mathf.Tan(a), 1f / Mathf.Tan(a)) + eps;
+            Vector2[] trimmed = ArrowLaneCorners(e, Vector2.zero, trim);
+            foreach (SoloRoomElement s in fixedSolids)
+                if (QuadOverlapsRect(trimmed, Box(s, Vector2.zero))) errors.Add($"{levelId}: {e.Name} lane {Describe(laneBox)} is blocked by {s.Name}.");
+            foreach (SoloRoomElement s in room.Elements)
+            {
+                bool movingSolid = s.Kind == SoloRoomElementKind.MovingTrap && s.Settings.MovingKind == MovingTrapKind.Solid;
+                if (!movingSolid && s.Kind != SoloRoomElementKind.CollapsingFloor) continue;
+                Rect swept = Box(s, Vector2.zero);
+                if (movingSolid) { Rect moved = swept; moved.position += s.Settings.Offset; swept = Envelope(swept, moved); }
+                if (QuadOverlapsRect(ArrowLaneCorners(e, Vector2.zero, 0f), swept)) errors.Add($"{levelId}: {e.Name} lane {Describe(laneBox)} crosses {s.Name}'s swept path; a pushed cat breaks the speed cap.");
+            }
+            // The frame takes the trimmed lane: the untrimmed corners dip into the end face by design.
+            Rect framed = Rect.MinMaxRect(trimmed.Min(p => p.x), trimmed.Min(p => p.y), trimmed.Max(p => p.x), trimmed.Max(p => p.y));
+            CheckFrame(levelId, e.Name + " launcher", launcherBox, room.Width, minY, maxY, errors);
+            CheckFrame(levelId, e.Name + " lane", framed, room.Width, minY, maxY, errors);
+            if (e.SecondarySize != Vector2.zero)
+                CheckFrame(levelId, e.Name + " trigger", new Rect(e.SecondaryPosition - e.SecondarySize * .5f, e.SecondarySize), room.Width, minY, maxY, errors);
+        }
+
+        static float DistanceToRect(Vector2 p, Rect r) =>
+            new Vector2(Mathf.Max(r.xMin - p.x, 0f, p.x - r.xMax), Mathf.Max(r.yMin - p.y, 0f, p.y - r.yMax)).magnitude;
+
         // D-060/D-075: the door's authored pose and retreat sweep stay one tick at run speed clear of every lane.
         public static List<string> ValidateArrowDoorClearance(string levelId, SoloRoomDefinition room)
         {
@@ -135,6 +221,9 @@ namespace Parallax.Editor.Setup
                 int stop = ArrowStopTick(e);
                 if (e.Settings.CooldownTicks < stop)
                     errors.Add($"{levelId}: {e.Name} cooldown {e.Settings.CooldownTicks} ends before the arrow stops (tell + flight = {stop} ticks).");
+                // PAX-099: a Periodic arrow fires only when armed, so a cooldown as long as the period skips shots.
+                if (repeat == TrapRepeatMode.Periodic && e.Settings.CooldownTicks >= e.Settings.PeriodTicks)
+                    errors.Add($"{levelId}: {e.Name} cooldown {e.Settings.CooldownTicks} is not below its period {e.Settings.PeriodTicks}; it would skip shots.");
             }
             return errors;
         }
@@ -160,7 +249,10 @@ namespace Parallax.Editor.Setup
         static void CheckArrowPeriodicSlack(string levelId, SoloRoomElement e, CatMotorConfig config, int slackTicks, List<string> errors)
         {
             Rect lane = ArrowLaneBox(e, Vector2.zero);
-            float crossing = FromRestCrossingTicks(lane.width + config.ColliderSize.x + .5f, config);
+            // PAX-099 (D-106): a cat on a walkway crosses an angled lane only where it cuts the cat's band (its height).
+            float a = Mathf.Abs(e.Settings.Arrow.AngleDegrees) * Mathf.Deg2Rad;
+            float footprint = a == 0f ? lane.width : Mathf.Min(lane.width, (config.ColliderSize.y + e.Settings.Arrow.Thickness / Mathf.Cos(a)) / Mathf.Tan(a));
+            float crossing = FromRestCrossingTicks(footprint + config.ColliderSize.x + .5f, config);
             int window = e.Settings.PeriodTicks - ArrowStopTick(e);
             if (window < crossing + slackTicks)
                 errors.Add($"{levelId}: {e.Name} periodic slack {window - crossing:F1} is below {slackTicks} ticks (window {window} against a from-rest crossing of {crossing:F1}, D-056).");

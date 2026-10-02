@@ -77,6 +77,26 @@ namespace Parallax.Tests.EditMode
 
         [Test] public void DoorClearance_LaneThroughTheDoor_IsRejected() => AssertRejected(Rule("ValidateArrowDoorClearance", Fixture("LaneThroughTheDoor")), "ArrowD", "door");
 
+        // ---------- PAX-099 (D-106): angled lanes ----------
+
+        [Test] public void AngledRoom_PassesEveryRule([ValueSource(nameof(Rules))] string rule) => AssertPasses(Rule(rule, Fixture("AngledRulesPass")));
+
+        [Test] public void Angle_OutsideTheSet_IsRejected() => AssertRejected(Rule("ValidateArrowLane", Fixture("AngleNotAllowed")), "ArrowE", "angle -50");
+
+        [Test] public void Spear_AtAnAngle_IsRejected() => AssertRejected(Rule("ValidateArrowLane", Fixture("AngledSpear")), "ArrowE", "spears fly level");
+
+        [Test] public void AngledLane_EndingInOpenAir_IsRejected() => AssertRejected(Rule("ValidateArrowLane", Fixture("AngledLaneEndInOpenAir")), "ArrowE", "end face");
+
+        [Test] public void AngledLane_BlockedByFixedGeometry_IsRejectedNamingTheBlocker() => AssertRejected(Rule("ValidateArrowLane", Fixture("AngledLaneBlocked")), "ArrowE", "Crate");
+
+        [Test] public void AngledSpeed_AtTheCap_Passes() => AssertPasses(Rule("ValidateArrowSpeed", Fixture("AngledSpeedAt", .427f)));
+
+        [Test] public void AngledSpeed_AboveTheCap_IsRejected() => AssertRejected(Rule("ValidateArrowSpeed", Fixture("AngledSpeedAt", .44f)), "ArrowE", "cap");
+
+        [Test] public void AngledLane_OverTheDoor_IsRejected() => AssertRejected(Rule("ValidateArrowDoorClearance", Fixture("AngledLaneThroughTheDoor")), "ArrowF", "door");
+
+        [Test] public void Cooldown_NotBelowThePeriod_IsRejected() => AssertRejected(Rule("ValidateArrowCooldown", Fixture("CooldownNotBelowThePeriod")), "ArrowA", "skip shots");
+
         [Test] public void Cooldown_EndingBeforeTheArrowStops_IsRejected() => AssertRejected(Rule("ValidateArrowCooldown", Fixture("CooldownBeforeTheArrowStops")), "ArrowA", "cooldown 20");
 
         [Test] public void PeriodicSlack_BelowTwelveTicks_IsRejected() => AssertRejected(Rule("ValidateArrowPeriodicSlack", Fixture("PeriodicSlackBelowTwelve")), "ArrowA", "slack");

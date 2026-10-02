@@ -24,6 +24,10 @@ namespace Parallax.Editor.Levels
             Hold(Left), Jump(), Until(XAtMost(27f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Tread_R3")), Until(Still()),
             Hold(Left), Jump(), Until(GroundedOn("S1_B")) };
 
+        // PAX-100 (D-106): on S1, stop as the corbel's arrow fires, let it land, and walk on.
+        static RouteStep[] ArrowWait() => new[] {
+            Until(XAtMost(19.8f)), Release(), Until(Still()), Until(Moving("Arrow_S1")), For(8), Until(Stopped("Arrow_S1")), Hold(Left) };
+
         // S1 from the hole to the left tower, the left tower, and S2 with the bait.
         static RouteStep[] Rest() => new[] {
             Until(XAtMost(17.5f)), Jump(), Until(GroundedOn("S1_A")),
@@ -39,8 +43,8 @@ namespace Parallax.Editor.Levels
 
         public static RoomRoutes Build()
         {
-            var solution = new Route("L003 solution", Ground().Concat(RightTower()).Concat(Rest()).ToArray());
-            var roundAgain = new Route("L003 round again", Ground().Concat(RightTower())
+            var solution = new Route("L003 solution", Ground().Concat(RightTower()).Concat(ArrowWait()).Concat(Rest()).ToArray());
+            var roundAgain = new Route("L003 round again", Ground().Concat(RightTower()).Concat(ArrowWait())
                 .Concat(new[] { Until(XAtMost(16.5f)), Until(GroundedOn("Ground_3")), Hold(Right) })
                 .Concat(RightTower()).Concat(Rest()).ToArray());
 
@@ -49,6 +53,9 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Hold(Right)", "run onto Floor_1", Until(Dead())), revealedBy: "Floor_1"),
                 new Betrayal("T2: the floor where the jump lands gives way under a cat that stops", "Pit3_Hazard", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Grounded)", "stop where it lands", Release(), Until(Dead())), revealedBy: "Floor_3"),
+                // PAX-100 (D-106): the arrow from the corbel.
+                new Betrayal("T3a: the corbel's arrow comes down on a cat that walks on along S1", "Arrow_S1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(S1_B))", "walk on", Until(Dead()))),
                 Betrayal.Recovers("T3: a section of S1 drops the cat to the ground, and it walks round again", "S1_Mid", roundAgain),
                 new Betrayal("T4: the left tower's step at the wall gives way onto spikes", "Spikes_B", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Tread_C))", "keep the rhythm",

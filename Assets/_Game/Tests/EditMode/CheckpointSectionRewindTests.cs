@@ -25,6 +25,10 @@ namespace Parallax.Tests.EditMode
             "TrapLab0", "TrapLab1", "TrapLab2", "TrapLab3", "TrapLab4", "TrapLab5", "TrapLab6", "TrapLab7", "TrapLab8", "TrapLab9", "TrapLab10",
             // Room 11's solution passes its geyser after a fire; room 9's Recovers route snaps Vine_Obvious and completes.
             "TrapLab11", "TrapLab9Recover",
+            // PAX-100: L006's Floor_6 (a FakePlatform) became a rider; TrapLab4's Recovers route fires Ledge_End before its gate.
+            "TrapLab4Recover",
+            // PAX-099 (D-106): the angled-arrow room (its Periodic arrow in flight at the gate's rewind).
+            "TrapLab13",
         };
 
         static Type Setup(string name) => Type.GetType("Parallax.Editor.Setup." + name + ", Parallax.Editor");
@@ -32,6 +36,7 @@ namespace Parallax.Tests.EditMode
         static object Room(string id)
         {
             if (id == "TrapLab9Recover") id = "TrapLab9";
+            if (id == "TrapLab4Recover") id = "TrapLab4";
             if (id.StartsWith("TrapLab")) return ((IList)Setup("TrapLabLayout").GetField("Rooms").GetValue(null))[int.Parse(id.Substring(7))];
             return ((IDictionary)Type.GetType("Parallax.Editor.Levels.LevelLayouts, Parallax.Editor").GetField("ById").GetValue(null))[id];
         }
@@ -40,6 +45,8 @@ namespace Parallax.Tests.EditMode
         {
             if (id == "TrapLab9Recover")
                 return F(((IList)F(Call(Type.GetType("Parallax.Editor.Levels.TrapLabRoutes, Parallax.Editor"), "Room9"), "Betrayals"))[1], "Route");
+            if (id == "TrapLab4Recover")
+                return F(((IList)F(Call(Type.GetType("Parallax.Editor.Levels.TrapLabRoutes, Parallax.Editor"), "Room4"), "Betrayals"))[2], "Route");
             if (id.StartsWith("TrapLab"))
             {
                 int n = int.Parse(id.Substring(7));

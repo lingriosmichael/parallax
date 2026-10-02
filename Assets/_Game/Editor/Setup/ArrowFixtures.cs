@@ -71,6 +71,35 @@ namespace Parallax.Editor.Setup
         // ArrowA with period 90: window 90 - 25 = 65 against a from-rest crossing of 65 + 12.
         public static SoloRoomDefinition PeriodicSlackBelowTwelve() => Room(ArrowA(periodTicks: 90));
 
+        // ---------- PAX-099 (D-106): angled lanes ----------
+
+        // ArrowE in the Overhang x[27,27.5] fires down-left at -60 degrees from (27, 4) to the floor at x 27 - 4 / tan 60
+        // (24.69), behind a cut at x[19.75,20.25].
+        public static readonly float AngledEndX = 27f - 4f / UnityEngine.Mathf.Tan(60f * UnityEngine.Mathf.Deg2Rad);
+        public static SoloRoomDefinition AngledRulesPass() => Room(ArrowE(new ArrowLane(ArrowDirection.Left, 4f, AngledEndX, angleDegrees: -60f)));
+
+        public static SoloRoomDefinition AngleNotAllowed() => Room(ArrowE(new ArrowLane(ArrowDirection.Left, 4f, AngledEndX, angleDegrees: -50f)));
+
+        public static SoloRoomDefinition AngledSpear() => Room(ArrowE(new ArrowLane(ArrowDirection.Left, 4f, AngledEndX, 1.4f, .4f, .3f, 8, spear: true, angleDegrees: -60f)));
+
+        // The tip stops at x 25.5, 1.4 above the floor.
+        public static SoloRoomDefinition AngledLaneEndInOpenAir() => Room(ArrowE(new ArrowLane(ArrowDirection.Left, 4f, 25.5f, angleDegrees: -60f)));
+
+        // A crate x[25,26] y[0,1.5]: the lane crosses x 25.5 at y 1.4.
+        public static SoloRoomDefinition AngledLaneBlocked() => Room(ArrowE(new ArrowLane(ArrowDirection.Left, 4f, AngledEndX, angleDegrees: -60f)),
+            E(SoloRoomElementKind.Wall, "Crate", (25.5f, .75f), (1f, 1.5f)));
+
+        public static SoloRoomDefinition AngledSpeedAt(float unitsPerTick) => Room(ArrowE(new ArrowLane(ArrowDirection.Left, 4f, AngledEndX, unitsPerTick: unitsPerTick, angleDegrees: -60f)));
+
+        // ArrowF in the Overhang fires down-right at -45 degrees from (27.5, 3.5) to the floor at x 31, over the door x[29.7,30.3].
+        public static SoloRoomDefinition AngledLaneThroughTheDoor() => Room(
+            Arrow("ArrowF", (27.25f, 3.5f), new ArrowLane(ArrowDirection.Right, 3.5f, 31f, angleDegrees: -45f), Once(), (24f, 3.5f), (.5f, 7f)));
+
+        // ArrowA with a cooldown as long as its period: every other shot would be skipped.
+        public static SoloRoomDefinition CooldownNotBelowThePeriod() => Room(ArrowA(periodTicks: 120, cooldownTicks: 120));
+
+        static SoloRoomElement ArrowE(ArrowLane lane) => Arrow("ArrowE", (27.25f, 4f), lane, Once(), (20f, 3.5f), (.5f, 7f));
+
         // ---------- chain source (R8) ----------
 
         // ArrowB is the chain source of a falling block 6 ticks later.

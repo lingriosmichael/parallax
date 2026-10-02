@@ -22,7 +22,10 @@ namespace Parallax.Editor.Levels
         // the underside.
         static RouteStep[] Bed() => new[] {
             Hold(Right), Until(XAtLeast(25.9f)), Jump(), Until(XAtLeast(30f)), Release(), Until(Grounded()), Until(Since("Arrow_3", 27)),
-            Hold(Left), Jump(), Until(Airborne()), Until(Grounded()), Jump(), Until(Airborne()), Until(Grounded()), Until(XAtMost(3.3f)), Release(), Until(Still()),
+            Hold(Left), Jump(), Until(Airborne()), Until(Grounded()), Jump(), Until(Airborne()), Until(Grounded()),
+            // PAX-101 (D-106): stop as the arrow from under the Bed fires, let it land, walk on through it.
+            Until(XAtMost(16.6f)), Release(), Until(Still()), Until(Moving("Arrow_U")), For(8), Until(Stopped("Arrow_U")), Hold(Left),
+            Until(XAtMost(3.3f)), Release(), Until(Still()),
             Hold(Up), Jump().Timed(TimedMode.Shift), Until(Climbing()), Until(GravityUp()), ReleaseClimb(), Until(Grounded()),
         };
 
@@ -64,10 +67,12 @@ namespace Parallax.Editor.Levels
                     B("walk on", BedPart, 1, Until(Dead())), revealedBy: "Lip_2"),
                 new Betrayal("T3 [SS]: a cat that jumps out of the Dip at once meets Arrow_3", "Arrow_3", DeathCause.Hazard,
                     B("out at once", BedPart, 6, Hold(Left), Jump(), Until(Dead()))),
+                new Betrayal("T3b [W]: the arrow from under the Bed comes down on a cat that walks on along the floor", "Arrow_U", DeathCause.Hazard,
+                    B("walk on", BedPart, 14, Until(Dead()))),
                 new Betrayal("Dead end D1 [LW]: a cat that climbs V_D, straight up at the door, meets Spikes_X under the Bed", "Spikes_X", DeathCause.Hazard,
-                    B("V_D", BedPart, 13, Until(XAtMost(1.3f)), Release(), Until(Still()), Hold(Up), Jump(), Until(Climbing()), Until(Dead()))),
+                    B("V_D", BedPart, 21, Until(XAtMost(1.3f)), Release(), Until(Still()), Hold(Up), Jump(), Until(Climbing()), Until(Dead()))),
                 new Betrayal("T6 [OL]: a cat that climbs V_A is flipped onto Tile_6, which gives way onto Thorns_6", "Thorns_6", DeathCause.Hazard,
-                    B("V_A", BedPart, 13, Until(XAtMost(8.3f)), Release(), Until(Still()), Hold(Up), Jump(), Until(Climbing()), Until(GravityUp()), ReleaseClimb(), Until(Dead())), revealedBy: "Tile_6"),
+                    B("V_A", BedPart, 21, Until(XAtMost(8.3f)), Release(), Until(Still()), Hold(Up), Jump(), Until(Climbing()), Until(GravityUp()), ReleaseClimb(), Until(Dead())), revealedBy: "Tile_6"),
                 // Underside.
                 new Betrayal("Dead end D2 [LW]: a cat that goes west under the Bed from V_B's top meets Spikes_X", "Spikes_X", DeathCause.Hazard,
                     B("west", UnderPart, 0, Hold(Left), Until(Dead()))),

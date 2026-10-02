@@ -22,7 +22,7 @@ namespace Parallax.Editor.Levels
         public static readonly IReadOnlyDictionary<string, Entry> ById = new Dictionary<string, Entry>
         {
             ["L001"] = new(1.8f, 1.5f), ["L002"] = new(1.8f), ["L003"] = new(1.8f, 1.5f), ["L004"] = new(1.2f), ["L005"] = new(1.2f, 1.5f),
-            ["L006"] = new(1.8f), ["L007"] = new(1.8f), ["L008"] = new(1.5f), ["L009"] = new(1.2f, 1.5f), ["L010"] = new(1.8f),
+            ["L006"] = new(1.8f), ["L007"] = new(1.8f), ["L008"] = new(1.5f), ["L009"] = new(1.2f, 1.5f), ["L010"] = new(1.2f),
             ["L011"] = new(1.2f), ["L012"] = new(1.5f), ["L013"] = new(1.8f), ["L014"] = new(1.5f), ["L015"] = new(1.2f, 1.5f),
             ["L016"] = new(1.2f), ["L017"] = new(1.2f), ["L018"] = new(1.5f), ["L019"] = new(1.2f), ["L020"] = new(1.5f),
             // Trap Lab rooms (validation only: the sandbox's own camera doesn't read this table).

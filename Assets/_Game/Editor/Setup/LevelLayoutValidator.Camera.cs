@@ -203,7 +203,7 @@ namespace Parallax.Editor.Setup
                 if (k < reveal) continue;
                 var half = new Vector2(viewHeight * .5f * aspect, viewHeight * .5f);
                 Rect view = Rect.MinMaxRect(state.Centre.x - half.x, state.Centre.y - half.y, state.Centre.x + half.x, state.Centre.y + half.y);
-                bool visible = ChangeBounds(records, element, k, out Rect changed) && changed.Overlaps(view);
+                bool visible = ChangeVisible(records, element, k, view);
                 if (fromReveal && !visible) return k - reveal;
                 if (!visible) runStart = -1;
                 else if (runStart < 0) runStart = k;
@@ -214,6 +214,21 @@ namespace Parallax.Editor.Setup
 
         // Where the change is seen at tick k: the element's rendered bounds, or, once it has vanished (a collapse,
         // a fake platform), the bounds it was last drawn at.
+        // PAX-099 (D-106): an angled arrow is seen when a corner of its launcher or its turned arrow is in view (the ruling:
+        // the turned box's corners, not the sprite's axis-aligned box); every other element by its rendered bounds.
+        static bool ChangeVisible(List<TickRecord> records, int element, int k, Rect view)
+        {
+            for (int t = k; t >= 0; t--)
+            {
+                if (!records[t].Rendered[element]) continue;
+                Vector2[] corners = records[t].TurnedCorners?[element];
+                if (corners == null) return records[t].RenderBounds[element].Overlaps(view);
+                foreach (Vector2 c in corners) if (view.Contains(c)) return true;
+                return false;
+            }
+            return false;
+        }
+
         static bool ChangeBounds(List<TickRecord> records, int element, int k, out Rect bounds)
         {
             for (int t = k; t >= 0; t--)

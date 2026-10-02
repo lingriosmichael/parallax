@@ -33,7 +33,16 @@ namespace Parallax.Editor.Levels
                 new Betrayal("T5: a cat that follows the door along the roof falls into the recess", "Recess5_Hazard", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Roof_M))", "follow the door", Until(Dead())), revealedBy: "Roof_5"),
                 new Betrayal("Dead end: the flip toward the door drops a cat onto spikes under the slab", "Spikes_L", DeathCause.Hazard,
-                    new Route("toward the door", Hold(Left), Until(Dead()))));
+                    new Route("toward the door", Hold(Left), Until(Dead()))),
+                // PAX-099 (D-106): the pad the retreated door stands on. A cat that waits in Flip_E comes to rest under it, and
+                // walks off either end: left, up to Roof_L and the door; right, up to Roof_5, which starts to give way as the cat
+                // runs on over it, along Roof_M to where Roof_4 gave way.
+                Betrayal.Recovers("Landing: a cat that waits in Flip_E rests under Door_Pad_L and walks off its left end to the door", "Door",
+                    Route.PrefixOf(solution, "Until(GroundedOn(Slab))", "wait under the pad, then left",
+                        Until(GravityUp()), Release(), Until(GroundedOn("Door_Pad_L")), Until(Still()), Hold(Left), Until(GroundedOn("Roof_L")), Hold(Right), Until(RoomComplete()))),
+                new Betrayal("Landing: a cat that waits in Flip_E rests under Door_Pad_L and walks off its right end along the roof", "Recess4_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Slab))", "wait under the pad, then right",
+                        Until(GravityUp()), Release(), Until(GroundedOn("Door_Pad_L")), Until(Still()), Hold(Right), Until(Dead())), revealedBy: "Roof_4"));
         }
     }
 }

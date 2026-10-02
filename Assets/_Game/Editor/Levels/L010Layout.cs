@@ -34,9 +34,18 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Wall,"Stub",(9.25f,13.75f),(.5f,.5f)),
                 // S1, with a section that gives way (x 11.5-13.5), over the ground (top 1); the shelf over it left of the
                 // start; the slab over the floating flip.
-                E(SoloRoomElementKind.Floor,"S1_A",(5.75f,4.5f),(11.5f,1f)),
+                // PAX-100 (D-106): S1_A in two, with Drop_10 (below) between them over a pit cut in the ground.
+                E(SoloRoomElementKind.Floor,"S1_A",(1.5f,4.5f),(3f,1f)),
+                E(SoloRoomElementKind.Floor,"S1_A2",(8.75f,4.5f),(5.5f,1f)),
                 E(SoloRoomElementKind.Floor,"S1_B",(18.75f,4.5f),(10.5f,1f)),
-                E(SoloRoomElementKind.Floor,"Ground",(12f,-1.5f),(24f,5f)),
+                E(SoloRoomElementKind.Floor,"Ground_L",(1.5f,-1.5f),(3f,5f)),
+                E(SoloRoomElementKind.Floor,"Ground_R",(15f,-1.5f),(18f,5f)),
+                // The pit under Drop_10 (x 3-6): its kill strip across the shaft (y -1 to -0.7) and its bottom deeper (y -4 to -3).
+                E(SoloRoomElementKind.PitBottom,"Pit10_Bottom",(4.5f,-3.5f),(3f,1f)),
+                E(SoloRoomElementKind.Hazard,"Pit10_Hazard",(4.5f,-.85f),(3f,.3f),hazardRole:SoloRoomHazardRole.OpeningBottom),
+                // The ground looks whole over the pit (no tells, D-085): a fake floor fills it from below the strip up to the ground's
+                // top, so its box hides the strip; Drop_10 and a falling cat pass through it.
+                E(SoloRoomElementKind.FakePlatform,"Pit10_Cover",(4.5f,0f),(3f,2f)),
                 E(SoloRoomElementKind.Floor,"Shelf",(14.5f,9.5f),(4f,1f)),
                 E(SoloRoomElementKind.Floor,"Slab_D",(4.4f,10.25f),(5.2f,.5f)),
                 // The stair right of the start, "straight up to the door".
@@ -60,7 +69,11 @@ namespace Parallax.Editor.Levels
                 new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,13.7f,.5f,unitsPerTick:.36f,disguised:true),new SoloRoomTrapSettings(delayTicks:150))));
             // T6 (L2, L1): as the cat comes along the roof, the door backs away once, over a roof section that gives way.
             elements.Add(E(SoloRoomElementKind.Door,"Door",(18f,13.25f),(.6f,1.5f)));
-            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(14f,12f),(1f,4f),settings:new SoloRoomTrapSettings(moveTicks:30,offset:new Vector2(3.5f,0f))));
+            // PAX-099 (D-106): the door stands on a pad at both poses, so it never hangs in the air; it backs away 5 u (3.5
+            // before), far enough that the last jump's arc clears Pad_B, which meets Wall_R.
+            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(14f,12f),(1f,4f),settings:new SoloRoomTrapSettings(moveTicks:30,offset:new Vector2(5f,0f))));
+            elements.Add(E(SoloRoomElementKind.Floor,"Pad_A",(17.8f,12.25f),(1f,.5f)));
+            elements.Add(E(SoloRoomElementKind.Floor,"Pad_B",(23.35f,12.25f),(1.3f,.5f)));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Roof_6",(20.25f,15.5f),(2.5f,3f),settings:new SoloRoomTrapSettings(delayTicks:6)));
             // Dead end (L4's lure): a flip floating over S1 sends a cat that jumps into it onto spikes under the slab above.
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_D2",(5.5f,7.8f),(1.5f,2f),settings:flip));
@@ -69,11 +82,17 @@ namespace Parallax.Editor.Levels
             // trigger is the space over it (its top to the recess's top).
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D1",(20.25f,6.4f),(1.5f,.3f),(20.25f,12.875f),(1.5f,8.25f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Step_C",(20.25f,8.5f),(1.5f,.5f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_D1",delayTicks:1)));
+            // T7 (PAX-100, D-106): the floor before the floor flip sinks under a cat that stops on it. Drop_10 (S1, x 3-6) goes 40
+            // ticks after a cat lands on it (its trigger is its top strip; a cat walking across is off it in about 33), 6.5 u down
+            // at 0.1 u a tick, carrying a cat that stays (it rests on it) through the fake ground into the pit's kill strip; it
+            // comes back up after a hold. Slow, so its first ticks stay in the camera's view (D-083).
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Drop_10",(4.5f,4.5f),(3f,1f),(4.5f,5.28f),(3f,.56f),new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Slip),
+                new SoloRoomTrapSettings(delayTicks:40,offset:new Vector2(0f,-6.5f),moveTicks:65,holdTicks:60,returnTicks:60,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:190,movingKind:MovingTrapKind.Solid))));
             var jumps = new[] {
                 J("Spikes_5",RequiredJumpKind.Hazard,RequiredJumpFrame.Ceiling,RequiredJumpDirection.Right,11.9f,14.8f,0f,0f,3f,.3f),
                 J("Roof_6",RequiredJumpKind.Pit,RequiredJumpFrame.Ceiling,RequiredJumpDirection.Right,18.4f,21.3f,0f,0f,1f,sourceName:"Roof_B",destinationName:"Roof_C"),
             };
-            return new SoloRoomDefinition(0,0f,24f,elements.ToArray(),System.Array.Empty<SoloRoomOpening>(),jumps);
+            return new SoloRoomDefinition(0,0f,24f,elements.ToArray(),new[] { O(SoloRoomOpeningKind.Pit,3f,6f,"Ground_L","Ground_R","Pit10_Bottom","Pit10_Hazard") },jumps);
         }
     }
 }

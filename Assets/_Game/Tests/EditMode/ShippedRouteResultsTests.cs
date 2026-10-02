@@ -32,14 +32,14 @@ namespace Parallax.Tests.EditMode
 
         [TestCase("L001", new[] { 26 }, new int[0], new[] { "Floor_2=26", "Block_1=22", "Block_2=22", "Spikes_1=10", "Floor_7=26", "Spikes_2=6" }, new[] { "Door visible t213, complete t281" })]
         [TestCase("L002", new[] { 26, 26, 22, 21, 25, 31 }, new int[0], new[] { "Block_1=10", "Block_2=10", "Block_3=10", "Spikes_4=11", "Floor_9=34", "Tread_2=45", "Spikes_6=20" }, new string[0])]
-        [TestCase("L003", new[] { 31, 34, 17, 32, 26 }, new int[0], new[] { "Floor_1=26", "Floor_3=21", "Spikes_B=18", "Block_5=10", "Spikes_R=20" }, new[] { "S1_Mid visible t374, complete t1132" })]
-        [TestCase("L004", new[] { 12 }, new int[0], new[] { "Spikes_1=11", "Spikes_A=28", "Spikes_3=15", "Roof_4=21", "Roof_5=27", "Spikes_L=26" }, new string[0])]
-        [TestCase("L005", new[] { 24, 32 }, new int[0], new[] { "Arrow_A=6", "Arrow_B=6", "Ledge_Lo2=21", "Ledge_Lo2=25", "Arrow_C=6", "Arrow_D=6", "Floor_6=27", "Spikes_D=15" }, new string[0])]
-        [TestCase("L006", new[] { 20, 26 }, new int[0], new[] { "Spikes_1=11", "Block_2=18", "Sweep_3=42", "Floor_4=21", "Floor_5=23", "Floor_6=26", "Spikes_L=44", "Floor_5=21", "Spikes_L=24" }, new string[0])]
-        [TestCase("L007", new[] { 26, 13, 31 }, new int[0], new[] { "Floor_1=29", "Floor_2=21", "S2_End=39", "S1_T4=30", "Spikes_5=9", "S1_T6=51", "Spikes_6b=32", "Tread_LD=19", "Tread_RF=19" }, new string[0])]
+        [TestCase("L003", new[] { 31, 34, 14, 31, 26 }, new int[0], new[] { "Floor_1=26", "Floor_3=21", "Arrow_S1=6", "Spikes_B=18", "Block_5=10", "Spikes_R=20" }, new[] { "S1_Mid visible t395, complete t1153" })]
+        [TestCase("L004", new[] { 12 }, new int[0], new[] { "Spikes_1=11", "Spikes_A=28", "Spikes_3=15", "Roof_4=21", "Roof_5=27", "Spikes_L=26", "Roof_4=272" }, new[] { "Door visible t393, complete t530" })]
+        [TestCase("L005", new[] { 24, 32 }, new int[0], new[] { "Arrow_A=6", "Arrow_Drip=6", "Arrow_B=6", "Ledge_Lo2=21", "Ledge_Lo2=25", "Arrow_C=6", "Arrow_D=6", "Floor_6=27", "Spikes_D=15" }, new string[0])]
+        [TestCase("L006", new[] { 20, 26 }, new int[0], new[] { "Spikes_1=11", "Block_2=18", "Sweep_3=42", "Floor_4=21", "Floor_5=23", "Ride_6=482", "Spikes_L=44", "Floor_5=21", "Spikes_L=24" }, new string[0])]
+        [TestCase("L007", new[] { 26, 13, 31 }, new int[0], new[] { "Floor_1=29", "Floor_2=21", "S2_End=39", "S1_T4=30", "Spikes_5=9", "S1_T6=51", "Spikes_6b=32", "Tread_LD=19", "Tread_RF=19" }, new[] { "Tread_RC visible t659, complete t1105" })]
         [TestCase("L008", new[] { 26, 26 }, new int[0], new[] { "Block_1=10", "Spikes_2=8", "Lift_3=9", "Floor_4=28", "Spikes_5=90", "Block_6=10", "Ledge_D=28", "Ledge_D=32", "Floor_9=7" }, new string[0])]
-        [TestCase("L009", new[] { 23 }, new int[0], new[] { "Spikes_1=16", "Spikes_1=24", "Arrow_2=6", "Spikes_3=7", "Arrow_4=6", "Roof_5=21", "Spikes_D1=19", "Ledge_D2=15", "Spikes_D1=24" }, new string[0])]
-        [TestCase("L010", new[] { 26 }, new int[0], new[] { "Block_1=10", "S1_2=25", "Spikes_3=33", "Arrow_4=6", "Spikes_5=393", "Roof_6=22", "Step_C=19", "Spikes_D2=15", "Spikes_D2=25" }, new string[0])]
+        [TestCase("L009", new[] { 51 }, new int[0], new[] { "Spikes_1=16", "Spikes_1=24", "Arrow_2=6", "Spikes_3=7", "Arrow_4=6", "Roof_5=21", "Spikes_D1=28", "Ledge_D2=15", "Spikes_D1=33", "Spikes_D1=56" }, new string[0])]
+        [TestCase("L010", new[] { 26, 20 }, new int[0], new[] { "Block_1=10", "S1_2=25", "Drop_10=57", "Spikes_3=33", "Arrow_4=6", "Spikes_5=393", "Roof_6=22", "Step_C=19", "Spikes_D2=15", "Spikes_D2=25" }, new[] { "Roof_6 visible t507, complete t527" })]
         public void RouteResults_AreUnchangedFromD079(string id, int[] windows, int[] margins, string[] leads, string[] recoveries)
         {
             object report = reports[id];

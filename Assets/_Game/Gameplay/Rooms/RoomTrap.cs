@@ -126,6 +126,9 @@ namespace Parallax.Gameplay.Rooms
             return IsLocalHumanOverlapping(box.bounds, observers, filter, results, out observer);
         }
         protected bool IsLocalHumanOverlapping(Bounds bounds, ObserverSet observers, ContactFilter2D filter, Collider2D[] results, out ObserverContext observer)
+            => IsLocalHumanOverlapping(bounds, 0f, observers, filter, results, out observer);
+        /// <summary>PAX-099 (D-106): the box turned by angleDegrees about its centre (an angled arrow); 0 is the plain box.</summary>
+        protected bool IsLocalHumanOverlapping(Bounds bounds, float angleDegrees, ObserverSet observers, ContactFilter2D filter, Collider2D[] results, out ObserverContext observer)
         {
             observer = null;
             if (Reality == null || observers == null) return false;
@@ -133,7 +136,7 @@ namespace Parallax.Gameplay.Rooms
             if (candidate == null || candidate.Driver == null || candidate.Driver.Kind != InputSourceKind.LocalHuman || candidate.Cat == null) return false;
             Collider2D cat = CatBodyCollider.Of(candidate.Cat);
             if (cat == null) return false;
-            int count = Physics2D.OverlapBox(bounds.center, bounds.size, 0f, filter, results);
+            int count = Physics2D.OverlapBox(bounds.center, bounds.size, angleDegrees, filter, results);
             for (int i = 0; i < count; i++) if (results[i] == cat) { observer = candidate; return true; }
             return false;
         }

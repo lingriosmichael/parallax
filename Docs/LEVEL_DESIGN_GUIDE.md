@@ -118,6 +118,9 @@ A late death replays every solved trap before it. Level Devil keeps retries to a
 - **Every trigger cuts its whole storey band,** from the floor to whatever is above, including a recess over a roof section that gives way. A trap that should fire only on a jump can't be built this way in band 1 (no learned bypasses); make the jump meet something a walker never touches instead (L007's overhang).
 - **A MovingTrap needs its trigger box even in Periodic mode,** or it disables itself.
 - **Arrows:** a lane ends at a solid's face, never crosses the door, and its launcher must be in view when it tells, so put the launcher near where it fires. `Stopped(arrow)` is already true during its 6-tick tell; wait with `Moving`, `For(8)`, then `Stopped`.
+- **Angled arrows (D-106, from level 3):** 0°, ±30°, ±45° or ±60°, positive towards world up whatever the gravity. The mouth is the launcher's side face, flush with its host's face; set `LaneEndX` where the tip meets a floor, ceiling or wall face (`LaneY ± (LaneEndX − mouth)·tan a`). Only the lane's low end crosses a walker's band, so time the trigger for where the arrow comes down, not where it starts. A stopped angled arrow is harmless and not a foothold. Speed cap: 0.63 / 0.50 / 0.43 u/tick at 30° / 45° / 60° for an 0.8 arrow.
+- **Repeating arrows:** `repeatMode: Periodic` with the level's own `periodTicks`; the cooldown must cover the flight and stay below the period. A wait for a repeating arrow is `Until(Moving)`, `For(8)`, `Until(Stopped)`.
+- **Doors stand on something (D-106).** At its authored pose and its retreated pose, a door's bottom is a fixed solid's top covering its width; for a door reached upside down, that's a shelf or pad under it. Check a pad against every jump arc near the door (L010's retreat had to lengthen so the last jump clears its pad).
 - **Walkers fall into a one-storey dip** (a nook, or a roof alcove upside down) and stop there on their own. The betrayal is leaving it too soon, not passing it.
 - **Declare every way off a dead end.** A cat can step off, run off, jump, or steer in the air after a flip. Each one needs its own Dies route, or a shortcut to the door hides in the one nobody declared (the review of L006, L008 and L009).
 - **Permanent chain results sit off the path or narrow enough to jump.** Spikes that come up and stay up on a storey the way crosses later must be jumpable (≤ 1.5 u) or out of the way.
@@ -137,15 +140,21 @@ Full list and sources: `claude/RESEARCH_level_devil_inventory.md`.
 | The ceiling falls | FallingBlock, flush in the ceiling | Chains well |
 | **The floor lifts you into the ceiling** | FallingBlock Up / MovingTrap Solid, plus a ceiling hazard | Check the lead |
 | **A block rises at the far lip** of a jump | MovingTrap Solid rising | Needs the kit check (below) |
-| **A wall pushes you** into a pit | MovingTrap Solid horizontal | Needs the kit check (below) |
+| **A wall pushes you** into a pit | MovingTrap Solid, `pushes` (D-095) | From level 3 (D-106) |
+| A platform you ride | MovingTrap Solid, Periodic, Carry (D-095) | From level 3 (D-106) |
+| The floor slides away under you | MovingTrap Solid, Carry or Slip (D-095) | Any level |
+| The floor sinks while you stand, then comes back | MovingTrap Solid, drop-and-return, Rearm (D-095) | Any level |
+| The floor shrinks under you | ShrinkingFloor (D-095) | From level 3 (D-106) |
 | Spikes pop up | HiddenSpikes | |
 | Spikes on a rhythm | periodic spikes | Honest; count, then commit |
 | A lane fires from a wall | Arrow (disguised) | |
+| An arrow on a rhythm | Arrow, Periodic | The interval is per level |
+| An arrow from above or below | Arrow at ±30°, ±45°, ±60° (D-106) | From level 3 |
 | The door retreats (once or **twice**) | DoorRetreat | Two retreats: confirm in the kit |
 | A flip that looks like an escape | GravityFlip + hidden spikes | The lure isn't the killer |
 | A chain: one trigger, a delayed sequence | Trigger chains + delays | Memorise the order |
 
-**Kit check (half B):** MovingTrap Solid **lifts** the cat cleanly (L008's lift, into spikes on the roof that are always in view). **Pushing** it sideways, and a lip **rising** in front of or under it, are unproven: physics shoves the cat instead of the kit deciding, so those patterns wait for a kit-gap ticket. **Two retreats on one door** don't compose (one offset, one saved start): a door retreats once.
+**Kit check (half B):** MovingTrap Solid **lifts** the cat cleanly (L008's lift, into spikes on the roof that are always in view). Riding, sliding, sinking, shrinking and pushing are D-095's (PAX-093); a lip **rising** in front of or under the cat is still unproven. **Two retreats on one door** don't compose (one offset, one saved start): a door retreats once.
 
 ### Worked example: one gap, many betrayals (Level Devil, Pits)
 One screen: a pillar, a gap one block wide, a slab, a small block on the slab. The jump itself is easy. Across the stages:

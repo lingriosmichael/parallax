@@ -25,13 +25,16 @@ namespace Parallax.Editor.Levels
                 Hold(Right), Jump(), Until(Airborne()), Until(Grounded()),
                 Until(XAtLeast(7.8f)), Jump(), Until(Airborne()), Until(Grounded()),
                 Jump(), Until(Airborne()), Until(Grounded()),
-                Until(XAtLeast(18.3f)), Jump(), Until(RoomComplete()));
+                Until(XAtLeast(18.3f)), Jump().Timed(TimedMode.Shift), Until(RoomComplete()));
 
             return new RoomRoutes(solution,
                 new Betrayal("T1: Block_1 comes down on a cat that runs on", "Block_1", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Hold(Left)", "run on", Until(Dead()))),
                 new Betrayal("T2: the floor where the hop over the block lands gives way under a cat that stops", "Spikes_2", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Stopped(Block_1))", "stop where it lands", Hold(Left), Jump(), Until(Airborne()), Until(Grounded()), Release(), Until(Dead())), revealedBy: "S1_2"),
+                // PAX-100 (D-106): the floor before the flip drops away.
+                new Betrayal("T7: the floor before the floor flip drops away under a cat that stops on it", "Pit10_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Moving(Spikes_3))", "stop before the flip", Hold(Left), Until(XAtMost(4.8f)), Release(), Until(Dead())), revealedBy: "Drop_10"),
                 new Betrayal("T3: Spikes_3 are up under a cat that runs on", "Spikes_3", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Grounded)", "run on", Until(Dead()))),
                 new Betrayal("T4: the arrow the real flip fired catches a cat that hops out of the alcove at once", "Arrow_4", DeathCause.Hazard,
@@ -40,6 +43,11 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(X>=7.8)", "walk on", Jump(), Until(Airborne()), Until(Grounded()), Until(Dead()))),
                 new Betrayal("T6: a cat that follows the door onto the roof section falls into the recess", "Recess6_Hazard", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X>=18.3)", "follow the door", Until(Dead())), revealedBy: "Roof_6"),
+                // PAX-099 (D-106): the pads the door stands on. A cat that jumps after the door too early bumps Pad_A, comes down
+                // on the roof section that gives way, and runs off it onto Roof_C before it goes: it recovers (never a soft-lock).
+                Betrayal.Recovers("T6: a cat that jumps after the door too early bumps Pad_A and runs on over the roof section as it gives way", "Roof_6",
+                    Route.PrefixOf(solution, "Until(X>=7.8)", "jump early", Jump(), Until(Airborne()), Until(Grounded()),
+                        Jump(), Until(Airborne()), Until(Grounded()), Until(XAtLeast(17.6f)), Jump(), Until(RoomComplete()))),
                 new Betrayal("Dead end: the stair straight up to the door", "Spikes_D1", DeathCause.Hazard,
                     new Route("up the stair", Hold(Right), Jump(), Until(GroundedOn("Step_A")), Release(), Until(Still()),
                         Hold(Right), Jump(), Until(GroundedOn("Step_B")), Release(), Until(Still()), Hold(Left), Jump(), Until(Fired("Spikes_D1")), Release(), Until(Dead())), revealedBy: "Step_C"),

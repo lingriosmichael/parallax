@@ -24,6 +24,9 @@ namespace Parallax.Editor.Routes
         public float CatX, CatY;
         public UnityEngine.Rect[] RenderBounds;
         public bool[] Rendered;
+        // PAX-099 (D-106): for an angled arrow only, the corners of each drawn SpriteRenderer (the launcher's and the turned
+        // arrow's), room-local; the camera tell tests these points instead of RenderBounds. Null for every other element.
+        public UnityEngine.Vector2[][] TurnedCorners;
 
         public bool SameAs(TickRecord o)
         {

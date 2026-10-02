@@ -34,8 +34,11 @@ namespace Parallax.Editor.Setup
         // PAX-084 (D-086): a spear fires once and sticks at the lane end; from the tick after its stop its shaft
         // (Length x Thickness, the visible shaft) is solid geometry.
         public readonly bool Spear;
-        public ArrowLane(ArrowDirection direction, float laneY, float laneEndX, float length = .8f, float thickness = .16f, float unitsPerTick = .3f, int tellTicks = 6, bool disguised = false, bool spear = false)
-        { IsConfigured = true; Direction = direction; LaneY = laneY; LaneEndX = laneEndX; Length = length; Thickness = thickness; UnitsPerTick = unitsPerTick; TellTicks = tellTicks; Disguised = disguised; Spear = spear; }
+        // PAX-099 (D-106): degrees from horizontal, positive towards world up (ArrowMath.AllowedAngles). LaneY is the mouth's
+        // height and LaneEndX the x where the tip stops; a spear stays at 0.
+        public readonly float AngleDegrees;
+        public ArrowLane(ArrowDirection direction, float laneY, float laneEndX, float length = .8f, float thickness = .16f, float unitsPerTick = .3f, int tellTicks = 6, bool disguised = false, bool spear = false, float angleDegrees = 0f)
+        { IsConfigured = true; Direction = direction; LaneY = laneY; LaneEndX = laneEndX; Length = length; Thickness = thickness; UnitsPerTick = unitsPerTick; TellTicks = tellTicks; Disguised = disguised; Spear = spear; AngleDegrees = angleDegrees; }
 
         // PAX-084 (D-086) defaults: 1.4 long, 0.4 thick (PlatformSizeConfig.SpearMinThickness), 1.2 u/tick, tell 8.
         public static ArrowLane SpearLane(ArrowDirection direction, float laneY, float laneEndX, float length = 1.4f, float thickness = .4f, float unitsPerTick = 1.2f, int tellTicks = 8, bool disguised = false) =>
