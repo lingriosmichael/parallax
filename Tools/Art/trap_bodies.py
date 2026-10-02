@@ -294,6 +294,17 @@ def bodies(emit, load_rgba, luminance_alpha, clean_alpha, trim, fit, resize, gri
         l = (lum - lum.min()) / max(1e-4, float(lum.max() - lum.min()))
         l = np.asarray(Image.fromarray((l[..., 0] * 255).astype(np.uint8), "L").filter(ImageFilter.GaussianBlur(1.6))).astype(np.float32)[..., None] / 255
         out[..., :3] = np.clip((0.07 + 0.08 * l) * np.array([1.0, 0.97, 0.95], np.float32), 0, 1)
+        # Round 3 (critic: "flat black triangles"): a two-facet bevel, the blade's right half (towards the light) a step
+        # lighter than its left, split along each row's run of blade pixels, still near-black (value ≤ 0.29).
+        facet = np.zeros(alpha.shape, np.float32)
+        for y in range(alpha.shape[0]):
+            xs = np.flatnonzero(alpha[y] > 0.5)
+            if xs.size == 0: continue
+            for run in np.split(xs, np.flatnonzero(np.diff(xs) > 1) + 1):
+                if run.size < 3: continue
+                t = (run - run[0]) / max(1, run.size - 1)
+                facet[y, run] = np.clip((t - 0.5) * 6, 0, 1)
+        out[..., :3] = out[..., :3] + facet[..., None] * np.array([0.13, 0.13, 0.14], np.float32)
         # The lit edge: where alpha falls off to the right of or above a blade pixel (light from the right and above).
         right = np.zeros_like(alpha); right[:, :-2] = alpha[:, 2:]
         above = np.zeros_like(alpha); above[2:] = alpha[:-2]

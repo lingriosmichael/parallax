@@ -19,16 +19,18 @@ namespace Parallax.Editor.Art
         static void MeasureValues(Metrics m, Texture2D tex)
         {
             Color32[] px = tex.GetPixels32();
-            int dark = 0, bright = 0;
+            int dark = 0, bright = 0, clipped = 0;
             var lum = new float[px.Length];
             for (int i = 0; i < px.Length; i++)
             {
                 float l = (0.2126f * px[i].r + 0.7152f * px[i].g + 0.0722f * px[i].b) / 255f;
                 lum[i] = l;
                 if (l < 0.2f) dark++; else if (l > 0.9f) bright++;
+                if (px[i].r >= 254 || px[i].g >= 254 || px[i].b >= 254) clipped++;
             }
             m.darkFraction = dark / (float)px.Length;
             m.brightFraction = bright / (float)px.Length;
+            m.clippedFraction = clipped / (float)px.Length;
             int tiles = 0, flat = 0;
             for (int ty = 0; ty + 64 <= tex.height; ty += 64)
                 for (int tx = 0; tx + 64 <= tex.width; tx += 64)
@@ -55,7 +57,16 @@ namespace Parallax.Editor.Art
             if (catArt != null)
             {
                 Bounds b = catArt.bounds;
-                float catLum = DarkFifthLinLum(tex, cam, new Rect(b.min, b.size));
+                // Round 3: the frame's box is mostly air (a fifth of the box took in the sky round the cat and read a dark cat as
+                // brown); the cat is its sprite's opaque share of the box, and its darkest fifth is a fifth of that share.
+                float share = OpaqueShare(catArt.sprite);
+                float catLum = DarkFifthLinLum(tex, cam, new Rect(b.min, b.size), share);
+                var dark = Pixels(tex, cam, new Rect(b.min, b.size), null).OrderBy(LinLum).ToList();
+                if (dark.Count >= 8)
+                {
+                    var fifth = dark.Take(System.Math.Max(4, Mathf.RoundToInt(dark.Count * share / 5f))).ToList();
+                    m.catDark = new Vector3(fifth.Average(p => p.r), fifth.Average(p => p.g), fifth.Average(p => p.b)) * 255f;
+                }
                 var around = Rect.MinMaxRect(b.min.x - 1f, b.min.y - 0.2f, b.max.x + 1f, b.max.y + 1f);
                 var skip = new List<Rect>(solids) { new(b.min, b.size) };
                 float bg = MeanLinLum(tex, cam, around, skip);
@@ -86,11 +97,38 @@ namespace Parallax.Editor.Art
             m.airOverBodyMin = bodyMin == float.MaxValue ? float.NaN : bodyMin;
         }
 
-        static float DarkFifthLinLum(Texture2D tex, Camera cam, Rect world)
+        static float DarkFifthLinLum(Texture2D tex, Camera cam, Rect world, float share)
         {
-            // The sprite's box is mostly air: the cat is its darkest fifth.
+            // The sprite's box is mostly air: the cat is its opaque share, and this is the darkest fifth of that.
             var lums = Pixels(tex, cam, world, null).Select(LinLum).OrderBy(v => v).ToList();
-            return lums.Count < 8 ? float.NaN : lums.Take(System.Math.Max(4, lums.Count / 5)).Average();
+            return lums.Count < 8 ? float.NaN : lums.Take(System.Math.Max(4, Mathf.RoundToInt(lums.Count * share / 5f))).Average();
+        }
+
+        // The share of a sprite's rect that is opaque (alpha > 0.5), read from its source PNG (the import isn't readable).
+        static readonly Dictionary<Sprite, float> shares = new();
+        static float OpaqueShare(Sprite sprite)
+        {
+            if (shares.TryGetValue(sprite, out float known)) return known;
+            float share = 1f;
+            string path = UnityEditor.AssetDatabase.GetAssetPath(sprite.texture);
+            if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+            {
+                var src = new Texture2D(2, 2);
+                if (src.LoadImage(System.IO.File.ReadAllBytes(path)))
+                {
+                    float sx = src.width / (float)sprite.texture.width, sy = src.height / (float)sprite.texture.height;
+                    Rect r = sprite.rect;
+                    int x0 = Mathf.FloorToInt(r.xMin * sx), x1 = Mathf.CeilToInt(r.xMax * sx), y0 = Mathf.FloorToInt(r.yMin * sy), y1 = Mathf.CeilToInt(r.yMax * sy);
+                    Color32[] px = src.GetPixels32();
+                    int opaque = 0, all = 0;
+                    for (int y = y0; y < y1; y++)
+                        for (int x = x0; x < x1; x++) { all++; if (px[y * src.width + x].a > 127) opaque++; }
+                    if (all > 0 && opaque > 0) share = opaque / (float)all;
+                }
+                Object.DestroyImmediate(src);
+            }
+            shares[sprite] = share;
+            return share;
         }
 
         static float MeanLinLum(Texture2D tex, Camera cam, Rect world, List<Rect> skip)

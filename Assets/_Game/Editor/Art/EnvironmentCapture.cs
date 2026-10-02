@@ -65,6 +65,11 @@ namespace Parallax.Editor.Art
             public List<string> textures = new();
             // PAX-A16 §2, on the phone shot (2400 x 1080).
             public float darkFraction, brightFraction, featurelessFraction;
+            /// <summary>Gauntlet round 2 (the developer: "no blown-out whites"): pixels with a channel at 254 or more.</summary>
+            public float clippedFraction;
+            /// <summary>Round 2 (the cat keeps its true colours): the cat's darkest fifth, 0–255 per channel; the sprite's own
+            /// is about (21, 15, 12).</summary>
+            public Vector3 catDark;
             public float catContrast;
             public List<Step> lips = new();
             public float lipOverAirMin, airOverBodyMin;
@@ -163,7 +168,8 @@ namespace Parallax.Editor.Art
             // middle and the level camera snaps to it, as it would there in play.
             if (LevelLayouts.ById.TryGetValue(id, out SoloRoomDefinition midRoom) && so.FindProperty("target").objectReferenceValue is Transform cat)
             {
-                var tops = SoloRoomSkin.WalkableTops(midRoom);
+                // Round 2: never the top of a ceiling (L019's mid shot stood the cat on the roof, outside the room).
+                var tops = SoloRoomSkin.WalkableTops(midRoom).Where(t => t.Owner.Kind != SoloRoomElementKind.Ceiling).ToList();
                 if (tops.Count > 0)
                 {
                     SoloRoomSkin.Edge best = tops.OrderBy(t => Mathf.Abs(Mathf.Clamp(fc.x, t.From + 0.5f, t.To - 0.5f) - fc.x) + 0.02f * Mathf.Abs(t.Line - fc.y)).First();

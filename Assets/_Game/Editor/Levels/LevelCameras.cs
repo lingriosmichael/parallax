@@ -18,13 +18,17 @@ namespace Parallax.Editor.Levels
 
         public const float BaseViewHeight = 16f;
 
-        // Measured 2026-10-02 (Phase 1 checkpoint): zooms from the camera sweep; lifts from the room auditor's ruling.
+        // The developer, 2026-10-02 (PAX-A16 Phase 2 round 2, D-104 amended, provisional): every level uses L001's camera,
+        // 1.8x with the 1.5 u lift, for a play-through. The camera tell and chaos rules fail in some levels at this zoom (the
+        // Phase 1 sweep: 13 and 9); they are left failing on purpose until the developer has played them.
+        // Phase 1's measured table (for reference): L002/L006/L007/L013 1.8x; L008/L012/L014/L018/L020 1.5x; L004/L011/L016/
+        // L017/L019 1.2x; lift on L001/L003/L005/L009/L015; L010 1.2x (PAX-100).
         public static readonly IReadOnlyDictionary<string, Entry> ById = new Dictionary<string, Entry>
         {
-            ["L001"] = new(1.8f, 1.5f), ["L002"] = new(1.8f), ["L003"] = new(1.8f, 1.5f), ["L004"] = new(1.2f), ["L005"] = new(1.2f, 1.5f),
-            ["L006"] = new(1.8f), ["L007"] = new(1.8f), ["L008"] = new(1.5f), ["L009"] = new(1.2f, 1.5f), ["L010"] = new(1.2f),
-            ["L011"] = new(1.2f), ["L012"] = new(1.5f), ["L013"] = new(1.8f), ["L014"] = new(1.5f), ["L015"] = new(1.2f, 1.5f),
-            ["L016"] = new(1.2f), ["L017"] = new(1.2f), ["L018"] = new(1.5f), ["L019"] = new(1.2f), ["L020"] = new(1.5f),
+            ["L001"] = new(1.8f, 1.5f), ["L002"] = new(1.8f, 1.5f), ["L003"] = new(1.8f, 1.5f), ["L004"] = new(1.8f, 1.5f), ["L005"] = new(1.8f, 1.5f),
+            ["L006"] = new(1.8f, 1.5f), ["L007"] = new(1.8f, 1.5f), ["L008"] = new(1.8f, 1.5f), ["L009"] = new(1.8f, 1.5f), ["L010"] = new(1.8f, 1.5f),
+            ["L011"] = new(1.8f, 1.5f), ["L012"] = new(1.8f, 1.5f), ["L013"] = new(1.8f, 1.5f), ["L014"] = new(1.8f, 1.5f), ["L015"] = new(1.8f, 1.5f),
+            ["L016"] = new(1.8f, 1.5f), ["L017"] = new(1.8f, 1.5f), ["L018"] = new(1.8f, 1.5f), ["L019"] = new(1.8f, 1.5f), ["L020"] = new(1.8f, 1.5f),
             // Trap Lab rooms (validation only: the sandbox's own camera doesn't read this table).
             ["TrapLab3"] = new(1.5f), ["TrapLab6"] = new(1.5f), ["TrapLab12"] = new(1.5f),
         };

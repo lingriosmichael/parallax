@@ -328,14 +328,9 @@ namespace Parallax.Editor.Setup
                 {
                     case Shape.PitBottom:
                         FaceShade(s);
-                        // Water on top; its other faces are trimmed like any block.
-                        foreach (Edge e in mine.Where(e => e.Side != Side.Top)) BlockEdge(s, e);
-                        foreach (Edge e in mine.Where(e => e.Side == Side.Top))
-                        {
-                            float h = water.height;
-                            Add(s, "Water_" + Idx(e), "ENV_Water", new Vector2((e.From + e.To) * 0.5f, e.Line - h * 0.5f + 0.06f), new Vector2(e.Length, h),
-                                new Vector2(water.width, h), new Vector4((e.From + e.To) * 0.5f, h * 0.5f, 1f, 1f), false, ZCap, true, "Water");
-                        }
+                        // Phase 2 round 2 (the developer: "water only goes where nothing walkable sits on it"): a pit's floor is
+                        // trimmed like any block, no water (the spikes and walls in pits read as standing in it).
+                        foreach (Edge e in mine) BlockEdge(s, e);
                         break;
                     case Shape.Slab:
                     {
@@ -429,8 +424,12 @@ namespace Parallax.Editor.Setup
                 // A block rising from the ground (a step, a pillar) shades from the ground's line, so it joins the ground's
                 // shadow without a seam; a floating block shades from its own top.
                 if (s.Shape != Shape.PitBottom && r.yMin <= groundLine + Eps && r.yMax > groundLine) start = ShadeStart + (r.yMax - groundLine);
+                // Phase 2 round 2: a small block buried in a bigger solid's shaded depth (its top under that solid's top less
+                // ShadeStart) takes the full shade, not a bright patch in a dark wall.
+                if (s.Shape != Shape.PitBottom && solids.Any(o => o.Name != s.Name && o.Rect.Overlaps(r) && o.Rect.width * o.Rect.height > r.width * r.height && r.yMax <= o.Rect.yMax - ShadeStart + Eps))
+                    start = 0f;
                 if (faceShade == null || shadeSolid == null || r.height <= start) return;
-                float ramp = s.Shape == Shape.PitBottom ? 0f : Mathf.Min(ShadeRamp, r.height - start), top = r.yMax - start;
+                float ramp = s.Shape == Shape.PitBottom || start == 0f ? 0f : Mathf.Min(ShadeRamp, r.height - start), top = r.yMax - start;
                 Color shade = LevelShade;
                 if (ramp > 0f) Tint(Add(s, "Shade", "ENV_FaceShade", new Vector2(r.center.x, top - ramp * 0.5f), new Vector2(r.width, ramp), Vector2.zero, Vector4.zero, false, ZShade, false), shade);
                 float rest = r.height - start - ramp;

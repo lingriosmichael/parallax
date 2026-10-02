@@ -32,6 +32,6 @@ Material:
     - _OutlineWidth: 1.5
     - _RimTop: 0.9
     m_Colors:
-    - _OutlineColor: {r: 1, g: 0.84, b: 0.58, a: 0.6}
+    - _OutlineColor: {r: 1, g: 0.95, b: 0.88, a: 0.38}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

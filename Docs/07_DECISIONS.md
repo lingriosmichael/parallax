@@ -2693,3 +2693,43 @@ don't make sense… keep the door on a platform."
 multiple angles … the point is variety and certain amount of challenge"; "add moving platforms and moving floors … throw
 these around in levels 3–20"; "exits just hanging in the air doesn't make sense … keep it on a platform." Rulings: several
 angles from level 3; every floor pattern in 3–10; real platforms; two fixed pads for L010.
+
+### D-104 amendment · 2026-10-02 · Accepted (the developer, PAX-A16 Phase 2 round 2; accepted after the play-through)
+**Decision:** every level (L001–L020) uses L001's camera, 1.8× with the 1.5 u lift, for the developer's play-through ("Use
+the same zoom as in level 001 … I want to play through with it with that zoom. I know you said there might be some
+issues. But don't fix them yet."). The camera tell (D-083) and chaos (D-093) rules fail in some levels at this zoom (the
+Phase 1 sweep found 13 and 9), and so does L010's sinking floor (PAX-100); they are left failing on purpose until the
+developer has played. After that the developer rules: keep 1.8× and amend the rules, change the layouts, or return
+levels to the measured table (recorded in `LevelCameras.cs`).
+
+**Ruling (2026-10-02, after the play-through):** 1.8× stays on every level, including the traps that set off out of
+view at that zoom. The findings accepted with it are pinned in the tests (`LevelZoomAccepted`): 22 camera tell findings
+in L004, L005, L008–L012, L014 and L016–L020, and the chaos moment in L014–L017, L019 and L020. Each
+tell entry names its level, betrayal and trap, so the rule still fails for any other trap, betrayal or level; a layout
+change that clears one removes its entry. The rules themselves (D-083, D-093) are unchanged for new work.
+
+### D-107 · 2026-10-02 · Accepted (PAX-A16 Phase 2 rounds 2–6; the developer approved the checkpoint)
+**Decision:** the environment art rulings of the Phase 2 critic loop, art only (no collider, trigger, route or timing
+changes):
+- **The cat keeps its true colours.** No level grades the cat or the hazards: the post profile is hue-neutral (no white
+  balance, split toning, coloured lift or colour filter; saturation within ±5), Neutral tonemapping, post exposure at most
+  +0.15, **no bloom** (its glow off the bright skies veiled the cat: its darkest fifth read 40–45 with bloom, 22–26 without,
+  against the sprite's own 21,15,12), 2D light colours capped at HSV saturation 0.15, and the cat's key light 0.9. A
+  level's colour lives in its sky, haze and background pieces.
+- **The cat's Reality A outline** is a pale warm rim at 15% (`CatA_VisualConfig.outlineColorA` 1, 0.86, 0.62, 0.15), set
+  by the Environment Stack setup; the solid orange 1-texel line read as a jagged cut-out at the 1.8× zoom. (The developer
+  confirmed the config change.)
+- **Removed:** the arch fringe under floating floors (hard-cut ends, ghost pillars under bridges); the waterfalls a
+  level's signature added on its own (they ran behind walkable floors; a level's own look still places them); sunbeams at
+  night; the overhang trims (edge, bounce, roots) over a room whose ceiling closes its top; the `Overcast` palette and its
+  `Silver` sky.
+- **Added:** a second, hazier row of the signature under a high walk (open-below rule; L016 and L019 hand-set); the far
+  lake only where its waterline sits under every solid's foot; the sun moved a little per level; the rays behind the back
+  walls; a moon's halo smaller and cool.
+- **Fixed:** the pale strip under every platform (the sky showed between the underside and its drapes), the black line
+  across pits (two overlapping shade quads), the navy cast on the outside walls (the shade sprite now tinted neutral), the
+  stone column over a side wall where a ceiling meets it.
+- Metrics: `catDark` is measured on the cat's own pixels (its sprite's opaque share), not the frame's box.
+
+**Why:** the developer's round-2 rules ("colour grading must never tint the cat or hazards", "no blown-out whites",
+"Readability ≥ 7 everywhere"), and six rounds of critics (average 4.62 → 5.44; Readability ≥ 7 in 19 of 20 levels).

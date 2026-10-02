@@ -87,6 +87,14 @@
       "kind": "object"
     },
     {
+      "name": "ENV_CitySkyline",
+      "file": "ENV_CitySkyline.png",
+      "folder": "Backgrounds/Kit",
+      "width": 15.6719,
+      "height": 6.0156,
+      "kind": "piece"
+    },
+    {
       "name": "ENV_Cloud_0",
       "file": "ENV_Cloud_0.png",
       "folder": "Backgrounds/Kit",
@@ -284,6 +292,22 @@
       "folder": "Backgrounds/Kit",
       "width": 2.3438,
       "height": 2.7422,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FarLake_0",
+      "file": "ENV_FarLake_0.png",
+      "folder": "Backgrounds/Kit",
+      "width": 16.4219,
+      "height": 4.9844,
+      "kind": "piece"
+    },
+    {
+      "name": "ENV_FarLake_1",
+      "file": "ENV_FarLake_1.png",
+      "folder": "Backgrounds/Kit",
+      "width": 16.5547,
+      "height": 4.875,
       "kind": "piece"
     },
     {
@@ -759,6 +783,14 @@
       "kind": "sky"
     },
     {
+      "name": "ENV_Sky_Teal",
+      "file": "ENV_Sky_Teal.png",
+      "folder": "Backgrounds/Kit",
+      "width": 12.0,
+      "height": 8.0,
+      "kind": "sky"
+    },
+    {
       "name": "ENV_Slab",
       "file": "ENV_Slab.png",
       "folder": "Kit",
@@ -800,7 +832,7 @@
       "file": "ENV_ThickUnder.png",
       "folder": "Kit",
       "width": 11.7356,
-      "height": 2.0339,
+      "height": 1.9119,
       "kind": "strip",
       "normal": false
     },

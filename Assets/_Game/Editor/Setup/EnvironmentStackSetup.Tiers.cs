@@ -64,11 +64,27 @@ namespace Parallax.Editor.Setup
         }
 
         /// <summary>Gauntlet (the brief: "the cat must read as the painted cat"): the cat's readability outline becomes a soft
-        /// warm rim, half transparent, instead of a hard yellow line; the key light now carries the cat's read.</summary>
+        /// pale rim from above, faint, instead of a hard yellow line; the key light carries the cat's read.</summary>
         static void SoftenCatOutline(List<string> changes)
         {
             var outline = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Game/Art/Materials/Cat_OutlineUnlit.mat");
-            var soft = new Color(1f, 0.84f, 0.58f, 0.6f);
+            // Phase 2 round 2: neutral pale and fainter (the warm rim read as a jagged yellow cut-out on the true-black cat).
+            var soft = new Color(1f, 0.95f, 0.88f, 0.38f);
+            // Round 3: the presenter overrides the material's colour from the cat's visual config (Reality A's solid orange
+            // line, 1 texel, read as a jagged cut-out at the 1.8 zoom). Same warm hue, paler, at 15% (40% and 28% read as a
+            // light dotted fringe).
+            var config = AssetDatabase.LoadAssetAtPath<ScriptableObject>("Assets/_Game/Data/CatA_VisualConfig.asset");
+            if (config != null)
+            {
+                var so = new SerializedObject(config);
+                SerializedProperty colourA = so.FindProperty("outlineColorA");
+                var rim = new Color(1f, 0.86f, 0.62f, 0.15f);
+                if (colourA != null && colourA.colorValue != rim)
+                {
+                    colourA.colorValue = rim; so.ApplyModifiedPropertiesWithoutUndo();
+                    changes.Add("the cat's Reality A outline is a paler warm rim at 15%");
+                }
+            }
             if (outline == null || !outline.HasProperty("_OutlineColor")) return;
             if (outline.GetColor("_OutlineColor") == soft && (!outline.HasProperty("_RimTop") || Mathf.Approximately(outline.GetFloat("_RimTop"), 0.9f))) return;
             outline.SetColor("_OutlineColor", soft);
@@ -112,8 +128,11 @@ namespace Parallax.Editor.Setup
         /// HDR highlights, a dark warm vignette). Created once, then its values re-applied (idempotent, same asset).</summary>
         public static void EnsureVolumeProfile(List<string> changes) => EnsureVolumeProfile(changes, VolumeProfilePath, null);
 
-        /// <summary>Gauntlet: a level's own profile from its palette (white balance, cool shadows and warm highlights,
-        /// exposure, bloom); the shared one (no palette) keeps the round-3 constants.</summary>
+        /// <summary>Gauntlet: a level's own profile from its palette (exposure, contrast, saturation, bloom); the shared one (no
+        /// palette) keeps the round-3 constants. Round 2 (the developer): the grade never tints the cat or the hazards, so the
+        /// profile carries no hue (white balance, split toning and the lift stay neutral; saturation within ±SaturationCap) and
+        /// the level's colour lives in its environment; and no blown-out whites, so Neutral tonemapping rolls the highlights off
+        /// (round 5: exposure capped at MaxPostExposure, so the cat keeps its true darks).</summary>
         public static VolumeProfile EnsureVolumeProfile(List<string> changes, string path, LevelPalettes.Palette p)
         {
             var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(path);
@@ -134,21 +153,23 @@ namespace Parallax.Editor.Setup
                 AssetDatabase.AddObjectToAsset(c, profile);
                 return c;
             }
-            // No tonemapping: Neutral pulled every white under 90% (§2's highlights); the bloom still reads the HDR glows.
-            Get<Tonemapping>().mode.Override(TonemappingMode.None);
+            // Round 2: Neutral rolls the highlights off, so the brightest areas keep their detail.
+            Get<Tonemapping>().mode.Override(TonemappingMode.Neutral);
             ColorAdjustments color = Get<ColorAdjustments>();
-            color.contrast.Override(p?.Contrast ?? PostContrast); color.saturation.Override(p?.Saturation ?? PostSaturation); color.postExposure.Override(p?.Exposure ?? PostExposure);
+            float saturation = Mathf.Clamp(p?.Saturation ?? PostSaturation, -SaturationCap, SaturationCap);
+            color.contrast.Override(p?.Contrast ?? PostContrast); color.saturation.Override(saturation);
+            // Round 5 (the cat's true colour): the post exposure lifted the cat with the scene (L005 +0.55 EV: its darkest 30 →
+            // 53); at most +0.15 now, and no extra for the tonemapper. The scene's brightness lives in its own pieces.
+            color.postExposure.Override(Mathf.Min(p?.Exposure ?? PostExposure, MaxPostExposure));
+            color.colorFilter.Override(Color.white);
+            // Hue-neutral (round 2): no lift (an equal pull on every channel, stretched by the contrast, crushed the cat's warm
+            // near-black fur to red: (21,15,12) rendered (18,0,0) to (63,24,3)); no white balance or split toning.
             LiftGammaGain lgg = Get<LiftGammaGain>();
-            // Gauntlet: the lift takes the palette's shadow colour (cool shadows, never warm black).
-            Color sh = p != null ? p.Shadows : new Color(1f, 0.98f, 0.95f);
-            float m = Mathf.Max(sh.r, Mathf.Max(sh.g, sh.b), 1e-3f);
-            // A third of the way to the shadow hue: a full shift turned the cat and the stone navy.
-            Vector3 tintLift = Vector3.Lerp(new Vector3(1f, 0.98f, 0.95f), new Vector3(sh.r / m, sh.g / m, sh.b / m), p != null ? 0.33f : 0f);
-            lgg.lift.Override(new Vector4(tintLift.x, tintLift.y, tintLift.z, p != null ? -0.02f : PostLift));
+            lgg.lift.Override(new Vector4(1f, 1f, 1f, p != null ? 0f : PostLift));
             WhiteBalance wb = Get<WhiteBalance>();
-            wb.temperature.Override(p?.Temperature ?? 0f); wb.tint.Override(p?.Tint ?? 0f);
+            wb.temperature.Override(0f); wb.tint.Override(0f);
             SplitToning split = Get<SplitToning>();
-            split.shadows.Override(p != null ? p.Shadows : Hex(PostShadows)); split.highlights.Override(p != null ? p.Highlights : Hex(PostHighlights)); split.balance.Override(p != null ? -10f : PostBalance);
+            split.shadows.Override(Hex(PostShadows)); split.highlights.Override(Hex(PostHighlights)); split.balance.Override(PostBalance);
             Bloom bloom = Get<Bloom>();
             float bloomIntensity = p?.Bloom ?? PostBloom;
             bloom.active = bloomIntensity > 0f;   // gauntlet: on, quarter size, two steps (its SetPass cost is in the round's report)
@@ -166,6 +187,10 @@ namespace Parallax.Editor.Setup
         // painted art's own saturation).
         // Round 3: more contrast, less exposure, a deeper vignette (the concept's dark frame against a bright core).
         const float PostContrast = 20f, PostSaturation = -3f, PostExposure = 0.45f, PostLift = -0.035f, PostBalance = 0f, PostBloom = 0f, PostVignette = 0.2f;
+        /// <summary>Round 2: the most a level's grade may change saturation (it changes how strong the hazards' colours read).</summary>
+        public const float SaturationCap = 5f;
+        /// <summary>Round 5: the most a level's post exposure may lift (it lifts the cat with the scene).</summary>
+        const float MaxPostExposure = 0.15f;
         // Split toning neutral (grey is no shift): it flattened every grade into one amber; the grades carry the colour.
         const string PostShadows = "#808080", PostHighlights = "#808080";
 
@@ -201,7 +226,8 @@ namespace Parallax.Editor.Setup
                 NearTier(c);
                 Outside(c);
                 Chains(c);
-                Fringes(c);
+                // Phase 2 round 4: no arch fringe (Fringes). Critics, two rounds: "arcade strips hard-cut at their ends",
+                // "ghost pillars under the bridge like a broken reflection" (L008, L020); a floating floor shows its underside.
             }
             PostVolume(c);
         }
@@ -214,11 +240,16 @@ namespace Parallax.Editor.Setup
             Sprite disc = EnvironmentKit.Sprite("ENV_Glow"), ray = EnvironmentKit.Sprite("ENV_Ray");
             if (glow != null && disc != null)
             {
-                SpriteRenderer halo = c.Place(c.Layer("Sun"), "SunHalo", "ENV_Glow", c.SunAt, Vector2.one * (c.SunSize * c.Config.SunHaloScale / disc.bounds.size.x), new Color(1f, 0.98f, 0.93f, 1f), c.Config.GetLayer("Sun").Order + 1, c.Back);
+                // Round 3 (critics on L010: "a daytime yellow glow blob in a night sky"): the halo takes the disc's own colour,
+                // and a moon's is half the size.
+                bool moon = c.Palette != null && c.Palette.Moon;
+                Color haloColour = c.Palette != null ? Color.Lerp(Color.white, c.Palette.Sun, 0.6f) : new Color(1f, 0.98f, 0.93f, 1f); haloColour.a = 1f;
+                SpriteRenderer halo = c.Place(c.Layer("Sun"), "SunHalo", "ENV_Glow", c.SunAt, Vector2.one * (c.SunSize * c.Config.SunHaloScale * (moon ? 0.5f : 1f) / disc.bounds.size.x), haloColour, c.Config.GetLayer("Sun").Order + 1, c.Back);
                 halo.sharedMaterial = glow;
                 halo.gameObject.AddComponent<AmbientMotion>().Configure(0f, 0f, 0f, 0f, 0f, 0f, 0.04f, 0.1f, 0.2f);
             }
             if (rayMaterial == null || ray == null || c.Config.Rays <= 0) return;
+            if (c.Palette != null && c.Palette.Moon) return;   // round 3: no sunbeams at night
             Transform layer = c.Layer("Rays");
             // The beam is painted falling to the right; mirrored when the sun is right of the view's middle.
             bool flip = c.SunAt.x > c.Travel.Mid.x;
@@ -226,7 +257,8 @@ namespace Parallax.Editor.Setup
             float scale = c.Travel.ViewHeight * 1.05f / size.y;
             for (int i = 0; i < c.Config.Rays; i++)
             {
-                float spread = (i - (c.Config.Rays - 1) * 0.5f) * size.x * scale * 0.55f;
+                float spread = (i - (c.Config.Rays - 1) * 0.5f) * size.x * scale * (0.45f + 0.3f * SoloRoomSkin.Hash(c.LevelId ?? "template", 700 + i))
+                    + (SoloRoomSkin.Hash(c.LevelId ?? "template", 710) - 0.5f) * c.Travel.ViewHeight * 0.6f;   // Phase 2 round 2
                 // The beams start near the view's top on the sun's side (a low sun's beams would fall under the floor).
                 var origin = new Vector2(c.SunAt.x, Mathf.Max(c.SunAt.y, c.Travel.Mid.y + c.Travel.ViewHeight * 0.3f));
                 Vector2 at = origin + new Vector2((flip ? -1f : 1f) * size.x * scale * 0.35f + spread, -size.y * scale * 0.45f);
@@ -289,7 +321,7 @@ namespace Parallax.Editor.Setup
             var renderer = go.GetComponent<ParticleSystemRenderer>();
             renderer.sharedMaterial = mote;
             renderer.renderMode = ParticleSystemRenderMode.Billboard;
-            renderer.sortingLayerName = c.Middle; renderer.sortingOrder = c.Config.GetLayer("Rays").Order + 1;
+            renderer.sortingLayerName = c.Middle; renderer.sortingOrder = c.Config.GetLayer("BackWall").Order + 1;   // round 4: in front of the back walls (the rays went behind them)
             ps.Play();
         }
 
@@ -336,7 +368,7 @@ namespace Parallax.Editor.Setup
                     r.gameObject.AddComponent<AmbientMotion>().Configure(0f, 0f, 0f, 0f, 0.6f, 0.07f, 0f, 0f, right ? 0.5f : 0f);
                 }
             }
-            if (top != null)
+            if (top != null && c.Config.FrameTopScale > 0f)
             {
                 float k = c.Config.FrameTopScale * vk;
                 SpriteRenderer r = Pinned(frame, "FrameTop", top, unlit, c, order);
@@ -351,7 +383,7 @@ namespace Parallax.Editor.Setup
             float kh = c.Config.FrameHangScale * vk;
             foreach ((Sprite sprite, string name, float side) in new[] { (hang, "FrameHang", -1f), (banner, "FrameBanner", 1f) })
             {
-                if (sprite == null) continue;
+                if (sprite == null || kh <= 0f) continue;
                 Vector2 size = (Vector2)sprite.bounds.size * kh;
                 SpriteRenderer r = Pinned(frame, name, sprite, unlit, c, order + 1);
                 r.transform.localScale = new Vector3(kh, kh, 1f);
@@ -434,6 +466,10 @@ namespace Parallax.Editor.Setup
             Bounds content = SoloRoomBuilder.ComputeRoomBounds(room, 0f);
             Bounds frame = SoloRoomBuilder.ComputeRoomBounds(room, 20f);
             float x0 = room.Origin.x, x1 = room.Origin.x + room.Width;
+            // Round 4 (critics: "a pale gap between the ceiling's end and the wall", L012): where a ceiling runs into a side,
+            // that side's column is stone all the way up (no wall top there to read).
+            List<SoloRoomSkin.Solid> ceilings = SoloRoomSkin.Solids(room).Where(s => s.Kind == SoloRoomElementKind.Ceiling).ToList();
+            bool ceilingAtLeft = ceilings.Any(s => s.Rect.xMin <= x0 + 0.05f), ceilingAtRight = ceilings.Any(s => s.Rect.xMax >= x1 - 0.05f);
             var t = new GameObject("Outside").transform;
             t.SetParent(c.EnvRoot, false);
             t.gameObject.layer = c.LayerIndex;
@@ -446,9 +482,13 @@ namespace Parallax.Editor.Setup
                 Rect.MinMaxRect(x0, frame.min.y, x1, content.min.y),
                 Rect.MinMaxRect(x0, content.max.y, x1, frame.max.y),
                 // Gauntlet: the room's side-wall columns (1 u, no renderer of their own) up to the walls' tops: stone, not sky.
-                Rect.MinMaxRect(x0 - 1f, frame.min.y, x0, room.Origin.y + 8f),
-                Rect.MinMaxRect(x1, frame.min.y, x1 + 1f, room.Origin.y + 8f),
+                Rect.MinMaxRect(x0 - 1f, frame.min.y, x0, ceilingAtLeft ? frame.max.y : room.Origin.y + 8f),
+                Rect.MinMaxRect(x1, frame.min.y, x1 + 1f, ceilingAtRight ? frame.max.y : room.Origin.y + 8f),
             };
+            // Round 3 (critics: "a smeared band and a pale strip above the ceiling", L012/L019): over each ceiling, stone from
+            // its top up to where the top band starts (the room's bounds sit above it, and the sky showed between).
+            rects = rects.Concat(SoloRoomSkin.Solids(room).Where(s => s.Kind == SoloRoomElementKind.Ceiling && s.Rect.yMax < content.max.y - 0.01f)
+                .Select(s => Rect.MinMaxRect(s.Rect.xMin, s.Rect.yMax - 0.02f, s.Rect.xMax, content.max.y + 0.02f))).ToArray();
             for (int i = 0; i < rects.Length; i++)
             {
                 Rect r = rects[i];
@@ -473,14 +513,19 @@ namespace Parallax.Editor.Setup
                     sh.transform.localScale = new Vector3(r.width / shadeSprite.bounds.size.x, r.height / shadeSprite.bounds.size.y, 1f);
                     var shr = sh.AddComponent<SpriteRenderer>();
                     shr.sprite = shadeSprite; shr.sharedMaterial = EnvironmentKit.TileMaterial("Sprite") ?? EnvironmentKit.UnlitMaterial;
-                    shr.color = new Color(1f, 1f, 1f, Mathf.Min(1f, c.Config.FaceShadeAlpha * 1.25f));
+                    // Round 5 (critics, every round: "a navy/purple translucent overlay on the walls"): the shade sprite is navy
+                    // (26,31,56); this tint makes it a neutral dark over the outside stone.
+                    shr.color = new Color(0.9f, 0.66f, 0.37f, Mathf.Min(1f, c.Config.FaceShadeAlpha * 1.25f));
                     shr.sortingLayerName = sr.sortingLayerName; shr.sortingOrder = -3;
                 }
             }
             // Gauntlet: the masonry over the room ends in a broken course with roots hanging, not a ruler-straight edge.
             Sprite under = EnvironmentKit.Sprite("ENV_Under");
             EnvironmentKit.Slot ud = EnvironmentKit.Get("ENV_Under");
-            if (under != null && ud != null && content.max.y < frame.max.y - 0.5f)
+            // Round 4 (critics: "a smeared band and a pale strip above the ceiling", L012/L019): where a ceiling closes the
+            // room's top, the masonry sits on it and shows no underside (its edge, bounce and roots drew over the ceiling's top).
+            float roofed = SoloRoomSkin.Solids(room).Where(s => s.Kind == SoloRoomElementKind.Ceiling && Mathf.Abs(s.Rect.yMax - content.max.y) < 0.05f).Sum(s => s.Rect.width);
+            if (under != null && ud != null && content.max.y < frame.max.y - 0.5f && roofed < 0.8f * (x1 - x0))
             {
                 var go = new GameObject("Outside_Edge");
                 go.transform.SetParent(t, false);

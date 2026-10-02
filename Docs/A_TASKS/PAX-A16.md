@@ -466,3 +466,21 @@ on the default look).
 - Device feel and frame rate are the developer's to check.
 - The set pieces need paintings (§3.6, §5).
 - The door often starts off screen (accepted in D-100).
+
+## 11. Phase 2 checkpoint (rounds 2–6, 2026-10-02)
+
+The developer ruled after round 6: commit as a checkpoint, accept 1.8× on every level (D-104 amendment), record the art
+rulings (D-107), delete the `Overcast` palette and `Silver` sky, and plan shared biomes next (PAX-A17, draft) instead of
+more rounds.
+
+- **Scores (four fresh critics a round):** average 4.62 (R2), 4.86, 5.28, 5.49, 5.44 (R6); Readability ≥ 7 in 1, 0, 10,
+  20 and 19 of 20 levels. Worse than its before in R6: L013, L016, L018. No level beats the concept.
+- **The main finding:** bloom, not the grade, lifted the cat to brown (D-107).
+- **Tests:** the camera tell and chaos findings accepted with 1.8× are pinned in `LevelZoomAccepted` (test-only), used by
+  `CameraTellTests`, `Band1LevelTests` and `Band2LevelTests`. New: `EnvironmentGradeTests`.
+- **Known follow-ups (still red):**
+  - PAX-100: `TrapArtRevealFrameTests.RevealFrame:L010`, Pit10_Cover (90 px differ on the reveal tick, worst 77).
+  - PAX-A16: `CatSheetImportTests.TheEnvironmentPpu_ByPath(A_BG_00_Sky)` and `…_IsFixed_NotReadFromTheCat` (the
+    background PPU 98.33 vs 128, deferred to A16 on 2026-10-02 and still open).
+- **Still open for the art** (in PAX-A17's plan): the floor's evenly lit front face, L013's sky, L018's grade, the
+  repeated ferns in L017/L018, L010's moon and the warm stone at night.

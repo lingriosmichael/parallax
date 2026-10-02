@@ -25,6 +25,8 @@ SKY_RAMPS = {
     "Dawn":     [(0.34, 0.44, 0.66), (0.78, 0.74, 0.82), (1.00, 0.84, 0.64)],
     "Ember":    [(0.40, 0.16, 0.14), (0.90, 0.42, 0.22), (1.00, 0.80, 0.50)],
     "Moon":     [(0.06, 0.08, 0.16), (0.22, 0.30, 0.48), (0.74, 0.82, 0.94)],
+    # Phase 2 round 2: two more skies, so L019 and L020 no longer share Ember's and Moonlit's.
+    "Teal":     [(0.08, 0.20, 0.26), (0.28, 0.50, 0.56), (0.96, 0.74, 0.52)],
 }
 
 
@@ -177,13 +179,16 @@ def build(ek, load, put, play, layers):
     course_h = round(0.3 * W)
     under_body = band(fa, course_h, (900, 400))
     under_body[..., :3] *= rows_gain(course_h, 0.8, 0.55)
-    under_body[-5:, :, :3] = under_body[-5:, :, :3] * 0.5 + np.array([0.86, 0.72, 0.55], np.float32) * 0.25   # the cornice lip
+    # Phase 2 round 2: the underside's last rows are its shadowed edge (a pale cornice line here followed the ragged edge
+    # and read as a white wavy strip under every platform).
+    under_body[-5:, :, :3] = under_body[-5:, :, :3] * 0.55
     # Round 9: a broken lower edge (seamless along the strip), never a ruler line.
     nx = under_body.shape[1]
     xx = np.arange(nx, dtype=np.float32) * (2 * np.pi / nx)
     rag = (12 + 7 * np.sin(xx * 6 + 0.2) + 4 * np.sin(xx * 13 + 0.9) + 2 * np.sin(xx * 29 + 2.1)).astype(int)
     rows = np.arange(course_h)[:, None]
-    under_body[..., 3] *= (rows < (course_h - rag[None, :])).astype(np.float32) * 0.9 + 0.1 * (rows < course_h - rag[None, :] + 3)
+    # Round 2 (Phase 2): binary, solid stone or nothing (a 0.9 body over a 0.1 fringe let the sky through: a pale band).
+    under_body[..., 3] *= (rows < (course_h - rag[None, :])).astype(np.float32)
     hang = 2   # gauntlet: drapes are placed by the builder; nothing hangs in the strip
     under = np.zeros((course_h + hang, under_body.shape[1], 4), np.float32)
     et.place(under, under_body, 0, 0)
@@ -309,6 +314,15 @@ def build(ek, load, put, play, layers):
     bw = load("ENV-32")
     rows = np.nonzero((bw[..., 3] > 0.02).any(axis=1))[0]
     put(layers, "ENV_RuinWall", feather_sides(bw[rows[0]:rows[-1] + 1], 0.08), L, kind="piece")
+
+    # ---------- round 2 (the developer's ENV-40 water ruins and ENV-41 layered city): whole far pieces at LAYER_PPU ----------
+    # Real transparency (no checkerboard or baked sky); their ends are already soft, a light feather keeps any stray hard edge
+    # soft. ENV-40's water fills its bottom band: the composer puts it only where nothing walkable stands over the water.
+    for i, src in enumerate(("ENV-40a", "ENV-40b")):
+        lake = ek.tp.trim(load(src), 0.02)
+        put(layers, f"ENV_FarLake_{i}", feather_sides(lake, 0.04), L, kind="piece")
+    city = ek.tp.trim(load("ENV-41"), 0.02)
+    put(layers, "ENV_CitySkyline", feather_sides(city, 0.04), L, kind="piece")
 
 
 def edge_fade(a, px=14, sides="tblr"):

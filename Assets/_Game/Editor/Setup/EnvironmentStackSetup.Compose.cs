@@ -41,9 +41,24 @@ namespace Parallax.Editor.Setup
             ["FloatingIsles"] = new[] { "ENV_MidArch_0", "ENV_MidTowers" },
         };
 
+        /// <summary>Round 2: the developer's layered city (ENV-41) stands in the middle of the far skyline in these levels (day
+        /// and storm light, where its warm stone reads); the far pieces keep clear of it.</summary>
+        static readonly HashSet<string> CityLevels = new() { "L004", "L007", "L011", "L016", "L019" };
+
         /// <summary>The paintings a level's signature shows at mid distance (the near tier skips them: no painting twice).</summary>
         static HashSet<string> SignatureSlots(string levelId) =>
             new(Signatures.TryGetValue(LevelPalettes.Signature(levelId), out string[] s) ? s : Signatures["Ruins"]);
+
+        /// <summary>Round 5: how far the frame must open under the lowest floor before a lower row of the signature stands there.</summary>
+        const float UnderRowOpen = 3f;
+
+        /// <summary>Round 6: the lower row's tops (world y at mid travel) in levels the open-below rule can't read: L016 walks
+        /// the beds at y 9-10 over sky down to its floor at 0; L019 walks at y 0-4 over pits at -2.5 (its row stands behind the
+        /// ledges, or the view never reaches it).</summary>
+        static readonly Dictionary<string, float> UnderRowTop = new() { ["L016"] = 8f, ["L019"] = 8f };
+
+        /// <summary>Round 2: how far the frame must open under the lowest floor before the far lake shows.</summary>
+        const float OpenBelow = 3.5f;
 
         static float R(string id, int salt) => SoloRoomSkin.Hash(id ?? "template", salt);
 
@@ -80,6 +95,16 @@ namespace Parallax.Editor.Setup
                 LevelLookConfig.Layer def = c.Config.GetLayer("Far");
                 var (from, to) = Visible(c, def.Speed, 2f);
                 Color tint = Color.Lerp(Color.white, p.Haze, p.FarHaze) * 0.98f; tint.a = 1f;
+                // Round 2: the city, whole and at its own size, centred in the skyline; its foot under the horizon's haze.
+                float cityFrom = float.MaxValue, cityTo = float.MinValue;
+                Sprite city = CityLevels.Contains(id ?? "") ? EnvironmentKit.Sprite("ENV_CitySkyline") : null;
+                if (city != null)
+                {
+                    Vector2 cs = city.bounds.size;
+                    float cx = Mathf.Lerp(from, to, 0.4f + 0.2f * R(id, 205));
+                    cityFrom = cx - cs.x * 0.5f; cityTo = cx + cs.x * 0.5f;
+                    c.Place(c.Layer("Far"), "City_far", "ENV_CitySkyline", new Vector2(cx, c.Horizon - 1.4f + cs.y * 0.5f), Vector2.one, tint, def.Order, c.Back, R(id, 206) > 0.5f, 0.001f);
+                }
                 int start = (int)(R(id, 200) * FarSet.Length);
                 float x = from + R(id, 201) * 2f;
                 for (int n = 0; x < to && n < FarSet.Length; n++)   // each far piece once
@@ -89,6 +114,7 @@ namespace Parallax.Editor.Setup
                     if (sprite == null) continue;
                     float s = 0.55f + 0.4f * R(id, 210 + n);
                     Vector2 size = (Vector2)sprite.bounds.size * s;
+                    if (x + size.x > cityFrom && x < cityTo) { x = cityTo + 0.8f; continue; }   // round 2: clear of the city
                     bool island = slot.Contains("Island") || slot.Contains("Cluster");
                     float baseY = c.Horizon + (island ? 1.5f + 2.5f * R(id, 220 + n) : -1.2f + 1.0f * R(id, 230 + n));
                     c.Place(c.Layer("Far"), $"{slot}_far_{n}", slot, new Vector2(x + size.x * 0.5f, baseY + size.y * 0.5f), Vector2.one * s, tint, def.Order, c.Back, R(id, 240 + n) > 0.5f, -0.001f * n);
@@ -108,7 +134,9 @@ namespace Parallax.Editor.Setup
                 // P1-R4: the signature is the mid plane's subject: lightly hazed, standing well above the walk line.
                 Color tint = Color.Lerp(Color.white, p.Haze, p.FarHaze * 0.55f) * 0.95f; tint.a = 1f;   // back enough not to read as a platform
                 float span = to - from, x = from + span * (0.05f + 0.15f * R(id, 300));
-                for (int n = 0; n < set.Length && x < to; n++)   // each signature piece once
+                // Round 3 (critics: "lone platforms against a sky card"; at the L001 zoom a view is a third of a level, so two
+                // pieces left most views empty): the set runs twice across the visible range, the repeat a level apart.
+                for (int n = 0; n < 2 * set.Length && x < to; n++)
                 {
                     string slot = set[n % set.Length];
                     Sprite sprite = EnvironmentKit.Sprite(slot);
@@ -118,29 +146,63 @@ namespace Parallax.Editor.Setup
                     x += size.x * (0.75f + 0.35f * R(id, 320 + n)) + 1.5f;
                     if (!FindLegalBase(slot, def.Speed, bottom, size, tops, c.Travel, out float legal)) { c.Changes.Add($"left out mid {slot} (A2)"); continue; }
                     bottom.y = legal;
-                    SpriteRenderer r = c.Place(c.Layer("Mid"), $"{slot}_mid_{n}", slot, bottom + new Vector2(0f, size.y * 0.5f), Vector2.one, tint, def.Order, c.Middle, R(id, 330 + n) > 0.5f, -0.001f * n);
+                    SpriteRenderer r = c.Place(c.Layer("Mid"), $"{slot}_mid_{n}", slot, bottom + new Vector2(0f, size.y * 0.5f), Vector2.one, tint, def.Order, c.Middle, (R(id, 330 + n % set.Length) > 0.5f) ^ (n >= set.Length), -0.001f * n);
                     if (slot.Contains("Tree") && r != null) r.gameObject.AddComponent<AmbientMotion>().Configure(0f, 0f, 0f, 0f, 0.4f, 0.08f, 0f, 0f, R(id, 340 + n));
                 }
-                if (k.Signature == "Waterfalls")
-                    foreach (float f in new[] { 0.3f, 0.72f })
-                        WaterfallAt(c, Mathf.Lerp(from, to, f), tint);
+                // Round 5 (critics: "the lower 40% is empty sky", L016/L019/L005): where the frame opens UnderRowOpen under the
+                // lowest floor, a second, hazier row of the signature rises from below the frame, its tops a unit under that floor.
+                float lowestTop = tops.Count > 0 ? tops.Min(t => t.Line) : c.Frame.min.y;
+                // Round 6: levels whose walk runs high over open air with a floor far below (the flip level's beds, the pits)
+                // set the row's tops by hand.
+                bool handSet = UnderRowTop.TryGetValue(id ?? "", out float setTop);
+                if (handSet) lowestTop = setTop + 1f;
+                if (handSet || lowestTop - c.Frame.min.y >= UnderRowOpen)
+                {
+                    Color under = Color.Lerp(Color.white, p.Haze, Mathf.Clamp(p.FarHaze * 0.9f, 0.5f, 0.85f)); under.a = 1f;
+                    float ux = from + span * (0.12f + 0.2f * R(id, 350));
+                    for (int n = 0; n < 12 && ux < to; n++)   // across the whole visible range (L019 is 64 u wide)
+                    {
+                        string slot = set[(n + 1) % set.Length];
+                        Sprite sprite = EnvironmentKit.Sprite(slot);
+                        if (sprite == null) continue;
+                        Vector2 size = sprite.bounds.size;
+                        var bottom = new Vector2(ux + size.x * 0.5f, lowestTop - 1f - size.y);
+                        ux += size.x * (0.9f + 0.5f * R(id, 360 + n)) + 3f;
+                        if (!FindLegalBase(slot, def.Speed, bottom, size, tops, c.Travel, out float legal)) { c.Changes.Add($"left out under-row {slot} (A2)"); continue; }
+                        bottom.y = legal;
+                        c.Place(c.Layer("Mid"), $"{slot}_under_{n}", slot, bottom + new Vector2(0f, size.y * 0.5f), Vector2.one, under, def.Order - 1, c.Middle, R(id, 370 + n) > 0.5f, 0.001f * n);
+                    }
+                }
+                // Round 5: the signature adds no waterfalls of its own (critics, L013: "they pour onto and behind walkable
+                // floors", the water rule); a level's own look still places them where it clears its floors.
             }
 
             // A pale veil in front of the mid distance, behind the near tier: a third step of distance.
             Gradient(c, "Mid", "MidVeil", c.Horizon - 2f, c.Horizon + view * 0.4f, p.Haze, p.FarHaze * 0.25f, up: true);
             // Mist rising behind the walk line: the floor's lip stands against haze, not hard against the sky.
-            Gradient(c, "Atmosphere", "MidMist", c.Horizon - 1.2f, c.Horizon + 2.2f, p.Haze, Mathf.Min(0.85f, p.Fog * 1.4f), up: true);
+            // Phase 2 round 2: thinner (the lower halves read milky, with no darks).
+            Gradient(c, "Atmosphere", "MidMist", c.Horizon - 1.2f, c.Horizon + 2.2f, p.Haze, Mathf.Min(0.5f, p.Fog * 0.85f), up: true);
 
-            // The water far below, wherever the room is open under its floors.
+            // Round 2 (the developer: "water only goes where nothing walkable sits on it"): no water plane across the whole
+            // frame (floors stood on it, L020). The developer's water ruins (ENV-40) stand on the far layer only where the frame
+            // opens at least OpenBelow under the lowest floor, their waterline down there, so every floor stands well above it.
             {
-                Sprite water = EnvironmentKit.Sprite("ENV_WaterPlane");
-                if (water != null)
+                float lowest = c.Room.HasValue ? SoloRoomSkin.WalkableTops(c.Room.Value).Select(t => t.Line + c.Room.Value.Origin.y).DefaultIfEmpty(c.Frame.min.y).Min() : c.Frame.min.y;
+                string lakeSlot = "ENV_FarLake_" + (int)(R(id, 260) * 2f);
+                // Round 3: the waterline also sits half a unit under every solid's foot (a pit wall or a floor's thickness read
+                // as standing in the lake), and the frame still has to open OpenBelow − 1 under it.
+                float deepest = c.Room.HasValue ? SoloRoomSkin.Solids(c.Room.Value).Select(s => s.Rect.yMin).DefaultIfEmpty(lowest).Min() : lowest;
+                float waterTop = Mathf.Min(lowest - 1f, deepest - 0.5f);
+                Sprite lake = waterTop - c.Frame.min.y >= OpenBelow - 1f ? EnvironmentKit.Sprite(lakeSlot) : null;
+                if (lake != null)
                 {
-                    LevelLookConfig.Layer def = c.Config.GetLayer("Mid");
-                    var (from, to) = Visible(c, def.Speed, c.Travel.MaxViewWidth);
-                    float sx = (to - from) / water.bounds.size.x;
-                    Color tint = Color.Lerp(Color.white, p.Horizon, 0.35f); tint.a = 1f;
-                    c.Place(c.Layer("Mid"), "Water", "ENV_WaterPlane", new Vector2((from + to) * 0.5f, c.Frame.min.y + 1.9f), new Vector2(sx, 1f), tint, def.Order + 1, c.Middle);
+                    LevelLookConfig.Layer def = c.Config.GetLayer("Far");
+                    var (from, to) = Visible(c, def.Speed, 0f);
+                    Vector2 size = lake.bounds.size;
+                    Color tint = Color.Lerp(Color.white, p.Haze, p.FarHaze * 0.6f); tint.a = 1f;
+                    // The water is the piece's lower quarter, its top at waterTop.
+                    float y = waterTop - size.y * 0.25f + size.y * 0.5f;
+                    c.Place(c.Layer("Far"), "Lake_far", lakeSlot, new Vector2(Mathf.Lerp(from, to, 0.3f + 0.4f * R(id, 261)), y), Vector2.one, tint, def.Order, c.Back, R(id, 262) > 0.5f, 0.002f);
                 }
             }
 
@@ -193,39 +255,16 @@ namespace Parallax.Editor.Setup
                     go.transform.position = new Vector3(r.center.x, (y0 + y1) * 0.5f, c.EnvRoot.position.z);
                     go.transform.localScale = new Vector3((r.width + 0.1f) / s.bounds.size.x, (y1 - y0) / s.bounds.size.y, 1f);
                     var sr = go.AddComponent<SpriteRenderer>();
-                    sr.sprite = s; sr.sharedMaterial = m; sr.color = new Color(0.62f, 0.42f, 0.3f, 0.97f);   // round 10: warm near-black (the sprite is cool; this neutralises it)
+                    // Round 10: warm near-black (the sprite is cool; this neutralises it); Phase 2 round 2: a little lighter.
+                    sr.sprite = s; sr.sharedMaterial = m; sr.color = new Color(0.62f, 0.42f, 0.3f, 0.85f);
                     sr.sortingLayerName = gameplay; sr.sortingOrder = -4;
                 }
                 Quad($"PitVoid_{n}_Fade", ramp, fadeTop - fadeH, fadeTop);
-                // A warm glow at the pit's lip, falling into the dark: the drop reads as depth, not fog.
-                Sprite glowFade = EnvironmentKit.Sprite("ENV_SkyFade");
-                if (glowFade != null)
-                {
-                    var g = new GameObject($"PitVoid_{n}_Warm");
-                    g.transform.SetParent(c.EnvRoot, false);
-                    g.layer = c.LayerIndex;
-                    g.transform.position = new Vector3(r.center.x, fadeTop - 0.35f, c.EnvRoot.position.z - 0.001f);
-                    g.transform.localScale = new Vector3((r.width + 0.1f) / glowFade.bounds.size.x, 0.7f / glowFade.bounds.size.y, 1f);
-                    var gr = g.AddComponent<SpriteRenderer>();
-                    gr.sprite = glowFade; gr.sharedMaterial = EnvironmentKit.UnlitMaterial;
-                    Color warm = c.Palette != null ? c.Palette.SunLight : new Color(1f, 0.75f, 0.45f); warm.a = 0.35f; gr.color = warm;
-                    gr.sortingLayerName = gameplay; gr.sortingOrder = -4;
-                }
-                if (fadeTop - fadeH > bottom) Quad($"PitVoid_{n}", solid, bottom, fadeTop - fadeH + 0.02f);
+                // Phase 2 round 2: no warm glow quad at the lip (its top edge read as a hard line); the fade alone carries the drop.
+                // Round 4: edge to edge (a 0.02 u overlap of two 0.85 quads read as a black line across the pit, L018).
+                if (fadeTop - fadeH > bottom) Quad($"PitVoid_{n}", solid, bottom, fadeTop - fadeH);
                 n++;
             }
-        }
-
-        static void WaterfallAt(TierContext c, float x, Color tint)
-        {
-            Sprite fall = EnvironmentKit.Sprite("ENV_Waterfall");
-            if (fall == null) return;
-            LevelLookConfig.Layer def = c.Config.GetLayer("Mid");
-            SpriteRenderer r = c.Place(c.Layer("Mid"), "Waterfall_" + Mathf.RoundToInt(x), "ENV_Waterfall", new Vector2(x, c.Horizon + 2f), Vector2.one, tint, def.Order - 1, c.Middle);
-            if (r == null) return;
-            r.drawMode = SpriteDrawMode.Tiled;   // the falling water scrolls down its own height (it's water: it moves)
-            r.transform.localScale = Vector3.one;
-            r.size = new Vector2(fall.bounds.size.x, c.Travel.ViewHeight + 6f);
         }
 
         /// <summary>A soft vertical gradient of `colour` between two heights over a layer's whole visible range: one quad, no
@@ -278,14 +317,14 @@ namespace Parallax.Editor.Setup
             // The sun's backlight: from the sun's side of the view, warm, wide, following the camera.
             float view = c.Travel.ViewHeight, width = view * 20f / 9f;
             var sunOffset = new Vector2((p.SunAt.x - 0.5f) * width, (p.SunAt.y - 0.5f) * view);
-            Light2D sun = Point("SunLight", p.SunLight, p.SunIntensity, view * 0.15f, width * 0.85f, 0.45f);
+            Light2D sun = Point("SunLight", LevelPalettes.CapLight(p.SunLight), p.SunIntensity, view * 0.15f, width * 0.85f, 0.45f);
             sun.gameObject.AddComponent<FollowTransform>().Configure(c.Camera.transform, sunOffset);
 
             // The cat's key light: a small warm light over its shoulder, so the painted cat reads (not a black shape).
             var follow = c.Camera.GetComponent<LevelCameraFollow>();
             Transform cat = follow != null ? new SerializedObject(follow).FindProperty("target").objectReferenceValue as Transform : null;
             if (cat == null) { c.Changes.Add("no cat light (the camera follows no target)"); return; }
-            Light2D key = Point("CatLight", p.CatLight, p.CatIntensity, 0.4f, 2.2f, 0.5f);
+            Light2D key = Point("CatLight", LevelPalettes.CapLight(p.CatLight), p.CatIntensity, 0.4f, 2.2f, 0.5f);
             key.gameObject.AddComponent<FollowTransform>().Configure(cat, new Vector2(-0.35f, 0.9f));
         }
     }

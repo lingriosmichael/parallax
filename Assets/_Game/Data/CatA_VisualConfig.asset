@@ -38,5 +38,5 @@ MonoBehaviour:
   fidgetDelay: 3
   climbStillSpeed: 0.02
   leapSpeedFraction: 0.5
-  outlineColorA: {r: 1, g: 0.75, b: 0.3, a: 1}
+  outlineColorA: {r: 1, g: 0.86, b: 0.62, a: 0.15}
   outlineColorB: {r: 0.35, g: 0.85, b: 1, a: 1}

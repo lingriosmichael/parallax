@@ -173,10 +173,11 @@ namespace Parallax.Editor.Setup
             LevelLookConfig.Grade grade = config.GetGrade(look.Grade) ?? config.GetGrade(LevelLooks.DefaultGrade) ?? config.Grades[0];
             // Gauntlet: the level's palette sets its sky, haze, sun and ambient light (LevelPalettes).
             LevelPalettes.Palette palette = LevelPalettes.For(levelId);
+            Color envGrade = LevelPalettes.EnvGrade(palette);
             grade = new LevelLookConfig.Grade
             {
                 Name = palette.Name, SkyTop = palette.SkyTop, SkyHorizon = palette.Horizon, Sun = palette.SunAt, SunSize = palette.SunSize,
-                Haze = palette.Haze, Light = palette.Ambient, LightIntensity = palette.AmbientIntensity,
+                Haze = palette.Haze, Light = LevelPalettes.CapLight(palette.Ambient), LightIntensity = palette.AmbientIntensity,
             };
             // D-104: the level's own view height (its zoom), as its camera uses.
             var travel = new Travel(worldFrame, Parallax.Editor.Levels.LevelCameras.ViewHeight(levelId, AssetDatabase.LoadAssetAtPath<LevelCameraConfig>(CameraConfigPath)));
@@ -222,7 +223,8 @@ namespace Parallax.Editor.Setup
                 t.localPosition = new Vector3(local.x, local.y, z);
                 t.localScale = new Vector3(scale.x, scale.y, 1f);
                 var r = t.gameObject.AddComponent<SpriteRenderer>();
-                r.sprite = sprite; r.sharedMaterial = unlit; r.color = color; r.flipX = flip;
+                // Round 2: the level's warm/cool lean on the environment's pieces (the post carries no hue).
+                r.sprite = sprite; r.sharedMaterial = unlit; r.color = new Color(color.r * envGrade.r, color.g * envGrade.g, color.b * envGrade.b, color.a); r.flipX = flip;
                 r.sortingLayerName = band; r.sortingOrder = order;
                 return r;
             }
@@ -241,7 +243,11 @@ namespace Parallax.Editor.Setup
             SkyPlate(sky, mid, new Vector2(width * 1.06f, view * 1.1f), grade, Order("Sky") + 2, Back, Place, "ENV_Sky_" + palette.Sky);
 
             // The sun (its painted glow included).
-            Vector3 sunSpec = new(grade.Sun.x, grade.Sun.y, grade.SunSize);
+            // Round 3 (critics: "every level's sun blob and beams at the same spot"): each level moves its palette's sun a
+            // little, across and up, by its id (the same build gives the same sky).
+            Vector3 sunSpec = levelId == null ? new(grade.Sun.x, grade.Sun.y, grade.SunSize)
+                : new(Mathf.Clamp(grade.Sun.x + (SoloRoomSkin.Hash(levelId, 720) - 0.5f) * 0.55f, 0.15f, 0.85f),
+                      Mathf.Clamp(grade.Sun.y + (SoloRoomSkin.Hash(levelId, 721) - 0.5f) * 0.18f, 0.58f, 0.86f), grade.SunSize);
             Sprite sunSprite = EnvironmentKit.Sprite("ENV_Sun");
             var sunAt = new Vector2(mid.x + (sunSpec.x - 0.5f) * width * 0.8f, mid.y + (sunSpec.y - 0.5f) * view);
             Place(Layer("Sun"), "Sun", "ENV_Sun", sunAt, Vector2.one * (sunSpec.z / sunSprite.bounds.size.x), palette.Sun, Order("Sun"), Back);
@@ -251,14 +257,14 @@ namespace Parallax.Editor.Setup
             // interior level keeps its back wall from its recipe (rebuilt whole in Phase 2).
             List<SoloRoomSkin.Edge> tops = room.HasValue ? SoloRoomSkin.WalkableTops(room.Value) : new List<SoloRoomSkin.Edge>();
             int pieceIndex = 0;
-            foreach (LevelLooks.Piece piece in look.Pieces.Where(q => q.Slot == "ENV_BackWall"))
+            foreach (LevelLooks.Piece piece in look.Pieces.Where(q => q.Slot is "ENV_BackWall" or "ENV_RuinWall"))
             {
                 Sprite sprite = EnvironmentKit.Sprite(piece.Slot);
                 if (sprite == null) continue;
                 LevelLookConfig.Layer def = config.GetLayer("BackWall");
                 Vector2 bottom = piece.Relative ? new Vector2(worldFrame.min.x + piece.X * worldFrame.size.x, worldFrame.min.y + piece.BaseY * worldFrame.size.y) : new Vector2(piece.X, piece.BaseY);
-                Vector2 size = new(piece.Span > 0f ? piece.Span : sprite.bounds.size.x, sprite.bounds.size.y);
-                SpriteRenderer r = Place(Layer("BackWall"), $"{piece.Slot}_{pieceIndex}", piece.Slot, bottom + new Vector2(0f, size.y * 0.5f), Vector2.one, Tint("BackWall", piece.Alpha), def.Order, Middle, piece.Flip, -0.001f * pieceIndex);
+                Vector2 size = new(piece.Span > 0f ? piece.Span : sprite.bounds.size.x * piece.Scale, sprite.bounds.size.y * piece.Scale);
+                SpriteRenderer r = Place(Layer("BackWall"), $"{piece.Slot}_{pieceIndex}", piece.Slot, bottom + new Vector2(0f, size.y * 0.5f), Vector2.one * (piece.Span > 0f ? 1f : piece.Scale), Tint("BackWall", piece.Alpha), def.Order, Middle, piece.Flip, -0.001f * pieceIndex);
                 pieceIndex++;
                 if (piece.Span > 0f) { r.drawMode = SpriteDrawMode.Tiled; r.transform.localScale = Vector3.one; r.size = size; }
             }

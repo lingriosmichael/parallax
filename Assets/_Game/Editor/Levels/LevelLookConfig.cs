@@ -13,7 +13,7 @@ namespace Parallax.Editor.Levels
         public const string AssetPath = "Assets/_Game/Data/LevelLookConfig.asset";
         public const float MaxFarScale = 1.5f;
         /// <summary>PAX-A16: bumped when the defaults change; the setup menu resets an older asset to them.</summary>
-        public const int CurrentVersion = 23;
+        public const int CurrentVersion = 26;
 
         [System.Serializable]
         public sealed class Grade
@@ -67,7 +67,7 @@ namespace Parallax.Editor.Levels
         [Tooltip("God rays: count, additive intensity, alpha.")]
         public int Rays = 3;
         public float RayIntensity = 1.1f;
-        public float RayAlpha = 0.7f;
+        public float RayAlpha = 0.22f;   // Phase 2 round 3: still flat stripes at 0.35 (0.7 read as opaque slabs)
         [Tooltip("The sun's additive halo: size as a multiple of the sun, intensity (above 1 blooms).")]
         public float SunHaloScale = 3.2f;
         public float SunHaloIntensity = 1.3f;
@@ -75,9 +75,9 @@ namespace Parallax.Editor.Levels
         public int Motes = 90;
         [Tooltip("The foreground frame: corner scale and the top curtain's scale (of their sprites), at a 13.33 u view (scaled with the view).")]
         public float FrameCornerScale = 0f;   // gauntlet: off (view-pinned ferns moved with the camera and could cover a trap; foot ferns in the world replace them)
-        public float FrameTopScale = 0.16f;
+        public float FrameTopScale = 0f;   // Phase 2 round 2: off (view-pinned: the same fringe in every level, moving with the camera)
         [Tooltip("Round 3: the hanging roots (top left) and banner (top right) pinned to the view, as a fraction of their painted size.")]
-        public float FrameHangScale = 0.75f;
+        public float FrameHangScale = 0f;   // Phase 2 round 2: off (the same view-pinned roots and banner in every level)
         [Tooltip("Round 3: the dark column at the view's left edge (scale, and how much of its width is in view).")]
         public float FramePillarScale = 0f, FramePillarShown = 0.46f;   // gauntlet: 0 = off (its lit edge read as a gap beside the floor)
         [Tooltip("The near tier's pieces: their scale (the paintings stay sharp up to about 1.4 at the phone's 81 px/u).")]
@@ -128,7 +128,7 @@ namespace Parallax.Editor.Levels
                 // (behind a back wall, so an interior shows it only through its windows).
                 L("Near", 0.6f, 0.4f, 0.82f, 1f, -47),   // gauntlet: in front of the mid veil (Mid order + 2)
                 L("BackWall", 1f, 0.18f, 0.78f, 1f, -46),   // round 3: deeper, so interiors aren't a pale flat wall
-                L("Rays", 0.04f, 0f, 1f, 1f, -30),   // P1-R5: with the sun (on screen at every camera position)
+                L("Rays", 0.04f, 0f, 1f, 1f, -49),   // P1-R5: with the sun; Phase 2 round 4: behind the back walls and near pieces (they washed the arches)
                 L("Atmosphere", 0.6f, 0f, 1f, 0.25f, -20),
                 L("Foreground", 1.1f, 0f, 0.14f, 1f, 10),
             };

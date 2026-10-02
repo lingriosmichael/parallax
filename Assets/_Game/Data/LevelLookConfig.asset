@@ -155,7 +155,7 @@ MonoBehaviour:
     HazeMix: 0
     Value: 1
     Alpha: 1
-    Order: -30
+    Order: -49
   - Name: Atmosphere
     Speed: 0.6
     HazeMix: 0
@@ -175,20 +175,20 @@ MonoBehaviour:
   DoorShadeAlpha: 0.55
   FlipHaloScale: 1.35
   FlipHaloAlpha: 1
-  Version: 23
+  Version: 26
   BodyTint: {r: 0.9, g: 0.87, b: 0.82, a: 1}
   CapBoost: {r: 0.98, g: 0.92, b: 0.84, a: 1}
   OutsideTint: {r: 0.3, g: 0.31, b: 0.37, a: 1}
   SupportTint: {r: 0.56, g: 0.5, b: 0.44, a: 1}
   Rays: 3
   RayIntensity: 1.1
-  RayAlpha: 0.7
+  RayAlpha: 0.22
   SunHaloScale: 3.2
   SunHaloIntensity: 1.3
   Motes: 90
   FrameCornerScale: 0
-  FrameTopScale: 0.16
-  FrameHangScale: 0.75
+  FrameTopScale: 0
+  FrameHangScale: 0
   FramePillarScale: 0
   FramePillarShown: 0.46
   NearScale: 1

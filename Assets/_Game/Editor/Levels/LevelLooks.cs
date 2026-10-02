@@ -40,7 +40,8 @@ namespace Parallax.Editor.Levels
 
         public static readonly Look Default = new()
         {
-            Grade = DefaultGrade, Stone = Fill.A, Dress = new Dressing(0.4f, drapes: true), Signature = "none",
+            // Phase 2 round 2 (L011's blank walls): glyph panels on the biggest faces too.
+            Grade = DefaultGrade, Stone = Fill.A, Dress = new Dressing(0.4f, drapes: true, glyphs: true), Signature = "none",
             Pieces = new[]
             {
                 new Piece("ENV_FarIsland_0", 0.2f, 0.62f, 1.5f, relative: true),
@@ -96,8 +97,9 @@ namespace Parallax.Editor.Levels
                 Grade = "WarmAfternoon", Stone = Fill.A, Dress = new Dressing(0.4f, banners: true, glyphs: true), Signature = "enclosed hall",
                 Pieces = new[]
                 {
-                    new Piece("ENV_BackWall", 16f, 7.2f, span: 36f),
-                    new Piece("ENV_BackWall", 16f, -0.5f, span: 36f),
+                    // Phase 2 round 2: a ruined hall of whole wall pieces (the tiled back wall repeated every 11 u).
+                    // Round 3 (critics: "a pale strip between the back wall and the floor"): every foot well under the floor line.
+                    new Piece("ENV_RuinWall", 3f, -1.5f), new Piece("ENV_RuinWall", 16.5f, -1.5f, 0.9f, flip: true), new Piece("ENV_RuinWall", 29.5f, -1.5f),
                     new Piece("ENV_FarIsland_3", 8f, 15.5f, 1.5f),
                     new Piece("ENV_MidTowers", 27f, 9.5f),
                     new Piece("ENV_FarSpire_2", 18f, 11f, 1.3f),
@@ -128,7 +130,8 @@ namespace Parallax.Editor.Levels
             },
             ["L007"] = new()
             {
-                Grade = "GoldenHour", Stone = Fill.A2, Dress = new Dressing(0.3f, rubble: true), Signature = "collapsed ruins",
+                // Phase 2 round 2: its big flat walls read blank; drapes, banners and glyph panels (two each at most, biggest faces).
+                Grade = "GoldenHour", Stone = Fill.A2, Dress = new Dressing(0.35f, drapes: true, banners: true, rubble: true, glyphs: true), Signature = "collapsed ruins",
                 Pieces = new[]
                 {
                     new Piece("ENV_MidPillar", 7f, -3.2f),
@@ -143,8 +146,7 @@ namespace Parallax.Editor.Levels
                 Grade = "GoldenHour", Stone = Fill.A, Dress = new Dressing(0.4f, drapes: true, glyphs: true), Signature = "light shafts through the back wall",
                 Pieces = new[]
                 {
-                    new Piece("ENV_BackWall", 16f, 8.6f, span: 36f),
-                    new Piece("ENV_BackWall", 16f, -0.5f, span: 36f),
+                    new Piece("ENV_RuinWall", 4f, -0.5f, flip: true), new Piece("ENV_RuinWall", 17f, 0.2f), new Piece("ENV_RuinWall", 30f, -0.6f, 0.92f, flip: true),
                     new Piece("ENV_MidTowers", 20f, 8.5f),
                     new Piece("ENV_Shaft", 11f, 1.5f, alpha: 0.45f),
                     new Piece("ENV_Shaft", 24.5f, 2.5f, alpha: 0.35f),
@@ -167,8 +169,8 @@ namespace Parallax.Editor.Levels
                 Grade = "DuskRose", Stone = Fill.A3, Dress = new Dressing(0.5f, banners: true, glyphs: true), Signature = "water, fog and banners at dusk",
                 Pieces = new[]
                 {
-                    new Piece("ENV_BackWall", 12f, 8.8f, span: 30f),
-                    new Piece("ENV_BackWall", 12f, 0.5f, span: 30f),
+                    // Round 4 (the cat vanished on them at night, contrast 2.0): hazed into the moonlit sky.
+                    new Piece("ENV_RuinWall", 2f, 0.5f, 0.95f, alpha: 0.4f), new Piece("ENV_RuinWall", 14f, 1.2f, flip: true, alpha: 0.4f), new Piece("ENV_RuinWall", 25f, 0.2f, alpha: 0.4f),
                     new Piece("ENV_Waterfall", 8f, 0f, span: 15f),
                     new Piece("ENV_MidTowers", 18f, 10f),
                     new Piece("ENV_Fog", 12f, 0.4f, span: 28f, alpha: 0.55f),

@@ -214,12 +214,22 @@ def build(ek, load, put, play, layers):
     thick = np.zeros((band_h + under_r.shape[0] + drape_h, tile_w + pad, 4), np.float32)
     place(thick, band, 0, 0)
     cornice = band_h - round(0.12 * W)
+    # Phase 2 round 3 (critics: "a cream wavy strip under every slab"): the sky showed through between the course's ragged
+    # edge and the drapes. A dark shadow band now sits behind the ragged edge (fading out below it), and the drapes start
+    # inside the course, so their tops tuck behind the stone.
+    under_h = under_r.shape[0]
+    rag_zone = round(under_h * 0.45)
+    shadow_top, shadow_h = cornice + under_h - rag_zone, rag_zone + round(0.08 * W)
+    shade = np.zeros((shadow_h, thick.shape[1], 4), np.float32)
+    shade[..., :3] = np.array([0.09, 0.075, 0.06], np.float32)
+    shade[..., 3] = np.clip(1.25 - np.linspace(0, 1, shadow_h, dtype=np.float32) ** 1.5 * 1.25, 0, 1)[:, None] * 0.92
+    place(thick, shade, 0, shadow_top)
     for k, xv in enumerate(range(-40, thick.shape[1], 64)):
         b = dboxes[(k * 5) % 3]
         d = drapes[b[1]:b[3], b[0]:b[2]]
         hgt = int(drape_h * (0.45 + 0.55 * ((k * 7) % 5) / 4))
         d = ek.scale(d, hgt / d.shape[0])
-        place(thick, d, xv, cornice + round(0.3 * W))
+        place(thick, d, xv, cornice + under_h - rag_zone)
     place(thick, under_r, 0, cornice)
     thick = ek.crossfade(thick, pad, 1)
     rows = np.nonzero((thick[..., 3] > 0.02).any(axis=1))[0]

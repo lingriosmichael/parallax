@@ -398,7 +398,7 @@
     "Bodies/TRAP-04_spike_strip": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-04_spike_strip_n.png",
       "palette": {
-        "black": 0.0006,
+        "black": 0.0,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-04_spike_strip.png",

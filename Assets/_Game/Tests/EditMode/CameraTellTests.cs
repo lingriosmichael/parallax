@@ -43,6 +43,7 @@ namespace Parallax.Tests.EditMode
             List<object> results = Tell(id, RouteValidatorTests.Room(id), RouteValidatorTests.Routes(id), errors);
             TestContext.Out.WriteLine(Table(results));
             Assert.Greater(results.Count, 0, "no dying betrayal was measured");
+            errors = LevelZoomAccepted.Unaccepted(errors);   // D-104 amendment: the findings accepted with the 1.8× zoom
             CollectionAssert.IsEmpty(errors, string.Join("\n", errors));
         }
 
