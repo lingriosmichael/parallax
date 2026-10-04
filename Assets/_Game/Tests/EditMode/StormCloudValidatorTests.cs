@@ -173,7 +173,7 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual(1.9f, StrikeBottomAt(room, 21f), 1e-4f, "the real Overhang");
         }
 
-        // ---------- ValidateBand (levels 11+ only) ----------
+        // ---------- ValidateBand (levels 5+ only, D-090 amendment) ----------
 
         LevelListConfig ElevenLevels()
         {
@@ -184,10 +184,10 @@ namespace Parallax.Tests.EditMode
         }
 
         [Test]
-        public void ACloud_InLevels1To10_IsAnErrorNamingTheLevel()
+        public void ACloud_InLevels1To4_IsAnErrorNamingTheLevel()
         {
             LevelListConfig levels = ElevenLevels();
-            foreach (string id in new[] { "B01", "B10" })
+            foreach (string id in new[] { "B01", "B04" })
             {
                 List<string> errors = Rule("ValidateBand", id, Room10(), levels);
                 Assert.AreEqual(1, errors.Count, string.Join("\n", errors));
@@ -197,6 +197,12 @@ namespace Parallax.Tests.EditMode
         }
 
         [Test] public void TheSameCloud_InLevel11_Passes() => CollectionAssert.IsEmpty(Rule("ValidateBand", "B11", Room10(), ElevenLevels()));
+
+        // PAX-103 (D-090 amendment): from level 5 on, in band 1 too.
+        [Test] public void TheSameCloud_InLevels5And10_Passes()
+        {
+            foreach (string id in new[] { "B05", "B10" }) CollectionAssert.IsEmpty(Rule("ValidateBand", id, Room10(), ElevenLevels()), id);
+        }
         [Test] public void ACloudInAnUnlistedRoom_IsExempt() => CollectionAssert.IsEmpty(Rule("ValidateBand", "TrapLab10", Room10(), ElevenLevels()));
     }
 }

@@ -2827,3 +2827,19 @@ lit. **The rule:** for every level, every hazard in its lethal pose, at each lev
 **Why:** the developer (2026-10-03): "arrows are super hard to see … make the arrow more visible regardless of the level it
 is in"; "Level 004: all arrows and traps are so hard to see. They meld into the background." Measured on the old art: L004's
 arrows 3–10% of their pixels at 3:1, L008's and L010's 2–5%.
+
+### D-090 amendment · 2026-10-03 · Accepted (PAX-103, the developer's rulings)
+**Decision:** storm clouds may appear from level 5 on (`LevelLayoutValidator.StormCloudFirstLevel`), in band 1 too, and
+not every level needs one; levels 1-4 still can't have one (`ValidateBand`). Band 1 uses D-090's defaults and dodge rule
+unchanged. Shipped: L007 (the storm wakes as the cat rides Ride_A over gap A) and L010 (as it rides Ride_E over the gap).
+**Why:** the developer (2026-10-03): "from this level onwards we can start adding the storm that follows the player"
+(L007); "Add for levels after 004. Not all levels need it. But I don't want to wait until level 11"; storms in L007 and L010
+only.
+
+### D-109 · 2026-10-03 · Accepted (PAX-103, the developer's play-test)
+**Decision:** no door is reachable upside down. In a room with a gravity flip, every door pose is out of reach of a
+gravity-up cat: from any underside it could stand on (its jump "down" and across, from the motor's numbers) unless spikes
+cover that underside, and by falling up from a flip below it (`ValidateDoorUpright`, run by `Band1LevelTests`).
+**Why:** the developer: "the exit shouldn't be reachable while I am inverted" (L009), "if I jump across I finish the level,
+which shouldn't be possible" (L004), after L009 and L010 in PAX-102. Measured red on L004 and L009.
+

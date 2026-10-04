@@ -71,17 +71,25 @@ namespace Parallax.Editor.Levels
             // PAX-102 (the developer: "add an inverter before you reach the door, I don't want the cat to reach a solution while
             // being in the ceiling"; "more moving platforms"): the room runs on east to x 32. A flip floating under the roof's
             // east end (x 16.5-17.5, from the roof down to y 11.75) turns a cat walking the roof upside down back down: it drops
-            // onto Ledge_E1. A gap wider than a jump (x 21-25.5, a kill strip across its bottom) is crossed only on Ride_E; where
-            // it sets the cat down, Sink_E sinks into the strip under a cat that stops; the door stands on Ledge_E3. The door's
+            // onto Ledge_E1. A gap wider than a jump (x 21-25.5) is crossed only on Ride_E; where it sets the cat down, Sink_E
+            // gives way under a cat that stops; the door stands on Ledge_E3. PAX-103: the gap's kill strip floated at y 10.9 with
+            // nothing under it; spikes come up on S1_B under the gap instead (and on the stair's Step_B and stub, which catch a
+            // fall too), as the cat lands on Ledge_E1. The door's
             // top (13.25) is out of reach of a cat upside down under Roof_C (its jump reaches down to 13.84).
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_E",(17f,12.875f),(1f,2.25f),settings:flip));
             elements.Add(E(SoloRoomElementKind.Floor,"Ledge_E1",(19.5f,11.5f),(3f,.5f)));
             elements.Add(E(SoloRoomElementKind.Floor,"Ledge_E3",(29.75f,11.5f),(4.5f,.5f)));
-            elements.Add(E(SoloRoomElementKind.Hazard,"GapE_Hazard",(24.25f,10.9f),(6.5f,.3f)));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapE",(24.25f,5.15f),(6.5f,.3f),(19.5f,13.875f),(2f,4.25f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapW",(24.25f,9.15f),(.5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_GapE")));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapS",(22.75f,7.65f),(1.5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_GapE")));
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Ride_E",(21.75f,11.5f),(1.5f,.5f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
                 new SoloRoomTrapSettings(offset:new Vector2(3f,0f),moveTicks:40,holdTicks:20,returnTicks:40,repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:0,cooldownTicks:100,movingKind:MovingTrapKind.Solid))));
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Sink_E",(26.5f,11.5f),(2f,.5f),(26.5f,12.03f),(2f,.56f),new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
-                new SoloRoomTrapSettings(delayTicks:30,offset:new Vector2(0f,-1f),moveTicks:30,holdTicks:40,returnTicks:30,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:100,movingKind:MovingTrapKind.Solid))));
+            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Sink_E",(26.5f,11.5f),(2f,.5f),settings:new SoloRoomTrapSettings(delayTicks:30)));
+            // PAX-103 (D-090 amendment, the developer's ruling: storms in L007 and L010): the storm wakes as the cat rides Ride_E
+            // over the gap (x 23-24) and follows it from behind (it starts over Ledge_E1): a cat that stops short of the door is
+            // struck. It stays under Roof_C and clear of the door (its range ends at x 29.5).
+            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(19.5f,14f),(2f,.8f),(23.5f,13.875f),(1f,4.25f),
+                new SoloRoomTrapSettings(new StormCloudSettings(19f, 29.5f), new SoloRoomTrapSettings(delayTicks:0))));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(30.5f,12.5f),(.6f,1.5f)));
             // Dead end (L4's lure): a flip floating over S1 sends a cat that jumps into it onto spikes under the slab above.
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_D2",(5.5f,7.8f),(1.5f,2f),settings:flip));

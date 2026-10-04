@@ -9,7 +9,8 @@ namespace Parallax.Tests.EditMode
     // PAX-102 (the developer: "I don't want to be able to solve this level by jumping on a door while inverted"; "I don't
     // want the cat to reach a solution while being in the ceiling"): in L009 and L010 a flip turns a cat walking the roof
     // upside down back down before the door, so every route that finishes the level finishes standing. Red first: before
-    // PAX-102 both solutions ended upside down at a door under the roof.
+    // PAX-102 both solutions ended upside down at a door under the roof. PAX-103: L004 too (its solution came up a flip
+    // under the door, upside down, until the climb replaced it).
     public sealed class DoorUprightTests
     {
         IDisposable session;
@@ -17,6 +18,7 @@ namespace Parallax.Tests.EditMode
         [OneTimeSetUp] public void Open() => session = OpenSession();
         [OneTimeTearDown] public void Close() => session?.Dispose();
 
+        [TestCase("L004")]   // PAX-103
         [TestCase("L009")]
         [TestCase("L010")]
         public void EveryRouteThatFinishesTheLevel_FinishesStanding(string id)

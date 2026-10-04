@@ -10,8 +10,12 @@ namespace Parallax.Editor.Levels
     // PAX-059 (D-085): level 4, gravity. Two bands: the lower one from the ground (top 0) to a slab (underside 7, x 0-24),
     // and the upper one from the slab's top (8) to the roof (underside 15). The door hangs from the roof at the left. The
     // start is mid-room; the way runs right along the ground, up a flip through the gap past the slab's end to the roof,
-    // back left upside down, down a flip to the slab's top, and up a flip under the door. Every roof section that gives way
-    // fills the recess behind it, so the recess's hazard stays hidden until it does.
+    // back left upside down, down a flip to the slab's top, and up a climb of six thin platforms to the door. Every roof
+    // section that gives way fills the recess behind it, so the recess's hazard stays hidden until it does.
+    // PAX-103 (the developer: "Remove this inverter instead add platforms … moving traps especially sideways, spikes in the
+    // bottom that kill you if you fall off the platforms. Do like 6 thin platforms, only one solution"; "invert the
+    // spikes"): the flip under the door, its pads and the door's retreat are gone; spikes cover the slab's top under the
+    // climb and the roof's underside over it, so the door is only reached standing.
     static class L004Layout
     {
         public static SoloRoomDefinition Build()
@@ -22,8 +26,10 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(9.5f,0f),(0f,0f)),
                 E(SoloRoomElementKind.Floor,"Ground",(16f,-2f),(32f,4f)),
                 E(SoloRoomElementKind.Floor,"Slab",(12f,7.5f),(24f,1f)),
-                // The roof, broken by two sections that give way (x 3-6 and 16-19.5).
+                // The roof, broken by a section that gives way (x 16-19.5). PAX-103: x 3-6 no longer gives way (its recess went
+                // with the door's retreat).
                 E(SoloRoomElementKind.Ceiling,"Roof_L",(1.5f,15.5f),(3f,1f)),
+                E(SoloRoomElementKind.Ceiling,"Roof_5",(4.5f,15.5f),(3f,1f)),
                 E(SoloRoomElementKind.Ceiling,"Roof_M",(11f,15.5f),(10f,1f)),
                 // PAX-102: Roof_R in two, with the rising section (Sink_R, below) between them over a new recess.
                 E(SoloRoomElementKind.Ceiling,"Roof_R",(23f,15.5f),(7f,1f)),
@@ -31,14 +37,10 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Wall,"Recess_C_L",(26.25f,18.75f),(.5f,5.5f)),
                 E(SoloRoomElementKind.Wall,"Recess_C_R",(28.75f,18.75f),(.5f,5.5f)),
                 E(SoloRoomElementKind.Ceiling,"Recess_C_Top",(27.5f,22f),(3f,1f)),
-                // The recesses behind them.
-                E(SoloRoomElementKind.Wall,"Recess_A_L",(2.75f,17f),(.5f,2f)),
-                E(SoloRoomElementKind.Wall,"Recess_A_R",(6.25f,17f),(.5f,2f)),
-                E(SoloRoomElementKind.Ceiling,"Recess_A_Top",(4.5f,18.5f),(4f,1f)),
+                // The recess behind Roof_4.
                 E(SoloRoomElementKind.Wall,"Recess_B_L",(15.75f,17f),(.5f,2f)),
                 E(SoloRoomElementKind.Wall,"Recess_B_R",(19.75f,17f),(.5f,2f)),
                 E(SoloRoomElementKind.Ceiling,"Recess_B_Top",(17.75f,18.5f),(4.5f,1f)),
-                E(SoloRoomElementKind.Hazard,"Recess5_Hazard",(4.5f,17.85f),(3f,.3f)),
                 E(SoloRoomElementKind.Hazard,"Recess4_Hazard",(17.75f,17.85f),(3.5f,.3f)),
                 // PAX-102: the kill strip across the new recess, hidden inside Sink_R (which fills the recess, as Roof_4 does), so
                 // it shows nothing until the section rises with a cat under it into it.
@@ -57,17 +59,25 @@ namespace Parallax.Editor.Levels
             // T3: spikes on the roof; T4: the roof where the jump over them lands gives way under a cat that stops.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_3",(21f,14.85f),(1f,.3f),(22.75f,11.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));   // PAX-102: trigger left of Pillar_7
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Roof_4",(17.75f,16.5f),(3.5f,3f),settings:new SoloRoomTrapSettings(delayTicks:12)));
-            // T5: the door backs away along the roof over a section that gives way. The way down: a flip floating under the
-            // roof; the way back up: a flip on the slab's top under the door's new place.
+            // The way down: a flip floating under the roof.
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_D",(12.25f,12.75f),(1.5f,1.5f),settings:flip));
-            elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_E",(2.5f,9f),(1f,2f),settings:flip));
-            elements.Add(E(SoloRoomElementKind.Door,"Door",(6.8f,14.25f),(.6f,1.5f)));
-            // PAX-099 (D-106): the door stands on a pad at each pose, so it never hangs in the air. Nothing stands under Roof_5
-            // (x 3-6, it gives way on a touch): a cat on a top there could jump into it (band 1's trap-floor headroom).
-            elements.Add(E(SoloRoomElementKind.Floor,"Door_Pad_R",(6.6f,13.25f),(1f,.5f)));
-            elements.Add(E(SoloRoomElementKind.Floor,"Door_Pad_L",(2.5f,13.25f),(1f,.5f)));
-            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(10.75f,11.5f),(.5f,7f),settings:new SoloRoomTrapSettings(moveTicks:30,offset:new Vector2(-4.3f,0f))));
-            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Roof_5",(4.5f,16.5f),(3f,3f),settings:new SoloRoomTrapSettings()));
+            // PAX-103: the climb. Six thin platforms (1 x 0.5) in a line up and to the left from the slab's top to the door at the
+            // wall, each 0.82 u above the one before, so none can be skipped (two steps up is 1.64, past a jump's 1.6), and none
+            // over another's jumps. Ride_2 and Ride_4 move 1.5 u left and back (Carry, Periodic, one 150-tick rhythm): hop on
+            // as one comes home, ride it out, step off. Spikes cover the slab's top under the climb, and the roof's underside
+            // over it (a cat that jumps on the door step meets them; the door is 7 u from the bare roof, out of an upside-down
+            // cat's reach).
+            elements.Add(E(SoloRoomElementKind.Hazard,"Climb_Spikes",(5.625f,8.15f),(11.25f,.3f)));
+            elements.Add(E(SoloRoomElementKind.Hazard,"Roof_Spikes",(6.375f,14.85f),(12.75f,.3f)));
+            elements.Add(E(SoloRoomElementKind.Floor,"Step_1",(10.75f,8.57f),(1f,.5f)));
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Ride_2",(9.25f,9.39f),(1f,.5f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
+                new SoloRoomTrapSettings(offset:new Vector2(-1.5f,0f),moveTicks:40,holdTicks:20,returnTicks:40,repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:0,cooldownTicks:100,movingKind:MovingTrapKind.Solid))));
+            elements.Add(E(SoloRoomElementKind.Floor,"Step_3",(6.25f,10.21f),(1f,.5f)));
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Ride_4",(4.75f,11.03f),(1f,.5f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
+                new SoloRoomTrapSettings(offset:new Vector2(-1.5f,0f),moveTicks:40,holdTicks:20,returnTicks:40,repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:75,cooldownTicks:100,movingKind:MovingTrapKind.Solid))));
+            elements.Add(E(SoloRoomElementKind.Floor,"Step_5",(1.75f,11.85f),(1f,.5f)));
+            elements.Add(E(SoloRoomElementKind.Floor,"Door_Step",(.5f,12.67f),(1f,.5f)));
+            elements.Add(E(SoloRoomElementKind.Door,"Door",(.5f,13.67f),(.6f,1.5f)));
             // PAX-102 (approved): the opening run's angled arrow. A corbel hangs from the slab (x 14.5-15.5, down to y 2.5); its
             // honest launcher fires down-left at -60 degrees 8 ticks after the cat sets off, onto the ground at x 12.8, ahead of a cat that
             // stops at once. Stop, let it land, walk on through it (L003's T3a, before the flips).

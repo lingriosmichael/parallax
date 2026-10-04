@@ -47,8 +47,7 @@ namespace Parallax.Tests.EditMode
             CollectionAssert.IsEmpty(errors, string.Join("\n", errors));
         }
 
-        [TestCase("L004", "Door_Pad_R", "its authored pose")]
-        [TestCase("L004", "Door_Pad_L", "its retreated pose")]
+        [TestCase("L004", "Door_Step", "its authored pose")]   // PAX-103: the door stands on the climb's top step (no retreat now)
         [TestCase("L009", "Slab_D", "its authored pose")]   // PAX-102: the door stands on Slab_D now
         [TestCase("L010", "Ledge_E3", "its authored pose")]   // PAX-102: the door stands on Ledge_E3 (no retreat now)
         [TestCase("L016", "Door_Ledge", "its authored pose")]

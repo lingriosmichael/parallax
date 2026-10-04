@@ -45,10 +45,13 @@ namespace Parallax.Editor.Levels
                 new Betrayal("T5: the spikes the block's landing brought up meet a cat that walks on past the stub", "Spikes_5", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X>=7.8)", "walk on", Jump(), Until(Airborne()), Until(Grounded()), Until(Dead()))),
                 // PAX-102: the rider and the sinking section on the way to the door.
-                new Betrayal("T8: a cat that runs on without waiting for Ride_E falls into the gap", "GapE_Hazard", DeathCause.Hazard,
+                new Betrayal("T8: a cat that runs on without waiting for Ride_E falls into the gap, onto the stair's spikes", "Spikes_GapS", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Ledge_E1))", "run on", Hold(Right), Until(Dead())), revealedBy: "Ride_E"),
-                new Betrayal("T9: Sink_E sinks into the gap with a cat that stops where Ride_E set it down", "GapE_Hazard", DeathCause.Hazard,
+                new Betrayal("T9: Sink_E gives way under a cat that stops where Ride_E set it down", "Spikes_GapE", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X>=24.6)", "stop on the section", Hold(Right), Until(XAtLeast(26.3f)), Release(), Until(Dead())), revealedBy: "Sink_E"),
+                // PAX-103: the storm. A cat that stops short of the door is struck.
+                new Betrayal("T10: the storm strikes a cat that stops on Ledge_E3 short of the door", "Cloud", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X>=24.6)", "stop short of the door", Hold(Right), Until(XAtLeast(28.4f)), Release(), Until(Dead())), revealedBy: "Cloud"),
                 new Betrayal("Dead end: the stair straight up to the door", "Spikes_D1", DeathCause.Hazard,
                     new Route("up the stair", Hold(Right), Jump(), Until(GroundedOn("Step_A")), Release(), Until(Still()),
                         Hold(Right), Jump(), Until(GroundedOn("Step_B")), Release(), Until(Still()), Hold(Left), Jump(), Until(Fired("Spikes_D1")), Release(), Until(Dead())), revealedBy: "Step_C"),

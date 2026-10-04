@@ -78,12 +78,15 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(Grounded)", "stop in the lane", Until(XAtMost(15.9f)), Release(), Until(Dead()))),
                 new Betrayal("T9: Arrow_O comes down on a cat that walks on", "Arrow_O", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Stopped(Arrow_G))", "walk on", Hold(Left), Until(Dead()))),
-                new Betrayal("T10: a cat that runs on without waiting for Ride_A falls into gap A", "GapA_Hazard", DeathCause.Hazard,
+                new Betrayal("T10: a cat that runs on without waiting for Ride_A falls into gap A", "Spikes_GapA", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(S2_East))", "run on", Hold(Left), Until(Dead())), revealedBy: "Ride_A"),
-                new Betrayal("T11: Sink_S sinks into gap A with a cat that stops where Ride_A set it down", "GapA_Hazard", DeathCause.Hazard,
+                new Betrayal("T11: Sink_S gives way under a cat that stops where Ride_A set it down", "Spikes_GapO", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X<=18.9)", "stop on the section", Hold(Left), Until(XAtMost(17.3f)), Release(), Until(Dead())), revealedBy: "Sink_S"),
-                new Betrayal("T12: a cat that runs on without waiting for Ride_B falls into gap B", "GapB_Hazard", DeathCause.Hazard,
+                new Betrayal("T12: a cat that runs on off Ride_B before it leaves falls into gap B", "Spikes_GapB", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X<=18.9)", "run on", Hold(Left), Until(Dead())), revealedBy: "Ride_B"),
+                // PAX-103: the storm. Waiting is what it punishes.
+                new Betrayal("T14: the storm strikes a cat that stops on S2_Mid instead of going on to Ride_B", "Cloud", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X<=18.9)", "stop on S2_Mid", Hold(Left), Until(XAtMost(14.2f)), Release(), Until(Dead())), revealedBy: "Cloud"),
                 new Betrayal("T13: Arrow_S's next shot hits a cat that stops in its lane before the door", "Arrow_S", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X<=8.9)", "stop in the lane", Hold(Left), Until(XAtMost(4f)), Release(), Until(Dead()))),
                 // PAX-100 (D-106): the sinking tread. A cat that waits on it rides it down and back up, then goes on.

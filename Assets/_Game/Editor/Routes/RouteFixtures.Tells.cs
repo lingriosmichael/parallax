@@ -19,6 +19,20 @@ namespace Parallax.Editor.Routes
             El(SoloRoomElementKind.Hazard, "Roof_Spikes", 10.5f, 8.85f, spread ? 9f : 1f, .3f),
             El(SoloRoomElementKind.Door, "Door", 18f, .75f, .6f, 1.5f) }, Array.Empty<SoloRoomOpening>(), Array.Empty<RequiredJump>());
 
+        // PAX-103: a room with a gravity flip and a door standing on the floor 1.5 u under the roof's underside (y 3): a cat walking
+        // the roof upside down can jump "down" into it. spiked covers the roof's underside over the door with spikes.
+        public static SoloRoomDefinition DoorUnderRoofRoom(bool spiked)
+        {
+            var elements = new System.Collections.Generic.List<SoloRoomElement> {
+                El(SoloRoomElementKind.Checkpoint, "Checkpoint", 2f, 0f, 0f, 0f),
+                El(SoloRoomElementKind.Floor, "Ground", 10f, -.5f, 20f, 1f),
+                El(SoloRoomElementKind.Ceiling, "Roof", 10f, 3.5f, 20f, 1f),
+                El(SoloRoomElementKind.GravityFlip, "Flip", 6f, 1.5f, 1f, 3f),
+                El(SoloRoomElementKind.Door, "Door", 18f, .75f, .6f, 1.5f) };
+            if (spiked) elements.Add(El(SoloRoomElementKind.Hazard, "Roof_Spikes", 16f, 2.85f, 8f, .3f));
+            return new(0, 0f, 20f, elements.ToArray(), Array.Empty<SoloRoomOpening>(), Array.Empty<RequiredJump>());
+        }
+
         // PAX-102 (D-085 amendment): a raised slab split around a 1.6 u falling block (x 10-11.6), so its fall leaves a real
         // hole. stepped drops the slab east of the block by 0.2, so the floor shows a step (a seam) at the block's edge.
         public static SoloRoomDefinition SlabBlockRoom(bool stepped) => new(0, 0f, 20f, new[] {

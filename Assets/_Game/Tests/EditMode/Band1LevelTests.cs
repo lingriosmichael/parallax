@@ -56,6 +56,7 @@ namespace Parallax.Tests.EditMode
             errors.AddRange(Rule("ValidateTriggerCoverage", id, room, Motor(), Gravity(), bypasses));
             errors.AddRange(bypasses.Select(b => "not approved: " + b));
             errors.AddRange(Rule("ValidateSurfaceCoverage", id, room, Motor()));
+            errors.AddRange(Rule("ValidateDoorUpright", id, room, Motor(), Gravity()));   // PAX-103
             errors.AddRange(Rule("ValidateFallingBlockLanding", id, room, Motor()));
             errors.AddRange(Rule("ValidateTrapFloorHeadroom", id, room, Motor()));
             errors.AddRange(Rule("ValidateTriggerNearTrap", id, room));

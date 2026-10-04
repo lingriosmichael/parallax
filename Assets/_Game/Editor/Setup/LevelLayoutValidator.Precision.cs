@@ -57,6 +57,11 @@ namespace Parallax.Editor.Setup
         // Trap Lab out of the list.
         // PAX-084 (D-086): the shared "levels 11+ only" check. Each kit mechanic for levels 11+ adds its kind here
         // (spears first; KIT-6-KIT-9 extend it). PAX-085 (D-087): inverters. PAX-086 (D-088): geysers. PAX-087 (D-089): vines. PAX-088 (D-090): storm clouds.
+        // PAX-103 (D-090 amendment): storm clouds from level StormCloudFirstLevel (5), in band 1 too.
+        /// <summary>PAX-103 (D-090 amendment, the developer: "Add for levels after 004. Not all levels need it"): the first level
+        /// a storm cloud may appear in.</summary>
+        public const int StormCloudFirstLevel = 5;
+
         public static List<string> ValidateBand(string levelId, SoloRoomDefinition room, LevelListConfig levels)
         {
             var errors = new List<string>();
@@ -68,6 +73,9 @@ namespace Parallax.Editor.Setup
             if (!HasSections(room) && spears.Length == 0 && inverters.Length == 0 && geysers.Length == 0 && vines.Length == 0 && clouds.Length == 0) return errors;
             if (levels == null) { errors.Add($"{levelId}: no LevelListConfig ({LevelListPath}); the band (D-065) is undefined."); return errors; }
             int number = LevelNumber(levels, levelId);
+            if (number > 0 && number < StormCloudFirstLevel)
+                foreach (SoloRoomElement cloud in clouds)
+                    errors.Add($"{levelId}: storm cloud '{cloud.Name}' in level {number}; storm clouds are for levels {StormCloudFirstLevel}+ only (D-090 amendment).");
             if (number <= 0 || number > EasyBandLastLevel) return errors;
             if (HasSections(room))
                 errors.Add($"{levelId}: precision section '{room.PrecisionSections[0].Name}' in level {number}; levels 1-{EasyBandLastLevel} are the easy band and allow no precision (D-065).");
@@ -79,8 +87,6 @@ namespace Parallax.Editor.Setup
                 errors.Add($"{levelId}: geyser '{geyser.Name}' in level {number}; geysers are for levels {EasyBandLastLevel + 1}+ only (D-088).");
             foreach (SoloRoomElement vine in vines)
                 errors.Add($"{levelId}: vine '{vine.Name}' in level {number}; vines are for levels {EasyBandLastLevel + 1}+ only (D-089).");
-            foreach (SoloRoomElement cloud in clouds)
-                errors.Add($"{levelId}: storm cloud '{cloud.Name}' in level {number}; storm clouds are for levels {EasyBandLastLevel + 1}+ only (D-090).");
             return errors;
         }
 

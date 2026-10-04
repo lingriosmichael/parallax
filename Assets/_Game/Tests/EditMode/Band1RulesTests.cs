@@ -146,6 +146,15 @@ namespace Parallax.Tests.EditMode
         public void AFallingBlockFlushInsideTheCeiling_Passes() =>
             Assert.IsEmpty(Invoke("ValidateBand1Tells", "FIX", Fixture("HangingBlockRoom", true)));
 
+        // PAX-103: no door reachable upside down.
+        [Test]
+        public void ADoorUnderABareRoof_InARoomWithAFlip_IsRejected() =>   // seen red: the rule is new
+            AssertMentions(Invoke("ValidateDoorUpright", "FIX", Fixture("DoorUnderRoofRoom", false), Motor(), Gravity()), "reachable by a gravity-up cat");
+
+        [Test]
+        public void ADoorUnderASpikedRoof_Passes() =>
+            Assert.IsEmpty(Invoke("ValidateDoorUpright", "FIX", Fixture("DoorUnderRoofRoom", true), Motor(), Gravity()));
+
         // PAX-102 (D-085 amendment): a floor block between two sections of a split slab, drawn as one surface, passes.
         [Test]
         public void AFallingBlockThatIsASectionOfASplitSlab_Passes() =>

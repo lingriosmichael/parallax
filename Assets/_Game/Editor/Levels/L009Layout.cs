@@ -79,6 +79,10 @@ namespace Parallax.Editor.Levels
             // down. (PAX-099's Door_Ledge under the roof is gone.)
             elements.Add(E(SoloRoomElementKind.Door,"Door",(2.3f,11.75f),(.6f,1.5f)));
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_E",(8f,12.5f),(1f,3f),settings:flip));
+            // PAX-103 (the developer: "the exit shouldn't be reachable while I am inverted. It needs inverted spikes"): spikes
+            // along the roof's underside over Slab_D, from the wall to Flip_E, so a cat upside down on the roof can't get above
+            // the door (a standing cat's jump on Slab_D tops out at 13.16, under their tips at 13.7).
+            elements.Add(E(SoloRoomElementKind.Hazard,"Roof_Spikes",(3.75f,13.85f),(7.5f,.3f)));
             var jumps = new[] {
                 J("Spikes_3",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,20.3f,23.2f,5f,5f,3f,.3f),
             };
