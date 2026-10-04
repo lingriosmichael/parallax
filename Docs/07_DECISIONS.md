@@ -2802,6 +2802,7 @@ window is the one that passes, then the one with most in view, then the one with
 - **L015:** no window has both: at best 4 changes with 3 in view (t71–t130: Arrow_3, Mover_M off screen, Collapse_2,
   Cloud), or 6 changes with fewer than 3 in view (t699–t758). Not foreseen when the rule was proposed (the proposal read the
   best in-view count and the best total from different windows). Left failing, for the developer's ruling.
+  **Ruled (2026-10-04):** a layout fix in L015's own ticket, as for L016; the rule stays (PAX-060's open items).
 
 ### D-085 amendment · 2026-10-03 · Accepted (the developer's ruling, PAX-102)
 **Decision:** a falling block may be a section of a split floor slab, so its fall leaves a real hole. The slab's colliders
