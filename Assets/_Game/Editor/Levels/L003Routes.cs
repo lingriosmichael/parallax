@@ -24,6 +24,13 @@ namespace Parallax.Editor.Levels
             Hold(Left), Jump(), Until(XAtMost(27f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Tread_R3")), Until(Still()),
             Hold(Left), Jump(), Until(GroundedOn("S1_B")) };
 
+        // PAX-102: wait short of a repeating arrow's lane for a shot to land, then go on (it fires again a beat later).
+        static RouteStep[] WaitFor(string arrow) => new[] {
+            Release(), Until(Still()), Until(Moving(arrow)), Until(Stopped(arrow)) };
+
+        // PAX-102: on the ground, short of Arrow_G's lane.
+        static RouteStep[] GroundArrowWait() => new[] { Until(XAtLeast(17f)) }.Concat(WaitFor("Arrow_G")).Concat(new[] { Hold(Right) }).ToArray();
+
         // PAX-100 (D-106): on S1, stop as the corbel's arrow fires, let it land, and walk on.
         static RouteStep[] ArrowWait() => new[] {
             Until(XAtMost(19.8f)), Release(), Until(Still()), Until(Moving("Arrow_S1")), For(8), Until(Stopped("Arrow_S1")), Hold(Left) };
@@ -31,22 +38,31 @@ namespace Parallax.Editor.Levels
         // S1 from the hole to the left tower, the left tower, and S2 with the bait.
         static RouteStep[] Rest() => new[] {
             Until(XAtMost(17.5f)), Jump(), Until(GroundedOn("S1_A")),
+            // PAX-102: Arrow_1's lane on S1.
+            Until(XAtMost(13.8f)), Release(), Until(Still()), Until(Moving("Arrow_1")), Until(Stopped("Arrow_1")), Hold(Left),
             Until(XAtMost(5.45f)), Release().Timed(TimedMode.Shift), Until(Still()),
             Hold(Left), Jump(), Until(GroundedOn("Tread_A")), Release(), Until(Still()),
             Hold(Right), Until(XAtLeast(2.8f)), Release().Timed(TimedMode.Shift), Until(Still()),
-            Hold(Left), Jump(), Until(GroundedOn("Tread_B")), Release(), Until(Still()),
+            // PAX-102: released over Tread_B, so the cat lands without striking the wall (that contact's solver order varies
+            // with the arrows' bodies and made the replays differ by 1e-4).
+            Hold(Left), Jump(), Until(XAtMost(1.7f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Tread_B")), Until(Still()),
             Hold(Right), Jump(), Until(GroundedOn("Tread_C")), Release(), Until(Still()),
             Hold(Right), Jump(), Until(GroundedOn("S2")),
+            // PAX-102: Arrow_2A's lane on S2.
+            Until(XAtLeast(8.2f)), Release(), Until(Still()), Until(Moving("Arrow_2A")), Until(Stopped("Arrow_2A")), Hold(Right),
             // The bait: into Block_5's trigger, back out, and over the block once it has landed.
             Until(XAtLeast(16.9f)), Hold(Left).Timed(TimedMode.Hesitate), Until(XAtMost(15.5f)), Release(), Until(Still()), Until(Stopped("Block_5")),
-            Hold(Right), Until(XAtLeast(18.4f)), Jump(), Until(Airborne()), Until(GroundedOn("S2").And(XAtLeast(21f))), Until(RoomComplete()) };
+            Hold(Right), Until(XAtLeast(18.4f)), Jump(), Until(Airborne()), Until(GroundedOn("S2").And(XAtLeast(21f))),
+            // PAX-102: Arrow_2B's lane, before the door.
+            Until(XAtLeast(23.2f)), Release(), Until(Still()), Until(Moving("Arrow_2B")), Until(Stopped("Arrow_2B")), Hold(Right),
+            Until(RoomComplete()) };
 
         public static RoomRoutes Build()
         {
-            var solution = new Route("L003 solution", Ground().Concat(RightTower()).Concat(ArrowWait()).Concat(Rest()).ToArray());
-            var roundAgain = new Route("L003 round again", Ground().Concat(RightTower()).Concat(ArrowWait())
+            var solution = new Route("L003 solution", Ground().Concat(GroundArrowWait()).Concat(RightTower()).Concat(ArrowWait()).Concat(Rest()).ToArray());
+            var roundAgain = new Route("L003 round again", Ground().Concat(GroundArrowWait()).Concat(RightTower()).Concat(ArrowWait())
                 .Concat(new[] { Until(XAtMost(16.5f)), Until(GroundedOn("Ground_3")), Hold(Right) })
-                .Concat(RightTower()).Concat(Rest()).ToArray());
+                .Concat(GroundArrowWait()).Concat(RightTower()).Concat(Rest()).ToArray());
 
             return new RoomRoutes(solution,
                 new Betrayal("T1: the first floor drops a cat that runs on", "Pit1_Hazard", DeathCause.Hazard,
@@ -61,7 +77,16 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(GroundedOn(Tread_C))", "keep the rhythm",
                         Release(), Until(Still()), Hold(Left), Until(XAtMost(3.1f)), Release(), Until(Still()), Hold(Left), Jump(), Until(Dead()))),
                 new Betrayal("T5: Block_5 comes down on a cat that runs on along S2", "Block_5", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(S2))", "run on", Until(Dead()))),
+                    Route.PrefixOf(solution, "Until(Stopped(Arrow_2A))", "run on", Hold(Right), Until(Dead()))),
+                // PAX-102: the four repeating arrows. A cat that stops in a lane is hit by the next shot.
+                new Betrayal("T6: Arrow_G's next shot hits a cat that stops in its lane on the ground", "Arrow_G", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Grounded)", "stop in the lane", Until(XAtLeast(19.7f)), Release(), Until(Dead()))),
+                new Betrayal("T7: Arrow_1's next shot hits a cat that stops in its lane on S1", "Arrow_1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(S1_A))", "stop in the lane", Hold(Left), Until(XAtMost(10.3f)), Release(), Until(Dead()))),
+                new Betrayal("T8: Arrow_2A's next shot hits a cat that stops in its lane on S2", "Arrow_2A", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(S2))", "stop in the lane", Until(XAtLeast(11.7f)), Release(), Until(Dead()))),
+                new Betrayal("T9: Arrow_2B's next shot hits a cat that stops in its lane before the door", "Arrow_2B", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(S2) && X>=21)", "stop in the lane", Until(XAtLeast(27.9f)), Release(), Until(Dead()))),
                 new Betrayal("Dead end: the right tower's step past S1 gives way onto spikes", "Spikes_R", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Tread_R3))", "keep climbing",
                         Until(Still()), Hold(Right), Jump(), Until(Dead()))));

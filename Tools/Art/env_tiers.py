@@ -277,6 +277,25 @@ def build(ek, load, put, play, layers):
     solid[..., 3] = 1
     put(play, "ENV_FaceShadeSolid", solid, W, kind="piece")
 
+    # PAX-102 (the developer: "falling blocks should leave a hole"): the socket a roof block leaves when it falls, seen from
+    # below. 1 u square (the block's art, drawn 1.1x, hides it at rest): deep warm shadow, the hole's inner walls a step
+    # lighter towards a ragged broken rim, the rim's lower lip catching a little light. Seeded, so the kit stays stable.
+    n = int(round(W))
+    rs = np.random.default_rng(102)
+    yy, xx = np.mgrid[0:n, 0:n].astype(np.float32) / (n - 1)
+    edge = np.minimum(np.minimum(xx, 1 - xx), np.minimum(yy, 1 - yy))           # 0 at the rim, 0.5 at the centre
+    jag = np.interp(np.arange(4 * n), np.linspace(0, 4 * n, 24), rs.uniform(0.0, 0.07, 24)).astype(np.float32)
+    perim = np.where(yy < xx, np.where(yy < 1 - xx, xx, 1 - yy + 1), np.where(yy < 1 - xx, 3 - yy + 1, 2 + (1 - xx)))
+    ragged = jag[np.clip((perim * n).astype(int), 0, 4 * n - 1)]
+    alpha = np.clip((edge - ragged) / 0.03, 0, 1)
+    depth = np.clip(edge / 0.5, 0, 1)
+    sock = np.zeros((n, n, 4), np.float32)
+    sock[..., :3] = (np.array([0.16, 0.13, 0.1], np.float32) * (1 - depth[..., None]) + np.array([0.03, 0.025, 0.02], np.float32) * depth[..., None])
+    lip = np.clip(1 - np.abs(edge - ragged - 0.03) / 0.03, 0, 1) * (yy > 0.5)    # the rim's lower half, a thin lit edge
+    sock[..., :3] = sock[..., :3] + lip[..., None] * np.array([0.22, 0.18, 0.13], np.float32)
+    sock[..., 3] = alpha
+    put(play, "ENV_Socket", sock, W, kind="piece")
+
     # Water at the bottom of an open world (§3.4): ENV-30's waterline and its glints over a reflection of the far city
     # (flipped, squashed, faded with depth), a seamless band 1600 px wide.
     city = layers["ENV_FarCity"]

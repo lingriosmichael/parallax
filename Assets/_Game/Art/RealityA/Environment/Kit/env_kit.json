@@ -820,6 +820,14 @@
       "normal": true
     },
     {
+      "name": "ENV_Socket",
+      "file": "ENV_Socket.png",
+      "folder": "Kit",
+      "width": 1.0017,
+      "height": 1.0017,
+      "kind": "piece"
+    },
+    {
       "name": "ENV_Sun",
       "file": "ENV_Sun.png",
       "folder": "Backgrounds/Kit",

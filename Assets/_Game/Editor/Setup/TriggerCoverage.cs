@@ -238,12 +238,14 @@ namespace Parallax.Editor.Setup
 
         // The storey's ceiling: under each sample, the nearest solid underside above the storey's floor (a ceiling, a slab
         // or a ledge); the band ends at the highest of them. False where a sample has nothing overhead.
+        // PAX-102 (D-085 amendment): a falling block that is a section of a split slab is the slab until it falls, so it
+        // closes the band above it as the slab does (its hole only opens once its trigger has fired).
         internal static bool TryStoreyCeiling(SoloRoomDefinition room, Rect trigger, float low, out float ceiling)
         {
             ceiling = float.NegativeInfinity;
             foreach (float x in Samples(room, trigger))
             {
-                float nearest = room.Elements.Where(IsOverhead).Select(Box).Where(r => r.xMin <= x && r.xMax >= x && r.yMin > low + Epsilon)
+                float nearest = room.Elements.Where(e => IsOverhead(e) || e.Kind == SoloRoomElementKind.FallingBlock && LevelLayoutValidator.IsSlabSection(room, Box(e), Epsilon)).Select(Box).Where(r => r.xMin <= x && r.xMax >= x && r.yMin > low + Epsilon)
                     .Select(r => r.yMin).DefaultIfEmpty(float.PositiveInfinity).Min();
                 if (float.IsPositiveInfinity(nearest)) return false;
                 ceiling = Mathf.Max(ceiling, nearest);

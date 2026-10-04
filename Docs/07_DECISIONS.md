@@ -2733,3 +2733,15 @@ changes):
 
 **Why:** the developer's round-2 rules ("colour grading must never tint the cat or hazards", "no blown-out whites",
 "Readability ≥ 7 everywhere"), and six rounds of critics (average 4.62 → 5.44; Readability ≥ 7 in 19 of 20 levels).
+
+### D-085 amendment · 2026-10-03 · Accepted (the developer's ruling, PAX-102)
+**Decision:** a falling block may be a section of a split floor slab, so its fall leaves a real hole. The slab's colliders
+are split around the block, with a floor on each side touching it at the same top and bottom; the floor is drawn as one
+continuous surface, with no seam, outline or colour change around the block. `ValidateBand1Tells` fails on any visible
+seam (an exposed side edge of the skin) at a floor block's edges, and on a block that is neither flush in a solid nor
+such a section. A real hole is wide enough for the cat's collider with margin (1.6 u for the 1 u collider); the collider
+is never changed. Roof blocks get an art hole instead, shown only after the block has left (`SolidArt`'s socket).
+Trigger coverage counts such a block as the slab over its storey until it falls.
+**Applied:** L010 Block_1, L008 Block_6 and L002 Block_1–3 (real holes, 1.6 u). L002 follows the developer's play-test
+(2026-10-03): "If part of the floor falls, there should be a hole there", superseding the earlier "no holes in L002";
+its S1 was reworked to fit (PAX-102 §8).

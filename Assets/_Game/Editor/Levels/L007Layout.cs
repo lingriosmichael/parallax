@@ -40,8 +40,13 @@ namespace Parallax.Editor.Levels
                 // PAX-100 (D-106): Tread_RC sinks while stood on (below, with the traps).
                 E(SoloRoomElementKind.Floor,"Tread_RD",(31.5f,10f),(1f,.5f)),
                 E(SoloRoomElementKind.Floor,"Tread_RE",(28.95f,11.25f),(1.5f,.5f)),
-                // S2, from the door to x 25.3; its end section (x 25.3-27.5) gives way.
-                E(SoloRoomElementKind.Floor,"S2_Main",(12.65f,9.5f),(25.3f,1f)),
+                // S2, from the door to x 25.3; its end section (x 25.3-27.5) gives way. PAX-102: S2 is cut by two gaps wider than a
+                // jump (x 8-12.5 and 18-22.5), each crossed only on a rider; a kill strip runs across each gap's bottom.
+                E(SoloRoomElementKind.Floor,"S2_Main",(4f,9.5f),(8f,1f)),
+                E(SoloRoomElementKind.Floor,"S2_Mid",(14.25f,9.5f),(3.5f,1f)),
+                E(SoloRoomElementKind.Floor,"S2_East",(23.9f,9.5f),(2.8f,1f)),
+                E(SoloRoomElementKind.Hazard,"GapA_Hazard",(19.5f,8.5f),(6f,.3f)),
+                E(SoloRoomElementKind.Hazard,"GapB_Hazard",(10.25f,8.5f),(4.5f,.3f)),
             };
             L001Layout.AddShaft(elements, 0, 0f, 5f);
             // T1: the floor one step ahead drops as the cat comes up to it (its trigger is the spikes in the shaft).
@@ -59,7 +64,7 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_5",(15.75f,6.45f),(3.5f,.3f),(15.4f,7f),(4.2f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             // T6 (T1, escalated): the floor ahead drops again, and spikes come up where the jump T1 taught lands, then go
             // back down: wait, then jump.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_6",(20.5f,.15f),(2f,.3f),(19.75f,7f),(3.5f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_6",(20.5f,.15f),(2f,.3f),(19.75f,9.5f),(3.5f,9f),new SoloRoomTrapSettings(revealDelayTicks:6)));   // PAX-102: up to the roof (gap A opens S2 above)
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"S1_T6",(20.5f,4.5f),(2f,1f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_6",delayTicks:1)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_6b",(22.75f,5.15f),(2.5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_6",repeatMode:TrapRepeatMode.Rearm,cooldownTicks:60)));
             // T7 (PAX-100, D-106): a tread that sinks. Tread_RC goes down 1.8 u, slowly, 30 ticks after a cat lands on it (its
@@ -79,6 +84,34 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D",(.5f,2.65f),(1f,.3f),(.5f,7f),(1f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Tread_LD",(.5f,4.75f),(1f,.5f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_D",delayTicks:1)));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(1.5f,10.75f),(.6f,1.5f)));
+            // PAX-102 (the developer: "gaps where you have to jump onto a moving platform"): two riders (Carry, Periodic, on the
+            // level's 150-tick rhythm). Each waits at its gap's east side, carries the cat 3 u west, holds, and comes back. Wait
+            // for it, ride it, step off; a cat that runs on as it arrives finds it gone and falls in.
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Ride_A",(21.75f,9.75f),(1.5f,.5f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
+                new SoloRoomTrapSettings(offset:new Vector2(-3f,0f),moveTicks:40,holdTicks:20,returnTicks:40,repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:10,cooldownTicks:100,movingKind:MovingTrapKind.Solid))));
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Ride_B",(11.75f,9.75f),(1.5f,.5f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
+                new SoloRoomTrapSettings(offset:new Vector2(-3f,0f),moveTicks:40,holdTicks:20,returnTicks:40,repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:50,cooldownTicks:100,movingKind:MovingTrapKind.Solid))));
+            // PAX-102 (in place of the storm cloud): the section where Ride_A sets the cat down (x 16-18) sinks 1.5 u, 30 ticks
+            // after a landing, into GapA_Hazard, carrying a cat that stays: step off and walk on.
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Sink_S",(17f,9.5f),(2f,1f),(17f,10.28f),(2f,.56f),new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
+                new SoloRoomTrapSettings(delayTicks:30,offset:new Vector2(0f,-1.5f),moveTicks:40,holdTicks:40,returnTicks:40,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:130,movingKind:MovingTrapKind.Solid))));
+            // PAX-102: two repeating arrows on the same rhythm (every 150 ticks), each from a carved corbel, crossing the walk on a short
+            // steep lane: on the ground (from under S1_B) and on S2 before the door (from under the roof). Wait for a shot to
+            // land, then pass; a cat that stops in a lane is hit by the next shot.
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_G",(17.5f,3.25f),(1f,1.5f)));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_G",(17.25f,2.9f),(.5f,.4f),settings:new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Left,2.9f,17f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:0,cooldownTicks:60))));
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_S",(5.5f,13.25f),(1f,1.5f)));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_S",(5.25f,12.9f),(.5f,.4f),settings:new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Left,12.9f,5f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:116,cooldownTicks:60))));
+            // PAX-102 (in place of the storm cloud): a single angled shot on the ground near the left tower. A corbel hangs under
+            // S1_A (x 6.5-7.5); its launcher fires down-right at -45 degrees as the cat, walking left, comes to x 12, onto the
+            // ground at x 10.4, ahead of a cat that stops at once. Stop, let it land, walk on through it.
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_O",(7f,3.25f),(1f,1.5f)));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_O",(7.25f,2.9f),(.5f,.4f),(12.25f,2f),(.5f,4f),new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Right,2.9f,7.5f + 2.9f,angleDegrees:-45f),new SoloRoomTrapSettings(delayTicks:0))));
             var jumps = new[] {
                 J("Floor_1",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Left,27.1f,24.3f,0f,0f,3f,sourceName:"Ground_A",destinationName:"Ground_M"),
                 J("Tread_LA",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Left,5.4f,3.6f,0f,1.25f,3f,sourceName:"Ground_B",destinationName:"Tread_LA"),

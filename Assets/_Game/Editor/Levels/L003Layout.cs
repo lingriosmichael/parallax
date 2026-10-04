@@ -63,6 +63,26 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Wall,"Corbel",(20.5f,8.25f),(1f,1.5f)));
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_S1",(20.25f,7.9f),(.5f,.4f),(19.15f,7f),(.5f,4f),
                 new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,7.9f,17.1f,angleDegrees:-45f),new SoloRoomTrapSettings(delayTicks:0))));
+            // PAX-102 (the developer: "add 4 more arrow launchers and make them shoot at intervals"): four repeating arrows, each
+            // from a carved corbel under the storey above, crossing the walk on a short steep lane, on one rhythm (D-106):
+            // the ground's and S1's every 120 ticks, half a beat apart; S2's two every 240, 50 ticks apart (phased to the walk). Wait
+            // for a shot to land, then pass; a cat that stops in a lane is hit by the next shot. Stopped arrows are harmless.
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_G",(22f,3.25f),(1f,1.5f)));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_G",(21.75f,2.9f),(.5f,.4f),settings:new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Left,2.9f,21.5f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:120,phaseTicks:0,cooldownTicks:60))));
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_1",(12f,8.25f),(1f,1.5f)));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_1",(11.75f,7.9f),(.5f,.4f),settings:new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Left,7.9f,11.5f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:120,phaseTicks:60,cooldownTicks:60))));
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_2A",(10f,13.25f),(1f,1.5f)));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_2A",(10.25f,12.9f),(.5f,.4f),settings:new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Right,12.9f,10.5f + 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:240,phaseTicks:180,cooldownTicks:60))));
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_2B",(25f,13.25f),(1f,1.5f)));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_2B",(25.25f,12.9f),(.5f,.4f),settings:new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Right,12.9f,25.5f + 2.9f,angleDegrees:-45f),
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:240,phaseTicks:130,cooldownTicks:60))));
             // T5: the bait: a block flush in the roof over S2.
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_5",(20f,14.5f),(1f,1f),(17.25f,12f),(.5f,4f),new SoloRoomTrapSettings(delayTicks:16,unitsPerTick:.36f,travelDistance:4f)));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(30.5f,10.75f),(.6f,1.5f)));

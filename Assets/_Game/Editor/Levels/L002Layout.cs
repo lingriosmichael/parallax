@@ -11,6 +11,9 @@ namespace Parallax.Editor.Levels
     // door is on S1, right above the start; the way to it runs left along the ground, up the tower at the left wall,
     // and back right along S1. The blocks sit flush in the slab above the ground. The stair behind the start is the
     // obvious way up to the door, and a dead end; the high ledge on S1 is the other one.
+    // PAX-102 (D-085 amendment; the developer: "If part of the floor falls, there should be a hole there"): each block is a
+    // 1.6 u section of S1, so its fall leaves a real hole the cat hops on the way back right. Spikes_4 moved west to leave
+    // a landing strip before Block_3's hole; the door's end of S1 moved 1.5 u east to leave room after Block_1's.
     static class L002Layout
     {
         public static SoloRoomDefinition Build()
@@ -28,9 +31,13 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Floor,"Tread_A",(3f,-1.375f),(2f,5.25f)),
                 E(SoloRoomElementKind.Floor,"Tread_B",(.5f,-.75f),(1f,6.5f)),
                 E(SoloRoomElementKind.Floor,"Tread_C",(3f,3.5f),(2f,.5f)),
-                // S1: a slab from the tower to x 28, broken at x 22.3-23.9 by a section that isn't there.
-                E(SoloRoomElementKind.Floor,"S1_A",(13.15f,4.5f),(18.3f,1f)),
-                E(SoloRoomElementKind.Floor,"S1_B",(25.95f,4.5f),(4.1f,1f)),
+                // S1: a slab from the tower to x 28, broken at x 23.8-25.4 by a section that isn't there. PAX-102: split around
+                // the three blocks (x 10.4-12, 15.8-17.4, 20.2-21.8), drawn as one surface until they fall.
+                E(SoloRoomElementKind.Floor,"S1_A",(7.2f,4.5f),(6.4f,1f)),
+                E(SoloRoomElementKind.Floor,"S1_A2",(13.9f,4.5f),(3.8f,1f)),
+                E(SoloRoomElementKind.Floor,"S1_A3",(18.8f,4.5f),(2.8f,1f)),
+                E(SoloRoomElementKind.Floor,"S1_A4",(22.8f,4.5f),(2f,1f)),
+                E(SoloRoomElementKind.Floor,"S1_B",(26.7f,4.5f),(2.6f,1f)),
                 // The high ledge on S1, whose end gives way.
                 E(SoloRoomElementKind.Floor,"Step_1",(14.25f,6f),(1.5f,.5f)),
                 E(SoloRoomElementKind.Floor,"Ledge_H",(17.25f,7.25f),(2.5f,.5f)),
@@ -44,23 +51,25 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.FakePlatform,"Floor_D",(31.25f,-1.5f),(1.5f,3f)));
             elements.Add(E(SoloRoomElementKind.FakePlatform,"Tread_2",(31.25f,2.25f),(1.5f,.5f)));
             // T1: fires as the cat sets off; lands ahead of a cat that runs on (the one bait: touch the trigger, let it land).
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_1",(20.5f,4.5f),(1f,1f),(22f,2f),(.5f,4f),new SoloRoomTrapSettings(delayTicks:7,unitsPerTick:.36f,travelDistance:4f)));
+            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_1",(21f,4.5f),(1.6f,1f),(22.5f,2f),(.5f,4f),new SoloRoomTrapSettings(delayTicks:7,unitsPerTick:.36f,travelDistance:4f)));
             // T2: set off where the hop over T1 lands, and lands on a cat that runs on (stop, let it land, hop it). Its own
             // trigger, right at it, so it can't be set off from afar and waited out (developer's play, after PAX-059a).
             // T3: on a cat that stops on the ledge between the pits.
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_2",(17f,4.5f),(1f,1f),(18.25f,2f),(.5f,4f),new SoloRoomTrapSettings(delayTicks:6,unitsPerTick:.36f,travelDistance:4f)));
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_3",(11f,4.5f),(1f,1f),(11.75f,2f),(.5f,4f),new SoloRoomTrapSettings(delayTicks:32,unitsPerTick:.36f,travelDistance:4f)));
-            // T4: on S1, where it heads back right.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_4",(9.75f,5.15f),(1.5f,.3f),(7.25f,7.5f),(.5f,5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_2",(16.6f,4.5f),(1.6f,1f),(18.75f,2f),(1f,4f),new SoloRoomTrapSettings(delayTicks:9,unitsPerTick:.36f,travelDistance:4f)));
+            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_3",(11.2f,4.5f),(1.6f,1f),(11.75f,2f),(.5f,4f),new SoloRoomTrapSettings(delayTicks:32,unitsPerTick:.36f,travelDistance:4f)));
+            // T4: on S1, where it heads back right (PAX-102: set off as the cat comes up onto S1, so there's a strip to land on
+            // between the spikes and Block_3's hole).
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_4",(7.75f,5.15f),(1f,.3f),(3.75f,6.875f),(.5f,6.25f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             // T5: the door backs away along S1 over a section that isn't there; spikes rise on the ground under it.
-            elements.Add(E(SoloRoomElementKind.Door,"Door",(22f,5.75f),(.6f,1.5f)));
-            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(16.25f,7.5f),(.5f,5f),settings:new SoloRoomTrapSettings(moveTicks:30,offset:new Vector2(3.5f,0f))));
-            elements.Add(E(SoloRoomElementKind.FakePlatform,"Floor_9",(23.1f,4.5f),(1.6f,1f)));
+            elements.Add(E(SoloRoomElementKind.Door,"Door",(23.5f,5.75f),(.6f,1.5f)));
+            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(15.5f,7.5f),(.5f,5f),settings:new SoloRoomTrapSettings(moveTicks:30,offset:new Vector2(3.5f,0f))));
+            elements.Add(E(SoloRoomElementKind.FakePlatform,"Floor_9",(24.6f,4.5f),(1.6f,1f)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_5",(25f,.15f),(5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Retreat")));
             // The high ledge's end gives way onto spikes on S1 below it. The spikes' trigger is the space over the ledge (its
             // top to the roof), so only a cat on the ledge sets it off, never one jumping from S1 under it; the ledge goes as
             // the spikes show (developer's play, after PAX-059a: it was a harmless drop that a jump from below set off).
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_6",(20f,5.15f),(3f,.3f),(20f,8.75f),(3f,2.5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // PAX-102: on S1_A3 only, clear of Block_1's hole.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_6",(19.35f,5.15f),(1.7f,.3f),(20f,8.75f),(3f,2.5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Ledge_2",(20f,7.25f),(3f,.5f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_6",delayTicks:1)));
             var jumps = new[] {
                 J("PitA_Bottom",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Left,14.1f,11.5f,0f,0f,3f,sourceName:"Ground_2",destinationName:"Ledge"),
@@ -69,8 +78,12 @@ namespace Parallax.Editor.Levels
                 J("Tread_B",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Left,2.5f,.5f,1.25f,2.5f,1f,sourceName:"Tread_A",destinationName:"Tread_B"),
                 J("Tread_C",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,.5f,2.6f,2.5f,3.75f,1f,sourceName:"Tread_B",destinationName:"Tread_C"),
                 J("S1_A",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,2.6f,4.6f,3.75f,5f,1f,sourceName:"Tread_C",destinationName:"S1_A"),
-                J("Spikes_4",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,8.3f,11f,5f,5f,3f,.3f),
-                J("Floor_9",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,21.8f,24.4f,5f,5f,3f,sourceName:"S1_A",destinationName:"S1_B"),
+                J("Spikes_4",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,6.5f,9f,5f,5f,1f,.3f),
+                // PAX-102: the holes the blocks leave in S1.
+                J("S1_A2",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,9.9f,12.5f,5f,5f,1f,sourceName:"S1_A",destinationName:"S1_A2"),
+                J("S1_A3",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,15.5f,18.1f,5f,5f,1f,sourceName:"S1_A2",destinationName:"S1_A3"),
+                J("S1_A4",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,19.7f,22.3f,5f,5f,1f,sourceName:"S1_A3",destinationName:"S1_A4"),
+                J("Floor_9",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,23.3f,25.9f,5f,5f,3f,sourceName:"S1_A4",destinationName:"S1_B"),
             };
             return new SoloRoomDefinition(0,0f,32f,elements.ToArray(),new[] { L001Layout.Shaft(9,30.5f,32f) },jumps);
         }

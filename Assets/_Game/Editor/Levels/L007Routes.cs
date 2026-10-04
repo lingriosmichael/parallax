@@ -17,13 +17,26 @@ namespace Parallax.Editor.Levels
             Hold(Right), Until(XAtLeast(28.9f)), Release(), Until(Still()),
             Hold(Right), Jump(), Until(GroundedOn("Tread_RD")), Release(), Until(Still()),
             Hold(Left), Jump(), Until(GroundedOn("Tread_RE")), Release(), Until(Still()),
-            Hold(Left), Jump(), Until(GroundedOn("S2_Main")), Until(RoomComplete()) };
+            Hold(Left), Jump(), Until(GroundedOn("S2_East")) }.Concat(AlongS2()).ToArray();
+
+        // PAX-102: S2 to the door: wait for Ride_A, ride it over gap A, walk on off the sinking section, wait for Ride_B, ride
+        // it over gap B, then wait out Arrow_S before the door.
+        static RouteStep[] AlongS2() => new[] {
+            Until(XAtMost(23.3f)), Release(), Until(Still()), Until(Home("Ride_A")),
+            Hold(Left), Until(GroundedOn("Ride_A").And(XAtMost(22f))), Release(), Until(Still()), Until(XAtMost(18.9f)),
+            Hold(Left), Until(XAtMost(13.3f)), Release(), Until(Still()), Until(Home("Ride_B")),
+            Hold(Left), Until(GroundedOn("Ride_B").And(XAtMost(12f))), Release(), Until(Still()), Until(XAtMost(8.9f)),
+            Hold(Left), Until(XAtMost(6.6f)), Release(), Until(Still()), Until(Moving("Arrow_S")), Until(Stopped("Arrow_S")),
+            Hold(Left), Until(RoomComplete()) };
 
         public static RoomRoutes Build()
         {
             var solution = new Route("L007 solution", new Route("L007 solution",
                 // Left along the ground: jump the floor that drops, and run on off the one that lands you.
                 Hold(Left), Until(Fired("Spikes_1")), Until(XAtMost(27.2f)), Jump(), Until(Airborne()), Until(Grounded()),
+                // PAX-102: wait out Arrow_G; then stop at once as Arrow_O fires, let it land, and walk on through it.
+                Until(XAtMost(19.2f)), Release(), Until(Still()), Until(Moving("Arrow_G")), Until(Stopped("Arrow_G")),
+                Hold(Left), Until(Fired("Arrow_O")), Release(), Until(Still()), Until(Stopped("Arrow_O")), Hold(Left),
                 // Up the left tower to S1.
                 Until(XAtMost(6.4f)), Jump(), Until(GroundedOn("Tread_LA")), Release(), Until(Still()),
                 Hold(Left), Jump(), Until(GroundedOn("Tread_LB")), Release(), Until(Still()),
@@ -60,6 +73,19 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(GroundedOn(Tread_LC))", "keep the rhythm", Release(), Until(Still()), Hold(Left), Jump(), Until(Dead())), revealedBy: "Tread_LD"),
                 new Betrayal("Dead end: the tower's rhythm goes on past S2", "Spikes_F", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Tread_RE))", "keep climbing", Release(), Until(Still()), Hold(Right), Jump(), Until(Dead())), revealedBy: "Tread_RF"),
+                // PAX-102: the ground's arrows, the riders, the sinking section and the door's arrow.
+                new Betrayal("T8: Arrow_G's next shot hits a cat that stops in its lane on the ground", "Arrow_G", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Grounded)", "stop in the lane", Until(XAtMost(15.9f)), Release(), Until(Dead()))),
+                new Betrayal("T9: Arrow_O comes down on a cat that walks on", "Arrow_O", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Stopped(Arrow_G))", "walk on", Hold(Left), Until(Dead()))),
+                new Betrayal("T10: a cat that runs on without waiting for Ride_A falls into gap A", "GapA_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(S2_East))", "run on", Hold(Left), Until(Dead())), revealedBy: "Ride_A"),
+                new Betrayal("T11: Sink_S sinks into gap A with a cat that stops where Ride_A set it down", "GapA_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X<=18.9)", "stop on the section", Hold(Left), Until(XAtMost(17.3f)), Release(), Until(Dead())), revealedBy: "Sink_S"),
+                new Betrayal("T12: a cat that runs on without waiting for Ride_B falls into gap B", "GapB_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X<=18.9)", "run on", Hold(Left), Until(Dead())), revealedBy: "Ride_B"),
+                new Betrayal("T13: Arrow_S's next shot hits a cat that stops in its lane before the door", "Arrow_S", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X<=8.9)", "stop in the lane", Hold(Left), Until(XAtMost(4f)), Release(), Until(Dead()))),
                 // PAX-100 (D-106): the sinking tread. A cat that waits on it rides it down and back up, then goes on.
                 Betrayal.Recovers("T7: a cat that waits on Tread_RC sinks with it, rides it back up and goes on", "Tread_RC",
                     new Route("wait on the tread", Route.PrefixOf(solution, "Until(GroundedOn(Tread_RC))", "wait on the tread",

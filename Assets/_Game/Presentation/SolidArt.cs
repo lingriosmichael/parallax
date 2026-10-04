@@ -12,7 +12,8 @@ namespace Parallax.Presentation
     /// over its grey-box's pose and size. On a world-tiled host (§12 R8) a block or a mover samples the tile at its authored
     /// pose, so it carries its own pixels as it moves; a shrinker samples where it stands, so it erodes in place. A block
     /// shows a crack from its release tick and a dust burst when it lands; a mover puffs dust at its leading edge while it
-    /// moves; a shrinker sheds chips at its shrinking edges.</summary>
+    /// moves; a shrinker sheds chips at its shrinking edges. PAX-102: a block in the room's roof leaves a hole (its socket)
+    /// once it has left its place by its own height, until the room resets it.</summary>
     public sealed class SolidArt : TrapArt, IHostSkinned
     {
         [SerializeField] RoomTrap trap;
@@ -24,6 +25,8 @@ namespace Parallax.Presentation
         [SerializeField] Vector2 moveDirection;
         [SerializeField] int landTick, moveTicks, holdTicks, returnTicks, shrinkTicks;
         [SerializeField] SpriteRenderer crack;
+        [Tooltip("PAX-102: the hole a roof block leaves, at its authored pose; null for any other block.")]
+        [SerializeField] SpriteRenderer socket;
         [SerializeField] SpriteRenderer[] dust = new SpriteRenderer[0];
 
         public override RoomTrap Trap => trap;
@@ -42,6 +45,7 @@ namespace Parallax.Presentation
         protected override void CollectEffects(List<Effect> into)
         {
             if (crack != null) into.Add(new Effect("crack", crack));
+            if (socket != null) into.Add(new Effect("hole", socket));
             string group = kind == SolidArtKind.FallingBlock ? "land" : kind == SolidArtKind.Shrinker ? "erode" : "move";
             foreach (SpriteRenderer d in dust) into.Add(new Effect(group, d));
         }
@@ -73,6 +77,11 @@ namespace Parallax.Presentation
                     Color c = crack.color; c.a = s >= landTick ? Mathf.Clamp01(1f - (s - landTick) / (float)TrapArtMath.CrackFadeTicks) : 1f; crack.color = c;
                 }
             }
+
+            // PAX-102: the roof block's hole, once the block is a whole height away from its place (the roof's own stone covers it
+            // until then); gone again when the room resets it.
+            if (socket != null)
+                socket.enabled = kind == SolidArtKind.FallingBlock && greyboxBody != null && Vector2.Distance(at, restPivot) >= greyboxBody.size.y - 1e-3f;
 
             for (int i = 0; i < dust.Length; i++)
             {

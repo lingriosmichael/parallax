@@ -146,6 +146,15 @@ namespace Parallax.Tests.EditMode
         public void AFallingBlockFlushInsideTheCeiling_Passes() =>
             Assert.IsEmpty(Invoke("ValidateBand1Tells", "FIX", Fixture("HangingBlockRoom", true)));
 
+        // PAX-102 (D-085 amendment): a floor block between two sections of a split slab, drawn as one surface, passes.
+        [Test]
+        public void AFallingBlockThatIsASectionOfASplitSlab_Passes() =>
+            Assert.IsEmpty(Invoke("ValidateBand1Tells", "FIX", Fixture("SlabBlockRoom", false)));
+
+        [Test]
+        public void AFallingBlockWithASeamWhereItMeetsTheSlab_IsRejected() =>   // seen red: a step of 0.2 east of the block
+            AssertMentions(Invoke("ValidateBand1Tells", "FIX", Fixture("SlabBlockRoom", true)), "Block");
+
         // ---------- the falling-block landing kill (a kit quirk) ----------
 
         [TestCase(8.5f, false)]   // seen in the harness: pins the standing cat without a kill (L001, PAX-059)

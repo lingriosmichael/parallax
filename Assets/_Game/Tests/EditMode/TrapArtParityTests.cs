@@ -268,7 +268,7 @@ namespace Parallax.Tests.EditMode
                 motion.TryGetValue(art, out Motion m);
                 bool movedLately = m != null && roomTick - m.Changed <= 1;   // it moved this room tick or the last
                 DeathKind? killedBy = death != null && death.IsHolding ? Expected(death.HoldKiller, pits) : null;
-                bool anyTell = false, anyGlint = false, anyCharge = false;
+                bool anyTell = false, anyGlint = false, anyCharge = false, anyHole = false;
                 foreach (TrapArt.Effect e in art.Effects)
                 {
                     if (!Drawn(e.Renderer)) continue;
@@ -286,6 +286,8 @@ namespace Parallax.Tests.EditMode
                         // From its release until it has lain still for the crack's fade.
                         case "crack": allowed = s >= 0 && (m == null || m.Landed < 0 || roomTick - m.Landed < TrapArtMath.CrackFadeTicks); break;
                         case "land": allowed = s >= 0 && m != null && m.Landed >= 0 && roomTick - m.Landed < TrapArtMath.LandDustTicks; break;
+                        // PAX-102: a roof block's hole, once the block is its own height away from its place.
+                        case "hole": anyHole = true; allowed = BlockHasLeft(art); break;
                         // Dust while the grey-box moves; a shrinker's chips while it shrinks (from its fire tick).
                         case "move": allowed = s >= 0 && movedLately; break;
                         case "erode": allowed = s >= 0 && (s == 0 || movedLately); break;
@@ -309,12 +311,18 @@ namespace Parallax.Tests.EditMode
                     Fail(tick, $"{art.name}: no glint in the tell ({s} since fire)");
                 if (trap is GeyserTrap geyser && geyser.Phase == GeyserPhase.Tell && !anyTell)
                     Fail(tick, $"{art.name}: no tell art in the geyser's tell");
+                if (art.Effects.Any(e => e.Group == "hole") && BlockHasLeft(art) && !anyHole)
+                    Fail(tick, $"{art.name}: the block has left its place but its hole doesn't show");
                 if (trap is StormCloudTrap cloud && cloud.Phase == StormCloudPhase.Charge && !anyCharge)
                     Fail(tick, $"{art.name}: no charge art in the storm's 25-tick charge");
                 return live;
             }
 
             static bool ArrowFired(TrapArt art) => art.Bodies.Count > 1 && Shown(art.Bodies[1].Greybox);
+
+            // PAX-102: the block's grey-box is at least its own height from where it was built.
+            static bool BlockHasLeft(TrapArt art) => art.Trap is FallingBlockTrap block && art.Bodies[0].Greybox != null
+                && Vector2.Distance((Vector2)Private(block, "start"), art.Bodies[0].Greybox.transform.position) >= art.Bodies[0].Greybox.size.y - 1e-3f;
 
             void CheckSkin(TrapArt art, int tick)
             {

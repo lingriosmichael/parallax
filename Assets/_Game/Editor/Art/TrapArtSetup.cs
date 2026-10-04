@@ -226,6 +226,9 @@ namespace Parallax.Editor.Art
             SoloRoomElement? pick = null;
             foreach (SoloRoomElement h in room.Elements)
                 if (Fixed(h.Kind) && new Rect(h.Position - h.Size * 0.5f, h.Size).Overlaps(box)) { pick = h; break; }
+            // PAX-102 (D-085 amendment): a block that is a section of a split slab takes the slab it touches.
+            if (pick == null && trap.Kind == SoloRoomElementKind.FallingBlock) pick = room.Elements.Cast<SoloRoomElement?>().FirstOrDefault(h => Fixed(h.Value.Kind)
+                && new Rect(h.Value.Position - h.Value.Size * 0.5f - Vector2.one * 0.01f, h.Value.Size + Vector2.one * 0.02f).Overlaps(box));
             if (pick == null && floorFirst) pick = room.Elements.Cast<SoloRoomElement?>().FirstOrDefault(h => h.Value.Kind == SoloRoomElementKind.Floor);
             if (pick == null) pick = room.Elements.Cast<SoloRoomElement?>().FirstOrDefault(h => Fixed(h.Value.Kind));
             Transform t = pick == null ? roomRoot.Find("Wall_Left") : roomRoot.Find(pick.Value.Name);

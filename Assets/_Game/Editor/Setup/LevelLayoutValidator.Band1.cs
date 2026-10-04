@@ -123,12 +123,26 @@ namespace Parallax.Editor.Setup
                         errors.Add($"{levelId}: {hazardNames[i]} {Describe(h)} lies {(up ? "above" : "under")} {trap.Name} and nowhere else on its surface, so it points at the trap (no tells, D-085).");
                 }
             }
+            List<SoloRoomSkin.Edge> edges = null;
             foreach (SoloRoomElement block in room.Elements.Where(e => e.Kind == SoloRoomElementKind.FallingBlock))
             {
                 Rect b = Box(block, Vector2.zero);
                 bool flush = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Ceiling || e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall)
                     .Any(e => { Rect r = Box(e, Vector2.zero); return b.xMin >= r.xMin - eps && b.xMax <= r.xMax + eps && b.yMin >= r.yMin - eps && b.yMax <= r.yMax + eps; });
-                if (!flush) errors.Add($"{levelId}: {block.Name} {Describe(b)} isn't flush inside a ceiling, floor or wall, so it shows before it moves (no tells, D-085).");
+                if (flush) continue;
+                // D-085 amendment (PAX-102): a block that is a section of a split slab (a real hole once it falls) passes when the
+                // floor is drawn as one surface across it: a floor on each side, touching it, with the same top and bottom, and no
+                // exposed side edge where they meet (the skin draws side faces and end caps on exposed edges only: a seam).
+                if (!IsSlabSection(room, b, eps))
+                {
+                    errors.Add($"{levelId}: {block.Name} {Describe(b)} isn't flush inside a ceiling, floor or wall, so it shows before it moves (no tells, D-085).");
+                    continue;
+                }
+                edges ??= SoloRoomSkin.ExposedEdges(SoloRoomSkin.Solids(room));
+                foreach (SoloRoomSkin.Edge e in edges.Where(e => (e.Side == SoloRoomSkin.Side.Left || e.Side == SoloRoomSkin.Side.Right)
+                    && (Mathf.Abs(e.Line - (b.xMin + room.Origin.x)) < eps || Mathf.Abs(e.Line - (b.xMax + room.Origin.x)) < eps)
+                    && e.To > b.yMin + room.Origin.y + eps && e.From < b.yMax + room.Origin.y - eps))
+                    errors.Add($"{levelId}: {block.Name} {Describe(b)}: a visible seam where it meets the slab ({e.Owner.Name}'s {e.Side} side at x {e.Line - room.Origin.x:F2}); a floor block is drawn as one surface with the slab (D-085 amendment).");
             }
             return errors;
         }
@@ -141,6 +155,14 @@ namespace Parallax.Editor.Setup
         // a cat standing where it lands only if its second-to-last pose already overlaps the cat by more than the test's
         // shrink; otherwise it pins the cat without killing it. With N moving ticks and a last step r, that pose is r + one
         // step above the rest pose, and it must be below the cat's height less the shrink.
+        // D-085 amendment (PAX-102): a floor on each side of the block, touching it, with its top and bottom.
+        internal static bool IsSlabSection(SoloRoomDefinition room, Rect b, float eps)
+        {
+            bool Side(bool left) => room.Elements.Where(e => e.Kind == SoloRoomElementKind.Floor).Select(e => Box(e, Vector2.zero))
+                .Any(r => Mathf.Abs(r.yMin - b.yMin) < eps && Mathf.Abs(r.yMax - b.yMax) < eps && Mathf.Abs(left ? r.xMax - b.xMin : r.xMin - b.xMax) < eps);
+            return Side(true) && Side(false);
+        }
+
         public const float BlockKillShrink = .04f;
 
         public static List<string> ValidateFallingBlockLanding(string levelId, SoloRoomDefinition room, Parallax.Gameplay.Player.CatMotorConfig motor)

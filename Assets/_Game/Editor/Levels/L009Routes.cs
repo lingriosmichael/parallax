@@ -22,7 +22,9 @@ namespace Parallax.Editor.Levels
                 // up the flip to the roof by the wall and back left upside down before the next: hop the stub, on to the door.
                 Until(XAtLeast(26.5f)), Release(), Until(Still()), Until(Moving("Arrow_4")), For(8), Until(Stopped("Arrow_4")),
                 Hold(Right), Until(GravityUp()), Until(Grounded()),
-                Hold(Left), Until(XAtMost(24.2f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()), Until(RoomComplete()));
+                Hold(Left), Until(XAtMost(24.2f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
+                // PAX-102: on along the roof into Flip_E, down onto Slab_D, and to the door standing.
+                Until(GravityDown()), Until(GroundedOn("Slab_D")), Until(RoomComplete()));
 
             return new RoomRoutes(solution,
                 new Betrayal("T1: the floating flip sends a cat that jumps into it onto spikes under the slab", "Spikes_1", DeathCause.Hazard,

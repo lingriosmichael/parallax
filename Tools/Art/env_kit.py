@@ -335,7 +335,14 @@ def build():
         if len(pieces) < len(keys):
             raise ValueError(f"{src}: found {len(pieces)} pieces, expected {len(keys)}")
         for key, box in zip(keys, sorted(pieces[:len(keys)], key=lambda b: b[0])):
-            put(layers, key, soft_base(sheet[box[1]:box[3], box[0]:box[2]]), HALF_PPU, kind="piece")
+            piece = soft_base(sheet[box[1]:box[3], box[0]:box[2]])
+            if key.startswith("ENV_FarIsland"):
+                # PAX-102 (the developer: "the L010 haze box"): the islands' faint baked haze (a quarter of their pixels at
+                # alpha 0.01-0.2) filled their box; against a dark night sky it read as a pale rectangle. Cut it: alpha under
+                # 0.1 goes, 0.1-0.35 ramps in, the island itself is unchanged.
+                piece = piece.copy()
+                piece[..., 3] *= np.clip((piece[..., 3] - 0.1) / 0.25, 0, 1)
+            put(layers, key, piece, HALF_PPU, kind="piece")
     put(layers, "ENV_MidPillar", tp.trim(load("ENV-15"), 0.05), HALF_PPU, kind="piece")
     aq = load("ENV-07c")
     rows = np.nonzero((aq[..., 3] > 0.02).any(axis=1))[0]

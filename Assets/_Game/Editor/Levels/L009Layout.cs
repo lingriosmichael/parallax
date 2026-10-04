@@ -40,7 +40,8 @@ namespace Parallax.Editor.Levels
                 // The small slabs over the floating flips.
                 // PAX-100 item 0: Slab_D reaches back to x 1.5 (it began at 4), so a cat that jumps into Flip_D1 moving left meets
                 // its spikes too, instead of rising past its end to the roof by the door (the bypass PAX-099 found).
-                E(SoloRoomElementKind.Floor,"Slab_D",(5.1f,10.25f),(7.2f,.5f)),
+                // PAX-102: 0.5 u higher, so the door on it is far enough from the start (D-085).
+                E(SoloRoomElementKind.Floor,"Slab_D",(5.1f,10.75f),(7.2f,.5f)),
                 E(SoloRoomElementKind.Floor,"Slab_1",(12.6f,10.25f),(5.2f,.5f)),
             };
             var flip = new SoloRoomTrapSettings(gravityMode:GravityFlipMode.Flip,rearmOnExit:true,rendererEnabled:true);
@@ -68,12 +69,16 @@ namespace Parallax.Editor.Levels
             // over it; and the ledge by the wall behind the start, "the first step up", which gives way onto spikes on S1 under
             // it (its trigger is the space over it).
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_D1",(5f,7.8f),(1.5f,2f),settings:flip));
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D1",(5.1f,9.85f),(7.2f,.3f),(5.1f,7.5f),(7.2f,5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D1",(5.1f,10.35f),(7.2f,.3f),(5.1f,7.75f),(7.2f,5.5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D2",(.75f,5.15f),(1.5f,.3f),(.75f,10.125f),(1.5f,7.75f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Ledge_D2",(.75f,6f),(1.5f,.5f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_D2",delayTicks:1)));
-            elements.Add(E(SoloRoomElementKind.Door,"Door",(3f,13.25f),(.6f,1.5f)));
-            // PAX-099 (D-106): the door stands on a ledge, so it never hangs in the air.
-            elements.Add(E(SoloRoomElementKind.Floor,"Door_Ledge",(3f,12.25f),(1f,.5f)));
+            // PAX-102 (the developer: "I don't want to be able to solve this level by jumping on a door while inverted"): the
+            // door stands on Slab_D's top (the platform on the far left), and a flip floating under the roof over Slab_D's east
+            // end (x 7.5-8.5, from the roof down to the slab) turns a cat walking the roof upside down back down before it gets
+            // there: it drops onto Slab_D and walks to the door standing. The flip fills the band, so it can't be passed upside
+            // down. (PAX-099's Door_Ledge under the roof is gone.)
+            elements.Add(E(SoloRoomElementKind.Door,"Door",(2.3f,11.75f),(.6f,1.5f)));
+            elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_E",(8f,12.5f),(1f,3f),settings:flip));
             var jumps = new[] {
                 J("Spikes_3",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,20.3f,23.2f,5f,5f,3f,.3f),
             };
