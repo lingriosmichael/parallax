@@ -19,6 +19,10 @@ namespace Parallax.Tests.EditMode
     // after that does anything move. Checked with the hosts re-skinned with a textured tile (the A02 fill, until the ENV-10
     // tiles land), since a flat grey-box would pass anything. Each level's declared routes are replayed twice: once to find
     // every reveal tick, once to render the element's area on that tick and the one before.
+    // PAX-104 (the developer's ruling): every other trap's bodies are hidden while one element's frames are compared. The test
+    // checks that element's disguise, not what moves behind it: L010's Drop_10, sinking behind Pit10_Cover, showed through a
+    // 1-px semi-transparent column of the tiled skin at a pixel boundary. That column is a real in-game tell, tracked in
+    // PAX-V09, not here.
     public sealed class TrapArtRevealFrameTests
     {
         const int PixelsPerUnit = 128;
@@ -92,8 +96,9 @@ namespace Parallax.Tests.EditMode
 
         static bool Skinned(TrapArt art) => art is IHostSkinned s && s.HostSkin.IsSet && art.Trap != null;
 
-        // The element's grey-box area at 128 px per unit, with the cat and every effect hidden, except this element's
-        // shards on its reveal tick (they are the frame; everything else that starts that tick may differ).
+        // The element's grey-box area at 128 px per unit, with the cat, every other trap's bodies (PAX-104) and every effect
+        // hidden, except this element's shards on its reveal tick (they are the frame; everything else that starts that tick
+        // may differ).
         static Color[] Render(TrapArt art, bool startingNow)
         {
             Bounds area = art.Bodies[0].Greybox.bounds;
@@ -101,8 +106,18 @@ namespace Parallax.Tests.EditMode
             foreach (CatMotor2D cat in Object.FindObjectsByType<CatMotor2D>(FindObjectsSortMode.None))
                 foreach (Renderer r in cat.GetComponentsInChildren<Renderer>()) if (!r.forceRenderingOff) { r.forceRenderingOff = true; hidden.Add(r); }
             foreach (TrapArt other in Object.FindObjectsByType<TrapArt>(FindObjectsSortMode.None))
+            {
+                if (other != art)
+                {
+                    // Its whole art (skin, trims, launcher) and its grey-box sprites.
+                    var bodies = new List<Renderer>(other.GetComponentsInChildren<Renderer>());
+                    foreach (TrapArt.Body b in other.Bodies) { bodies.Add(b.Art); bodies.Add(b.Greybox); }
+                    foreach (Renderer r in bodies)
+                        if (r != null && !r.transform.IsChildOf(art.transform) && !r.forceRenderingOff) { r.forceRenderingOff = true; hidden.Add(r); }
+                }
                 foreach (TrapArt.Effect e in other.Effects)
                     if (e.Renderer != null && !(other == art && startingNow && e.Group == "shard") && !e.Renderer.forceRenderingOff) { e.Renderer.forceRenderingOff = true; hidden.Add(e.Renderer); }
+            }
             var go = new GameObject("__RevealCamera");
             try
             {

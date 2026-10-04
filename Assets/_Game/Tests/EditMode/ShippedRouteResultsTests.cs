@@ -16,6 +16,7 @@ namespace Parallax.Tests.EditMode
     // difficulty pass: arrows, riders, sinking sections, real holes, the upright doors; L010 no longer has a Recovers).
     // PAX-103: re-pinned L003 (the arrow floor), L004 (the climb), L007 and L010 (the storm, the gaps' spikes), L009 (the
     // roof's spikes).
+    // PAX-104: re-pinned L007 (one ground arrow timed to the cat; the storm over all of S2).
     public sealed class ShippedRouteResultsTests
     {
         IDisposable session;
@@ -39,7 +40,7 @@ namespace Parallax.Tests.EditMode
         [TestCase("L004", new[] { 12, 13, 13, 14, 13, 31 }, new int[0], new[] { "Spikes_1=11", "Arrow_O=6", "Sink_R=44", "Arrow_7=18", "Spikes_A=27", "Spikes_3=7", "Roof_4=21", "Ride_2=673", "Ride_4=683", "Spikes_L=26" }, new string[0])]
         [TestCase("L005", new[] { 24, 32 }, new int[0], new[] { "Arrow_A=6", "Arrow_Drip=6", "Arrow_B=6", "Ledge_Lo2=21", "Ledge_Lo2=25", "Arrow_C=6", "Arrow_D=6", "Floor_6=27", "Spikes_D=15" }, new string[0])]
         [TestCase("L006", new[] { 20, 26 }, new int[0], new[] { "Spikes_1=11", "Block_2=18", "Sweep_3=42", "Floor_4=21", "Floor_5=23", "Ride_6=482", "Spikes_L=44", "Floor_5=21", "Spikes_L=24" }, new string[0])]
-        [TestCase("L007", new[] { 26, 13, 31 }, new int[0], new[] { "Floor_1=29", "Floor_2=21", "S2_End=39", "S1_T4=30", "Spikes_5=9", "S1_T6=51", "Spikes_6b=32", "Tread_LD=19", "Tread_RF=19", "Arrow_G=6", "Arrow_O=6", "Ride_A=849", "Sink_S=19", "Ride_B=926", "Cloud=274", "Arrow_S=6" }, new[] { "Tread_RC visible t724, complete t1355" })]
+        [TestCase("L007", new[] { 20, 13, 31 }, new int[0], new[] { "Floor_1=29", "Floor_2=21", "S2_End=39", "S1_T4=30", "Spikes_5=9", "S1_T6=51", "Spikes_6b=32", "Tread_LD=19", "Tread_RF=19", "Arrow_G=6", "Ride_A=843", "Sink_S=19", "Ride_B=778", "Cloud=274", "Arrow_S=6" }, new[] { "Tread_RC visible t659, complete t1356" })]
         [TestCase("L008", new[] { 26, 26 }, new int[0], new[] { "Block_1=10", "Spikes_2=8", "Lift_3=9", "Floor_4=28", "Spikes_5=129", "Block_6=10", "Arrow_S=6", "Arrow_O=6", "Ride_A=666", "Ride_B=773", "Ledge_D=28", "Ledge_D=32", "Floor_9=7" }, new string[0])]
         [TestCase("L009", new[] { 51 }, new int[0], new[] { "Spikes_1=16", "Spikes_1=24", "Arrow_2=6", "Spikes_3=7", "Arrow_4=6", "Roof_5=21", "Spikes_D1=30", "Ledge_D2=15", "Spikes_D1=35", "Spikes_D1=58" }, new string[0])]
         [TestCase("L010", new[] { 26 }, new int[0], new[] { "Block_1=10", "S1_2=25", "Drop_10=57", "Spikes_3=33", "Arrow_4=6", "Spikes_5=393", "Ride_E=537", "Sink_E=33", "Cloud=174", "Step_C=19", "Spikes_D2=15", "Spikes_D2=25" }, new string[0])]
