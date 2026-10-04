@@ -191,5 +191,9 @@ guard case; record (A) in PAX-A17's open items; correct PAX-104 §7.
 - **Docs:** PAX-104 §7 corrected; (A) and the gauntlet's quality level recorded in PAX-A17's open items.
 - **Tests** (batch clone, identical code): `WorldTileSkinTests` and `TrapArtRevealFrameTests`, 54 of 54. Not run:
   `TrapArtParityTests`, `HazardContrastTests` (no runtime code changed).
-- **Left as is:** `TrapArtPreview.ReskinHostsWithA02` (the contact sheet's re-skin) still draws the atlased A02 fill, so
-  the column can appear on a contact sheet rendered in the Editor. It's a preview tool, not the game.
+- **The contact sheet (follow-up, the developer's ruling):** `TrapContactSheet` renders the shipped skins too. Its second
+  collapsing-floor row, re-skinned with the A02 fill, is gone, the first row is titled "SHIPPED SKIN", and the sheet's
+  header says the hosts are in their shipped skin. The sheet and strips are regenerated, and the stale
+  `L015_Collapse_2_A02.png` strip is removed. `TrapArtPreview` (the re-skin) has no callers left; it stays in the
+  repo unused. The A16 critics judged `EnvironmentCapture`'s game-camera captures (Play Mode, the level camera,
+  2400 × 1080), not this sheet.

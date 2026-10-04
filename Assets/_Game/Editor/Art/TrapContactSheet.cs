@@ -37,7 +37,7 @@ namespace Parallax.Editor.Art
         sealed class Row
         {
             public string Title, Level, Trap, Route;   // Route: null = the solution, else the betrayal whose name starts with it
-            public bool A02Host, Strip;
+            public bool Strip;
             public Func<TrapArtConfig, Sprite[]> Bodies = _ => new Sprite[0];
             public List<(string label, Func<RoomTrap, int, bool> when)> States = new();
         }
@@ -58,13 +58,13 @@ namespace Parallax.Editor.Art
                     (List<(string, Texture2D)> shots, List<Texture2D> strip) = CaptureRow(session, row);
                     string[] placeholders = row.Bodies(config).Where(b => b != null && config.IsPlaceholder(b)).Select(b => b.name).Distinct().ToArray();
                     tiles.Add((placeholders.Length > 0 ? $"{row.Title}  [PLACEHOLDER: {string.Join(", ", placeholders)}]" : row.Title, shots));
-                    if (strip.Count > 0) strips.Add(($"{row.Level}_{row.Trap}{(row.A02Host ? "_A02" : "")}", strip));
+                    if (strip.Count > 0) strips.Add(($"{row.Level}_{row.Trap}", strip));
                 }
                 (List<(string, Texture2D)> flipShots, string note) = CaptureFlipLighting(session);
                 tiles.Add(("TRAP-01 FACING BOTH WAYS (FLIP SHADER; POINT-LIGHT SHADING IS CHECKED IN THE SCENE VIEW)", flipShots));
                 flipNote = note;
             }
-            Texture2D sheet = Compose(tiles, "PAX-A13 TRAP KIT - EVERY ELEMENT AT PHONE SCALE (90 PX/U) - HOSTS GREY-BOX UNLESS NOTED");
+            Texture2D sheet = Compose(tiles, "PAX-A13 TRAP KIT - EVERY ELEMENT AT PHONE SCALE (90 PX/U) - HOSTS IN THEIR SHIPPED SKIN");
             TrapShots.SavePng(sheet, OutPath);
             foreach ((string name, List<Texture2D> frames) in strips) SaveStrip(name, frames);
             Debug.LogWarning($"Trap Contact Sheet: {OutPath} ({sheet.width}x{sheet.height}), {tiles.Count} rows, {strips.Count} strips in {StripDir}; {flipNote}");
@@ -108,9 +108,10 @@ namespace Parallax.Editor.Art
                 r.States.Add(("ERUPT: MID", (t, _) => ((GeyserTrap)t).Phase == GeyserPhase.Erupt && TrapShots.TicksSinceFire(t) == GeyserTell(t) + 20));
             }
 
-            var floor = new Row { Title = "COLLAPSING FLOOR - L015 COLLAPSE_2 (GREY-BOX HOST)", Level = "L015", Trap = "Collapse_2" };
-            var floorA02 = new Row { Title = "COLLAPSING FLOOR ON THE A02 FILL TILE (HOST RE-SKINNED FOR THIS SHEET; ENV-10 NOT IN YET)", Level = "L015", Trap = "Collapse_2", A02Host = true };
-            foreach (Row r in new[] { floor, floorA02 })
+            // PAX-V09: the shipped skin (every room build gives the host the kit's stone). The second row on the A02 fill is gone:
+            // that sprite is atlased, and an atlased tile draws a see-through column at its wrap (WorldTileSkinTests).
+            var floor = new Row { Title = "COLLAPSING FLOOR - L015 COLLAPSE_2 (SHIPPED SKIN)", Level = "L015", Trap = "Collapse_2" };
+            foreach (Row r in new[] { floor })
             {
                 r.States.Add(("BEFORE: HOST SKIN", Before));
                 r.States.Add(("REVEAL FRAME", (t, _) => TrapShots.TicksSinceFire(t) == 0));
@@ -118,7 +119,7 @@ namespace Parallax.Editor.Art
                 r.States.Add(("CRUMBLE +16", (t, _) => TrapShots.TicksSinceFire(t) == 16));
                 r.States.Add(("GONE +40", (t, _) => TrapShots.TicksSinceFire(t) == 40));
             }
-            foreach (Row r in new[] { arrowLeft, arrowRight, geyserUp, geyserDown, floor, floorA02 }) r.Strip = true;
+            foreach (Row r in new[] { arrowLeft, arrowRight, geyserUp, geyserDown, floor }) r.Strip = true;
             geyserUp.Bodies = geyserDown.Bodies = c => c.Steam;
             var rows = new List<Row> { arrowLeft, arrowRight, honest };
 
@@ -129,7 +130,7 @@ namespace Parallax.Editor.Art
             spear.States.Add(("STUCK + SHIVER", (t, _) => TrapShots.TicksSinceFire(t) == Tell(t) + Flight(t) + 2));
             spear.States.Add(("PLANTED", (t, _) => TrapShots.TicksSinceFire(t) == Tell(t) + Flight(t) + 24));
             rows.Add(spear);
-            rows.AddRange(new[] { geyserUp, geyserDown, floor, floorA02 });
+            rows.AddRange(new[] { geyserUp, geyserDown, floor });
             rows.Add(Timed("FAKE PLATFORM - L011 LEDGE_M", "L011", "Ledge_M", null, "BEFORE: HOST SKIN", null, 0, 6, 16, 40));
 
             Func<TrapArtConfig, Sprite[]> spikes = c => new[] { c.SpikeStrip };
@@ -213,7 +214,6 @@ namespace Parallax.Editor.Art
             var done = new bool[row.States.Count];
             int stripFrom = -1;
             using var rig = new TrapShots.Rig();
-            bool reskinned = false;
             var options = new ReplayOptions
             {
                 AfterTick = tick =>
@@ -222,7 +222,6 @@ namespace Parallax.Editor.Art
                     Transform target = row.Trap == Death ? null : FindElement(row.Trap);
                     if (row.Trap != Death && target == null) return;
                     RoomTrap trap = target != null && target.TryGetComponent(out RoomTrap t) ? t : null;
-                    if (row.A02Host && !reskinned) { TrapArtPreview.ReskinHostsWithA02(); reskinned = true; }
                     TrapShots.ApplyArt();
                     (Vector2 centre, float view) = Frame(target, trap);
                     for (int i = 0; i < row.States.Count; i++)
