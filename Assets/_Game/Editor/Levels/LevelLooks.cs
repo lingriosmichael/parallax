@@ -99,7 +99,10 @@ namespace Parallax.Editor.Levels
                 {
                     // Phase 2 round 2: a ruined hall of whole wall pieces (the tiled back wall repeated every 11 u).
                     // Round 3 (critics: "a pale strip between the back wall and the floor"): every foot well under the floor line.
-                    new Piece("ENV_RuinWall", 3f, -1.5f), new Piece("ENV_RuinWall", 16.5f, -1.5f, 0.9f, flip: true), new Piece("ENV_RuinWall", 29.5f, -1.5f),
+                    // 2026-10-03 (the developer: "visuals are weird", a pale sky column between two pieces): 10.8 u apart, so
+                    // each piece's feathered end (8% of its 12 u) overlaps the next and no gap shows.
+                    new Piece("ENV_RuinWall", 2f, -1.5f), new Piece("ENV_RuinWall", 12.8f, -1.5f, flip: true), new Piece("ENV_RuinWall", 23.6f, -1.5f),
+                    new Piece("ENV_RuinWall", 34.4f, -1.5f, flip: true),
                     new Piece("ENV_FarIsland_3", 8f, 15.5f, 1.5f),
                     new Piece("ENV_MidTowers", 27f, 9.5f),
                     new Piece("ENV_FarSpire_2", 18f, 11f, 1.3f),
@@ -146,7 +149,9 @@ namespace Parallax.Editor.Levels
                 Grade = "GoldenHour", Stone = Fill.A, Dress = new Dressing(0.4f, drapes: true, glyphs: true), Signature = "light shafts through the back wall",
                 Pieces = new[]
                 {
-                    new Piece("ENV_RuinWall", 4f, -0.5f, flip: true), new Piece("ENV_RuinWall", 17f, 0.2f), new Piece("ENV_RuinWall", 30f, -0.6f, 0.92f, flip: true),
+                    // 2026-10-03: 10.8 u apart (no gap between the feathered ends; see L004).
+                    new Piece("ENV_RuinWall", 2f, -0.5f, flip: true), new Piece("ENV_RuinWall", 12.8f, 0.2f), new Piece("ENV_RuinWall", 23.6f, -0.6f, flip: true),
+                    new Piece("ENV_RuinWall", 34.4f, -0.3f),
                     new Piece("ENV_MidTowers", 20f, 8.5f),
                     new Piece("ENV_Shaft", 11f, 1.5f, alpha: 0.45f),
                     new Piece("ENV_Shaft", 24.5f, 2.5f, alpha: 0.35f),
@@ -170,7 +175,9 @@ namespace Parallax.Editor.Levels
                 Pieces = new[]
                 {
                     // Round 4 (the cat vanished on them at night, contrast 2.0): hazed into the moonlit sky.
-                    new Piece("ENV_RuinWall", 2f, 0.5f, 0.95f, alpha: 0.4f), new Piece("ENV_RuinWall", 14f, 1.2f, flip: true, alpha: 0.4f), new Piece("ENV_RuinWall", 25f, 0.2f, alpha: 0.4f),
+                    // 2026-10-03: 10.8 u apart (no gap between the feathered ends; see L004).
+                    new Piece("ENV_RuinWall", 2f, 0.5f, alpha: 0.4f), new Piece("ENV_RuinWall", 12.8f, 1.2f, flip: true, alpha: 0.4f), new Piece("ENV_RuinWall", 23.6f, 0.2f, alpha: 0.4f),
+                    new Piece("ENV_RuinWall", 34.4f, 0.8f, flip: true, alpha: 0.4f),
                     new Piece("ENV_Waterfall", 8f, 0f, span: 15f),
                     new Piece("ENV_MidTowers", 18f, 10f),
                     new Piece("ENV_Fog", 12f, 0.4f, span: 28f, alpha: 0.55f),
