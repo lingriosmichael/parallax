@@ -128,10 +128,10 @@ namespace Parallax.Editor.Art
             SpriteRenderer launcher = Child(art, "Launcher", layer, changes);
             launcher.sortingOrder = greyLauncher.sortingOrder;
             if (lane.Disguised) { hostLook.ApplyTo(launcher, e.Size); launcher.transform.localScale = Vector3.one; launcher.flipX = false; }   // scale after the draw mode (Sliced rewrites it)
-            else { launcher.sprite = config.ArrowLauncher; launcher.sharedMaterial = config.TrapMaterial; launcher.drawMode = SpriteDrawMode.Simple; launcher.flipX = lane.Direction == ArrowDirection.Left; }
+            else { launcher.sprite = config.ArrowLauncher; launcher.sharedMaterial = HazardMaterial(config); launcher.drawMode = SpriteDrawMode.Simple; launcher.flipX = lane.Direction == ArrowDirection.Left; }
 
             SpriteRenderer arrow = Child(art, "Arrow", layer, changes);   // a spear's head
-            arrow.sprite = spear ? config.SpearHead : config.Arrow; arrow.sharedMaterial = config.TrapMaterial; arrow.drawMode = SpriteDrawMode.Simple;
+            arrow.sprite = spear ? config.SpearHead : config.Arrow; arrow.sharedMaterial = HazardMaterial(config); arrow.drawMode = SpriteDrawMode.Simple;
             arrow.sortingOrder = greyArrow != null ? greyArrow.sortingOrder : 0;
             arrow.flipX = lane.Direction == ArrowDirection.Left;
             arrow.enabled = false;
@@ -139,7 +139,7 @@ namespace Parallax.Editor.Art
             if (spear)
             {
                 shaft = Child(art, "Shaft", layer, changes);
-                shaft.sprite = config.SpearShaft; shaft.sharedMaterial = config.TrapMaterial; shaft.drawMode = SpriteDrawMode.Tiled;
+                shaft.sprite = config.SpearShaft; shaft.sharedMaterial = HazardMaterial(config); shaft.drawMode = SpriteDrawMode.Tiled;
                 shaft.sortingOrder = arrow.sortingOrder; shaft.flipX = arrow.flipX; shaft.enabled = false;
             }
             else RemoveChild(art, "Shaft", changes);
@@ -149,7 +149,7 @@ namespace Parallax.Editor.Art
             if (lane.Disguised)
             {
                 slot = Child(art, "Slot", layer, changes);
-                slot.sprite = config.ArrowLauncher; slot.sharedMaterial = config.TrapMaterial; slot.drawMode = SpriteDrawMode.Simple;
+                slot.sprite = config.ArrowLauncher; slot.sharedMaterial = HazardMaterial(config); slot.drawMode = SpriteDrawMode.Simple;
                 slot.sortingOrder = launcher.sortingOrder + 1; slot.flipX = lane.Direction == ArrowDirection.Left; slot.enabled = false;
             }
             else RemoveChild(art, "Slot", changes);
@@ -162,7 +162,7 @@ namespace Parallax.Editor.Art
             int flight = ArrowMath.FlightTicks(LevelLayoutValidator.ArrowTravel(e), lane.UnitsPerTick);
             TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", e.Name), ("launcherArt", launcher), ("greyboxLauncher", greyLauncher),
                 ("arrowArt", arrow), ("greyboxArrow", greyArrow), ("disguised", lane.Disguised), ("launcherSprite", config.ArrowLauncher), ("arrowSprite", config.Arrow),
-                ("trapMaterial", config.TrapMaterial), ("launcherSize", e.Size), ("arrowSize", new Vector2(lane.Length, lane.Thickness)),
+                ("trapMaterial", HazardMaterial(config)), ("launcherSize", e.Size), ("arrowSize", new Vector2(lane.Length, lane.Thickness)),
                 ("direction", (int)lane.Direction), ("tellTicks", lane.TellTicks), ("flightTicks", flight), ("glint", glint), ("slot", slot),
                 ("spear", spear), ("shaftArt", shaft), ("spearHeadSprite", config.SpearHead), ("spearShaftSprite", config.SpearShaft));
             WriteSkin(presenter, "hostSkin", hostLook, changes);
@@ -216,6 +216,12 @@ namespace Parallax.Editor.Art
         }
 
         // ---------- helpers ----------
+
+        /// <summary>PAX-V08: the material lethal bodies draw with (spikes, an arrow or spear and its launcher or slot): unlit, so
+        /// a hazard keeps its full colour, outline and rim under any level's lights (a night level's dim light made them melt
+        /// into an unlit sky; HazardContrastTests). Effects (glint, dust) keep the trap material. Falls back to the trap material
+        /// if URP's unlit sprite material can't be found.</summary>
+        internal static Material HazardMaterial(TrapArtConfig config) => EnvironmentKit.UnlitMaterial != null ? EnvironmentKit.UnlitMaterial : config.TrapMaterial;
 
         /// <summary>The fixed geometry a disguised trap sits in (a launcher) or passes for (a floor): the first Floor,
         /// Ceiling, Wall or PitBottom overlapping it; a floor with no overlap passes for the room's first Floor.</summary>

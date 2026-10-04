@@ -2814,3 +2814,16 @@ Trigger coverage counts such a block as the slab over its storey until it falls.
 **Applied:** L010 Block_1, L008 Block_6 and L002 Block_1–3 (real holes, 1.6 u). L002 follows the developer's play-test
 (2026-10-03): "If part of the floor falls, there should be a hole there", superseding the earlier "no holes in L002";
 its S1 was reworked to fit (PAX-102 §8).
+
+### D-108 · 2026-10-03 · Accepted (PAX-V08, the developer's rulings)
+**Decision:** hazards read on every background. One danger colour, crimson (0.80, 0.06, 0.14; `HazardPalette.Danger`,
+`hazard_readable.DANGER`), marks lethal things only: arrow heads and fletching, spike tips, the spear's blade, the launcher's
+mouth and its tell glow. Background and environment art never use it (warm light and gold stay amber/yellow; checked by
+`test_hazard_readable.py`). Every lethal sprite has a dark outer line and a light inner rim. Lethal bodies (spikes, arrows,
+spears, launchers and their slots) draw with URP's unlit sprite material, so level lighting never dims them; effects stay
+lit. **The rule:** for every level, every hazard in its lethal pose, at each level-camera pose that shows it (2400 × 1080,
+2D lights on), at least 30% of its pixels reach a 3:1 luminance contrast against what's behind them
+(`HazardContrastTests`).
+**Why:** the developer (2026-10-03): "arrows are super hard to see … make the arrow more visible regardless of the level it
+is in"; "Level 004: all arrows and traps are so hard to see. They meld into the background." Measured on the old art: L004's
+arrows 3–10% of their pixels at 3:1, L008's and L010's 2–5%.

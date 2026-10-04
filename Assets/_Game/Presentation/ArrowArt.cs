@@ -11,7 +11,8 @@ namespace Parallax.Presentation
     /// effects that start on it). An honest launcher's body is the slot. The arrow (TRAP-02) or the spear (TRAP-05: a head and
     /// a repeating shaft) is drawn exactly where the grey-box projectile is, facing its lane: the sprites face right and are
     /// flipped for a left lane, and the trap material (Parallax/2D/Sprite-Lit-Flip) turns their normal maps with them. Over the
-    /// declared tell the slot warms and a glint pulses at the head; on stopping, the projectile shivers inside its box and
+    /// declared tell the slot flushes crimson and a crimson glint pulses at the head (PAX-V08: the danger colour,
+    /// HazardPalette); on stopping, the projectile shivers inside its box and
     /// puffs a little dust. PAX-099 (D-106): an angled arrow's art takes the grey-box arrow's rotation (Mirror).</summary>
     public sealed class ArrowArt : TrapArt, IHostSkinned
     {
@@ -19,7 +20,6 @@ namespace Parallax.Presentation
         public const float ArrowFill = 0.94f;
         const int ShiverTicks = 10, ImpactLife = 18;
         const float ShiverAmplitude = 0.018f;
-        static readonly Color TellWarm = new(1f, 0.72f, 0.38f, 1f);
 
         [SerializeField] ArrowTrap trap;
         [SerializeField] SpriteRenderer launcherArt, greyboxLauncher;
@@ -83,7 +83,7 @@ namespace Parallax.Presentation
                 else
                 {
                     DrawFitted(launcherArt, launcherSprite, launcherSize * bodyScale);
-                    launcherArt.color = Color.Lerp(Color.white, TellWarm, pulse * 0.8f);
+                    launcherArt.color = Color.Lerp(Color.white, HazardPalette.TellTint, pulse);   // PAX-V08: the tell glows crimson
                 }
             }
             if (slot != null)
@@ -94,7 +94,7 @@ namespace Parallax.Presentation
                 {
                     slot.transform.position = new Vector3(greyboxLauncher.transform.position.x, greyboxLauncher.transform.position.y, slot.transform.position.z);
                     DrawFitted(slot, launcherSprite, launcherSize * bodyScale);
-                    slot.color = Color.Lerp(Color.white, TellWarm, pulse * 0.8f);
+                    slot.color = Color.Lerp(Color.white, HazardPalette.TellTint, pulse);
                 }
             }
 
@@ -129,7 +129,7 @@ namespace Parallax.Presentation
                 {
                     glint.transform.position = new Vector3(head.x, head.y, glint.transform.position.z);
                     glint.transform.localScale = Vector3.one * (2.4f * pulse);
-                    Color c = glint.color; c.a = 0.5f + 0.5f * pulse; glint.color = c;
+                    Color c = HazardPalette.TellGlint; c.a = 0.5f + 0.5f * pulse; glint.color = c;
                 }
             }
 
@@ -165,10 +165,13 @@ namespace Parallax.Presentation
             if (trapMaterial != null) shaftArt.sharedMaterial = trapMaterial;
             shaftArt.drawMode = SpriteDrawMode.Tiled;   // before the scale: switching draw mode rewrites a SpriteRenderer's scale
             shaftArt.tileMode = SpriteTileMode.Continuous;
-            shaftArt.transform.localScale = Vector3.one;
+            // PAX-V08: tiled along its length only, one row stretched to the drawn thickness (as SpikeArt's strip), so a
+            // thick spear doesn't stack rows of its outlined shaft.
+            float row = spearShaftSprite != null ? spearShaftSprite.bounds.size.y : thick;
+            shaftArt.transform.localScale = new Vector3(1f, thick / row, 1f);
             shaftArt.flipX = FacesLeft;
             shaftArt.color = Color.white;
-            shaftArt.size = new Vector2(shaftLen, thick);
+            shaftArt.size = new Vector2(shaftLen, row);
             shaftArt.transform.position = centre + new Vector3(-sign * (size.x * 0.49f - shaftLen * 0.5f), 0f, 0f);
         }
 

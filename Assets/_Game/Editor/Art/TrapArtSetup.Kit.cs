@@ -40,11 +40,11 @@ namespace Parallax.Editor.Art
             Transform art = ArtObject(artRoot, e.Name, greybox.transform.position, layer, changes);
             SpikeArt presenter = SetupUtility.Ensure<SpikeArt>(art.gameObject, changes);
             SpriteRenderer body = Child(art, "Spikes", layer, changes);
-            body.sprite = config.SpikeStrip; body.sharedMaterial = config.TrapMaterial; body.drawMode = SpriteDrawMode.Tiled;
+            body.sprite = config.SpikeStrip; body.sharedMaterial = HazardMaterial(config); body.drawMode = SpriteDrawMode.Tiled;
             body.sortingOrder = greybox.sortingOrder; body.enabled = greybox.enabled;
             SpriteRenderer[] grit = rises ? Effects(art, "Grit", config.GritPuffs, config.Dust, config.TrapMaterial, greybox.sortingOrder + EffectOrder, layer, changes) : Effects(art, "Grit", 0, config.Dust, config.TrapMaterial, 0, layer, changes);
             TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", e.Name), ("body", body), ("greyboxBody", greybox),
-                ("strip", config.SpikeStrip), ("trapMaterial", config.TrapMaterial), ("pointsDown", PointsDown(room, e)), ("rises", rises));
+                ("strip", config.SpikeStrip), ("trapMaterial", HazardMaterial(config)), ("pointsDown", PointsDown(room, e)), ("rises", rises));
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
             SetupUtility.SetArray(presenter, "grit", grit.Cast<Object>().ToArray(), changes);
             return art.name;

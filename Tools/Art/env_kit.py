@@ -20,6 +20,7 @@ from PIL import Image, ImageFilter
 
 sys.path.insert(0, str(Path(__file__).parent))
 import trap_process as tp  # noqa: E402
+import hazard_readable  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "Art_Source/Environment/A"
@@ -206,7 +207,8 @@ def build():
     play, layers, slots = {}, {}, {}
 
     def put(store, name, a, units_ppu, **meta):
-        a = tp.clean_alpha(a)
+        # PAX-V08: no environment art carries the danger colour (crimson, hazard_readable.DANGER); stray crimson goes amber.
+        a = hazard_readable.out_of_danger(tp.clean_alpha(a))
         store[name] = a
         slots[name] = dict(file=name + ".png", folder="Kit" if store is play else "Backgrounds/Kit",
                            width=round(a.shape[1] / units_ppu, 4), height=round(a.shape[0] / units_ppu, 4), **meta)
@@ -293,7 +295,11 @@ def build():
         if len(pieces) < len(keys):
             raise ValueError(f"{src}: found {len(pieces)} pieces, expected {len(keys)}")
         for key, box in zip(keys, pieces):
-            put(play, key, fit_width(sheet[box[1]:box[3], box[0]:box[2]], round(width * WORLD_PPU)), WORLD_PPU, kind="dressing")
+            piece = fit_width(sheet[box[1]:box[3], box[0]:box[2]], round(width * WORLD_PPU))
+            if src == "ENV-22":
+                # PAX-V08: the banners' red cloth is the danger colour; it turns a deep royal blue (hue 222).
+                piece = hazard_readable.set_hue(piece, hazard_readable.reddish(piece), 222.0)
+            put(play, key, piece, WORLD_PPU, kind="dressing")
 
     # Climb vine (PAX-A08's old item 15): top anchor, tiling middle, tip; 0.6 u wide like the grab box.
     v = load("ENV-18")
@@ -377,6 +383,8 @@ def write(play, layers, slots):
     LAYERS.mkdir(parents=True, exist_ok=True)
     for store, folder in ((play, KIT), (layers, LAYERS)):
         for name, a in store.items():
+            # PAX-V08: again as it's written (some art is finished after put(): edge fades, scaled copies).
+            a = hazard_readable.out_of_danger(a)
             tp.save(a, folder / f"{name}.png")
             if slots[name].get("normal"):
                 tp.save(tp.normal_map(a, strength=1.6, bevel_px=2.0), folder / f"{name}_n.png")

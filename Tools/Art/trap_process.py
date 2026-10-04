@@ -19,6 +19,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageFilter
 
+import hazard_readable
+
 REPO = Path(__file__).resolve().parents[2]
 OUT = REPO / "Assets" / "_Game" / "Art" / "Traps"
 MANIFEST = OUT / "trap_kit.json"
@@ -163,11 +165,13 @@ def build():
 
     # TRAP-01, the launcher: its mouth faces right (flipped in code for a left-facing lane). 0.5 u square.
     src = CHATGPT / "TRAP-01_arrow_launcher_v1.png"
-    emit("Bodies/TRAP-01_arrow_launcher", fit(clean_alpha(trim(load_rgba(src))), 0.5, 0.5), sources=[src])
+    # PAX-V08: its mouth crimson (the danger colour).
+    emit("Bodies/TRAP-01_arrow_launcher", hazard_readable.launcher_mouth(fit(clean_alpha(trim(load_rgba(src))), 0.5, 0.5)), sources=[src])
 
     # TRAP-02, the arrow, pointing right: 0.8 u long, the kit's default arrow length (fits inside any lane's box).
     src = CHATGPT / "TRAP-02_arrow_v1.png"
-    emit("Bodies/TRAP-02_arrow", fit(clean_alpha(trim(load_rgba(src))), 0.8, 0.16), sources=[src])
+    # PAX-V08: twice as thick, a bone shaft, a crimson head and fletching, and the double outline.
+    emit("Bodies/TRAP-02_arrow", hazard_readable.arrow(fit(clean_alpha(trim(load_rgba(src))), 0.8, 0.16)), sources=[src])
 
     # TRAP-03, the vent: cropped around its mouth to the vent's 1 x 0.3 box, 128 x 38 px.
     src = CHATGPT / "TRAP-03_geyser_vent_v1.png"

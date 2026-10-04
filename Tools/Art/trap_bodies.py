@@ -318,9 +318,12 @@ def bodies(emit, load_rgba, luminance_alpha, clean_alpha, trim, fit, resize, gri
         out[-3:, :, :3] = np.array([0.08, 0.07, 0.07], np.float32); out[-3:, :, 3] = 1.0
         return out
 
-    body("TRAP-04_spike_strip", "Bodies/TRAP-04_spike_strip", lambda s: tile_height(blades(whole_periods(clean_alpha(trim(load_rgba(s))))), 45), ph_spike_strip, tiled=True)
-    body("TRAP-05_spear", "Bodies/TRAP-05_spear_head", lambda s: fit(clean_alpha(np.ascontiguousarray(pieces(clean_alpha(load_rgba(s)), 3)[0][:, ::-1])), 0.75, 0.34), ph_spear_head)   # the v1 image points left; the kit faces right
-    body("TRAP-05_spear", "Bodies/TRAP-05_spear_shaft", lambda s: tile_height(straight_run(clean_alpha(pieces(clean_alpha(load_rgba(s)), 3)[1])), 44), ph_spear_shaft, tiled=True)
+    # PAX-V08 (hazard readability): crimson tips and blades, bone shafts, the double outline; sized first, outlined after
+    # (so the lines stay crisp), the tiled strips' outlines wrapped across their seams. Same tile heights as before.
+    import hazard_readable as hr
+    body("TRAP-04_spike_strip", "Bodies/TRAP-04_spike_strip", lambda s: hr.spike_strip(tile_height(blades(whole_periods(clean_alpha(trim(load_rgba(s))))), 42)), ph_spike_strip, tiled=True)
+    body("TRAP-05_spear", "Bodies/TRAP-05_spear_head", lambda s: hr.spear_head(fit(clean_alpha(np.ascontiguousarray(pieces(clean_alpha(load_rgba(s)), 3)[0][:, ::-1])), 0.75, 0.34)), ph_spear_head)   # the v1 image points left; the kit faces right
+    body("TRAP-05_spear", "Bodies/TRAP-05_spear_shaft", lambda s: hr.spear_shaft(tile_height(straight_run(clean_alpha(pieces(clean_alpha(load_rgba(s)), 3)[1])), 36)), ph_spear_shaft, tiled=True)
     body("TRAP-06_inverter_orb", "Bodies/TRAP-06_inverter_orb", lambda s: fit(trim(luminance_alpha(load_rgba(s))), 0.6, 0.6), ph_orb)
     body("TRAP-07_inverter_cue", "Bodies/TRAP-07_cue_ring", lambda s: fit(trim(grid(luminance_alpha(load_rgba(s)), 1, 2, 0)[0]), 1.5, 1.1), ph_cue_ring, normal=False)
     body("TRAP-07_inverter_cue", "Bodies/TRAP-07_cue_mark", lambda s: fit(trim(grid(luminance_alpha(load_rgba(s)), 1, 2, 0)[1]), 0.7, 0.2), ph_cue_mark, normal=False)

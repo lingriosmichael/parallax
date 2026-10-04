@@ -329,13 +329,19 @@
       "tiled": false
     }
   ],
-  "flags": [],
+  "flags": [
+    "Bodies/TRAP-01_arrow_launcher: black shading 28.8%",
+    "Bodies/TRAP-02_arrow: black shading 39.6%",
+    "Bodies/TRAP-04_spike_strip: black shading 42.9%",
+    "Bodies/TRAP-05_spear_head: black shading 31.7%",
+    "Bodies/TRAP-05_spear_shaft: black shading 21.3%"
+  ],
   "ppu": 128,
   "sprites": {
     "Bodies/TRAP-01_arrow_launcher": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher_n.png",
       "palette": {
-        "black": 0.0077,
+        "black": 0.2881,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher.png",
@@ -356,7 +362,7 @@
     "Bodies/TRAP-02_arrow": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.3957,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow.png",
@@ -366,8 +372,8 @@
       ],
       "placeholder": "",
       "size_px": [
-        102,
-        17
+        214,
+        78
       ],
       "sources": [
         "Art_Source/Traps_ChatGPT/TRAP-02_arrow_v1.png"
@@ -398,7 +404,7 @@
     "Bodies/TRAP-04_spike_strip": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-04_spike_strip_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.4287,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-04_spike_strip.png",
@@ -408,7 +414,7 @@
       ],
       "placeholder": "",
       "size_px": [
-        324,
+        302,
         45
       ],
       "sources": [
@@ -419,7 +425,7 @@
     "Bodies/TRAP-05_spear_head": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_head_n.png",
       "palette": {
-        "black": 0.0011,
+        "black": 0.3173,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_head.png",
@@ -429,8 +435,8 @@
       ],
       "placeholder": "",
       "size_px": [
-        96,
-        33
+        102,
+        39
       ],
       "sources": [
         "Art_Source/Traps_ChatGPT/TRAP-05_spear_v1.png"
@@ -440,7 +446,7 @@
     "Bodies/TRAP-05_spear_shaft": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_shaft_n.png",
       "palette": {
-        "black": 0.0155,
+        "black": 0.2132,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_shaft.png",
@@ -450,7 +456,7 @@
       ],
       "placeholder": "",
       "size_px": [
-        225,
+        184,
         44
       ],
       "sources": [
