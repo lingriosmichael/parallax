@@ -468,7 +468,8 @@ namespace Parallax.Editor.Setup
             float x0 = room.Origin.x, x1 = room.Origin.x + room.Width;
             // Round 4 (critics: "a pale gap between the ceiling's end and the wall", L012): where a ceiling runs into a side,
             // that side's column is stone all the way up (no wall top there to read).
-            List<SoloRoomSkin.Solid> ceilings = SoloRoomSkin.Solids(room).Where(s => s.Kind == SoloRoomElementKind.Ceiling).ToList();
+            // Only the room's roof (a ceiling whose top is the room's top), never a low overhang, lid or lintel inside it.
+            List<SoloRoomSkin.Solid> ceilings = SoloRoomSkin.Solids(room).Where(s => s.Kind == SoloRoomElementKind.Ceiling && s.Rect.yMax >= content.max.y - 0.05f).ToList();
             bool ceilingAtLeft = ceilings.Any(s => s.Rect.xMin <= x0 + 0.05f), ceilingAtRight = ceilings.Any(s => s.Rect.xMax >= x1 - 0.05f);
             var t = new GameObject("Outside").transform;
             t.SetParent(c.EnvRoot, false);
@@ -485,10 +486,6 @@ namespace Parallax.Editor.Setup
                 Rect.MinMaxRect(x0 - 1f, frame.min.y, x0, ceilingAtLeft ? frame.max.y : room.Origin.y + 8f),
                 Rect.MinMaxRect(x1, frame.min.y, x1 + 1f, ceilingAtRight ? frame.max.y : room.Origin.y + 8f),
             };
-            // Round 3 (critics: "a smeared band and a pale strip above the ceiling", L012/L019): over each ceiling, stone from
-            // its top up to where the top band starts (the room's bounds sit above it, and the sky showed between).
-            rects = rects.Concat(SoloRoomSkin.Solids(room).Where(s => s.Kind == SoloRoomElementKind.Ceiling && s.Rect.yMax < content.max.y - 0.01f)
-                .Select(s => Rect.MinMaxRect(s.Rect.xMin, s.Rect.yMax - 0.02f, s.Rect.xMax, content.max.y + 0.02f))).ToArray();
             for (int i = 0; i < rects.Length; i++)
             {
                 Rect r = rects[i];
