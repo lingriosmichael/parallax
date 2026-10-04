@@ -9,21 +9,23 @@ using UnityEngine;
 
 namespace Parallax.Editor.Setup
 {
-    // PAX-076 (D-083, KIT-4): the camera tell rule (D-071 (6), D-078). For every betrayal that dies, its reveal
-    // (RevealedBy's first visible change) must be on screen for at least RevealLeadTicks before it can first kill
-    // (RouteValidator.Lead's end: the kill, or an arrow's first lethal tick). The level camera is CameraMath.Step,
-    // the game's own step, run over the replay's recorded cat positions (no extra replays per camera case):
+    // PAX-076 (D-083, KIT-4), amended 2026-10-03: the camera rule. Surprise is allowed: a trap no longer has to be on
+    // screen before it fires. Every dying betrayal's killer, in its lethal pose, must be on screen at some point from the
+    // kill tick (ReplayResult.Kill: the tick whose room step killed) until the death hold ends (RoomSafetyConfig.HoldTicks),
+    // so every death is readable. During the hold the room is frozen as it killed (D-058) and the camera keeps easing
+    // toward the frozen cat (D-058 amendment). The killer is the trap the replay attributes the kill to. The level camera
+    // is CameraMath.Step, the game's own step, run over the replay's recorded cat positions (no extra replays per camera
+    // case):
     // - frames at 30 and 60 fps, each at 4 phases of a frame, and a starting look direction of -1, 0 and +1 (a
     //   respawn snap keeps the last attempt's direction; Start begins at 0);
     // - the drawn cat is Rigidbody2D interpolation's: between the previous tick's pose and this tick's, so up to
     //   one tick behind the physics (R4);
-    // - the frames only drive the smoothing and the interpolated target (R10): at tick k the element is visible when
-    //   its rendered bounds at tick k (once it has vanished, the bounds it was last drawn at) overlap the view of the
-    //   latest frame rendered at or before tick k. No frame delay is added: the lead counts simulation ticks (D-057);
-    // - the on-screen lead is the end tick minus the first tick from which the element is visible at every tick up to
-    //   the end. The worst of the 24 cases counts. A room in fit mode at an aspect passes trivially at that aspect.
-    // PAX-060 (D-097, opt-in): a betrayal that declares an escape (Betrayal.Escape) is checked against its last escape tick
-    // instead of the kill (EscapeTell); every other betrayal keeps the rule above unchanged.
+    // - the frames only drive the smoothing and the interpolated target (R10): the killer is on screen at a tick when its
+    //   rendered bounds at the kill tick (an angled arrow: its turned corners; a trap that has vanished: the bounds it was
+    //   last drawn at) overlap the view of the latest frame rendered at or before that tick.
+    // The worst of the 24 cases counts, at 4:3, 16:9 and 20:9. A room in fit mode at an aspect passes at that aspect.
+    // PAX-060 (D-097, opt-in, unchanged): a betrayal that declares an escape (Betrayal.Escape) is also checked against its
+    // last escape tick (EscapeTell).
     public static partial class LevelLayoutValidator
     {
         public const string LevelCameraConfigPath = "Assets/_Game/Data/LevelCameraConfig.asset";
@@ -35,23 +37,26 @@ namespace Parallax.Editor.Setup
 
         public sealed class CameraTellResult
         {
-            public string Betrayal, RevealedBy, Aspect;
+            public string Betrayal, RevealedBy, Killer, Aspect;
             public bool Fit;
-            public int Reveal = -1, End = -1, Lead = -1;      // RouteValidator.Lead's ticks
-            public int OnScreenLead = -1;                     // worst case; Lead when Fit
+            public int Reveal = -1, End = -1, Lead = -1;      // RouteValidator.Lead's ticks (for the table)
+            public int KillTick = -1;
+            public bool KillerOnScreen;                       // worst case: on screen by the hold's end in all 24 cases
             public int WorstFps; public float WorstPhase, WorstStartDirection;
             // D-097: an escape-backed row. Reveal and LastEscape come from the escape's own replay; Required is the span
             // reveal..last escape (inclusive), which must be on screen throughout and at least RouteValidator.WindowTicks.
             public bool Escape;
-            public int LastEscape = -1, Required = RevealLeadTicks;
-            public bool Passed => Escape ? OnScreenLead >= Required && Required >= RouteValidator.WindowTicks : OnScreenLead >= RevealLeadTicks;
+            public int LastEscape = -1, Required = RevealLeadTicks, OnScreenLead = -1;
+            public bool Passed => Escape ? OnScreenLead >= Required && Required >= RouteValidator.WindowTicks : KillerOnScreen;
             public override string ToString() => Escape
                 ? Fit
                     ? $"{RevealedBy} @ {Aspect}: fit, escape (reveal t{Reveal}, last escape t{LastEscape}, {Required} ticks)"
                     : $"{RevealedBy} @ {Aspect}: escape, on screen {OnScreenLead} of {Required} (reveal t{Reveal}, last escape t{LastEscape}; worst {WorstFps} fps, phase {WorstPhase}, start direction {WorstStartDirection})"
                 : Fit
-                    ? $"{RevealedBy} @ {Aspect}: fit (lead {Lead})"
-                    : $"{RevealedBy} @ {Aspect}: on screen {OnScreenLead} of lead {Lead} (reveal t{Reveal}, end t{End}; worst {WorstFps} fps, phase {WorstPhase}, start direction {WorstStartDirection})";
+                    ? $"{Killer} @ {Aspect}: fit (kill t{KillTick})"
+                    : KillerOnScreen
+                        ? $"{Killer} @ {Aspect}: on screen by the hold's end (kill t{KillTick})"
+                        : $"{Killer} @ {Aspect}: off screen from the kill (t{KillTick}) to the hold's end (worst {WorstFps} fps, phase {WorstPhase}, start direction {WorstStartDirection})";
         }
 
         public static List<string> ValidateCameraTell(string levelId, SoloRoomDefinition room, RoomRoutes routes)
@@ -75,6 +80,7 @@ namespace Parallax.Editor.Setup
             var results = new List<CameraTellResult>();
             if (camera == null) { errors.Add($"{levelId}: no LevelCameraConfig ({LevelCameraConfigPath}); the camera tell rule is undefined."); return results; }
             CameraMath.FollowParams p = Follow(camera, viewHeight, bias);
+            int hold = HoldTicks();
             Bounds frameBounds = SoloRoomBuilder.ComputeRoomBounds(room, camera.ViewMargin);
             Vector2 frameCentre = (Vector2)frameBounds.center - room.Origin, frameSize = frameBounds.size;
 
@@ -82,21 +88,25 @@ namespace Parallax.Editor.Setup
             {
                 if (betrayal.Outcome != BetrayalOutcome.Dies) continue;
                 ReplayResult replay = RouteHarness.Replay(session, room, betrayal.Route, new ReplayOptions { ResolveCause = false });
+                // A betrayal that doesn't die is the route rule's error (D-079); nothing to see here.
+                if (replay.Kill == null) continue;
                 LeadResult lead = RouteValidator.Lead(replay, betrayal);
-                // A betrayal that doesn't die or never reveals is the route rule's error (D-079); nothing to see here.
-                if (replay.Kill == null || lead.FirstVisibleTick < 0) continue;
-                int end = lead.FirstVisibleTick + lead.Lead;
-                if (betrayal.Escape != null) { EscapeTell(session, levelId, room, betrayal, lead.Lead, frameCentre, frameSize, p, results, errors); continue; }
-                int element = replay.Elements.IndexOf(betrayal.RevealedBy);
+                string killer = replay.Kill.Killer ?? betrayal.Killer;
+                int element = replay.Elements.IndexOf(killer), kill = replay.Kill.Tick;
+                if (element < 0) { errors.Add($"{levelId}: betrayal '{betrayal.Name}': its killer {killer ?? "(none)"} is not a drawn element, so the camera rule can't see it (D-083 amendment)."); continue; }
                 for (int a = 0; a < CameraTellAspects.Length; a++)
                 {
-                    var result = new CameraTellResult { Betrayal = betrayal.Name, RevealedBy = betrayal.RevealedBy, Aspect = CameraTellAspectNames[a], Reveal = lead.FirstVisibleTick, End = end, Lead = lead.Lead };
+                    var result = new CameraTellResult
+                    {
+                        Betrayal = betrayal.Name, RevealedBy = betrayal.RevealedBy, Killer = killer, Aspect = CameraTellAspectNames[a],
+                        Reveal = lead.FirstVisibleTick, Lead = lead.Lead, End = lead.FirstVisibleTick >= 0 ? lead.FirstVisibleTick + lead.Lead : -1, KillTick = kill,
+                    };
                     result.Fit = CameraMath.IsFitMode(frameSize, p.MaxViewHeight, CameraTellAspects[a]);
-                    if (result.Fit) result.OnScreenLead = lead.Lead;
-                    else WorstOnScreenLead(replay, element, lead.FirstVisibleTick, end, frameCentre, frameSize, CameraTellAspects[a], p, result);
+                    result.KillerOnScreen = result.Fit || WorstKillerOnScreen(replay, element, kill, hold, frameCentre, frameSize, CameraTellAspects[a], p, result);
                     results.Add(result);
-                    if (!result.Passed) errors.Add($"{levelId}: betrayal '{betrayal.Name}': {result} is below {RevealLeadTicks} ticks on screen (D-083 camera tell rule).");
+                    if (!result.Passed) errors.Add($"{levelId}: betrayal '{betrayal.Name}': {result}: the killer must be on screen before the death hold ends (D-083 amendment).");
                 }
+                if (betrayal.Escape != null && lead.FirstVisibleTick >= 0) EscapeTell(session, levelId, room, betrayal, lead.Lead, frameCentre, frameSize, p, results, errors);
             }
             return results;
         }
@@ -133,7 +143,7 @@ namespace Parallax.Editor.Setup
                     foreach (float phase in CameraTellPhases)
                     foreach (float direction in CameraTellStartDirections)
                     {
-                        int onScreen = OnScreen(last, element, reveal, result.End, frameCentre, frameSize, CameraTellAspects[a], camera, fps, phase, direction, true);
+                        int onScreen = OnScreen(last, element, reveal, result.End, frameCentre, frameSize, CameraTellAspects[a], camera, fps, phase, direction);
                         if (onScreen >= result.OnScreenLead) continue;
                         result.OnScreenLead = onScreen; result.WorstFps = fps; result.WorstPhase = phase; result.WorstStartDirection = direction;
                     }
@@ -144,72 +154,89 @@ namespace Parallax.Editor.Setup
             }
         }
 
-        static void WorstOnScreenLead(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect, CameraMath.FollowParams camera, CameraTellResult result)
+        // The death hold's length (RoomSafetyConfig.HoldTicks; RoomDeath's default 30 when the asset is missing).
+        public const string RoomSafetyConfigPath = "Assets/_Game/Data/RoomSafetyConfig.asset";
+        static int HoldTicks() => AssetDatabase.LoadAssetAtPath<Parallax.Gameplay.Rooms.RoomSafetyConfig>(RoomSafetyConfigPath) is { } c ? c.HoldTicks : 30;
+
+        // True when the killer is on screen before the hold ends in every camera case; otherwise the first case that never
+        // shows it.
+        static bool WorstKillerOnScreen(ReplayResult replay, int element, int kill, int hold, Vector2 frameCentre, Vector2 frameSize, float aspect, CameraMath.FollowParams camera, CameraTellResult result)
         {
-            result.OnScreenLead = int.MaxValue;
             foreach (int fps in CameraTellFramesPerSecond)
             foreach (float phase in CameraTellPhases)
             foreach (float direction in CameraTellStartDirections)
             {
-                int onScreen = OnScreenLead(replay, element, reveal, end, frameCentre, frameSize, aspect, camera, fps, phase, direction);
-                if (onScreen >= result.OnScreenLead) continue;
-                result.OnScreenLead = onScreen; result.WorstFps = fps; result.WorstPhase = phase; result.WorstStartDirection = direction;
+                if (KillerOnScreen(replay, element, kill, hold, frameCentre, frameSize, aspect, camera, fps, phase, direction)) continue;
+                result.WorstFps = fps; result.WorstPhase = phase; result.WorstStartDirection = direction;
+                return false;
             }
+            return true;
         }
 
-        // One camera case: the level camera's Start at tick 0, then one CameraMath.Step per rendered frame. R10: the
-        // frames only drive the smoothing and the interpolated target; visibility is judged per simulation tick, against
-        // the view of the latest frame rendered at or before that tick. No frame delay is added (display latency is a
-        // Phase H device check).
-        public static int OnScreenLead(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect,
+        // One camera case: the level camera's Start at tick 0, then one CameraMath.Step per rendered frame, through the
+        // kill and on through the hold with the cat frozen where it died. R10: the frames only drive the smoothing and the
+        // interpolated target; the killer, frozen in its pose at the kill tick, is judged at each tick from the kill to the
+        // hold's last, against the view of the latest frame rendered at or before that tick. No frame delay is added.
+        public static bool KillerOnScreen(ReplayResult replay, int element, int kill, int holdTicks, Vector2 frameCentre, Vector2 frameSize, float aspect,
             LevelCameraConfig camera, int framesPerSecond, float phase, float startDirection) =>
-            OnScreen(replay, element, reveal, end, frameCentre, frameSize, aspect, Follow(camera, camera.MaxViewHeight, 0f), framesPerSecond, phase, startDirection, false);
+            KillerOnScreen(replay, element, kill, holdTicks, frameCentre, frameSize, aspect, Follow(camera, camera.MaxViewHeight, 0f), framesPerSecond, phase, startDirection);
 
-        static int OnScreenLead(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect,
-            CameraMath.FollowParams camera, int framesPerSecond, float phase, float startDirection) =>
-            OnScreen(replay, element, reveal, end, frameCentre, frameSize, aspect, camera, framesPerSecond, phase, startDirection, false);
-
-        // fromReveal false: D-083's on-screen lead (the run that reaches the end). True (D-097): the ticks the element stays
-        // on screen from the reveal, up to the end, stopping at the first tick it's off screen.
-        static int OnScreen(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect,
-            CameraMath.FollowParams p, int framesPerSecond, float phase, float startDirection, bool fromReveal)
+        static bool KillerOnScreen(ReplayResult replay, int element, int kill, int holdTicks, Vector2 frameCentre, Vector2 frameSize, float aspect,
+            CameraMath.FollowParams p, int framesPerSecond, float phase, float startDirection)
         {
             List<TickRecord> records = replay.Records;
-            // PAX-083: the loop below stops at records.Count, so a replay shorter than the lead's end would read as on
-            // screen up to the end and overstate the lead. Fail instead.
-            if (records.Count == 0) throw new InvalidOperationException($"OnScreenLead: the replay recorded no ticks; the camera tell rule can't measure the reveal (end t{end}).");
-            if (records.Count < end) throw new InvalidOperationException($"OnScreenLead: the replay has {records.Count} ticks, short of the lead's end t{end}; the camera tell rule can't measure the reveal.");
-            Vector2 start = Cat(records[0]);
-            // LevelCameraFollow.Start/SnapToTarget: anchor at the cat, an immediate step, velocity zeroed.
+            // PAX-083: a replay that stops before the kill can't show where the killer was; fail instead of guessing.
+            if (records.Count == 0) throw new InvalidOperationException($"KillerOnScreen: the replay recorded no ticks; the camera rule can't see the kill (t{kill}).");
+            if (records.Count <= kill) throw new InvalidOperationException($"KillerOnScreen: the replay has {records.Count} ticks, short of the kill at t{kill}; the camera rule can't see it.");
+            int last = kill + Math.Max(0, holdTicks - 1);
+            Rect[] views = ViewsThroughHold(records, kill, last, frameCentre, frameSize, aspect, p, framesPerSecond, phase, startDirection);
+            for (int t = kill; t <= last; t++)
+                if (ChangeVisible(records, element, kill, views[t])) return true;
+            return false;
+        }
+
+        // The camera rule's loop (as ViewPerRecord), on past the kill to tick `last` with the cat frozen at its kill pose.
+        static Rect[] ViewsThroughHold(List<TickRecord> records, int kill, int last, Vector2 frameCentre, Vector2 frameSize, float aspect,
+            CameraMath.FollowParams p, int framesPerSecond, float phase, float startDirection)
+        {
+            Vector2 CatAt(int t) { TickRecord r = records[Math.Min(t, kill)]; return new Vector2(r.CatX, r.CatY); }
+            var views = new Rect[last + 1];
+            Vector2 start = CatAt(0);
             var state = new CameraMath.FollowState { AnchorX = start.x, LastDirection = startDirection };
             float viewHeight = CameraMath.Step(ref state, start, frameCentre, frameSize, aspect, p, true, 0f);
             state.Velocity = Vector2.zero; state.AnchorX = start.x;
-
             double tick = TickTime.SecondsPerTick, frame = 1.0 / framesPerSecond;
-            int f = 0, runStart = -1;
-            for (int k = 0; k < end && k < records.Count; k++)
+            int f = 0;
+            for (int k = 0; k <= last; k++)
             {
-                // Render every frame whose latest completed tick is k or earlier.
                 while (true)
                 {
                     double time = (f + phase) * frame;
                     int frameTick = (int)Math.Floor(time / tick + 1e-9);
                     if (frameTick > k) break;
                     float alpha = (float)(time / tick - frameTick);
-                    Vector2 drawn = frameTick == 0 ? start : Vector2.Lerp(Cat(records[frameTick - 1]), Cat(records[frameTick]), alpha);
+                    Vector2 drawn = frameTick == 0 ? start : Vector2.Lerp(CatAt(frameTick - 1), CatAt(frameTick), alpha);
                     viewHeight = CameraMath.Step(ref state, drawn, frameCentre, frameSize, aspect, p, false, (float)frame);
                     f++;
                 }
-                if (k < reveal) continue;
                 var half = new Vector2(viewHeight * .5f * aspect, viewHeight * .5f);
-                Rect view = Rect.MinMaxRect(state.Centre.x - half.x, state.Centre.y - half.y, state.Centre.x + half.x, state.Centre.y + half.y);
-                bool visible = ChangeVisible(records, element, k, view);
-                if (fromReveal && !visible) return k - reveal;
-                if (!visible) runStart = -1;
-                else if (runStart < 0) runStart = k;
+                views[k] = Rect.MinMaxRect(state.Centre.x - half.x, state.Centre.y - half.y, state.Centre.x + half.x, state.Centre.y + half.y);
             }
-            if (fromReveal) return end - reveal;
-            return runStart < 0 ? 0 : end - runStart;
+            return views;
+        }
+
+        // D-097: the ticks the element stays on screen from the reveal, up to the end, stopping at the first tick it's off
+        // screen.
+        static int OnScreen(ReplayResult replay, int element, int reveal, int end, Vector2 frameCentre, Vector2 frameSize, float aspect,
+            CameraMath.FollowParams p, int framesPerSecond, float phase, float startDirection)
+        {
+            List<TickRecord> records = replay.Records;
+            if (records.Count == 0) throw new InvalidOperationException($"OnScreen: the replay recorded no ticks; the escape-backed reveal can't be measured (end t{end}).");
+            if (records.Count < end) throw new InvalidOperationException($"OnScreen: the replay has {records.Count} ticks, short of the end t{end}; the escape-backed reveal can't be measured.");
+            Rect[] views = ViewPerRecord(replay, frameCentre, frameSize, aspect, p, framesPerSecond, phase, startDirection);
+            for (int k = reveal; k < end; k++)
+                if (!ChangeVisible(records, element, k, views[k])) return k - reveal;
+            return end - reveal;
         }
 
         // Where the change is seen at tick k: the element's rendered bounds, or, once it has vanished (a collapse,
@@ -236,7 +263,5 @@ namespace Parallax.Editor.Setup
             bounds = default;
             return false;
         }
-
-        static Vector2 Cat(TickRecord r) => new(r.CatX, r.CatY);
     }
 }

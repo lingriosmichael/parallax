@@ -2707,6 +2707,7 @@ view at that zoom. The findings accepted with it are pinned in the tests (`Level
 in L004, L005, L008–L012, L014 and L016–L020, and the chaos moment in L014–L017, L019 and L020. Each
 tell entry names its level, betrayal and trap, so the rule still fails for any other trap, betrayal or level; a layout
 change that clears one removes its entry. The rules themselves (D-083, D-093) are unchanged for new work.
+**Superseded in part (2026-10-03):** the D-083 amendment replaced the camera tell; the pins (`LevelZoomAccepted`) are gone.
 
 ### D-107 · 2026-10-02 · Accepted (PAX-A16 Phase 2 rounds 2–6; the developer approved the checkpoint)
 **Decision:** the environment art rulings of the Phase 2 critic loop, art only (no collider, trigger, route or timing
@@ -2733,6 +2734,74 @@ changes):
 
 **Why:** the developer's round-2 rules ("colour grading must never tint the cat or hazards", "no blown-out whites",
 "Readability ≥ 7 everywhere"), and six rounds of critics (average 4.62 → 5.44; Readability ≥ 7 in 19 of 20 levels).
+
+### D-083 amendment · 2026-10-03 · Accepted (the developer's ruling)
+**Decision:** surprise is allowed. A trap no longer has to be on screen before it fires. The camera rule is now: every
+dying betrayal's **killer**, in its lethal pose, is **on screen at the moment of death**, so every death is readable.
+- The moment of death is the kill tick (the tick whose room step killed). The camera stands still for the whole death hold
+  (D-058, `LevelCameraFollow`), so that frame is what the player sees for the hold.
+- The killer is the trap the replay attributes the kill to; it's on screen when its drawn bounds at the kill tick (an
+  angled arrow: its turned corners; a trap that has vanished: where it was last drawn) overlap the view. Same camera model
+  as before: the game's own `CameraMath.Step` over the recorded cat, 30/60 fps × 4 phases × 3 starting look directions,
+  worst case, at 4:3, 16:9 and 20:9; a room in fit mode passes.
+- A killer that isn't a drawn element fails with its own message.
+- Unchanged: D-097's escape-backed reveal (opt-in, still checked as well), D-057's tells (hidden spikes' reveal delay and
+  an arrow's tell ≥ 6 ticks) and D-079/D-080's route lead (the reveal changes ≥ 6 ticks before the kill, camera or not).
+- `LevelZoomAccepted` and its 28 pins are removed; `CameraTellTests` runs the rule on all 20 levels.
+
+**Measured (2026-10-03, the killer-at-death rule, deaths failing per camera):**
+
+| Camera | Levels failing | Deaths failing |
+|---|---|---|
+| 1.8× with the 1.5 u lift (shipped) | 17: L001, L002, L005–L008, L010–L016, L018–L020 | 58 |
+| 1.8×, no lift | 8: L004, L008, L012, L014, L016, L018, L019, L020 | 14 |
+| 1.5×, no lift | 3: L008, L012, L014 | 3 |
+| 1.2×, no lift | 0 | 0 |
+
+Almost every failure is a fall: the 1.5 u lift keeps the view high, and the smoothed camera hasn't followed the cat down
+by the kill tick, so the cat and the spikes or pit it dies on are below the frozen frame. L010 fails only at 1.8× with
+the lift (T2, onto Spikes_2) and passes at 1.8× without it. The levels are left failing, to be ruled on (the lift, the
+zoom, the camera during the hold, or the layouts).
+
+**D-093 (chaos) under the same relaxation, proposed, not changed:** the chaos moment's elements in view at 16:9 (band 2):
+
+| Level | 1.8×/1.5 | 1.8×/0 | 1.5×/0 | 1.2×/0 | every change, on screen or not |
+|---|---|---|---|---|---|
+| L014 | 4 | 3 | 5 | 5 | 5 |
+| L015 | 3 | 3 | 3 | 5 | 6 |
+| L016 | 1 | 1 | 2 | 5 | 5 |
+| L017 | 4 | 3 | 4 | 5 | 5 |
+| L019 | 3 | 4 | 4 | 5 | 7 |
+| L020 | 4 | 4 | 5 | 6 | 6 |
+
+(L011–L013 and L018 pass at every camera.) Counting every change in the window, on screen or not, passes all ten band-2
+levels; keeping "in view" fails these six at the shipped camera.
+
+**Revised the same day (the developer's rulings, 2026-10-03):** the killer must be on screen **at some point before the
+death hold ends**, not only on the kill tick, because the camera now keeps easing during the hold (D-058 amendment). The
+validator steps the camera on through `RoomSafetyConfig.HoldTicks` (30) with the cat and the killer frozen in their kill
+poses, and passes the death if the killer is in view at any of those ticks, in every camera case. Measured with the 1.5 u
+lift kept: **no death fails** in L001–L020 (58 failed at the kill tick alone), so the lift stays and no layout changes.
+D-097's escape check is kept as it is.
+
+### D-058 amendment · 2026-10-03 · Accepted (the developer's ruling; play-tested by the developer 2026-10-03)
+**Decision:** during the death hold the level camera keeps easing toward the cat (it stood still, PAX-047 §2.2.3). The
+room stays frozen exactly as it killed (traps, hazards, `RoomLifeTick`, door and bounds checks, all still gated by
+`RoomDeath.IsHolding`); only `LevelCameraFollow.Step` runs on, toward the frozen cat. `LevelCameraFollow.roomDeath` is
+still wired by the setup but no longer gates `Step`. Respawn still snaps (`SnapToTarget` on `CatRespawn.Respawned`).
+**Why:** at 1.8× with the 1.5 u lift, a fall outran the camera, so the frozen frame often showed neither the cat nor what
+killed it (58 deaths in 17 levels). Easing during the hold shows every one of them before the room resets.
+
+### D-093 amendment · 2026-10-03 · Accepted (the developer's ruling)
+**Decision:** the chaos moment counts every change, on screen or not: a 60-tick window in which at least 5 elements change
+(`ChaosMinElements`), at least 3 of them in view (`ChaosMinInView`, the same 16:9 worst-case view as before). The best
+window is the one that passes, then the one with most in view, then the one with most changes.
+**Measured (shipped camera, 1.8× with the lift):** L011–L014, L017–L020 pass. Two fail:
+- **L016:** 5 changes, 1 in view (t975–t1034: Spikes_S1, Spikes_S4, Block_S3 and Spikes_S5 off screen). Goes to its level
+  ticket for a layout fix (the developer's ruling).
+- **L015:** no window has both: at best 4 changes with 3 in view (t71–t130: Arrow_3, Mover_M off screen, Collapse_2,
+  Cloud), or 6 changes with fewer than 3 in view (t699–t758). Not foreseen when the rule was proposed (the proposal read the
+  best in-view count and the best total from different windows). Left failing, for the developer's ruling.
 
 ### D-085 amendment · 2026-10-03 · Accepted (the developer's ruling, PAX-102)
 **Decision:** a falling block may be a section of a split floor slab, so its fall leaves a real hole. The slab's colliders

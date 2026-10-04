@@ -14,7 +14,7 @@ namespace Parallax.Gameplay.Cameras
     public sealed class LevelCameraFollow : MonoBehaviour
     {
         [SerializeField] Transform target;
-        [SerializeField] RoomDeath roomDeath;
+        [SerializeField] RoomDeath roomDeath;   // wired by LevelCameraSetup; no longer gates Step (D-058 amendment)
         [SerializeField] CatRespawn respawn;
         [SerializeField] LevelCameraConfig config;
 
@@ -70,9 +70,9 @@ namespace Parallax.Gameplay.Cameras
             if (target == null || config == null) return;
             if (cam == null) cam = GetComponent<Camera>();
             if (cam == null) return;
-            // PAX-047 (D-058)/§2.2.3: still camera during the death hold - RoomManager gates its
-            // whole tick on the same flag, this gates the whole position/size update the same way.
-            if (roomDeath != null && roomDeath.IsHolding) return;
+            // D-058 amendment (2026-10-03): the camera keeps easing toward the cat during the death hold (it was
+            // still, PAX-047 §2.2.3), so a fall that outran the camera still shows the cat and its killer before the
+            // room resets. The room itself stays frozen (RoomManager gates its tick on RoomDeath.IsHolding).
             if (!HasBakedFrame()) return;
 
             transform.position = ToVector3(Resolve(transform.position, immediate: false));

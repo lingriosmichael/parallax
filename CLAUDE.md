@@ -209,7 +209,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 - **Death holds, then resets the current room (D-041, D-058).** A death freezes the room —
   `RoomLifeTick`, traps, hazards, door and bounds checks all gated off via `RoomDeath.IsHolding` —
   for `RoomSafetyConfig.HoldTicks` (default 30 = 0.6 s at 50 Hz), showing the room exactly as it
-  killed the player, then runs the same reset as before: the cat respawns at the room's
+  killed the player (the level camera keeps easing toward the frozen cat, D-058 amendment), then runs the same reset as before: the cat respawns at the room's
   checkpoint, and every trap and room-owned anchor in that room returns to its declared initial
   value. Completed rooms are never reset. Anchor resets go out as **new requests** from the
   session authority, never as a registry rollback (D-024). `HoldTicks = 0` reproduces the old
@@ -237,7 +237,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 - Arrows: tell ≥ 6 ticks, harmless when stopped, lane checked by the validator (D-078).
 - Every room declares a solution route and its betrayal routes; `ValidateRoutes` replays them through the real game code (D-079).
 - A betrayal route Dies (killer, lead ≥ 6) or Recovers (the room completes after the reveal); non-lethal betraying surfaces need trigger coverage, and a fake platform is never a landing surface (D-080).
-- Precision (D-083): tighter reach and slack only inside a room's `PrecisionSections` (`PrecisionThresholds`), never in levels 1–10; a `BaitGap` is proven out of reach; every reveal is inside the level camera's view ≥ 6 ticks before it can kill, at 4:3, 16:9 and 20:9.
+- Precision (D-083): tighter reach and slack only inside a room's `PrecisionSections` (`PrecisionThresholds`), never in levels 1–10; a `BaitGap` is proven out of reach; every dying betrayal's killer, in its lethal pose, is inside the level camera's view at some point before the death hold ends, at 4:3, 16:9 and 20:9 (D-083 amendment: surprise is allowed).
 - Levels 1–10 (band 1, PAX-059, D-085; design guide `Docs/LEVEL_DESIGN_GUIDE.md`) pass `LevelLayoutValidator.Band1.cs` and `Band1LevelTests`: lethal traps and a sequential chain, dead ends that kill (Dies routes named "Dead end…", one per way off the approach; never a soft-lock), width ≤ 32, a 500–1500-tick solution (L001 ≥ 280), trap floors out of reach from below, falling blocks and moving hazards set off within 3 u, and no learned bypasses. By convention (no check enforces it), every mid-air release on a solution is written as a timed step, so the route validator's windows sweep measures it (window ≥ 12).
 
 ### Scenes, Build Settings and loading (D-072)

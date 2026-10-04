@@ -19,7 +19,9 @@ namespace Parallax.Editor.Setup
         public const int Band2MinLethal = 8, Band2MinSequence = 6, Band2MinDeadEnds = 2;
         public const int Band2MinTicks = 1100, Band2MaxTicks = 2500;   // §13 R4: the floor lowered from 1500
         public const int Band2MinSections = 2, Band2MaxSections = 3;
-        public const int ChaosWindowTicks = 60, ChaosMinElements = 5;
+        // D-093 amendment (2026-10-03): at least ChaosMinElements change in the window, on screen or not, and at least
+        // ChaosMinInView of them in view.
+        public const int ChaosWindowTicks = 60, ChaosMinElements = 5, ChaosMinInView = 3;
         public const int Band2MinElementBetrayals = 3;
         public const int MaxTrapsPerAnswer = 3, MaxBaitTraps = 1;
         public static readonly int[] Band2PrecisionLevels = { 12, 15, 19 };
@@ -142,14 +144,16 @@ namespace Parallax.Editor.Setup
         public sealed class ChaosResult
         {
             public int FromTick = -1, InViewCount;
-            public List<ChaosOnset> Onsets = new();   // the best window's first onset per element
+            public List<ChaosOnset> Onsets = new();   // the best window's first onset per element (its count: every change)
+            public bool Passes => Onsets.Count >= ChaosMinElements && InViewCount >= ChaosMinInView;
             public override string ToString() => FromTick < 0 ? "no onsets"
                 : $"t{FromTick}-t{FromTick + ChaosWindowTicks - 1}: {InViewCount} in view of {Onsets.Count} ({string.Join(", ", Onsets.Select(o => $"{o.Element} t{o.Tick}{(o.InView ? "" : " (off screen)")}"))})";
         }
 
         // An onset: the element's look changes at a tick after a tick with no change (or it's the first change). The cat's
         // extras, gate markers and doors aren't counted. inView(recordIndex, elementIndex) says whether the change is on
-        // screen then. The best window is the 60-tick one with the most distinct elements in view (ties: the earliest).
+        // screen then. The best window is the 60-tick one that passes (D-093 amendment: ChaosMinElements changing,
+        // ChaosMinInView of them in view), then the one with the most in view, then the most changing (ties: the earliest).
         public static ChaosResult Band2Chaos(ReplayResult replay, SoloRoomDefinition room, Func<int, int, bool> inView)
         {
             var doors = new HashSet<string>(room.Elements.Where(e => e.Kind == SoloRoomElementKind.Door).Select(e => e.Name));
@@ -173,18 +177,20 @@ namespace Parallax.Editor.Setup
                     if (window.TryGetValue(element, out ChaosOnset seen)) { if (visible && !seen.InView) { seen.InView = true; seen.Tick = r[index].Tick; } continue; }
                     window[element] = new ChaosOnset { Element = replay.Elements[element], Tick = r[index].Tick, InView = visible };
                 }
-                int count = window.Values.Count(o => o.InView);
-                if (count > best.InViewCount || best.FromTick < 0)
-                    best = new ChaosResult { FromTick = from, InViewCount = count, Onsets = window.Values.OrderBy(o => o.Tick).ToList() };
+                var candidate = new ChaosResult { FromTick = from, InViewCount = window.Values.Count(o => o.InView), Onsets = window.Values.OrderBy(o => o.Tick).ToList() };
+                if (best.FromTick < 0 || Better(candidate, best)) best = candidate;
             }
             return best;
         }
 
+        static bool Better(ChaosResult a, ChaosResult b) =>
+            a.Passes != b.Passes ? a.Passes : a.InViewCount != b.InViewCount ? a.InViewCount > b.InViewCount : a.Onsets.Count > b.Onsets.Count;
+
         public static List<string> ValidateBand2Chaos(string levelId, int level, ChaosResult chaos)
         {
             var errors = new List<string>();
-            if (IsBand2(level) && chaos.InViewCount < ChaosMinElements)
-                errors.Add($"{levelId}: the chaos moment has {chaos.InViewCount} elements changing in view within {ChaosWindowTicks} ticks ({chaos}); band 2 needs at least {ChaosMinElements} (D-093).");
+            if (IsBand2(level) && !chaos.Passes)
+                errors.Add($"{levelId}: the chaos moment has {chaos.Onsets.Count} elements changing within {ChaosWindowTicks} ticks, {chaos.InViewCount} of them in view ({chaos}); band 2 needs at least {ChaosMinElements}, at least {ChaosMinInView} in view (D-093).");
             return errors;
         }
 
@@ -212,7 +218,7 @@ namespace Parallax.Editor.Setup
             return (i, e) => ChangeBounds(replay.Records, e, i, out Rect b) && views.All(v => b.Overlaps(v[i]));
         }
 
-        // OnScreenLead's camera loop (the level camera's Start, then one CameraMath.Step per rendered frame), keeping the
+        // The camera rule's loop (the level camera's Start, then one CameraMath.Step per rendered frame), keeping the
         // view of the latest frame rendered at or before each record's tick.
         static Rect[] ViewPerRecord(ReplayResult replay, Vector2 frameCentre, Vector2 frameSize, float aspect, CameraMath.FollowParams p, int framesPerSecond, float phase, float startDirection)
         {

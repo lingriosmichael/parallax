@@ -186,8 +186,11 @@ namespace Parallax.Tests
             finally { DestroyCamera(built); }
         }
 
+        // D-058 amendment (2026-10-03): the camera keeps easing during the death hold. Step's SmoothDamp position depends on
+        // Time.deltaTime (0 in EditMode), so the size Resolve sets unconditionally is the proxy that the hold no longer
+        // gates Step. Red first: before the amendment, the hold left the size at 3.
         [Test]
-        public void DuringDeathHold_Step_ChangesNeitherPositionNorOrthographicSize()
+        public void DuringDeathHold_Step_KeepsFollowing()
         {
             var built = BuildCamera(typeof(RoomDeath));
             try
@@ -202,14 +205,11 @@ namespace Parallax.Tests
                 so.FindProperty("roomDeath").objectReferenceValue = roomDeath;
                 so.ApplyModifiedPropertiesWithoutUndo();
 
-                built.camGO.transform.position = new Vector3(500f, -500f, -10f);
                 built.camGO.GetComponent<Camera>().orthographicSize = 3f;
 
                 built.follow.Step();
 
-                Assert.AreEqual(500f, built.camGO.transform.position.x, 1e-4f, "camera must not move during the death hold.");
-                Assert.AreEqual(-500f, built.camGO.transform.position.y, 1e-4f, "camera must not move during the death hold.");
-                Assert.AreEqual(3f, built.camGO.GetComponent<Camera>().orthographicSize, 1e-4f, "camera size must not change during the death hold either.");
+                Assert.AreNotEqual(3f, built.camGO.GetComponent<Camera>().orthographicSize, "the camera keeps following during the death hold.");
             }
             finally { DestroyCamera(built); }
         }
@@ -220,9 +220,9 @@ namespace Parallax.Tests
             // Step()'s SmoothDamp position update depends on Time.deltaTime, which is 0 in an
             // EditMode test (no frame has actually elapsed), so it cannot be used to prove the
             // hold gate let execution through. orthographicSize is set unconditionally by Resolve
-            // before any SmoothDamp call, so it's a deltaTime-independent proxy for "the gate did
-            // not early-return": DuringDeathHold_... proves it stays put while holding; this proves
-            // it gets recomputed the moment IsHolding goes false.
+            // before any SmoothDamp call, so it's a deltaTime-independent proxy for "Step ran". Since the
+            // D-058 amendment it runs during the hold too (DuringDeathHold_Step_KeepsFollowing); this
+            // proves it still runs once IsHolding goes false.
             var built = BuildCamera(typeof(RoomDeath));
             try
             {

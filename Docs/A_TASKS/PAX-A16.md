@@ -477,7 +477,8 @@ more rounds.
   20 and 19 of 20 levels. Worse than its before in R6: L013, L016, L018. No level beats the concept.
 - **The main finding:** bloom, not the grade, lifted the cat to brown (D-107).
 - **Tests:** the camera tell and chaos findings accepted with 1.8× are pinned in `LevelZoomAccepted` (test-only), used by
-  `CameraTellTests`, `Band1LevelTests` and `Band2LevelTests`. New: `EnvironmentGradeTests`.
+  `CameraTellTests`, `Band1LevelTests` and `Band2LevelTests`. New: `EnvironmentGradeTests`. (Superseded 2026-10-03: the D-083 amendment
+  replaced the camera tell and removed `LevelZoomAccepted`.)
 - **Known follow-ups (still red):**
   - PAX-100: `TrapArtRevealFrameTests.RevealFrame:L010`, Pit10_Cover (90 px differ on the reveal tick, worst 77).
   - PAX-A16: `CatSheetImportTests.TheEnvironmentPpu_ByPath(A_BG_00_Sky)` and `…_IsFixed_NotReadFromTheCat` (the

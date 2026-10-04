@@ -110,8 +110,13 @@ namespace Parallax.Tests.EditMode
 
         [Test] public void TheDoorMarkerAndCatDontCount() => AssertMentions(Chaos(new[] { 10, 20, 30, 40 }, 25), "chaos moment");
 
-        [Test] public void AnOnsetOffScreenDoesntCount() =>
-            AssertMentions(Chaos(new[] { 10, 20, 30, 40, 50 }, -1, (i, e) => e != 2), "E2 t30 (off screen)");
+        // D-093 amendment: every change counts, on screen or not, as long as at least 3 of them are in view.
+        [Test] public void AnOnsetOffScreen_StillCounts_WithFourInView() => AssertNone(Chaos(new[] { 10, 20, 30, 40, 50 }, -1, (i, e) => e != 2));
+
+        [Test] public void FiveChanges_OnlyTwoInView_IsRejected() =>
+            AssertMentions(Chaos(new[] { 10, 20, 30, 40, 50 }, -1, (i, e) => e < 2), "2 of them in view");
+
+        [Test] public void FiveChanges_ThreeInView_Pass() => AssertNone(Chaos(new[] { 10, 20, 30, 40, 50 }, -1, (i, e) => e < 3));
 
         // ---------- the level's element in >= 3 betrayals ----------
 

@@ -77,7 +77,6 @@ namespace Parallax.Tests.EditMode
             string summary = (string)report.GetType().GetMethod("Summary").Invoke(report, null)
                 + $"  solution: {ticks} ticks\n  camera:\n    " + string.Join("\n    ", table.Cast<object>());
             TestContext.Out.WriteLine(summary);
-            errors = LevelZoomAccepted.Unaccepted(errors);   // D-104 amendment: the findings accepted with the 1.8× zoom
             Assert.IsEmpty(errors, string.Join("\n", errors) + "\n\n" + summary);
         }
     }

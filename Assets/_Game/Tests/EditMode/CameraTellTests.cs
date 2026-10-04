@@ -10,8 +10,10 @@ using static Parallax.Tests.EditMode.PrecisionTestApi;
 
 namespace Parallax.Tests.EditMode
 {
-    // PAX-076 (D-083) §2.6/§6: the camera tell rule. Every dying betrayal's reveal is on screen for at least 6 ticks
-    // before it can first kill, at 4:3, 16:9 and 20:9, worst of 30/60 fps x 4 phases x 3 starting look directions.
+    // PAX-076 (D-083), amended 2026-10-03: the camera rule. Surprise is allowed (a trap may fire from off screen), but every
+    // dying betrayal's killer, in its lethal pose, is on screen at some point before the death hold ends (the camera keeps
+    // easing during the hold, D-058 amendment), at 4:3, 16:9 and 20:9, worst of 30/60 fps x 4 phases x 3 starting look
+    // directions.
     public sealed class CameraTellTests
     {
         IDisposable session;
@@ -27,23 +29,15 @@ namespace Parallax.Tests.EditMode
 
         static string Table(IEnumerable<object> results) => string.Join("\n", results.Select(r => r.ToString()));
 
-        [TestCase("L001")]
-        [TestCase("L002")]
-        [TestCase("L003")]
-        [TestCase("L004")]
-        [TestCase("L005")]
-        [TestCase("L006")]
-        [TestCase("L007")]
-        [TestCase("L008")]
-        [TestCase("L009")]
-        [TestCase("L010")]
+        static IEnumerable<string> Levels() => Enumerable.Range(1, 20).Select(i => "L" + i.ToString("000"));
+
+        [TestCaseSource(nameof(Levels))]
         public void ShippedLevel_PassesTheCameraTellRule_AtEveryAspect(string id)
         {
             var errors = new List<string>();
             List<object> results = Tell(id, RouteValidatorTests.Room(id), RouteValidatorTests.Routes(id), errors);
             TestContext.Out.WriteLine(Table(results));
             Assert.Greater(results.Count, 0, "no dying betrayal was measured");
-            errors = LevelZoomAccepted.Unaccepted(errors);   // D-104 amendment: the findings accepted with the 1.8× zoom
             CollectionAssert.IsEmpty(errors, string.Join("\n", errors));
         }
 
@@ -86,53 +80,73 @@ namespace Parallax.Tests.EditMode
             for (int i = 0; i <= 2; i++) Assert.IsNull(routes.GetMethod("Room" + i), "Trap Lab room " + i + " now has routes: add it to the camera tell tests");
         }
 
-        // Seen red as built: the reveal (ArrowX's tell) is 34 u ahead of the cat, off screen until the arrow is well
-        // into its flight; it can first kill at the end of the tell.
+        // The amendment's point: ArrowX's tell is 34 u ahead of the cat, off screen until the arrow is well into its flight
+        // (this failed the old rule, a reveal on screen 6 ticks before it can kill). The arrow reaches the cat, so it's on
+        // screen at the kill: the surprise passes.
         [Test]
-        public void ARevealOffScreen_InFollowMode_Fails()
+        public void ATrapThatFiresFromOffScreen_Passes_WhenItsKillerIsOnScreenAtTheDeath()
         {
             var errors = new List<string>();
             List<object> results = Tell("Fixture", Fixture("CameraTellRoom", 60f, 40f, 6f), Fixture("CameraTellRoutes"), errors);
             TestContext.Out.WriteLine(Table(results) + "\n" + string.Join("\n", errors));
             Assert.AreEqual(3, results.Count);
-            Assert.IsTrue(results.All(r => !(bool)F(r, "Fit")));
-            Assert.AreEqual(3, errors.Count, "one failure per aspect");
-            Assert.IsTrue(results.All(r => (int)F(r, "Lead") >= 6), "the plain route lead passes: only the camera catches this");
-        }
-
-        // R10: with the reveal in view, follow mode gives the whole lead, as fit mode does: a tell of D-078's minimum 6
-        // passes at every aspect (no frame delay is counted).
-        [Test]
-        public void TheSameRoom_WithTheTriggerMovedNearTheLauncher_Passes_WithTheWholeLeadOnScreen()
-        {
-            var errors = new List<string>();
-            List<object> results = Tell("Fixture", Fixture("CameraTellRoom", 60f, 40f, 33f), Fixture("CameraTellRoutes"), errors);
-            TestContext.Out.WriteLine(Table(results));
-            Assert.AreEqual(3, results.Count);
-            // PAX-083: in fit mode the whole lead passes trivially, so the camera must really follow here.
-            Assert.IsTrue(results.All(r => !(bool)F(r, "Fit")), "the room must be in follow mode at every aspect\n" + Table(results));
+            Assert.IsTrue(results.All(r => !(bool)F(r, "Fit")), "the camera must really follow here\n" + Table(results));
             CollectionAssert.IsEmpty(errors, string.Join("\n", errors));
-            foreach (object r in results) Assert.AreEqual((int)F(r, "Lead"), (int)F(r, "OnScreenLead"), r.ToString());
-            Assert.AreEqual(6, (int)F(results[0], "Lead"), "the fixture arrow's tell is D-078's minimum");
+            Assert.IsTrue(results.All(r => (bool)F(r, "KillerOnScreen") && (string)F(r, "Killer") == "ArrowX"), Table(results));
         }
 
-        // PAX-083: a replay that stops before the lead's end (or recorded nothing) fails with a clear message. Before the
-        // guard, the short one read as on screen to the end and overstated the lead; the empty one was an index error.
+        // The rule's check itself: the same death, with the arrow drawn 100 u away at the kill tick, stays off screen through
+        // the whole hold. Red first: unmoved, it's on screen.
+        [Test]
+        public void AKillerDrawnOffScreen_AtTheKill_Fails()
+        {
+            object room = Fixture("CameraTellRoom", 60f, 40f, 33f), betrayal = ((IList)F(Fixture("CameraTellRoutes"), "Betrayals"))[0];
+            object replay = ReplayRoute(session, room, F(betrayal, "Route"));
+            int kill = (int)F(F(replay, "Kill"), "Tick"), arrow = ElementIndex(replay, "ArrowX");
+            var centre = new UnityEngine.Vector2(30f, 3f); var size = new UnityEngine.Vector2(62f, 12f);
+            bool OnScreen() => (bool)Invoke(Validator, "KillerOnScreen", replay, arrow, kill, 30, centre, size, 16f / 9f, Camera(), 30, 0f, 0f);
+            Assert.IsTrue(OnScreen(), "the arrow kills the cat where it stands: on screen");
+
+            object record = ((IList)F(replay, "Records"))[kill];
+            var bounds = (Array)F(record, "RenderBounds");
+            var b = (UnityEngine.Rect)bounds.GetValue(arrow);
+            bounds.SetValue(new UnityEngine.Rect(b.x + 100f, b.y, b.width, b.height), arrow);
+            if (F(record, "TurnedCorners") is Array corners) corners.SetValue(null, arrow);
+            Assert.IsFalse(OnScreen(), "drawn 100 u away at the kill tick");
+        }
+
+        // D-058 amendment: a fall that outruns the camera. The fixture's cat drops 40 u down a shaft into Pit; at the kill
+        // tick the camera, smoothed, is still above it. With no hold it's off screen (red first); the camera eases on during
+        // the 30-tick hold and shows Pit before the room resets.
+        [Test]
+        public void AFallThatOutrunsTheCamera_IsShownBeforeTheHoldEnds()
+        {
+            object room = Fixture("EscapeTellRoom"), betrayal = ((IList)F(Fixture("EscapeTellRoutes"), "Betrayals"))[0];
+            object replay = ReplayRoute(session, room, F(betrayal, "Route"));
+            int kill = (int)F(F(replay, "Kill"), "Tick"), pit = ElementIndex(replay, (string)F(betrayal, "Killer"));
+            Type builder = Type.GetType("Parallax.Editor.Setup.SoloRoomBuilder, Parallax.Editor");
+            var frame = (UnityEngine.Bounds)builder.GetMethod("ComputeRoomBounds").Invoke(null, new object[] { room, Camera().ViewMargin });
+            var centre = (UnityEngine.Vector2)frame.center - (UnityEngine.Vector2)F(room, "Origin"); var size = (UnityEngine.Vector2)frame.size;
+            bool OnScreen(int hold) => (bool)Invoke(Validator, "KillerOnScreen", replay, pit, kill, hold, centre, size, 16f / 9f, Camera(), 30, 0f, 0f);
+            Assert.IsFalse(OnScreen(0), "at the kill tick the camera hasn't followed the fall down to Pit");
+            Assert.IsTrue(OnScreen(30), "the camera reaches it during the hold");
+        }
+
+        // PAX-083: a replay that stops before the kill (or recorded nothing) fails with a clear message, not a guess.
         [TestCase(-1)]
         [TestCase(0)]
         public void AShortOrEmptyReplay_FailsWithAClearMessage(int keep)
         {
             object room = Fixture("CameraTellRoom", 60f, 40f, 33f), betrayal = ((IList)F(Fixture("CameraTellRoutes"), "Betrayals"))[0];
             object replay = ReplayRoute(session, room, F(betrayal, "Route"));
-            object lead = Call(T("RouteValidator"), "Lead", replay, betrayal);
-            int reveal = (int)F(lead, "FirstVisibleTick"), end = reveal + (int)F(lead, "Lead");
+            int kill = (int)F(F(replay, "Kill"), "Tick");
             var records = (IList)F(replay, "Records");
-            int count = keep < 0 ? end - 1 : keep;
+            int count = keep < 0 ? kill : keep;
             while (records.Count > count) records.RemoveAt(records.Count - 1);
 
-            var e = Assert.Throws<InvalidOperationException>(() => Invoke(Validator, "OnScreenLead", replay, ElementIndex(replay, "ArrowX"), reveal, end,
+            var e = Assert.Throws<InvalidOperationException>(() => Invoke(Validator, "KillerOnScreen", replay, ElementIndex(replay, "ArrowX"), kill, 30,
                 new UnityEngine.Vector2(30f, 3f), new UnityEngine.Vector2(62f, 12f), 16f / 9f, Camera(), 30, 0f, 0f));
-            StringAssert.Contains(keep < 0 ? $"has {end - 1} ticks, short of the lead's end t{end}" : "recorded no ticks", e.Message);
+            StringAssert.Contains(keep < 0 ? $"has {kill} ticks, short of the kill at t{kill}" : "recorded no ticks", e.Message);
         }
 
         // PAX-060 (D-097): a betrayal with a declared escape is checked against its last escape tick, not its kill. In the
@@ -141,11 +155,13 @@ namespace Parallax.Tests.EditMode
         public void AnEscapeBackedReveal_ThatLeavesTheViewBeforeTheLastEscape_Fails()
         {
             var errors = new List<string>();
-            List<object> results = Tell("Fixture", Fixture("EscapeTellRoom"), Fixture("EscapeTellRoutes"), errors);
-            TestContext.Out.WriteLine(Table(results) + "\n" + string.Join("\n", errors));
+            List<object> all = Tell("Fixture", Fixture("EscapeTellRoom"), Fixture("EscapeTellRoutes"), errors);
+            TestContext.Out.WriteLine(Table(all) + "\n" + string.Join("\n", errors));
+            List<object> results = all.Where(r => (bool)F(r, "Escape")).ToList();
             Assert.AreEqual(3, results.Count);
-            Assert.IsTrue(results.All(r => (bool)F(r, "Escape") && !(bool)F(r, "Fit")), "escape-backed rows in follow mode\n" + Table(results));
-            Assert.AreEqual(3, errors.Count, "one failure per aspect\n" + Table(results));
+            Assert.IsTrue(results.All(r => !(bool)F(r, "Fit")), "escape-backed rows in follow mode\n" + Table(results));
+            List<string> escapeErrors = errors.Where(e => e.Contains("(D-097")).ToList();
+            Assert.AreEqual(3, escapeErrors.Count, "one escape failure per aspect\n" + Table(all));
             foreach (object r in results)
             {
                 Assert.Greater((int)F(r, "OnScreenLead"), 0, "Lip is on screen as it gives way: " + r);
@@ -165,10 +181,12 @@ namespace Parallax.Tests.EditMode
             justT1.SetValue(t1, 0);
             object only = Activator.CreateInstance(T("RoomRoutes"), F(routes, "Solution"), justT1);
             var errors = new List<string>();
-            List<object> results = Tell("L014", RouteValidatorTests.Room("L014"), only, errors);
+            List<object> results = Tell("L014", RouteValidatorTests.Room("L014"), only, errors).Where(r => (bool)F(r, "Escape")).ToList();
             TestContext.Out.WriteLine(Table(results));
             Assert.AreEqual(3, results.Count);
-            CollectionAssert.IsEmpty(errors, string.Join("\n", errors));
+            // The escape rule only (the killer-at-death rule is checked with the level, in ShippedLevel_…).
+            List<string> escapeErrors = errors.Where(e => e.Contains("(D-097")).ToList();
+            CollectionAssert.IsEmpty(escapeErrors, string.Join("\n", escapeErrors));
             foreach (object r in results)
             {
                 Assert.IsTrue((bool)F(r, "Escape"), r.ToString());

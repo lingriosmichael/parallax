@@ -54,7 +54,6 @@ namespace Parallax.Tests.EditMode
             using IDisposable session = OpenSession();
             List<string> errors = Check(session, id, level, out string report);
             TestContext.Out.WriteLine(report);
-            errors = LevelZoomAccepted.Unaccepted(errors);   // D-104 amendment: the findings accepted with the 1.8× zoom
             Assert.IsEmpty(errors, string.Join("\n", errors) + "\n\n" + report);
         }
 
