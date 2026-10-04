@@ -16,9 +16,12 @@ namespace Parallax.Tests.EditMode
 {
     // PAX-A13 (§12 R8): for every disguised element that wears its host's skin, the frame on its reveal tick is pixel-identical
     // to the frame on the tick before, except for effects that start on that tick (dust, a launcher's slot and glint); only
-    // after that does anything move. Checked with the hosts re-skinned with a textured tile (the A02 fill, until the ENV-10
-    // tiles land), since a flat grey-box would pass anything. Each level's declared routes are replayed twice: once to find
-    // every reveal tick, once to render the element's area on that tick and the one before.
+    // after that does anything move. Each level's declared routes are replayed twice: once to find every reveal tick, once to
+    // render the element's area on that tick and the one before.
+    // PAX-V09 (the developer's ruling): rendered with the shipped skins. Every room build gives the hosts the kit's
+    // world-tiled stone (SoloRoomSkin.SkinFill), which the trap art copies, so the old re-skin with the A02 fill (from before
+    // the ENV-10 tiles) is gone; it drew an atlased sprite, whose wrap let the atlas padding through (PAX-V09). A flat skin
+    // would pass anything, so a compared element whose skin isn't world-tiled fails.
     // PAX-104 (the developer's ruling): every other trap's bodies are hidden while one element's frames are compared. The test
     // checks that element's disguise, not what moves behind it: L010's Drop_10, sinking behind Pit10_Cover, showed through a
     // 1-px semi-transparent column of the tiled skin at a pixel boundary. That column is a real in-game tell, tracked in
@@ -27,7 +30,6 @@ namespace Parallax.Tests.EditMode
     {
         const int PixelsPerUnit = 128;
         const float Tolerance = 3f / 255f;
-        static readonly Type Preview = Type.GetType("Parallax.Editor.Art.TrapArtPreview, Parallax.Editor");
 
         public static IEnumerable<TestCaseData> Levels()
         {
@@ -55,7 +57,10 @@ namespace Parallax.Tests.EditMode
                         var rooms = Object.FindFirstObjectByType<RoomManager>();
                         foreach (TrapArt art in Object.FindObjectsByType<TrapArt>(FindObjectsSortMode.None))
                             if (Skinned(art) && art.Trap.LatestFireTick >= 0 && art.Trap.LatestFireTick == rooms.RoomLifeTick && tick > 1)
+                            {
                                 reveals.Add((art.name, tick));
+                                if (!((IHostSkinned)art).HostSkin.WorldTiled) errors.Add($"{id} [{name}] {art.name}: its skin '{((IHostSkinned)art).HostSkin.Sprite.name}' isn't the kit's world-tiled stone; a flat skin would pass anything");
+                            }
                     }));
                     ReplayRoute(session, room, route, find);
                     if (reveals.Count == 0) continue;
@@ -63,10 +68,8 @@ namespace Parallax.Tests.EditMode
                     // Pass 2: the same replay (the harness is deterministic), rendering each reveal and the tick before it.
                     var before = new Dictionary<string, Color[]>();
                     object capture = Activator.CreateInstance(T("ReplayOptions"));
-                    bool reskinned = false;
                     Set(capture, "AfterTick", (Action<int>)(tick =>
                     {
-                        if (!reskinned) { Assert.NotNull(Preview, "TrapArtPreview not found"); Preview.GetMethod("ReskinHostsWithA02").Invoke(null, null); reskinned = true; }
                         foreach (TrapArt art in Object.FindObjectsByType<TrapArt>(FindObjectsSortMode.None)) art.Apply();
                         foreach ((string artName, int revealTick) in reveals)
                         {
