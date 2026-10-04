@@ -304,8 +304,11 @@ The inside wall of a grand ruined colonnade hall seen straight on: tall columns 
 
 ## 7. Risks
 
-- **Point lights** don't show in off-screen captures (known since A13). The glow comes from bloom and the painted art;
+- **Point lights** didn't show in off-screen captures (known since A13). The glow comes from bloom and the painted art;
   point lights are verified in the Scene view or on device.
+  - *Corrected 2026-10-04:* captures include the 2D point lights since b08d0cc (`EnvironmentCapture.PrepareLights`
+    builds each light's mesh and culling sphere before the render; URP does that only in its LateUpdate). Only A16 Phase
+    1 rounds 1–3 and the PAX-A13 checks lacked them. Proved on L002 and guarded by `EnvironmentCaptureLightsTests`.
 - **Budget:** about 7 tiers, supports and particles push draws up. Atlas per tier, and keep the static-mesh merge (the A15
   follow-up) in reserve.
 - **Supports** must never look standable where the cat can't stand, so they stay dark, desaturated, lipless and behind
@@ -462,7 +465,9 @@ on the default look).
 
 ### 10.7 Known limits
 
-- Off-screen captures skip 2D point lights, and motion is checked as present, not watched.
+- Motion is checked as present, not watched. (*Corrected 2026-10-04:* this line said off-screen captures skip 2D point
+  lights. They include them since b08d0cc, `PrepareLights`; only Phase 1 rounds 1–3 and the PAX-A13 checks lacked them.
+  Guarded by `EnvironmentCaptureLightsTests`.)
 - Device feel and frame rate are the developer's to check.
 - The set pieces need paintings (§3.6, §5).
 - The door often starts off screen (accepted in D-100).
