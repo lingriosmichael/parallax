@@ -28,6 +28,17 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual(1, Rule("ValidateBaitGaps", "Fixture", Fixture("BaitRoom", 5.6f), Motor(), Gravity()).Count);
         }
 
+        // PAX-105 (D-110 amendment 2): the 5.66 u gap that passes above, with its far pit wall a grip wall up to the floor: a cat
+        // that falls short grabs it and kicks back onto its top, so the gap can be crossed.
+        [Test]
+        public void ABaitGapWithAGripWallAtItsFarSide_CanBeCrossed()
+        {
+            object room = System.Type.GetType("Parallax.Editor.Setup.WallClingFixtures, Parallax.Editor").GetMethod("GripBaitRoom").Invoke(null, new object[] { 5.66f });
+            List<string> errors = Rule("ValidateBaitGaps", "Fixture", room, Motor(), Gravity());
+            Assert.AreEqual(1, errors.Count, string.Join("\n", errors));
+            StringAssert.Contains("can be crossed with a wall jump", errors[0]);
+        }
+
         [Test]
         public void Room5sBaitGap_Passes_AndTheLayoutPassesValidate()
         {

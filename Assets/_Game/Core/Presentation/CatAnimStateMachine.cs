@@ -2,7 +2,7 @@ namespace Parallax.Core
 {
     // Pure presentation state. It consumes already-derived motion values and owns
     // only animation timing; gameplay never reads it.
-    public sealed class CatAnimStateMachine
+    public sealed partial class CatAnimStateMachine
     {
         readonly float riseExit;
         readonly float fallEnter;
@@ -113,6 +113,7 @@ namespace Parallax.Core
             // A jump is seen once: JumpedThisStep stays set on every frame until the next tick.
             bool jumpEdge = input.JumpedThisStep && !jumpSeen;
             jumpSeen = input.JumpedThisStep;
+            bool wallJumpEdge = WallJumpEdge(input);
             float v = input.VelocityAlongGravity;
             // Item 4: the gravity sign, seen every frame (a respawn or a reset forgets it, so it never rolls).
             bool flipped = gravityKnown && input.GravitySign != lastGravitySign;
@@ -185,6 +186,9 @@ namespace Parallax.Core
                 if (State == CatAnimState.Climb && still && climbStillFrames < settings.MinStateFrames) return CatAnimState.Climb;
                 return still ? CatAnimState.Hang : CatAnimState.Climb;
             }
+
+            // Row 5b (PAX-105): on a wall, and the wall jump.
+            if (WallRow(input, onGround, wallJumpEdge, out CatAnimState wall)) return wall;
 
             // Row 6 (item 3): climbing ends. With the leap's launch (the body leaving against gravity at about the jump speed:
             // the motor's climber doesn't raise JumpedThisStep, so the launch speed is the signal, read only) it's Leap, with the
@@ -389,13 +393,13 @@ namespace Parallax.Core
                 highPoint = h;
             }
             float drop = highPoint - h;
-            if ((input.Grounded && !input.JumpedThisStep) || input.Climbing || h > highPoint) highPoint = h;
+            if ((input.Grounded && !input.JumpedThisStep) || input.Climbing || input.Clinging || h > highPoint) highPoint = h;
             return drop;
         }
 
         static bool Air(CatAnimState s) =>
             s == CatAnimState.Rise || s == CatAnimState.Apex || s == CatAnimState.Fall || s == CatAnimState.TakeOff || s == CatAnimState.Leap
-            || s == CatAnimState.Flip;
+            || s == CatAnimState.Flip || IsWall(s);
 
         static bool GroundOrLanding(CatAnimState s) =>
             Ground(s) || s == CatAnimState.Land || s == CatAnimState.HardLand || s == CatAnimState.IdleFidget;
@@ -534,6 +538,7 @@ namespace Parallax.Core
             climbStillFrames = 0;
             ClimbDirection = 1;
             gravityKnown = false;
+            ResetWall();
             ResetFidgets();
         }
 

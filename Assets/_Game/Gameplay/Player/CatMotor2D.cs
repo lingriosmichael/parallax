@@ -27,6 +27,8 @@ namespace Parallax.Gameplay.Player
         RigidbodyConstraints2D savedConstraints;
         // PAX-087 (D-089): the climbing branch; null only when Awake disabled the motor.
         CatClimber climber;
+        // PAX-105 (D-110): the wall branch; null only when Awake disabled the motor.
+        CatWallCling wallCling;
 
         public bool IsGrounded { get; private set; }
         /// <summary>PAX-093 (D-095): the collider this step's ground test stood the cat on (null when not grounded).</summary>
@@ -42,6 +44,15 @@ namespace Parallax.Gameplay.Player
         public bool IsFrozen { get; private set; }
         public bool IsClimbing => climber != null && climber.IsClimbing;
         public ClimbVine ClimbedVine => climber?.Vine;
+        /// <summary>PAX-105 (D-110): clinging to a wall, and on which side (+1 right, -1 left, 0 not clinging).</summary>
+        public bool IsClinging => wallCling != null && wallCling.IsClinging;
+        public int ClingSide => wallCling != null ? wallCling.ClingSide : 0;
+        /// <summary>PAX-105 (D-110 amendment): latch mode (the next wall reached latches without a Grab press).</summary>
+        public bool IsLatchMode => wallCling != null && wallCling.LatchMode;
+        /// <summary>PAX-105 (D-110): true on the step the cat jumped off a wall.</summary>
+        public bool WallJumpedThisStep => wallCling != null && wallCling.WallJumpedThisStep;
+        /// <summary>PAX-105 (presentation only, read by CatVisualPresenter): the collider clung to (null when not clinging).</summary>
+        public Collider2D ClingFace => wallCling?.Face;
 
         /// <summary>PAX-087 (D-089): the vines this cat may climb, handed over by LocalHumanDriver.Activate (null: none).
         /// Any climb in progress ends.</summary>
@@ -81,6 +92,7 @@ namespace Parallax.Gameplay.Player
             jumpBufferTimer = 0f;
             command = CatCommand.None;
             climber?.Clear();   // PAX-087 (D-089): a death, reset or respawn ends a climb, with no regrab lock
+            wallCling?.Clear(); // PAX-105 (D-110): and a cling, latch mode, a remembered Grab and the face lock
             body.rotation = Vector2.SignedAngle(Vector2.down, gravity.Direction);
         }
 
@@ -91,6 +103,7 @@ namespace Parallax.Gameplay.Player
         {
             if (IsFrozen || body == null) return;
             climber?.Release();   // PAX-087 (D-089): a launch lets go of the vine (with the regrab lock)
+            wallCling?.Release(); // PAX-105 (D-110): and of a wall (the face lock), ending latch mode
             body.linearVelocity = GeyserMath.Launch(body.linearVelocity, direction, speed);
             coyoteTimer = 0f;
             IsGrounded = false;
@@ -117,12 +130,35 @@ namespace Parallax.Gameplay.Player
             if (away > 0f && fall < away / dt) body.linearVelocity = v + down * (away / dt - fall);
         }
 
+        /// <summary>D-115 (supersedes D-056 (3)'s launch): a floor that was carrying the cat upward and slows or stops this room
+        /// tick leaves it riding at the floor's new speed instead of flinging it on (the push into the cat is physics', so the
+        /// cat kept the floor's old speed). Only a cat touching the floor's top, rising no faster than the floor was (a jump
+        /// is faster) and that didn't jump this step. Called in the room step, before physics.</summary>
+        public void MatchSlowingFloor(Collider2D floor, Vector2 displacement, Vector2 previousDisplacement, float dt)
+        {
+            if (IsFrozen || body == null || floor == null || IsClimbing || JumpedThisStep || WallJumpedThisStep || dt <= 0f) return;
+            Vector2 down = gravity.Direction;
+            float before = -Vector2.Dot(previousDisplacement, down) / dt, now = Mathf.Max(0f, -Vector2.Dot(displacement, down) / dt);
+            if (before <= now + 1e-4f) return;
+            Vector2 v = body.linearVelocity;
+            float rise = -Vector2.Dot(v, down);
+            if (rise <= now + 1e-4f || rise > before + 2f) return;
+            int count = body.Cast(down, groundFilter, groundHits, config.GroundProbeDistance);
+            for (int i = 0; i < count; i++)
+                if (groundHits[i].collider == floor && Vector2.Dot(groundHits[i].normal, -down) > config.GroundNormalThreshold)
+                {
+                    body.linearVelocity = v + down * (rise - now);
+                    return;
+                }
+        }
+
         /// <summary>PAX-093 (D-095): a push wall's shove, called in the room step: the kit moves the cat by `delta` (no physics
         /// shove). It lets go of a vine. Frozen: nothing.</summary>
         public void ApplyPush(Vector2 delta)
         {
             if (IsFrozen || body == null) return;
             climber?.Release();
+            wallCling?.Release();   // PAX-105 (D-110)
             body.position += delta;
         }
 
@@ -152,6 +188,7 @@ namespace Parallax.Gameplay.Player
             Collider2D bodyCollider = null;
             foreach (Collider2D c in GetComponents<Collider2D>()) if (!c.isTrigger) { bodyCollider = c; break; }
             climber = new CatClimber(body, bodyCollider, config);
+            wallCling = new CatWallCling(body, bodyCollider, config, groundFilter);
         }
 
         public void Step(in CatCommand input, float dt)
@@ -181,6 +218,18 @@ namespace Parallax.Gameplay.Player
             // returns false having touched nothing, so everything below runs exactly as before.
             if (climber != null && climber.Step(command, down, right, IsGrounded, jumpBufferTimer > 0f, JumpMath.SpeedForHeight(config.JumpHeight, gravity.Strength), dt))
             {
+                wallCling?.Release();   // PAX-105 (D-110): climbing a vine wins over clinging
+                IsGrounded = false;
+                coyoteTimer = 0f;
+                jumpBufferTimer = 0f;
+                body.rotation = Vector2.SignedAngle(Vector2.down, down);
+                return;
+            }
+
+            // PAX-105 (D-110): a cling, or a wall jump, owns this step. Without a Grab press remembered, latch mode, a cling
+            // or a move lock it returns false having touched no body, so everything below runs exactly as before.
+            if (wallCling != null && wallCling.Step(command, down, IsGrounded, jumpBufferTimer > 0f, JumpMath.SpeedForHeight(config.JumpHeight, gravity.Strength), gravity.Strength, dt))
+            {
                 IsGrounded = false;
                 coyoteTimer = 0f;
                 jumpBufferTimer = 0f;
@@ -195,9 +244,18 @@ namespace Parallax.Gameplay.Player
             coyoteTimer = (float)coyote;
             jumpBufferTimer = (float)buffer;
 
-            float target = command.Move * config.MaxSpeed;
-            float accelRate = Mathf.Abs(command.Move) > 0.01f ? config.Acceleration : config.Deceleration;
-            along = Mathf.MoveTowards(along, target, accelRate * dt);
+            float move = command.Move;
+            bool keepAlong = false;
+            // PAX-105 (D-110): after a wall jump, Move back toward the wall is ignored and, with no Move away, the sideways
+            // speed is kept (no deceleration) until the move lock ends.
+            if (wallCling != null && wallCling.TakeMoveLockStep())
+            {
+                move = wallCling.LockedMove(move);
+                keepAlong = Mathf.Abs(move) <= 0.01f;
+            }
+            float target = move * config.MaxSpeed;
+            float accelRate = Mathf.Abs(move) > 0.01f ? config.Acceleration : config.Deceleration;
+            if (!keepAlong) along = Mathf.MoveTowards(along, target, accelRate * dt);
 
             fall += gravity.Strength * dt;
 

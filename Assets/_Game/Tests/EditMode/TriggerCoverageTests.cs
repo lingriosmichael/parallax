@@ -109,6 +109,13 @@ namespace Parallax.Tests.EditMode
         public void FlipEntry_TriggerMissesTheFlipIntoTheStretch_IsRejected() =>
             AssertRejected(Synthetic("FlipEntry", false), "Drop_Spikes");
 
+        // PAX-105 (D-110 amendment 2): a grip wall beside the moat could carry the cat over it, so the flip-entry clause no
+        // longer covers the stretch (only grip faces count; the plain FlipEntry room above still passes).
+        [Test]
+        public void FlipEntry_AGripWallBesideTheMoat_IsAnotherWayIn_SoItsRejected() =>
+            AssertRejected(Coverage("FIX", Type.GetType("Parallax.Editor.Setup.WallClingFixtures, Parallax.Editor").GetMethod("GripFlipEntry").Invoke(null, null),
+                syntheticMotor, SyntheticGravity, new List<string>()), "Drop_Spikes");
+
         [Test]
         public void FlipEntry_DangerWithinGravityUpReach_IsRejected() =>
             AssertRejected(Synthetic("FlipEntryCeilingDanger"), "Ceiling_Drop");

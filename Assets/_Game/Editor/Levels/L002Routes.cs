@@ -9,6 +9,8 @@ namespace Parallax.Editor.Levels
     // T5 is the door backing away over a section of S1 that isn't there (jump it). The stair behind the start and the
     // high ledge on S1 are the dead ends. Every release that sets up a landing or a take-off spot is a timed step, so its
     // window of release ticks is measured (>= 12, PAX-059: a release is mid-air control, and no landing may need precision).
+    // D-112: the end is a ferry crossing: wait on the dock for Ferry to come home, drop onto it, ride it out, and jump up to
+    // the door from its far end (the jump is timed, so its window is measured).
     static class L002Routes
     {
         public static RoomRoutes Build()
@@ -37,7 +39,11 @@ namespace Parallax.Editor.Levels
                 Until(Still()), Hold(Right), Jump(), Until(XAtLeast(12.2f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("S1_A2")), Hold(Right),
                 Until(XAtLeast(15.6f)), Jump(), Until(XAtLeast(18.1f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("S1_A3")),
                 Until(Still()), Hold(Right), Until(XAtLeast(19.4f)), Jump(), Until(XAtLeast(22f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("S1_A4")),
-                Hold(Right), Until(XAtLeast(23.2f)), Jump(), Until(RoomComplete()));
+                Release(), Until(Still()),
+                // D-112: the ferry crossing.
+                Until(Moving("Ferry")), Until(Home("Ferry")),
+                Hold(Right), Until(XAtLeast(24.2f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Ferry")), Until(Stopped("Ferry")),
+                Hold(Right), Jump().Timed(TimedMode.Shift), Until(RoomComplete()));
 
             return new RoomRoutes(solution,
                 new Betrayal("T1: Block_1 comes down on a cat that runs on from the start", "Block_1", DeathCause.Hazard,
@@ -48,8 +54,14 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(GroundedOn(Ledge))", "stop on the ledge", Release(), Until(Dead()))),
                 new Betrayal("T4: Spikes_4 rise under a cat that runs along S1", "Spikes_4", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(S1_A))", "run on", Hold(Right), Until(Dead()))),
-                new Betrayal("T5: a cat that follows the door walks off S1 onto Spikes_5", "Spikes_5", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=23.2)", "follow the door", Until(Dead())), revealedBy: "Floor_9"),
+                new Betrayal("T5: a cat that jumps after the door overshoots the ferry onto Spikes_5b", "Spikes_5b", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(S1_A4))", "jump after the door", Hold(Right), Jump(), Until(Dead())), revealedBy: "Door"),
+                new Betrayal("T6: a cat that steps off the dock while the ferry is away falls onto Spikes_5", "Spikes_5", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Home(Ferry))", "step off while it's away", Until(Moving("Ferry")), Until(Stopped("Ferry")), Hold(Right), Until(Dead())), revealedBy: "Ferry"),
+                new Betrayal("T7: Stone, the slab in the gap, is a fake; a cat that hops onto it falls onto Spikes_5", "Spikes_5", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Home(Ferry))", "hop onto the slab", Hold(Right), Jump(), Until(XAtLeast(25.6f)), Release(), Until(Dead())), revealedBy: "Stone"),
+                new Betrayal("Dead end: the stair's top step where the ferry docks drops the cat onto Spikes_5b", "Spikes_5b", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Stopped(Ferry))", "step onto the stair's top step", Hold(Right), Until(Airborne()), Release(), Until(Dead())), revealedBy: "Tread_3"),
                 new Betrayal("Dead end: the stair up to the door", "Pit9_Hazard", DeathCause.Hazard,
                     new Route("stair", Hold(Right), Until(XAtLeast(27.2f)), Jump(), Until(GroundedOn("Tread_1")), Jump(), Until(Dead())), revealedBy: "Tread_2"),
                 new Betrayal("Dead end: the high ledge on S1 gives way onto spikes", "Spikes_6", DeathCause.Hazard,

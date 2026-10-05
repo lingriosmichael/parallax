@@ -228,6 +228,10 @@ namespace Parallax.Editor.Setup
             return errors;
         }
 
+        // D-113 (the developer, 2026-10-05): L003's S1 arrows fly non-stop and are jumped, not waited out; the solution's jumps
+        // keep their 12-tick windows (the route validator).
+        static readonly string[] JumpedArrows = { "L003/Arrow_L", "L003/Arrow_R" };
+
         // D-056 (1): a Periodic arrow's window from its stop to the next fire (the next tell counts as
         // unsafe) clears a from-rest crossing of the lane by PeriodicSlackTicks.
         public static List<string> ValidateArrowPeriodicSlack(string levelId, SoloRoomDefinition room)
@@ -241,6 +245,7 @@ namespace Parallax.Editor.Setup
             {
                 // PAX-076 (D-083): an arrow whose lane is wholly inside a precision section is ValidatePrecision's.
                 if (WhollyInSection(room, ArrowLaneBox(e, Vector2.zero))) continue;
+                if (System.Array.IndexOf(JumpedArrows, $"{levelId}/{e.Name}") >= 0) continue;
                 CheckArrowPeriodicSlack(levelId, e, config, PeriodicSlackTicks, errors);
             }
             return errors;

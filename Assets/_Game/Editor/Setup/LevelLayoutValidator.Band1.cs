@@ -127,9 +127,14 @@ namespace Parallax.Editor.Setup
             foreach (SoloRoomElement block in room.Elements.Where(e => e.Kind == SoloRoomElementKind.FallingBlock))
             {
                 Rect b = Box(block, Vector2.zero);
-                bool flush = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Ceiling || e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall)
+                bool flush = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Ceiling || e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall || e.Kind == SoloRoomElementKind.GripWall)
                     .Any(e => { Rect r = Box(e, Vector2.zero); return b.xMin >= r.xMin - eps && b.xMax <= r.xMax + eps && b.yMin >= r.yMin - eps && b.yMax <= r.yMax + eps; });
                 if (flush) continue;
+                // D-110 amendment 3: a grip falling block is meant to be seen (its claw look says where it holds), so it may hang
+                // in the open; L001's two walls hang from the ceiling until they fall.
+                if (block.Settings.Grip.IsConfigured) continue;
+                // D-111 (the developer, 2026-10-04): L001's ledge is a floor that falls on the cat passing under it.
+                if (levelId == "L001" && block.Name == "Ledge") continue;
                 // D-085 amendment (PAX-102): a block that is a section of a split slab (a real hole once it falls) passes when the
                 // floor is drawn as one surface across it: a floor on each side, touching it, with the same top and bottom, and no
                 // exposed side edge where they meet (the skin draws side faces and end caps on exposed edges only: a seam).
@@ -198,7 +203,7 @@ namespace Parallax.Editor.Setup
             {
                 Rect t = Box(trap, Vector2.zero);
                 float highest = room.Elements
-                    .Where(e => e.Name != trap.Name && (e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall || e.Kind == SoloRoomElementKind.CollapsingFloor))
+                    .Where(e => e.Name != trap.Name && (e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall || e.Kind == SoloRoomElementKind.GripWall || e.Kind == SoloRoomElementKind.CollapsingFloor))
                     .Select(e => Box(e, Vector2.zero))
                     .Where(r => r.xMax > t.xMin + 1e-3f && r.xMin < t.xMax - 1e-3f && r.yMax < t.yMin - 1e-3f)
                     .Select(r => r.yMax).DefaultIfEmpty(float.NegativeInfinity).Max();
@@ -206,8 +211,22 @@ namespace Parallax.Editor.Setup
                 float head = highest + reach, limit = t.yMin - TrapFloorTouchSkin - HeadroomMargin;
                 if (head > limit + 1e-3f)
                     errors.Add($"{levelId}: {trap.Name} gives way on a touch, and a cat jumping straight up from the top at y {highest:F2} under it reaches y {head:F2}, within {TrapFloorTouchSkin + HeadroomMargin:F2} of its underside ({t.yMin:F2}); raise it to an underside of at least {head + TrapFloorTouchSkin + HeadroomMargin:F2}, or trigger it from a box over its top.");
+                else WallJumpHeadroom(levelId, room, motor, trap, t, limit, errors);
             }
             return errors;
+        }
+
+        // PAX-105 (D-110 (7), the audit's kind (d)): nor can a wall jump get the cat's top that close to the underside (a face
+        // within a wall jump's reach of the trap floor, or a surface only wall jumps reach). Only what wall jumps add counts here.
+        static void WallJumpHeadroom(string levelId, SoloRoomDefinition room, Parallax.Gameplay.Player.CatMotorConfig motor, SoloRoomElement trap, Rect t, float limit, List<string> errors)
+        {
+            float gravity = GravityStrength();
+            Vector2 checkpoint = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Checkpoint).Select(e => e.Position).DefaultIfEmpty(Vector2.zero).First();
+            float with = TriggerCoverage.HighestTopOver(room, t.xMin, t.xMax, t.yMin, checkpoint, motor, gravity, walls: true);
+            if (with <= limit + 1e-3f) return;
+            float without = TriggerCoverage.HighestTopOver(room, t.xMin, t.xMax, t.yMin, checkpoint, motor, gravity, walls: false);
+            if (with > without + 1e-3f)
+                errors.Add($"{levelId}: {trap.Name} gives way on a touch, and a wall jump gets the cat's top to y {with:F2} under it, within {TrapFloorTouchSkin + HeadroomMargin:F2} of its underside ({t.yMin:F2}) (D-110 (7), D-085).");
         }
 
         // A trap goes off where the cat is, never from afar (developer's play of L001 after PAX-059a: a trigger 8.5 u before

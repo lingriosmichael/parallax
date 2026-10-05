@@ -77,6 +77,20 @@ Units: pp = phone px at 80 px/u; sp = sprite px at PPU 143.3.
   to the stretched leap.
 - **Fewer, bigger key poses for full speed.** At 4 u/s the 25-frame loop advances about 3 frames per display frame. V07
   now steps through every third frame, regularly, but the limbs still read as a blur.
+- **On a grip wall (PAX-105, reusing the vine art; accepted for now, 2026-10-04).**
+  - *Paws in the floor at the end of a slide.* Sliding down a wall to the floor, the vertical pose's hind paws and tail
+    are drawn up to 54.8 sp into the floor on the last frames before the landing (the vine's foot shows the same).
+  - *The pop into the vertical pose.* Grabbing a wall at the top of a jump goes from the side-view air pose to the
+    vertical Climb/Hang pose in one frame: an 18–20 pp jump of the silhouette (`wall_*` captures).
+  - The residue on `CatA_Hang` (the cut-out vine stem along the paws and belly) waits for the developer's call on the
+    `wall_*` contact sheets.
+
+## Grip wall (PAX-105, D-110 amendment 2)
+
+- **`GripWall` texture (new art).** Grip walls draw the level's wall look (falling ones the floor's stone); the code-built
+  claw-scratch overlay was removed at the developer's request (D-111), so nothing marks where the claws hold yet. Wanted: a stone wall texture
+  with worn, scratched grip marks or a rough climbing face, readable at phone size against the plain walls, tiling as the
+  wall kit does (whole repeating texture, PAX-V09), in the Reality A palette.
 
 ## Idle, deaths and door
 

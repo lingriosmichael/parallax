@@ -18,7 +18,7 @@ namespace Parallax.Editor.Setup
     // box; the secondary box is its Overlap wake trigger.
     // PAX-093 (D-095): ShrinkingFloor is appended the same way (levels 11+ only). Position/Size is the full floor; the
     // secondary box, when set, is its Overlap trigger (else its own top, like a collapsing floor).
-    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser, Vine, StormCloud, ShrinkingFloor }
+    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser, Vine, StormCloud, ShrinkingFloor, GripWall }
     public enum SoloRoomOpeningKind { Pit, Recess }
     public enum SoloRoomHazardRole { Normal, OpeningBottom, OpeningCap, CeilingForceUpCoverage, UnjumpableFloor }
     public enum RequiredJumpKind { Pit, Hazard }
@@ -96,6 +96,14 @@ namespace Parallax.Editor.Setup
         { IsConfigured = true; ShrinkTicks = shrinkTicks; MinWidth = minWidth; From = from; }
     }
 
+    // PAX-105 (D-110 amendment 3): a falling block that is a grip wall once it has landed (GripSurface on its collider).
+    public readonly struct GripSettings
+    {
+        public readonly bool IsConfigured;
+        public GripSettings(bool grip) { IsConfigured = grip; }
+        public static GripSettings On => new(true);
+    }
+
     public readonly struct SoloRoomTrapSettings
     {
         public readonly bool IsConfigured; public readonly int DelayTicks; public readonly int MoveTicks; public readonly int RevealDelayTicks;
@@ -117,8 +125,10 @@ namespace Parallax.Editor.Setup
         // PAX-093 (D-095): default for every element that isn't a PAX-093 floor.
         public readonly MovingFloorSettings Floor;
         public readonly ShrinkSettings Shrink;
+        // PAX-105 (D-110 amendment 3): default for everything but a grip falling block.
+        public readonly GripSettings Grip;
         public SoloRoomTrapSettings(int delayTicks = 0, int moveTicks = 0, int revealDelayTicks = 0, float unitsPerTick = 0f, float travelDistance = 0f, FallingBlockDirection direction = FallingBlockDirection.Down, GravityFlipMode gravityMode = GravityFlipMode.Flip, bool rearmOnExit = false, bool rendererEnabled = false, Vector2 offset = default, string triggerName = "Trigger", TrapTriggerSource triggerSource = TrapTriggerSource.Overlap, string chainSource = null, TrapRepeatMode repeatMode = TrapRepeatMode.Once, int cooldownTicks = 0, int periodTicks = 1, int phaseTicks = 0, MovingTrapKind movingKind = MovingTrapKind.Hazard, int holdTicks = 0, int returnTicks = 0, float crushDepth = 0f, string learnedBypassReason = null)
-        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; Geyser = default; Cloud = default; Floor = default; Shrink = default; }
+        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; Geyser = default; Cloud = default; Floor = default; Shrink = default; Grip = default; }
         // PAX-074 (D-078): an arrow's lane on top of ordinary trigger/repeat settings. Two parameters on
         // purpose: tests that build settings by reflection pick the longest constructor, which stays the one above.
         public SoloRoomTrapSettings(ArrowLane arrow, SoloRoomTrapSettings timing) { this = timing; Arrow = arrow; }
@@ -131,6 +141,8 @@ namespace Parallax.Editor.Setup
         // PAX-093 (D-095): a MovingTrap Solid's floor behaviour, and a shrinking floor's shrink (same two-parameter shape).
         public SoloRoomTrapSettings(MovingFloorSettings floor, SoloRoomTrapSettings timing) { this = timing; Floor = floor; }
         public SoloRoomTrapSettings(ShrinkSettings shrink, SoloRoomTrapSettings timing) { this = timing; Shrink = shrink; }
+        // PAX-105 (D-110 amendment 3): a falling block's grip on top of its timing (same two-parameter shape).
+        public SoloRoomTrapSettings(GripSettings grip, SoloRoomTrapSettings timing) { this = timing; Grip = grip; }
     }
 
     public readonly struct SoloRoomElement

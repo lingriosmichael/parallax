@@ -15,6 +15,7 @@ namespace Parallax.Gameplay.Input
         bool jumpPressedLatched;
         bool interactHeld;
         bool interactPressedLatched;
+        bool grabPressedLatched;
 
         void Update()
         {
@@ -40,6 +41,8 @@ namespace Parallax.Gameplay.Input
                 jumpHeld = keyboard.spaceKey.isPressed;
                 interactPressedLatched |= keyboard.fKey.wasPressedThisFrame;
                 interactHeld = keyboard.fKey.isPressed;
+                // PAX-105 (D-110 amendment): Left Shift grabs a wall.
+                grabPressedLatched |= keyboard.leftShiftKey.wasPressedThisFrame;
             }
         }
 
@@ -83,9 +86,11 @@ namespace Parallax.Gameplay.Input
             cmd.JumpHeld = jumpHeld;
             cmd.InteractPressed = interactPressedLatched;
             cmd.InteractHeld = interactHeld;
+            cmd.GrabPressed = grabPressedLatched;
 
             jumpPressedLatched = false;
             interactPressedLatched = false;
+            grabPressedLatched = false;
 
             return cmd;
         }
@@ -98,6 +103,7 @@ namespace Parallax.Gameplay.Input
             jumpPressedLatched = false;
             interactHeld = false;
             interactPressedLatched = false;
+            grabPressedLatched = false;
         }
     }
 }

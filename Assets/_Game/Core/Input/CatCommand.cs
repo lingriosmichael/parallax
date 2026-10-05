@@ -8,6 +8,7 @@ namespace Parallax.Core
         public bool  JumpHeld;
         public bool  InteractPressed;
         public bool  InteractHeld;
+        public bool  GrabPressed;   // PAX-105 (D-110 amendment): edge, pressed this tick (latches onto a wall)
 
         public static CatCommand None => default;
     }

@@ -34,9 +34,14 @@ namespace Parallax.Tests.EditMode
 
         static string Summary(object report) => (string)report.GetType().GetMethod("Summary").Invoke(report, null);
 
-        [TestCase("L001", new[] { 26 }, new int[0], new[] { "Floor_2=26", "Block_1=22", "Block_2=22", "Spikes_1=10", "Floor_7=26", "Spikes_2=6" }, new[] { "Door visible t213, complete t281" })]
-        [TestCase("L002", new[] { 26, 24, 26, 21, 20, 23, 29, 15, 32, 28, 24 }, new int[0], new[] { "Block_1=10", "Block_2=10", "Block_3=10", "Spikes_4=50", "Floor_9=34", "Tread_2=45", "Spikes_6=20" }, new string[0])]
-        [TestCase("L003", new[] { 31, 34, 17, 32, 28 }, new int[0], new[] { "Floor_1=26", "Floor_3=21", "Spikes_B=18", "Arrow_2A=6", "Arrow_2C=6", "Arrow_2D=6", "Arrow_2B=6", "Spikes_R=20" }, new[] { "S1_Mid visible t374, complete t1406" })]
+        // PAX-105 (D-110 amendment 3): L001 re-pinned to its falling grip walls (the climb out replaced the timed hop over Block_1).
+        [TestCase("L001", new int[0], new int[0], new[] { "Floor_2=26", "Block_1=20", "Block_2=20", "Spikes_1=10", "Floor_7=27", "Spikes_2=7" }, new[] { "Door visible t262, complete t330" })]
+        // D-112: L002 re-pinned to its ferry crossing (the drop onto Ferry, the jump up to the door, Stone and Tread_3).
+        [TestCase("L002", new[] { 26, 24, 26, 21, 20, 23, 29, 15, 32, 28, 13, 15, 17 }, new int[0], new[] { "Block_1=10", "Block_2=10", "Block_3=10", "Spikes_4=50", "Door=90", "Ferry=773", "Stone=16", "Tread_3=23", "Tread_2=45", "Spikes_6=20" }, new string[0])]
+        // D-113: L003 re-pinned: S1 the arrow floor (the jumps past Post_R, Lift_1, Shrink_1 and onto Post_L), S2 the spike bed
+        // (D-113 amendment: Hop_1, Ride_1, Lift_2, Hop_2, Ride_2, the fakes False_1 and False_2); no Recovers (S1_Mid is gone).
+        // D-113 amendment 2: the perch on Post_R (1.2 u), raised S1_A, Hop_2 moving.
+        [TestCase("L003", new[] { 31, 34, 20, 25, 21, 32, 16, 13, 27, 12, 16, 17, 18, 20, 13, 18 }, new int[0], new[] { "Floor_1=26", "Floor_3=21", "Spikes_B=18", "Arrow_L=6", "Lift_1=659", "Shrink_1=47", "False_1=8", "Ride_1=898", "False_2=7", "Ride_2=1043", "Spikes_R=20" }, new string[0])]
         [TestCase("L004", new[] { 12, 13, 13, 14, 13, 31 }, new int[0], new[] { "Spikes_1=11", "Arrow_O=6", "Sink_R=44", "Arrow_7=18", "Spikes_A=27", "Spikes_3=7", "Roof_4=21", "Ride_2=673", "Ride_4=683", "Spikes_L=26" }, new string[0])]
         [TestCase("L005", new[] { 24, 32 }, new int[0], new[] { "Arrow_A=6", "Arrow_Drip=6", "Arrow_B=6", "Ledge_Lo2=21", "Ledge_Lo2=25", "Arrow_C=6", "Arrow_D=6", "Floor_6=27", "Spikes_D=15" }, new string[0])]
         [TestCase("L006", new[] { 20, 26 }, new int[0], new[] { "Spikes_1=11", "Block_2=18", "Sweep_3=42", "Floor_4=21", "Floor_5=23", "Ride_6=482", "Spikes_L=44", "Floor_5=21", "Spikes_L=24" }, new string[0])]
@@ -54,7 +59,7 @@ namespace Parallax.Tests.EditMode
             CollectionAssert.AreEquivalent(leads, ((IEnumerable)F(report, "Leads")).Cast<object>().Select(l => F(l, "RevealedBy") + "=" + F(l, "Lead")).ToArray(), Summary(report));
             CollectionAssert.AreEqual(recoveries, ((IEnumerable)F(report, "Recoveries")).Cast<object>()
                 .Select(r => $"{F(r, "RevealedBy")} visible t{F(r, "FirstVisibleTick")}, complete t{F(r, "CompletionTick")}").ToArray(),
-                "Recovers betrayals (D-080; PAX-059: L001 the Door, L003 S1_Mid; the other levels declare none)\n" + Summary(report));
+                "Recovers betrayals (D-080; PAX-059: L001 the Door; the other levels declare none)\n" + Summary(report));
         }
     }
 }

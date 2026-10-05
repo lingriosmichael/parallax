@@ -22,5 +22,9 @@ namespace Parallax.Core
         Leap,
         Door,
         IdleFidget,
+        // PAX-105 (D-110): appended in this order.
+        WallCling,
+        WallSlide,
+        WallJump,
     }
 }

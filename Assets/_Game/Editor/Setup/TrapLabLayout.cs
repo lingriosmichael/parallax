@@ -64,6 +64,8 @@ namespace Parallax.Editor.Setup
             , Room12()
             // PAX-099 (D-106): the angled-arrow room.
             , Room13()
+            // PAX-105 (D-110): the wall room (TrapLabLayout.WallCling.cs).
+            , Room14()
         };
 
         // PAX-099 (D-106): the angled-arrow room, origin 614 (room 12 ends at 601; the same 13 u gap), width 32, a flat floor

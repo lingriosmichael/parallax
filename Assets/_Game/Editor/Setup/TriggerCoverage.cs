@@ -254,7 +254,7 @@ namespace Parallax.Editor.Setup
         }
 
         static bool IsOverhead(SoloRoomElement e) =>
-            e.Kind == SoloRoomElementKind.Ceiling || e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall;
+            e.Kind == SoloRoomElementKind.Ceiling || e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall || e.Kind == SoloRoomElementKind.GripWall;
 
         // "Seen from the checkpoint", per storey: the sides of the trigger from which the cat can reach its band without
         // crossing it. Standable surfaces (and, in a room with gravity flips, the undersides a flipped cat walks) are
@@ -262,38 +262,13 @@ namespace Parallax.Editor.Setup
         // whose path passes through the trigger inside the band is not taken. Without a motor, or when nothing in the
         // band is reached, it falls back to the checkpoint's side, the rule before PAX-059.
         // PAX-091: also stuck spear shafts (except for `trap`'s own chain family), vines, geyser launches and closed pits
-        // (TriggerCoverage.Edges.cs).
-        internal static Side ApproachSides(SoloRoomDefinition room, Rect trigger, float low, float ceiling, Vector2 checkpoint, CatMotorConfig motor, float gravity, SoloRoomElement trap)
+        // (TriggerCoverage.Edges.cs). PAX-105 (D-110): and wall faces, clung to and jumped off (`walls`; TriggerCoverage.Edges.cs).
+        internal static Side ApproachSides(SoloRoomDefinition room, Rect trigger, float low, float ceiling, Vector2 checkpoint, CatMotorConfig motor, float gravity, SoloRoomElement trap, bool walls = true)
         {
             Side fallback = checkpoint.x <= trigger.center.x ? Side.Left : Side.Right;
             if (motor == null || gravity <= 0f) return fallback;
-            var reach = new Reach(motor, gravity);
-            List<Piece> pieces = Pieces(room, trigger, low, ceiling, motor.ColliderSize.y);
-            AddStuckShafts(pieces, room, trap, trigger, low, ceiling, motor.ColliderSize.y);
-            AddVines(pieces, room, trigger, low, ceiling, reach);
-            AddMovers(pieces, room, trigger, low, ceiling, motor.ColliderSize.y);
-            // PAX-095 (D-098): the surface the checkpoint stands on, a top or (a gravity-up start) an underside; otherwise, as
-            // before, the highest top at or below it.
-            Piece start = pieces.Where(p => !p.Vine && p.XMin - Epsilon <= checkpoint.x && p.XMax + Epsilon >= checkpoint.x && Mathf.Abs(p.Y - checkpoint.y) <= Epsilon)
-                .OrderBy(p => p.Up).FirstOrDefault()
-                ?? pieces.Where(p => !p.Up && !p.Vine && p.XMin - Epsilon <= checkpoint.x && p.XMax + Epsilon >= checkpoint.x && p.Y <= checkpoint.y + Epsilon)
-                .OrderByDescending(p => p.Y).FirstOrDefault();
-            if (start == null) return fallback;
-            SoloRoomElement[] flips = room.Elements.Where(e => e.Kind == SoloRoomElementKind.GravityFlip).ToArray();
-            Rect[] fixedSolids = FixedSolids(room);
-            Vent[] vents = Vents(room, motor, gravity);
-            var reached = new HashSet<Piece> { start };
-            var frontier = new Queue<Piece>(); frontier.Enqueue(start);
-            while (frontier.Count > 0)
-            {
-                Piece a = frontier.Dequeue();
-                foreach (Piece b in pieces)
-                    if (!reached.Contains(b) && (Walks(a, b, trigger, low, ceiling, reach, room.Width, fixedSolids)
-                        || flips.Any(f => Flips(room, a, b, Box(f), trigger, low, ceiling, reach))
-                        || Climbs(a, b, trigger, low, ceiling, reach, room.Width, fixedSolids) || Launches(a, b, vents, trigger, low, ceiling, reach)
-                        || Rides(a, b, trigger, low, ceiling)))
-                    { reached.Add(b); frontier.Enqueue(b); }
-            }
+            HashSet<Piece> reached = Reached(room, trigger, low, ceiling, checkpoint, motor, gravity, trap, walls);
+            if (reached == null) return fallback;
             Side sides = Side.None;
             foreach (Piece p in reached.Where(p => p.InBand))
             {
@@ -303,9 +278,60 @@ namespace Parallax.Editor.Setup
             return sides == Side.None ? fallback : sides;
         }
 
+        // Every surface, vine stretch and wall face the cat reaches from the checkpoint without passing through the trigger in
+        // its band (null: no surface under the checkpoint). A wall face's P1 is the highest the cat clings to it.
+        static HashSet<Piece> Reached(SoloRoomDefinition room, Rect trigger, float low, float ceiling, Vector2 checkpoint, CatMotorConfig motor, float gravity, SoloRoomElement trap, bool walls)
+        {
+            var reach = new Reach(motor, gravity);
+            List<Piece> pieces = Pieces(room, trigger, low, ceiling, motor.ColliderSize.y);
+            AddStuckShafts(pieces, room, trap, trigger, low, ceiling, motor.ColliderSize.y);
+            AddVines(pieces, room, trigger, low, ceiling, reach);
+            AddMovers(pieces, room, trigger, low, ceiling, motor.ColliderSize.y);
+            WallJumpReach arc = walls ? new WallJumpReach(motor, gravity) : null;
+            if (arc != null) AddFaces(pieces, room, trigger, arc);
+            // PAX-095 (D-098): the surface the checkpoint stands on, a top or (a gravity-up start) an underside; otherwise, as
+            // before, the highest top at or below it.
+            Piece start = pieces.Where(p => !p.Vine && !p.Wall && p.XMin - Epsilon <= checkpoint.x && p.XMax + Epsilon >= checkpoint.x && Mathf.Abs(p.Y - checkpoint.y) <= Epsilon)
+                .OrderBy(p => p.Up).FirstOrDefault()
+                ?? pieces.Where(p => !p.Up && !p.Vine && !p.Wall && p.XMin - Epsilon <= checkpoint.x && p.XMax + Epsilon >= checkpoint.x && p.Y <= checkpoint.y + Epsilon)
+                .OrderByDescending(p => p.Y).FirstOrDefault();
+            if (start == null) return null;
+            SoloRoomElement[] flips = room.Elements.Where(e => e.Kind == SoloRoomElementKind.GravityFlip).ToArray();
+            Rect[] fixedSolids = FixedSolids(room);
+            Vent[] vents = Vents(room, motor, gravity);
+            var reached = new HashSet<Piece> { start };
+            var frontier = new Queue<Piece>(); frontier.Enqueue(start);
+            while (frontier.Count > 0)
+            {
+                Piece a = frontier.Dequeue();
+                foreach (Piece b in pieces)
+                {
+                    // PAX-105: a face is reached again whenever the cat can cling to it higher than before.
+                    if (b.Wall)
+                    {
+                        float h = ClingHeight(a, b, trigger, low, ceiling, reach, arc, room.Width, fixedSolids);
+                        if (h > b.P1 + Epsilon) { b.P1 = h; b.InBand = b.P1 >= low - Epsilon && b.P0 <= ceiling + Epsilon; reached.Add(b); frontier.Enqueue(b); }
+                        continue;
+                    }
+                    if (!reached.Contains(b) && (Walks(a, b, trigger, low, ceiling, reach, room.Width, fixedSolids)
+                        || flips.Any(f => Flips(room, a, b, Box(f), trigger, low, ceiling, reach))
+                        || Climbs(a, b, trigger, low, ceiling, reach, room.Width, fixedSolids) || Launches(a, b, vents, trigger, low, ceiling, reach)
+                        || Rides(a, b, trigger, low, ceiling) || JumpsOffWall(a, b, trigger, low, ceiling, reach, arc, room.Width, fixedSolids)))
+                    { reached.Add(b); frontier.Enqueue(b); }
+                }
+            }
+            return reached;
+        }
+
         // PAX-091: a vine node is a Piece with Vine set, climbable from paws P0 to P1 (TriggerCoverage.Edges.cs).
         // PAX-093: a Carry mover's piece has Mover set (MoverEnd at its end pose).
-        sealed class Piece { public float XMin, XMax, Y, P0, P1; public bool Up, InBand, Vine; public string Mover; public bool MoverEnd, MoverReturns; public Rect MoverSweep; }
+        // PAX-105: a wall face is a Piece with Wall set: the clinging cat's collider column [XMin, XMax] beside the face at FaceX
+        // (FaceSide +1: the wall on the cat's right), its paws from P0 to PMax; P1 is the highest reached so far (-infinity: not yet).
+        sealed class Piece
+        {
+            public float XMin, XMax, Y, P0, P1; public bool Up, InBand, Vine; public string Mover; public bool MoverEnd, MoverReturns; public Rect MoverSweep;
+            public bool Wall; public int FaceSide; public float FaceX, PMax; public string Face;
+        }
 
         readonly struct Reach
         {
@@ -334,6 +360,9 @@ namespace Parallax.Editor.Setup
                 if (room.Openings.Any(o => o.ClosureName == e.Name) || solids.Any(o => o.Name != e.Name && Box(o).Contains(above)) || pitHazards.Any(h => h.Contains(above))) continue;
                 AddPiece(pieces, r.xMin, r.xMax, r.yMax, false, trigger, low, ceiling, catHeight, room.Width);
             }
+            // PAX-105 (D-110 amendment 3): a grip falling block's top, once landed, is a surface (a climb out ends on it).
+            foreach (var (_, r) in GripBlocksLanded(room))
+                AddPiece(pieces, r.xMin, r.xMax, r.yMax, false, trigger, low, ceiling, catHeight, room.Width);
             if (!room.Elements.Any(e => e.Kind == SoloRoomElementKind.GravityFlip)) return pieces;
             SoloRoomElement[] overhead = room.Elements.Where(e => IsOverhead(e) || e.Kind == SoloRoomElementKind.CollapsingFloor).ToArray();
             foreach (SoloRoomElement e in overhead)
@@ -366,7 +395,7 @@ namespace Parallax.Editor.Setup
         // for undersides). PAX-091: a drop through a closed pit isn't taken.
         static bool Walks(Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach, float width, Rect[] fixedSolids)
         {
-            if (a.Up != b.Up || a.Vine || b.Vine) return false;
+            if (a.Up != b.Up || a.Vine || b.Vine || a.Wall || b.Wall) return false;
             float rise = a.Up ? a.Y - b.Y : b.Y - a.Y;
             float gap = Mathf.Max(0f, Mathf.Max(b.XMin - a.XMax, a.XMin - b.XMax));
             float limit = reach.Gap(rise);
@@ -401,7 +430,7 @@ namespace Parallax.Editor.Setup
         // first surface of the other gravity it meets on its way, within the drift of the flip's span.
         static bool Flips(SoloRoomDefinition room, Piece a, Piece b, Rect flip, Rect trigger, float low, float ceiling, Reach reach)
         {
-            if (a.Up == b.Up || a.Vine || b.Vine) return false;
+            if (a.Up == b.Up || a.Vine || b.Vine || a.Wall || b.Wall) return false;
             float lift = reach.Rise + reach.Height, flat = reach.Gap(0f);
             bool inReach = a.Up ? flip.yMax >= a.Y - lift && flip.yMin <= a.Y : flip.yMin <= a.Y + lift && flip.yMax >= a.Y;
             if (!inReach || flip.xMax < a.XMin - flat || flip.xMin > a.XMax + flat) return false;
@@ -442,6 +471,11 @@ namespace Parallax.Editor.Setup
             if (checkpointX > left && checkpointX < right) return false;
             // Anything standable above the stretch's floor could be another way in.
             if (room.Elements.Where(IsSolid).Select(Box).Any(r => r.xMax > left && r.xMin < right && r.yMax > floor + Epsilon)) return false;
+            // PAX-105 (D-110): so could a wall face within a wall jump's crossing reach of the stretch (a kick-off over an
+            // unjumpable hazard, or a climb), the room's own side walls included.
+            var arc = new WallJumpReach(motor, gravityStrength);
+            if (ClingSolids(room).Any(s => s.box.height >= arc.MinFaceHeight - Epsilon && s.box.yMax > floor + Epsilon
+                && s.box.xMax > left - arc.CrossingReach && s.box.xMin < right + arc.CrossingReach)) return false;
 
             float halfCat = motor.ColliderSize.x * .5f;
             foreach (SoloRoomElement flip in room.Elements.Where(e => e.Kind == SoloRoomElementKind.GravityFlip))
@@ -456,7 +490,7 @@ namespace Parallax.Editor.Setup
         }
 
         static bool IsSolid(SoloRoomElement e) =>
-            e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall || e.Kind == SoloRoomElementKind.PitBottom || e.Kind == SoloRoomElementKind.CollapsingFloor
+            e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall || e.Kind == SoloRoomElementKind.GripWall || e.Kind == SoloRoomElementKind.PitBottom || e.Kind == SoloRoomElementKind.CollapsingFloor
             || e.Kind == SoloRoomElementKind.ShrinkingFloor   // PAX-093 (D-095): standable at its full width
             || (e.Kind == SoloRoomElementKind.MovingTrap && e.Settings.MovingKind == MovingTrapKind.Solid);
 

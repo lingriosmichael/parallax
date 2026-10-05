@@ -74,7 +74,7 @@ namespace Parallax.Editor.Art
             }
             // Lip (the cap band), body (1.2–1.6 u down, blocks tall enough), air (0.35–0.65 u up), per walkable top in view.
             Rect view = ViewRect(cam, tex);
-            List<Rect> traps = room.Elements.Where(e => e.Kind is not (SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall
+            List<Rect> traps = room.Elements.Where(e => e.Kind is not (SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.GripWall
                 or SoloRoomElementKind.PitBottom or SoloRoomElementKind.Checkpoint or SoloRoomElementKind.Door or SoloRoomElementKind.CollapsingFloor or SoloRoomElementKind.FakePlatform))
                 .Select(e => new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size)).ToList();
             var airSkip = new List<Rect>(solids); airSkip.AddRange(traps);

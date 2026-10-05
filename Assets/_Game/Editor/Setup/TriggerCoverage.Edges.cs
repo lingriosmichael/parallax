@@ -105,7 +105,7 @@ namespace Parallax.Editor.Setup
         // A grab onto a vine from a surface, a leap or release from a vine onto a surface, or a leap from one vine to another.
         static bool Climbs(Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach, float width, Rect[] fixedSolids)
         {
-            if (!a.Vine && !b.Vine) return false;
+            if ((!a.Vine && !b.Vine) || a.Wall || b.Wall) return false;
             // PAX-095: a grab or a leap keeps the cat's gravity; a gravity-up one is the gravity-down one mirrored.
             if (a.Up != b.Up) return false;
             if (a.Up) return Climbs(Mirror(a), Mirror(b), Mirror(trigger), -ceiling, -low, reach, width, fixedSolids.Select(Mirror).ToArray());
@@ -198,7 +198,7 @@ namespace Parallax.Editor.Setup
         // PAX-095: or from vine a, when the climbing cat's collider overlaps the column: launched with the same envelope.
         static bool Launches(Piece a, Piece b, Vent[] vents, Rect trigger, float low, float ceiling, Reach reach)
         {
-            if (b.Up != a.Up) return false;
+            if (b.Up != a.Up || a.Wall || b.Wall) return false;
             foreach (Vent v in vents)
             {
                 if (v.Down != a.Up) continue;
@@ -342,8 +342,251 @@ namespace Parallax.Editor.Setup
             return false;
         }
 
+        // ---------- PAX-105 (D-110): wall faces ----------
+
+        // Every solid a cat can cling to: grip walls only (D-110 amendment 2). Faces under the motor's MinClingFaceHeight are
+        // left out where they're used.
+        internal static IEnumerable<(string name, Rect box)> ClingSolids(SoloRoomDefinition room)
+        {
+            foreach (SoloRoomElement e in room.Elements)
+                if (e.Kind == SoloRoomElementKind.GripWall) yield return (e.Name, Box(e));
+            foreach ((string name, Rect box) b in GripBlocksLanded(room)) yield return b;
+        }
+
+        /// <summary>D-110 amendment 3: every grip falling block at its landed pose (its authored box moved by its travel). It
+        /// can only be grabbed once it has landed (a moving solid never latches), so the reach model takes it there, top
+        /// included, from the start: more reach, never less.</summary>
+        internal static IEnumerable<(string name, Rect box)> GripBlocksLanded(SoloRoomDefinition room)
+        {
+            foreach (SoloRoomElement e in room.Elements)
+            {
+                if (e.Kind != SoloRoomElementKind.FallingBlock || !e.Settings.Grip.IsConfigured) continue;
+                Rect r = Box(e);
+                r.y += (e.Settings.Direction == FallingBlockDirection.Up ? 1f : -1f) * e.Settings.TravelDistance;
+                yield return (e.Name, r);
+            }
+        }
+
+        // Everything that fills a clinging cat's column: every solid and the room's own side walls (x -1 to 0 and width to
+        // width + 1, y -4 to 8, as SoloRoomBuilder builds them).
+        static IEnumerable<(string name, Rect box)> ColumnBlockers(SoloRoomDefinition room)
+        {
+            foreach (SoloRoomElement e in room.Elements)
+                if (IsSolid(e) || e.Kind == SoloRoomElementKind.Ceiling || (e.Kind == SoloRoomElementKind.FallingBlock && !e.Settings.Grip.IsConfigured)) yield return (e.Name, Box(e));
+            foreach ((string name, Rect box) b in GripBlocksLanded(room)) yield return b;
+            yield return ("Wall_Left", Rect.MinMaxRect(-1f, -4f, 0f, 8f));
+            yield return ("Wall_Right", Rect.MinMaxRect(room.Width, -4f, room.Width + 1f, 8f));
+        }
+
+        // One node per stretch of a face the clinging cat can use: its collider beside the face, its paws from the face's
+        // bottom to its top less half the cat (the face must span the collider's centre, where the side cast meets it), minus
+        // where another solid fills the cat's column (it can't be there) and where its collider would touch the trigger.
+        static void AddFaces(List<Piece> pieces, SoloRoomDefinition room, Rect trigger, WallJumpReach arc)
+        {
+            (string name, Rect box)[] solids = ColumnBlockers(room).ToArray();
+            foreach ((string name, Rect r) in ClingSolids(room))
+            {
+                if (r.height < arc.MinFaceHeight - Epsilon) continue;
+                foreach (int side in new[] { 1, -1 })
+                {
+                    float face = side > 0 ? r.xMin : r.xMax;
+                    float x0 = side > 0 ? face - arc.Width : face, x1 = x0 + arc.Width;
+                    if (x0 < -Epsilon || x1 > room.Width + Epsilon) continue;
+                    var spans = new List<(float from, float to)> { (r.yMin - arc.HalfHeight, r.yMax - arc.HalfHeight) };
+                    var blocks = solids.Where(s => s.name != name && s.box.xMax > x0 + Epsilon && s.box.xMin < x1 - Epsilon).Select(s => (s.box.yMin - arc.Height, s.box.yMax)).ToList();
+                    if (trigger.width > 0f && trigger.xMax > x0 + Epsilon && trigger.xMin < x1 - Epsilon) blocks.Add((trigger.yMin - arc.Height, trigger.yMax));
+                    foreach ((float b0, float b1) in blocks)
+                        spans = spans.SelectMany(s => new[] { (s.from, Mathf.Min(s.to, b0)), (Mathf.Max(s.from, b1), s.to) }).Where(s => s.Item2 >= s.Item1 - Epsilon).ToList();
+                    foreach ((float from, float to) in spans)
+                        pieces.Add(new Piece { Wall = true, FaceSide = side, FaceX = face, Face = name + (side > 0 ? ":W" : ":E"), XMin = x0, XMax = x1, Y = from, P0 = from, PMax = to, P1 = float.NegativeInfinity });
+                }
+            }
+        }
+
+        // The highest paw height on face b the cat clings to from a (-infinity: none). From a surface (or a vine height: a leap,
+        // an ordinary jump), the face is grabbed where the jump's envelope meets it (any height up to a jump above a, at most
+        // the gap the jump reaches at that height: the highest that qualifies), as a vine is grabbed. From another face, the
+        // wall jump's arc (WallJumpReach) from the highest point clung to: where the collider meets b's column, at the top of
+        // the rise if it gets there rising. Never b itself (the face lock), never gravity up, never through the trigger.
+        static float ClingHeight(Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach, WallJumpReach arc, float width, Rect[] fixedSolids)
+        {
+            if (arc == null || a.Up || b.Up || a == b) return float.NegativeInfinity;
+            if (a.Wall)
+            {
+                if (float.IsNegativeInfinity(a.P1) || a.Face == b.Face) return float.NegativeInfinity;
+                float best = float.NegativeInfinity, cx = (a.XMin + a.XMax) * .5f, bx = (b.XMin + b.XMax) * .5f;
+                int away = -a.FaceSide;
+                for (int k = 1; k < arc.Y.Length; k++)
+                {
+                    float near = cx + away * arc.XBack[k], far = cx + away * arc.XAway[k];
+                    if (bx < Mathf.Min(near, far) - Epsilon || bx > Mathf.Max(near, far) + Epsilon) continue;
+                    float y = a.P1 + (k < arc.ApexTick ? arc.Y[arc.ApexTick] : arc.Y[k]);
+                    float h = Mathf.Min(b.PMax, y);
+                    if (h < b.P0 - Epsilon || h <= best) continue;
+                    if (!ArcCrosses(cx, bx, Mathf.Min(h, a.P1), a.P1 + arc.Apex + reach.Height, trigger, low, ceiling)) best = h;
+                }
+                return best;
+            }
+            if (a.Vine)
+            {
+                float best = float.NegativeInfinity;
+                foreach (float h in new[] { a.P0, a.P1, b.P0, b.PMax - reach.Rise }.Select(h => Mathf.Clamp(h, a.P0, a.P1)).Distinct())
+                    best = Mathf.Max(best, ClingFromSurface(new Piece { XMin = a.XMin, XMax = a.XMax, Y = h }, b, trigger, low, ceiling, reach, width, fixedSolids));
+                return best;
+            }
+            return ClingFromSurface(a, b, trigger, low, ceiling, reach, width, fixedSolids);
+        }
+
+        static float ClingFromSurface(Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach, float width, Rect[] fixedSolids)
+        {
+            float gap = Mathf.Max(0f, Mathf.Max(b.XMin - a.XMax, a.XMin - b.XMax));
+            float hi = Mathf.Min(b.PMax, a.Y + reach.Rise);
+            if (hi < b.P0 - Epsilon) return float.NegativeInfinity;
+            bool Fits(float h) { float limit = reach.Gap(h - a.Y); return limit >= 0f && gap <= limit + Epsilon; }
+            float h0 = b.P0;
+            if (!Fits(h0)) return float.NegativeInfinity;
+            float best = hi;
+            if (!Fits(hi))
+            {
+                // The gap a jump reaches only shrinks as the target rises: the highest that fits, by bisection.
+                float lo = h0; best = hi;
+                for (int i = 0; i < 40; i++) { float mid = (lo + best) * .5f; if (Fits(mid)) lo = mid; else best = mid; }
+                best = lo;
+            }
+            (float x0, float x1) = Stretch(a, b);
+            var at = new Piece { XMin = b.XMin, XMax = b.XMax, Y = best };
+            if (Crosses(x0, x1, a, at, trigger, low, ceiling, reach)) return float.NegativeInfinity;
+            if (best < a.Y - Epsilon)
+            {
+                if (ClosedPit(x0, x1, a, at, reach, fixedSolids, width)) return float.NegativeInfinity;
+                if (b.XMin >= a.XMax - Epsilon && Walled(a, at, a.XMax, 1, reach, fixedSolids)) return float.NegativeInfinity;
+                if (b.XMax <= a.XMin + Epsilon && Walled(a, at, a.XMin, -1, reach, fixedSolids)) return float.NegativeInfinity;
+            }
+            return best;
+        }
+
+        // From face a (clung to up to a.P1) onto surface or vine b: the wall jump's arc lands on b (with any input between the
+        // stick held away and held back: the cat's collider overlaps b's span as it comes down through b's height), or grabs a
+        // vine as a leap from that height would; or letting go (a push-away) drops the cat onto b.
+        static bool JumpsOffWall(Piece a, Piece b, Rect trigger, float low, float ceiling, Reach reach, WallJumpReach arc, float width, Rect[] fixedSolids)
+        {
+            if (arc == null || !a.Wall || b.Wall || a.Up || b.Up || float.IsNegativeInfinity(a.P1)) return false;
+            var from = new Piece { XMin = a.XMin, XMax = a.XMax, Y = a.P1 };
+            if (b.Vine) return Grabs(from, b, trigger, low, ceiling, reach);
+            if (Releases(from, b, trigger, reach, fixedSolids, width)) return true;
+            float cx = (a.XMin + a.XMax) * .5f;
+            int away = -a.FaceSide;
+            // The capsule rides up onto a top whose corner it meets up to CornerAllowance below it.
+            float corner = b.Y - arc.CornerAllowance;
+            for (int k = 1; k < arc.Y.Length; k++)
+            {
+                float y0 = a.P1 + arc.Y[k - 1], y1 = a.P1 + arc.Y[k];
+                if (!(y1 < y0 && y1 <= b.Y + Epsilon && y0 >= corner - Epsilon)) continue;   // coming down through [corner, top]
+                float near = cx + away * arc.XBack[k], far = cx + away * arc.XAway[k];
+                float c0 = Mathf.Min(near, far) - arc.HalfWidth, c1 = Mathf.Max(near, far) + arc.HalfWidth;
+                if (c1 <= b.XMin + Epsilon || c0 >= b.XMax - Epsilon) continue;
+                float landX = Mathf.Clamp(cx, b.XMin + arc.HalfWidth, b.XMax - arc.HalfWidth);
+                if (!ArcCrosses(cx, landX, b.Y, a.P1 + arc.Apex + reach.Height, trigger, low, ceiling)) return true;
+            }
+            return false;
+        }
+
+        // A wall jump's path from the face (centre cx) to x, between heights y0 and y1, passes through the trigger in its band.
+        static bool ArcCrosses(float cx, float x, float y0, float y1, Rect trigger, float low, float ceiling)
+        {
+            Rect band = Rect.MinMaxRect(trigger.xMin, Mathf.Max(trigger.yMin, low), trigger.xMax, Mathf.Min(trigger.yMax, ceiling));
+            return Overlaps(band, Mathf.Min(cx, x) - .5f, Mathf.Max(cx, x) + .5f, y0, y1);
+        }
+
+        // ---------- PAX-105: the audit's questions (LevelLayoutValidator.WallJump.cs) ----------
+
+        /// <summary>Whether the cat, from the checkpoint and without passing through `blocker` in band [low, ceiling], gets its
+        /// collider into `target` (standing on a surface, on a vine, or clinging to a face), with or without wall jumps.</summary>
+        internal static bool ReachesBox(SoloRoomDefinition room, Rect blocker, float low, float ceiling, Vector2 checkpoint, CatMotorConfig motor, float gravity, Rect target, bool walls)
+        {
+            if (motor == null || gravity <= 0f) return false;
+            HashSet<Piece> reached = Reached(room, blocker, low, ceiling, checkpoint, motor, gravity, default, walls);
+            if (reached == null) return false;
+            float h = motor.ColliderSize.y;
+            foreach (Piece p in reached)
+            {
+                Rect body = p.Wall ? Rect.MinMaxRect(p.XMin, p.P0, p.XMax, p.P1 + h)
+                    : p.Vine ? Rect.MinMaxRect(p.XMin, p.P0, p.XMax, p.P1 + h)
+                    : p.Up ? Rect.MinMaxRect(p.XMin, p.Y - h, p.XMax, p.Y) : Rect.MinMaxRect(p.XMin, p.Y, p.XMax, p.Y + h);
+                if (body.Overlaps(target)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>The highest the cat's collider top gets over the x-span [x0, x1] from below `underside` (gravity down; any
+        /// way it gets there from the checkpoint, no trigger), with or without wall jumps: a jump from a surface or vine stretch
+        /// under it, or a wall jump from a face (clung to below it) within a wall jump's reach of it.</summary>
+        internal static float HighestTopOver(SoloRoomDefinition room, float x0, float x1, float underside, Vector2 checkpoint, CatMotorConfig motor, float gravity, bool walls)
+        {
+            if (motor == null || gravity <= 0f) return float.NegativeInfinity;
+            var none = new Rect(-1e4f, -1e4f, 0f, 0f);
+            HashSet<Piece> reached = Reached(room, none, float.NegativeInfinity, float.PositiveInfinity, checkpoint, motor, gravity, default, walls);
+            if (reached == null) return float.NegativeInfinity;
+            float top = float.NegativeInfinity, lift = motor.JumpHeight + motor.ColliderSize.y;
+            WallJumpReach arc = walls ? new WallJumpReach(motor, gravity) : null;
+            foreach (Piece p in reached.Where(p => !p.Up))
+            {
+                if (p.Wall)
+                {
+                    float h = Mathf.Min(p.P1, underside - arc.Height);
+                    if (h < p.P0) continue;
+                    float cx = (p.XMin + p.XMax) * .5f;
+                    for (int k = 1; k < arc.Y.Length; k++)
+                    {
+                        float near = cx - p.FaceSide * arc.XBack[k], far = cx - p.FaceSide * arc.XAway[k];
+                        if (Mathf.Max(near, far) + arc.HalfWidth > x0 && Mathf.Min(near, far) - arc.HalfWidth < x1) top = Mathf.Max(top, h + arc.Y[k] + arc.Height);
+                    }
+                }
+                else if (p.XMax > x0 && p.XMin < x1)
+                {
+                    float paws = p.Vine ? Mathf.Min(p.P1, underside - motor.ColliderSize.y) : p.Y;
+                    if (paws + motor.ColliderSize.y <= underside + Epsilon && (!p.Vine || paws >= p.P0)) top = Mathf.Max(top, paws + lift);
+                }
+            }
+            return top;
+        }
+
+        /// <summary>PAX-105 (the audit's kinds (a) and (b)): for every overlap trap's trigger, what wall jumps add. (b) a side
+        /// from which the cat now reaches the trigger's band, with a danger lying before the trigger's near edge seen from there
+        /// (D-074's cut, with wall approaches); (a) the door, now reached without passing through the trigger.</summary>
+        internal static void WallFindings(string levelId, SoloRoomDefinition room, CatMotorConfig motor, float gravity, List<string> findings)
+        {
+            if (motor == null || gravity <= 0f) return;
+            Vector2 checkpoint = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Checkpoint).Select(e => e.Position).DefaultIfEmpty(Vector2.zero).First();
+            Rect[] doors = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Door).Select(Box).ToArray();
+            foreach (SoloRoomElement trap in room.Elements)
+            {
+                if (!IsOverlapTrap(trap) || trap.Settings.LearnedBypassReason != null || !TryTrigger(trap, out Rect trigger)) continue;
+                float low = StoreyLow(room, trigger);
+                if (!TryStoreyCeiling(room, trigger, low, out float ceiling)) continue;
+                Side with = ApproachSides(room, trigger, low, ceiling, checkpoint, motor, gravity, trap, walls: true);
+                Side without = ApproachSides(room, trigger, low, ceiling, checkpoint, motor, gravity, trap, walls: false);
+                Side added = with & ~without;
+                foreach (Side side in new[] { Side.Left, Side.Right })
+                {
+                    if ((added & side) == 0) continue;
+                    float nearEdge = side == Side.Left ? trigger.xMin : trigger.xMax;
+                    foreach ((string owner, Rect volume) in Dangers(room, trap))
+                    {
+                        bool beyond = side == Side.Left ? volume.xMin >= nearEdge - Epsilon : volume.xMax <= nearEdge + Epsilon;
+                        if (!beyond) findings.Add($"(b) {levelId}: {trap.Name}: a wall jump reaches its band from the {(side == Side.Left ? "left" : "right")}, where {owner}'s danger {Describe(volume)} lies before the trigger's near edge x {nearEdge:F2}.");
+                    }
+                }
+                if (LevelLayoutValidator.WallJumpDoorExemptions.ContainsKey(levelId + "/" + trap.Name)) continue;
+                foreach (Rect door in doors)
+                    if (ReachesBox(room, trigger, low, ceiling, checkpoint, motor, gravity, door, walls: true)
+                        && !ReachesBox(room, trigger, low, ceiling, checkpoint, motor, gravity, door, walls: false))
+                        findings.Add($"(a) {levelId}: {trap.Name}: wall jumps reach the door {Describe(door)} without passing through its trigger {Describe(trigger)}.");
+            }
+        }
+
         static Rect[] FixedSolids(SoloRoomDefinition room) =>
-            room.Elements.Where(e => e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall
+            room.Elements.Where(e => e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall || e.Kind == SoloRoomElementKind.GripWall
                 || e.Kind == SoloRoomElementKind.PitBottom || e.Kind == SoloRoomElementKind.Ceiling).Select(Box).ToArray();
     }
 }

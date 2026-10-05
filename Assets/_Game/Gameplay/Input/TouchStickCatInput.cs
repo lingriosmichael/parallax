@@ -14,6 +14,8 @@ namespace Parallax.Gameplay.Input
         [SerializeField] Rect stickZone = new Rect(0.00f, 0.00f, 0.5f, 0.6f);
         [SerializeField] Rect jumpZone = new Rect(0.78f, 0.00f, 0.22f, 0.45f);
         [SerializeField] Rect interactZone = new Rect(0.56f, 0.00f, 0.18f, 0.40f);
+        [Tooltip("PAX-105 (D-110 amendment): the Grab zone, directly above the jump zone (the interact zone is beside it).")]
+        [SerializeField] Rect grabZone = new Rect(0.78f, 0.45f, 0.22f, 0.22f);
         [SerializeField] float stickRadius = 0.12f;
         [SerializeField] float deadZone = 0.15f;
         [Tooltip("PAX-087 (D-089): dead zone on the stick's y for Climb, after the radial dead zone. Higher than x's so a slightly diagonal run never climbs.")]
@@ -34,12 +36,14 @@ namespace Parallax.Gameplay.Input
 
         readonly HashSet<int> jumpFingerIds = new HashSet<int>();
         readonly HashSet<int> interactFingerIds = new HashSet<int>();
+        readonly HashSet<int> grabFingerIds = new HashSet<int>();
         readonly HashSet<int> activeIds = new HashSet<int>();
         readonly List<int> staleIds = new List<int>();
         readonly HashSet<int> ignoredFingerIds = new HashSet<int>();
         readonly List<ITouchReservedRegion> validReservedRegions = new List<ITouchReservedRegion>();
         bool jumpPressedLatch;
         bool interactPressedLatch;
+        bool grabPressedLatch;
 
         void Awake()
         {
@@ -108,6 +112,11 @@ namespace Parallax.Gameplay.Input
                         jumpFingerIds.Add(id);
                         jumpPressedLatch = true;
                     }
+                    else if (grabZone.Contains(norm))
+                    {
+                        grabFingerIds.Add(id);
+                        grabPressedLatch = true;
+                    }
                     else if (stickZone.Contains(norm) && stickFingerId < 0)
                     {
                         stickFingerId = id;
@@ -141,6 +150,10 @@ namespace Parallax.Gameplay.Input
                 if (!activeIds.Contains(id)) staleIds.Add(id);
             }
             foreach (int id in interactFingerIds)
+            {
+                if (!activeIds.Contains(id)) staleIds.Add(id);
+            }
+            foreach (int id in grabFingerIds)
             {
                 if (!activeIds.Contains(id)) staleIds.Add(id);
             }
@@ -181,6 +194,7 @@ namespace Parallax.Gameplay.Input
             if (id == stickFingerId) stickFingerId = -1;
             jumpFingerIds.Remove(id);
             interactFingerIds.Remove(id);
+            grabFingerIds.Remove(id);
         }
 
         public CatCommand Read()
@@ -198,6 +212,9 @@ namespace Parallax.Gameplay.Input
             cmd.InteractHeld = interactFingerIds.Count > 0;
             interactPressedLatch = false;
 
+            cmd.GrabPressed = grabPressedLatch;
+            grabPressedLatch = false;
+
             return cmd;
         }
 
@@ -206,12 +223,14 @@ namespace Parallax.Gameplay.Input
             stickFingerId = -1;
             jumpFingerIds.Clear();
             interactFingerIds.Clear();
+            grabFingerIds.Clear();
             ignoredFingerIds.Clear();
             lastStickVector = Vector2.zero;
             currentMove = 0f;
             currentClimb = 0f;
             jumpPressedLatch = false;
             interactPressedLatch = false;
+            grabPressedLatch = false;
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

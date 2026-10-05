@@ -185,6 +185,16 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual(passes, errors.Length == 0, string.Join("\n", errors));
         }
 
+        // PAX-105 (D-110 amendment 2): out of a straight jump's reach, but a kick off the grip wall under its edge reaches it.
+        [Test]
+        public void ATouchTrapFloor_IsOutOfReachOfAWallJumpOffAGripWallUnderIt()
+        {
+            object room = Type.GetType("Parallax.Editor.Setup.WallClingFixtures, Parallax.Editor").GetMethod("GripUnderTrapFloor").Invoke(null, null);
+            string[] errors = Invoke("ValidateTrapFloorHeadroom", "FIX", room, Motor());
+            Assert.AreEqual(1, errors.Length, string.Join("\n", errors));
+            StringAssert.Contains("a wall jump gets the cat's top", errors[0]);
+        }
+
         // A trap floor triggered from a box over its top: the box must hold the whole top strip (a standing cat).
         [TestCase(4.5f, true)]    // the top to the ceiling
         [TestCase(.3f, false)]    // shorter than the cat: seen red before the rule accepted over-top triggers, too (band)

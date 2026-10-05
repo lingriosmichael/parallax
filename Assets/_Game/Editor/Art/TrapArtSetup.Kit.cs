@@ -44,7 +44,7 @@ namespace Parallax.Editor.Art
             body.sortingOrder = greybox.sortingOrder; body.enabled = greybox.enabled;
             SpriteRenderer[] grit = rises ? Effects(art, "Grit", config.GritPuffs, config.Dust, config.TrapMaterial, greybox.sortingOrder + EffectOrder, layer, changes) : Effects(art, "Grit", 0, config.Dust, config.TrapMaterial, 0, layer, changes);
             TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", e.Name), ("body", body), ("greyboxBody", greybox),
-                ("strip", config.SpikeStrip), ("trapMaterial", HazardMaterial(config)), ("pointsDown", PointsDown(room, e)), ("rises", rises));
+                ("strip", config.SpikeStrip), ("trapMaterial", HazardMaterial(config)), ("pointsDown", PointsDown(room, e)), ("pointsSide", PointsSide(room, e)), ("rises", rises));
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
             SetupUtility.SetArray(presenter, "grit", grit.Cast<Object>().ToArray(), changes);
             return art.name;
@@ -54,7 +54,7 @@ namespace Parallax.Editor.Art
         /// their bottom; otherwise they stand on their host and point up.</summary>
         internal static bool PointsDown(SoloRoomDefinition room, SoloRoomElement e)
         {
-            static bool Fixed(SoloRoomElementKind k) => k is SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.PitBottom;
+            static bool Fixed(SoloRoomElementKind k) => k is SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.GripWall or SoloRoomElementKind.PitBottom;
             var box = new Rect(e.Position - e.Size * 0.5f, e.Size);
             bool above = false, below = false;
             foreach (SoloRoomElement h in room.Elements)
@@ -67,6 +67,26 @@ namespace Parallax.Editor.Art
                 if (Mathf.Abs(r.yMax - box.yMin) < 0.06f || (r.yMax > box.yMin && r.yMax < box.center.y && r.yMin < box.yMin)) below = true;
             }
             return above && !below;
+        }
+
+        /// <summary>A strip taller than it's wide, on a fixed element's side (touching it or set into it), points away from it:
+        /// +1 east off a wall to its west, -1 west off one to its east; 0 otherwise (the developer: Thorns_R in L019 drew as
+        /// one stretched tooth).</summary>
+        internal static int PointsSide(SoloRoomDefinition room, SoloRoomElement e)
+        {
+            if (e.Size.y <= e.Size.x) return 0;
+            static bool Fixed(SoloRoomElementKind k) => k is SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.GripWall or SoloRoomElementKind.PitBottom;
+            var box = new Rect(e.Position - e.Size * 0.5f, e.Size);
+            bool west = false, east = false;
+            foreach (SoloRoomElement h in room.Elements)
+            {
+                if (!Fixed(h.Kind)) continue;
+                var r = new Rect(h.Position - h.Size * 0.5f, h.Size);
+                if (!(r.yMin < box.yMax - 1e-3f && r.yMax > box.yMin + 1e-3f)) continue;
+                if (Mathf.Abs(r.xMax - box.xMin) < 0.06f || (r.xMax > box.xMin && r.xMax <= box.center.x + 1e-3f && r.xMin < box.xMin)) west = true;
+                if (Mathf.Abs(r.xMin - box.xMax) < 0.06f || (r.xMin < box.xMax && r.xMin >= box.center.x - 1e-3f && r.xMax > box.xMax)) east = true;
+            }
+            return west == east ? 0 : west ? 1 : -1;
         }
 
         // PAX-102: a falling block inside the room's roof (the highest ceiling), in a room with no gravity flip.

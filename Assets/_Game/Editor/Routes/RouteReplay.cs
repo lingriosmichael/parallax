@@ -338,6 +338,7 @@ namespace Parallax.Editor.Routes
                     Dead = Death.IsHolding || Death.WasKilledThisTick(ObserverId.A, tick), Holding = Death.IsHolding, Complete = Rooms.LevelComplete,
                     Move = Mathf.RoundToInt(command.Move), JumpPressed = command.JumpPressed,
                     Climb = Mathf.RoundToInt(command.Climb), IsClimbing = Cat.IsClimbing,
+                    GrabPressed = command.GrabPressed, IsClinging = Cat.IsClinging, ClingSide = Cat.ClingSide, LatchMode = Cat.IsLatchMode,
                     FireTick = new int[Elements.Count + 2], Signature = new int[Elements.Count + 2],
                     RenderBounds = new Rect[Elements.Count + 2], Rendered = new bool[Elements.Count + 2],
                     TurnedCorners = new Vector2[Elements.Count + 2][],
@@ -488,7 +489,7 @@ namespace Parallax.Editor.Routes
         {
             CatCommand next;
             public void Queue(CatCommand command) => next = command;
-            public CatCommand Read() { CatCommand c = next; next.JumpPressed = false; next.InteractPressed = false; return c; }
+            public CatCommand Read() { CatCommand c = next; next.JumpPressed = false; next.InteractPressed = false; next.GrabPressed = false; return c; }
             public void ResetTransientState() => next = CatCommand.None;
         }
 
@@ -533,7 +534,7 @@ namespace Parallax.Editor.Routes
 
         readonly Route route; readonly ReplayOptions options; readonly ReplayResult result;
         int index, move, climb, forLeft = -1, insertLeft;
-        bool jump, inserted, idle;
+        bool jump, grab, inserted, idle;
         // PAX-090 (D-091): Route.FromSection's jump to its Rewind step.
         public RoomManager Rooms;
         int gateSeenTick = -1;
@@ -580,6 +581,7 @@ namespace Parallax.Editor.Routes
                     case RouteStepKind.HoldClimb: climb = step.Direction; index++; continue;
                     case RouteStepKind.ReleaseClimb: climb = 0; index++; continue;
                     case RouteStepKind.Jump: jump = true; index++; continue;
+                    case RouteStepKind.Grab: grab = true; index++; continue;
                     case RouteStepKind.Margin: index++; continue;
                     case RouteStepKind.Rewind:
                         if (RewindTarget <= 0 || Rooms.CurrentSection < RewindTarget)
@@ -589,7 +591,7 @@ namespace Parallax.Editor.Routes
                             return false;
                         }
                         rewound = true; rewindDue = true;
-                        move = 0; climb = 0; jump = false;
+                        move = 0; climb = 0; jump = false; grab = false;
                         index++;
                         command = default;
                         return true;
@@ -614,8 +616,9 @@ namespace Parallax.Editor.Routes
 
         bool Emit(out CatCommand command)
         {
-            command = new CatCommand { Move = move, Climb = climb, JumpPressed = jump };
+            command = new CatCommand { Move = move, Climb = climb, JumpPressed = jump, GrabPressed = grab };
             jump = false;
+            grab = false;
             return true;
         }
     }

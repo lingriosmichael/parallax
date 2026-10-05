@@ -22,7 +22,7 @@ namespace Parallax.Editor.Setup
 
         internal static bool IsSectionOwned(SoloRoomElement e) => e.Kind switch
         {
-            SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.PitBottom
+            SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.GripWall or SoloRoomElementKind.PitBottom
                 or SoloRoomElementKind.Checkpoint or SoloRoomElementKind.Door or SoloRoomElementKind.Hazard => false,
             _ => true,
         };

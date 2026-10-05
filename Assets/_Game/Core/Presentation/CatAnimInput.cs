@@ -7,8 +7,12 @@ namespace Parallax.Core
         public CatAnimInput(bool grounded, bool climbing, float surfaceSpeed, float velocityAlongGravity, float dt,
             bool jumpedThisStep = false, float gravitySign = -1f, float heightAgainstGravity = 0f, bool holding = false, bool rollingOff = false,
             float bodySurfaceSpeed = float.NaN, float bodyVelocityAlongGravity = float.NaN,
-            float landDuration = 0f, float hardLandDuration = 0f, bool gaitSwitchReady = true, bool respawned = false, bool levelComplete = false, bool stopping = true)
+            float landDuration = 0f, float hardLandDuration = 0f, bool gaitSwitchReady = true, bool respawned = false, bool levelComplete = false, bool stopping = true,
+            bool clinging = false, int clingSide = 0, bool wallJumped = false)
         {
+            Clinging = clinging;
+            ClingSide = clingSide;
+            WallJumped = wallJumped;
             Stopping = stopping;
             Respawned = respawned;
             LevelComplete = levelComplete;
@@ -29,6 +33,11 @@ namespace Parallax.Core
             GravitySign = gravitySign;
         }
 
+        /// <summary>PAX-105 (D-110): the motor clings to a wall, on which side (+1 right, -1 left), and jumped off one on its
+        /// last step (held on every frame until the next tick, as JumpedThisStep).</summary>
+        public bool Clinging { get; }
+        public int ClingSide { get; }
+        public bool WallJumped { get; }
         /// <summary>The motor's grounded flag.</summary>
         public bool Grounded { get; }
         /// <summary>The motor is climbing a vine.</summary>

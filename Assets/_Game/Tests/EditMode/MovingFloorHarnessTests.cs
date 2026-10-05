@@ -95,16 +95,17 @@ namespace Parallax.Tests.EditMode
             Assert.IsTrue(l.Skip(moved).Take(30).Any(r => !r.Grounded), "a Legacy cat falls behind a lift going down faster than it falls\n" + Dump(legacy));
         }
 
-        // Q2: the push into the cat stays physics': an upward lift launches the cat on its stop the same with or without Carry.
+        // Q2: the push into the cat stays physics', the same with or without Carry. D-115 (supersedes D-056 (3)'s launch, the
+        // developer: "when one is on top of it and not moving, it auto jumps"): the cat stops with the lift.
         [Test]
-        public void AnUpwardLift_LaunchesTheCatOnItsStop_TheSameWhateverItsMotion()
+        public void AnUpwardLift_StopsTheCatWithIt_TheSameWhateverItsMotion()
         {
             List<Rec> carry = Records(Replay(session, Case("RideUp", M("Carry")))), legacy = Records(Replay(session, Case("RideUp", M("Legacy"))));
             Assert.AreEqual(legacy.Count, carry.Count);
             for (int i = 0; i < carry.Count; i++) Assert.AreEqual(legacy[i].Y, carry[i].Y, 1e-5f, $"t{carry[i].Tick}");
             float stopTop = .5f + 3f, apex = carry.Max(r => r.Y) - HalfHeight;
             TestContext.Out.WriteLine($"apex {apex - stopTop:F3} above the stopped lift");
-            Assert.Greater(apex, stopTop + .05f, "launched on the stop (D-056 (3))");
+            Assert.Less(apex, stopTop + .05f, "no launch on the stop (D-115)");
         }
 
         // Q3: jumping off a moving Carry floor adds its sideways speed (5 u/s) once, on the jump tick; off Legacy, nothing.

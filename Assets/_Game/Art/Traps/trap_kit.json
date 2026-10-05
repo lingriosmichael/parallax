@@ -332,7 +332,7 @@
   "flags": [
     "Bodies/TRAP-01_arrow_launcher: black shading 28.8%",
     "Bodies/TRAP-02_arrow: black shading 39.6%",
-    "Bodies/TRAP-04_spike_strip: black shading 42.9%",
+    "Bodies/TRAP-04_spike_strip: black shading 43.0%",
     "Bodies/TRAP-05_spear_head: black shading 31.7%",
     "Bodies/TRAP-05_spear_shaft: black shading 21.3%"
   ],
@@ -404,7 +404,7 @@
     "Bodies/TRAP-04_spike_strip": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-04_spike_strip_n.png",
       "palette": {
-        "black": 0.4287,
+        "black": 0.4295,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-04_spike_strip.png",
@@ -414,7 +414,7 @@
       ],
       "placeholder": "",
       "size_px": [
-        302,
+        301,
         45
       ],
       "sources": [

@@ -408,7 +408,7 @@ namespace Parallax.Editor.Art
         }
 
         /// <summary>A level's solution as the route harness plays it: one screen-relative command per tick, read from the
-        /// replay's own records (Move, Jump, Climb), so this rig plays the same inputs on the same ticks.</summary>
+        /// replay's own records (Move, Jump, Climb, Grab), so this rig plays the same inputs on the same ticks.</summary>
         static CatCommand[] RouteCommands(RouteSession session, string level)
         {
             ReplayResult result = RouteHarness.Replay(session, LevelLayouts.ById[level], LevelRoutes.ById[level].Solution, new ReplayOptions { ResolveCause = false });
@@ -426,7 +426,7 @@ namespace Parallax.Editor.Art
             for (int i = 1; i < result.Records.Count; i++)
             {
                 TickRecord r = result.Records[i];
-                commands[i - 1] = new CatCommand { Move = r.Move, JumpPressed = r.JumpPressed, Climb = r.Climb };
+                commands[i - 1] = new CatCommand { Move = r.Move, JumpPressed = r.JumpPressed, Climb = r.Climb, GrabPressed = r.GrabPressed };
             }
             return commands;
         }

@@ -52,7 +52,7 @@ namespace Parallax.Editor.Art
             foreach (TrapArt art in artRoot.GetComponentsInChildren<TrapArt>(true))
             {
                 TrapKitSetup.Write(art, changes, ("bodyScale", art is CollapsingFloorArt or SolidArt || art is ArrowArt { Disguised: true } ? 1f : config.BodyScale));
-                if (art is SpikeArt) TrapKitSetup.Write(art, changes, ("heightScale", config.SpikeHeightScale));
+                if (art is SpikeArt) TrapKitSetup.Write(art, changes, ("heightScale", config.SpikeHeightScale), ("stripTeeth", config.SpikeStripTeeth));
             }
             foreach (Transform stale in artRoot.Cast<Transform>().Where(c => !built.Contains(c.name)).ToList())
             {
@@ -227,7 +227,7 @@ namespace Parallax.Editor.Art
         /// Ceiling, Wall or PitBottom overlapping it; a floor with no overlap passes for the room's first Floor.</summary>
         internal static SpriteRenderer HostRenderer(Transform roomRoot, SoloRoomDefinition room, SoloRoomElement trap, bool floorFirst)
         {
-            static bool Fixed(SoloRoomElementKind k) => k is SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.PitBottom;
+            static bool Fixed(SoloRoomElementKind k) => k is SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.GripWall or SoloRoomElementKind.PitBottom;
             var box = new Rect(trap.Position - trap.Size * 0.5f, trap.Size);
             SoloRoomElement? pick = null;
             foreach (SoloRoomElement h in room.Elements)

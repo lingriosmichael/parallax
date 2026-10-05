@@ -84,6 +84,15 @@ namespace Parallax.Gameplay.Presentation
         [Tooltip("PAX-V07 item 3: climbing ends with a leap when the body leaves against gravity within this fraction of the way from the jump speed toward the climb speed, either side of the jump speed (set by the setup menu).")]
         [SerializeField, Range(0f, 1f)] float leapSpeedFraction = 0.5f;
 
+        [Tooltip("PAX-105 (D-110): on a wall, how far (units, facing +1) CatA_Hang's paws reach from the pivot toward the wall; the presenter draws the pivot that far from the face. Measured from the sheet (WallClingPoseTests).")]
+        [SerializeField, Min(0f)] float wallHangReach = .177f;
+
+        [Tooltip("PAX-105 (D-110): the same for CatA_Climb played down a wall: the middle of its frames' range (0.219-0.254), so every frame's paws are within 0.018 u of the face. Measured from the sheet (WallClingPoseTests).")]
+        [SerializeField, Min(0f)] float wallSlideReach = .2365f;
+
+        [Tooltip("PAX-105 (D-110): per CatA_Leap frame, how far (units, facing +1) its back edge lies behind the pivot; a wall jump's drawing is pushed out just far enough that this edge doesn't pass the face. Measured from the sheet (WallClingPoseTests).")]
+        [SerializeField] float[] wallJumpBackReach = { .277f, .598f, .730f };
+
         [Tooltip("Unlit outline colour for Reality A.")]
         [SerializeField] Color outlineColorA = new Color(1f, 0.75f, 0.3f, 1f);
 
@@ -116,6 +125,16 @@ namespace Parallax.Gameplay.Presentation
         public float TurnHoldTime => turnHoldTime;
         public float FidgetDelay => fidgetDelay;
         public float ClimbStillSpeed => climbStillSpeed;
+        public float WallHangReach => wallHangReach;
+        public float WallSlideReach => wallSlideReach;
+        /// <summary>PAX-105: CatA_Leap frame `index`'s back reach (the largest one past the table's end).</summary>
+        public float WallJumpBackReach(int index)
+        {
+            if (wallJumpBackReach == null || wallJumpBackReach.Length == 0) return 0f;
+            float max = 0f;
+            foreach (float r in wallJumpBackReach) max = Mathf.Max(max, r);
+            return index >= 0 && index < wallJumpBackReach.Length ? wallJumpBackReach[index] : max;
+        }
         /// <summary>Item 3: the band of launch speeds against gravity (u/s) that make the end of a climb a leap: the jump speed
         /// less / plus leapSpeedFraction of its difference from the climb speed (a release keeps at most the climb speed; a
         /// geyser launch is faster). Infinite without a motor config (no leap is recognized).</summary>

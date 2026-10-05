@@ -198,9 +198,13 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 - **Movement is screen-relative (D-049):** right is always screen-right, including upside down,
   for touch and keyboard.
 - The camera stays world-aligned and never rotates with gravity (D-020).
-
-## Rooms, traps and death (v1)
-
+- **Wall cling and wall jump (D-110 + amendments 1–4):** gravity down only. An airborne, not-rising cat that touches
+  a still **grip face** (a `GripWall`, or a landed grip falling block) latches on **automatically** (no button since
+  amendment 4); no other surface can be held. It slides (capped at `WallSlideSpeed`), jump kicks it up and away, pushing
+  away releases. A face just left can't be latched again until the cat lands or latches a different face, so climbing
+  needs two facing walls. Climbing a vine wins (D-089). **Moss on a side face means grip**: grip faces wear full-height
+  moss; every other side is broken stone with moss and ivy only in its top band (D-114). Pure rules in
+  `WallClingState`; every level's reach model and static checks include wall jumps.
 - **A room is a checkpoint and a door (D-040, D-050).** Room id = checkpoint id. Only the current
   room is live. A `LocalHuman` touching the live room's door completes it and respawns the cat at
   checkpoint N+1 on the same tick; no checkpoint N+1 means level complete.
@@ -237,6 +241,7 @@ MCP gives you hands inside the running Editor. It changes **who presses the butt
 - Arrows: tell ≥ 6 ticks, harmless when stopped, lane checked by the validator (D-078).
 - Every room declares a solution route and its betrayal routes; `ValidateRoutes` replays them through the real game code (D-079).
 - A betrayal route Dies (killer, lead ≥ 6) or Recovers (the room completes after the reveal); non-lethal betraying surfaces need trigger coverage, and a fake platform is never a landing surface (D-080).
+- Wall jumps (D-110): grip walls only, placed on purpose (none in L001–L020); no wall jump may skip a betrayal, reach the door off the solution, or reach a proven-out-of-reach bait; `ValidateWallJumpShortcuts` checks every level.
 - Precision (D-083): tighter reach and slack only inside a room's `PrecisionSections` (`PrecisionThresholds`), never in levels 1–10; a `BaitGap` is proven out of reach; every dying betrayal's killer, in its lethal pose, is inside the level camera's view at some point before the death hold ends, at 4:3, 16:9 and 20:9 (D-083 amendment: surprise is allowed).
 - Levels 1–10 (band 1, PAX-059, D-085; design guide `Docs/LEVEL_DESIGN_GUIDE.md`) pass `LevelLayoutValidator.Band1.cs` and `Band1LevelTests`: lethal traps and a sequential chain, dead ends that kill (Dies routes named "Dead end…", one per way off the approach; never a soft-lock), width ≤ 32, a 500–1500-tick solution (L001 ≥ 280), trap floors out of reach from below, falling blocks and moving hazards set off within 3 u, and no learned bypasses. By convention (no check enforces it), every mid-air release on a solution is written as a timed step, so the route validator's windows sweep measures it (window ≥ 12).
 

@@ -72,6 +72,17 @@ namespace Parallax.Tests.EditMode
         public void DangerBeforeItsTrigger_SeenFromTheOnlyWayUp_IsRejected(string fixture) =>
             AssertMentioned(TriggerCoverage(Fixture(fixture, false)), "Ledge_Spikes", "lies before Ledge_Spikes's trigger near edge");
 
+        // PAX-105 (D-110 amendment 2): a grip shaft is a way up like a vine (only grip faces add reach; the wall-free fixtures
+        // above are unchanged).
+        [Test]
+        public void AGripShaft_IsAWayUp_LikeAVine()
+        {
+            Type grips = Type.GetType("Parallax.Editor.Setup.WallClingFixtures, Parallax.Editor");
+            object Room(bool beyond) => grips.GetMethod("GripOnlyLedge").Invoke(null, new object[] { beyond });
+            AssertNotMentioned(TriggerCoverage(Room(true)), "Ledge_Spikes");
+            AssertMentioned(TriggerCoverage(Room(false)), "Ledge_Spikes", "lies before Ledge_Spikes's trigger near edge");
+        }
+
         // ---------- surface coverage per storey ----------
 
         [Test]

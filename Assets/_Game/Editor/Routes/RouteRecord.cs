@@ -15,6 +15,9 @@ namespace Parallax.Editor.Routes
         public bool JumpPressed; public int Move;
         // PAX-087 (D-089): the route's Climb this tick and whether the cat ended it on a vine (0/false with no vines).
         public int Climb; public bool IsClimbing;
+        // PAX-105 (D-110): the route's Grab press this tick, whether the cat ended it on a wall (and which side: +1 right,
+        // -1 left, 0 none) and in latch mode. All false/0 for a route that never presses Grab.
+        public bool GrabPressed, IsClinging, LatchMode; public int ClingSide;
         // Per element, in ReplayResult.Elements order.
         public int[] FireTick;   // the element's LatestFireTick (room ticks), -1 before its first fire
         public int[] Signature;  // hash of every SpriteRenderer in the element's subtree (Q5)
@@ -32,13 +35,14 @@ namespace Parallax.Editor.Routes
         {
             if (Tick != o.Tick || RoomLifeTick != o.RoomLifeTick || X != o.X || Y != o.Y || Vx != o.Vx || Vy != o.Vy
                 || Grounded != o.Grounded || GravityUp != o.GravityUp || Dead != o.Dead || Holding != o.Holding || Complete != o.Complete
-                || Ground != o.Ground || JumpPressed != o.JumpPressed || Move != o.Move || Climb != o.Climb || IsClimbing != o.IsClimbing) return false;
+                || Ground != o.Ground || JumpPressed != o.JumpPressed || Move != o.Move || Climb != o.Climb || IsClimbing != o.IsClimbing
+                || GrabPressed != o.GrabPressed || IsClinging != o.IsClinging || LatchMode != o.LatchMode || ClingSide != o.ClingSide) return false;
             for (int i = 0; i < FireTick.Length; i++) if (FireTick[i] != o.FireTick[i] || Signature[i] != o.Signature[i]) return false;
             return true;
         }
 
         public override string ToString() =>
-            $"t{Tick} r{RoomLifeTick} x{X:F4} y{Y:F4} vx{Vx:F3} vy{Vy:F3} g{(Grounded ? 1 : 0)}:{Ground} up{(GravityUp ? 1 : 0)} m{Move}{(Climb != 0 ? " c" + Climb : "")}{(IsClimbing ? " CLIMB" : "")}{(JumpPressed ? " J" : "")}{(Dead ? " DEAD" : "")}{(Complete ? " DONE" : "")}";
+            $"t{Tick} r{RoomLifeTick} x{X:F4} y{Y:F4} vx{Vx:F3} vy{Vy:F3} g{(Grounded ? 1 : 0)}:{Ground} up{(GravityUp ? 1 : 0)} m{Move}{(Climb != 0 ? " c" + Climb : "")}{(IsClimbing ? " CLIMB" : "")}{(IsClinging ? (ClingSide > 0 ? " WALL>" : " <WALL") : "")}{(LatchMode ? " LATCH" : "")}{(JumpPressed ? " J" : "")}{(GrabPressed ? " G" : "")}{(Dead ? " DEAD" : "")}{(Complete ? " DONE" : "")}";
     }
 
     // What a route condition sees: the previous tick's record plus element lookups by name.

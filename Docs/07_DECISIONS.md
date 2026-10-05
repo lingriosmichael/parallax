@@ -2844,3 +2844,284 @@ cover that underside, and by falling up from a flip below it (`ValidateDoorUprig
 **Why:** the developer: "the exit shouldn't be reachable while I am inverted" (L009), "if I jump across I finish the level,
 which shouldn't be possible" (L004), after L009 and L010 in PAX-102. Measured red on L004 and L009.
 
+
+### D-110 · 2026-10-04 · Accepted (the developer's rulings; built by PAX-105)
+**Decision:** wall cling and wall jump.
+(1) **Cling.** An airborne cat with **gravity down** whose collider touches a clingable wall face clings to it
+**automatically**: no stick input. A grounded cat never clings (walking into a wall does nothing). **Gravity up: no cling**;
+the cat falls past walls as before (D-109 is unaffected).
+(2) **Clingable face.** A vertical face (contact normal within `WallNormalThreshold` of horizontal) of solid, non-trigger
+geometry in the cat's own reality, **at least 1.0 u tall** (`MinClingFaceHeight`), and standing still. Not clingable:
+hazards (they kill), triggers, fake platforms, vines (climbing wins, D-089), faces under 1.0 u (thin platform edges, D-074
+(6)), and any solid while it moves. A solid that starts moving, a push wall, a carry or a launch releases the cat.
+(3) **Slide.** Upward speed at contact carries on under normal gravity; once falling, the fall speed is capped at
+`WallSlideSpeed` (default 2 u/s). While clinging, the cat faces the wall and Move toward it does nothing.
+(4) **Wall jump.** A jump press while clinging (also a jump buffered onto the cling tick, or pressed within
+`WallCoyoteTicks` (5) after a push-away release) launches the cat away from the wall: the normal jump launch (`JumpMath`,
+same height as a ground jump) plus `WallJumpSideSpeed` (default = `MaxSpeed`) away from the face. For
+`WallJumpMoveLockTicks` (default 8) Move back toward that face is ignored. Coyote and buffer are 0 after it. There is no
+other air or double jump.
+(5) **Two walls to climb.** After the cat leaves a face for any reason, that face can't be clung to again until the cat
+is grounded or has clung to a different face (another collider, or the other side of the same one). Height is gained only
+between two facing walls within a wall jump's reach; one wall gives one cling, a slide and one kick-off.
+(6) **Release.** The wall jump; pushing away (|Move| ≥ `WallReleaseThreshold`, 0.5, away from the face); landing; sliding
+past the face's end; a gravity flip; a launch, push or carry, or the face moving; death, room reset or respawn (these
+clear the lock too). The death hold freezes a cling as it is; the pause runs no motor step.
+(7) **Every level.** Wall cling works in every level, 1–20 and later. L001–L020 were built without it: PAX-105 audits and
+fixes them so that no wall jump skips a betrayal, reaches the door off the solution, or reaches a bait the validator proves
+out of reach. Every later level is validated with wall jumps in the reach model.
+(8) **Presentation** reuses the existing cat art (D-036 flipbook, no Animator): cling = `CatA_Hang`, slide = `CatA_Climb`
+stepped downward at the slide speed, wall jump = `CatA_Leap` (from frame 1, as the vine leap), each mirrored to face (or
+leave) the wall with the paws drawn on the wall's face. New AutoSprite frames only if that reuse fails PAX-105's art check
+and the developer approves the spend (20-credit cap per asset).
+(9) **Determinism.** Rules in ticks, pure logic in `Parallax.Core` (`WallClingState`), tunables in `CatMotorConfig`.
+**Why:** the developer (2026-10-04): the cat should "jump against a wall and with its claws … hang on to the wall and
+slowly slide down", and jump from there to "reach higher positions … like a form of double jump". Rulings: two walls
+needed to climb; every solid wall with faces ≥ 1 u; automatic grab; jump releases and pushes away; pushing away
+releases; gravity down only; the existing levels are fixed in the same ticket. Automatic grab needs no extra touch
+button; the two-wall rule and the 1 u minimum keep single walls and thin platforms from becoming ladders past the trolls.
+**Supersedes / amends:** PAX-008's "no wall jump" scope note. D-089 unchanged (climbing wins over clinging). The static
+reach assumptions (D-056 (2) reachability, D-074 trigger coverage approaches, D-083 `BaitGap`, D-085 trap floors out of
+reach from below) now include wall jumps, from PAX-105 on.
+**Consequence:** the route record gains `IsClinging` and routes may wall-jump. Level design: two facing walls ≥ 1 u tall
+within a wall jump's crossing reach are a climb; any wall ≥ 1 u beside a gap is a possible kick-off. PAX-105 appends the
+measured numbers (crossing reach, height per hop) as an as-built note under this entry.
+
+### D-110 amendment · 2026-10-04 · Accepted (the developer's rulings on PAX-105 Phase 1)
+**Decision:** the cling is triggered by a **Grab button** and runs in a **latch mode**; it is no longer automatic.
+(1) **Grab button.** `CatCommand.GrabPressed` (edge, like `JumpPressed`). Touch: a second button on the right, beside
+jump. Keyboard: Left Shift. The router merges it like jump; the seated filter zeroes it; pause (`ResetTransientState`)
+and the death hold drop it.
+(2) **Latching.** An airborne cat with gravity down **taps Grab** while touching a clingable face (D-110 (2)) and **not
+rising** (upward speed ≤ 0): it latches and enters **latch mode**. A tap is remembered for `GrabBufferTicks` (default 6),
+so a tap made while still rising, or just before reaching the wall, latches on the first tick the cat touches a face
+while not rising. Without a Grab tap the cat never clings: walls behave exactly as before.
+(3) **Latch mode.** While in latch mode, a cat that touches another clingable face while not rising latches on it
+**automatically**, without another tap, so it can jump from wall to wall. The face lock (D-110 (5)) still applies: the
+face just left never re-latches automatically.
+(4) **Leaving latch mode.** Landing; a wall jump that reaches no other face before the cat lands or the move lock ends
+and it starts falling away (in practice: no wall to jump off again means the mode ends when the cat lands or when it
+falls past the faces it could reach; Phase 2 states the exact test); pushing away; sliding past a face's end; a gravity
+flip, launch, push or moving face; death, room reset, respawn. After leaving it, a new Grab tap is needed.
+(5) **Rising contact.** No latch, buffered or automatic, while rising. A cat rising along a wall keeps rising against it
+and latches at the top of its rise. D-110 (3)'s "upward speed carries on" applies to the moment before the latch.
+(6) **Pit walls stay grabbable.** A missed jump into a pit can be saved with a Grab tap; PAX-105's audit treats that as
+a possible shortcut like any other.
+(7) **Wall-jump carry.** During `WallJumpMoveLockTicks`, with no Move away from the face, the wall jump keeps its sideways
+speed (no deceleration), so the arc doesn't depend on holding the stick.
+**Why:** the developer (2026-10-04, after Phase 1): "you have to press a specific button to latch on to the wall, it
+shouldn't happen automatically"; "you have to jump and then tap to latch, once latched it's in latch mode and you can
+just jump from wall to wall. If no wall to jump off from again then it exits latch mode"; grab only when not rising;
+the button beside jump. A deliberate grab keeps every existing route and ledge hop unchanged (no route presses Grab),
+and makes saving yourself from a pit a skill, not an accident.
+**Supersedes:** D-110 (1)'s automatic grab and its "no stick input" clause; D-110 (4)'s wall coyote (a push-away now ends
+latch mode, so `WallCoyoteTicks` is dropped). The rest of D-110 stands.
+
+### D-110 amendment 2 · 2026-10-04 · Accepted (the developer's rulings on PAX-105 §5.3)
+**Decision:** only **grip walls** can be grabbed. A grip wall is a new layout element (`SoloRoomElementKind.GripWall`,
+appended): solid geometry like a `Wall`, at least `MinClingFaceHeight` (1.0 u) tall, with a `GripSurface` marker on its
+collider and its own look, so a player can see where the claws will hold. Every other solid face (walls, floors, pit
+sides, blocks, solids, spears) behaves as before the feature: the Grab button does nothing against it. The other D-110
+rules and amendment 1 (Grab button, latch mode, not rising, face lock, two walls to climb, releases) apply unchanged to
+grip walls.
+(1) **Levels.** L001–L020 get no grip walls and stay exactly as built. Grip walls are placed on purpose in later levels,
+like vines (D-089); `ValidateWallJumpShortcuts` checks every level's grip faces against D-110 (7), so a level with none
+passes by construction.
+(2) **Single-wall top landing kept.** A kick-off from a grip wall that steers back can land on that wall's own top
+(measured: up to 1.08 u above the latch point, so a grip wall up to about 2.75 u tall can be got onto from the floor).
+Level design accounts for it; the validator's reach model includes it.
+(3) **Grab button placement:** above jump, at (0.78, 0.45, 0.22, 0.22); the slot beside jump stays the interact zone.
+(4) **Look.** Until real art exists, grip walls draw the level's wall look with a visible claw-friendly overlay (built in
+code, readable at phone size, D-108's crimson never used); the real texture is an art slot in `NEEDED_ASSETS.md`.
+**Why:** PAX-105's audit found wall-jump shortcuts in 17 of 20 levels (L002's door in 160 ticks with one Grab), coming
+from thick floors, pit sides and tall walls, which no global rule fixed (slippery room walls: 15 still fail; a 1.5 or
+2.0 u minimum: 17). The developer chose designed grip walls over redesigning 17 play-tested levels.
+**Supersedes:** D-110 (2)'s "every solid … face" (now: grip walls only), D-110 (7)'s "works in every level" and its
+L001–L020 audit-and-fix clause, and PAX-105 ruling R2/R6.
+**Consequence:** wall jumps become a designed kit element. Fake or give-way grip walls (trolls) are a possible later kit
+ticket, not part of PAX-105.
+
+**D-110 as-built (PAX-105, 2026-10-04).**
+- **Measured** (route harness, 50 Hz; `WallClingHarnessTests`, `WallJumpShortcutTests`): a wall jump rises **1.70 u**
+  (a ground jump's discrete apex) with 6 u/s away; the **crossing reach is 5.08 u** face to face (the far face latches in
+  latch mode up to the first step below the launch height); **+1.67 u a hop** in a 2 u shaft (the far wall is met while
+  rising and latched at the top of the rise; the model says 1.69), about +1.30 u at 4 u (model). The **slide is 2 u/s**
+  (0.04 u a tick); a faster fall onto a wall is cut to it at once. The **top landing** (a kick off one grip wall with
+  the stick held back after the 8-tick move lock) reaches a top up to **1.08 u** above the latch (1.13 u misses; the reach
+  model counts 1.23 u: half the collider's height for the capsule riding up a top's corner).
+- **Detection.** Each motor step, with a Grab remembered or in latch mode, two horizontal `body.Cast`s (the ground cast's
+  filter: own reality, no triggers; 0.05 u). A hit counts when |normal.x| ≥ 0.9, its collider is at least 1.0 u tall and
+  carries `GripSurface` (amendment 2: only `GripWall`s, built by `SoloRoomBuilder` as a Wall plus the marker), and it
+  isn't the face just left. A collider with a body must have the same bounds as on the previous step (the one-step still
+  check); a clung face whose bounds change (moved, resized, switched off) lets go. The cat snaps onto the face on the
+  latch step.
+- **Static rules.** The reach search (`TriggerCoverage`: coverage edges, surface coverage, flip entry) gained grip-face
+  nodes: grabbed from a surface or vine within a jump's envelope, left by the wall-jump arc (`WallJumpReach`, every input
+  between stick held away and held back), a push-away drop, or a latch on another grip face. `ValidateBaitGaps`,
+  `ValidateTrapFloorHeadroom` and the flip-entry clause count grip faces; with no grip walls every rule gives what it gave
+  before. New: `ValidateGripWall` (≥ 1.0 u, inside the frame, overlaps no solid, no hazard on it or under its cling
+  columns) and `ValidateWallJumpShortcuts` (kinds (a) door, (b) a trigger's cut, (c) bait gap, (d) trap floor from below,
+  (e) section gate; only what grip-wall jumps add).
+- **Audit (before amendment 2).** With every solid face grabbable, 17 of L001–L020 had shortcuts (L002's door in 160 ticks
+  from the start, one Grab, replayed through the game); slippery room walls left 15, a 1.5 or 2.0 u minimum 17. Ruled:
+  grip walls only, no level edits. With none in L001–L020, all 20 pass `ValidateWallJumpShortcuts` unchanged, and every
+  existing route (L001–L020, Trap Lab 3–13) replays tick for tick as before (records and validator reports compared).
+- **Trap Lab room 14** (origin 659, width 40): the solution climbs the grip shaft (Shaft_L, Shaft_R, 2 u apart) with one
+  Grab and three latches onto the Plateau; Plain_Wall gives no hold, and Spike_Floor kills the cat that grabs at it
+  (lead 14); Block_F's rise is survived (Recovers); Lone_Wall, a single grip wall, can't be climbed.
+- **Presentation.** `WallCling` shows `CatA_Hang`, `WallSlide` `CatA_Climb` played backwards by the distance slid,
+  `WallJump` `CatA_Leap` from frame 1; the drawing is placed with each clip's reach to the face (`CatVisualConfig`:
+  0.177, 0.2365 and per Leap frame 0.277 / 0.598 / 0.730 u, pinned to the sheets): clinging paws within 0.021 u short of
+  to 0.014 u into the face, the push-off frame within 0.006 u. A wall jump right after the latch holds the cling pose for
+  `MinStateFrames`. Accepted for now (NEEDED_ASSETS § Climb): paws in the floor at a slide's end, the 18–20 pp pop into
+  the vertical pose.
+
+### D-110 amendment 3 · 2026-10-04 · Accepted (the developer, after PAX-105)
+**Decision:** a falling block can be a **grip wall**: `SoloRoomTrapSettings(GripSettings.On, timing)` puts `GripSurface`
+on its collider, so once it has landed it is grabbed like a `GripWall` (a moving solid never latches; the cling waits for
+the block to be still and lets go if it moves). Validators take it at its landed pose: `ValidateGripWall`, the reach
+model (its faces and its landed top) and `ValidateWallJumpShortcuts`. **L001** uses it: Block_1 and Block_2 become grip
+walls 4.5 u tall, hanging from the ceiling (y 3.9–8.4) until they fall to the floor (3.9 u at 0.1675 u a tick, landing
+23 ticks after setting off, as before); landed, their faces are 3.6 u apart, and the solution climbs out wall to wall
+(one Grab, then latch mode) onto Block_1's top and on to the shelf. Their betrayals are unchanged.
+**Why:** the developer (2026-10-04): "the boxes that fall from the top [should] be actual walls that one [has to] jump
+between … to get out. High but not all the way to the top as one has to be able to get out." Chosen: falling grip walls,
+4.5 u, out over Block_1.
+**Supersedes:** amendment 2 (1)'s "L001–L020 get no grip walls" for L001's two blocks only, and D-085's "no tells" for
+a grip falling block: it may hang in the open (band 1's flush rule skips it). Measured: at L001's zoom the camera's view
+tops out near y 6.3, so the ceiling (8.4) is never seen but up to 2.36 u of each hanging wall is (the developer chose to
+show them).
+
+### D-111 · 2026-10-04 · Accepted (the developer's L001 rework, after PAX-105)
+**Decision:** L001 changes, on the developer's screenshots:
+(1) **The floor between the walls shrinks away.** The ground between Block_1's and Block_2's landings (x 8.9–12.5) is a
+shrinking floor ("Squeeze", the pit's full depth, over Pit 2's hazard). It starts 30 ticks after Block_2 sets off (the
+walls have landed) and shrinks from both sides to nothing over 75 ticks: the cat has to grab a wall; falling kills.
+(2) **The shelf and the ledge are 25% higher** (shelf top 1.30 → 1.625, ledge top 2.735 → 3.419). The shelf is now out
+of a ground jump's reach and is reached from Block_1's top.
+(3) **The ledge falls on a cat that goes through the gap** between the shelf and the ledge (its trigger fills that gap):
+1.294 u at 0.06 u a tick, onto the shelf. Its dead-end spikes (Spikes_2) are removed.
+(4) **The last falling floor is 4 u long** (x 25.6–29.6, from the stone after the shelf to the door's platform).
+(5) **L001 is unsolvable until the developer's solution** ("It might make it unsolvable but that is okay. I have plan
+for the solution that will come later."): its route checks fail until then.
+**Exceptions:** D-106's "shrinking floors from level 3" for L001's Squeeze; D-085's "falling blocks flush in geometry"
+for L001's Ledge (both named in the validators). Approved by the developer by name (2026-10-04): D-080's surface
+coverage for `L001/Squeeze` (`SurfaceCoverageExemptions`: the cat steps onto it before Block_1's trigger, but it shrinks
+only after the walls land), and D-110 (a) for `L001/Spikes_1` (`WallJumpDoorExemptions`: the climb between the walls is
+the only way onto the shelf over the spikes, so it is the route, not a shortcut).
+**Trigger and build fixes:** Squeeze is built after Block_2 (a chain source is looked up among traps already built);
+Spikes_1's trigger fills the gap under the raised shelf (y 0–1.125); the Ledge's trigger is the column over the shelf up
+to the ceiling.
+**Art (the developer, 2026-10-04, on play screenshots):** (6) **No claw scratches:** `GripSurface` draws nothing; a grip
+wall wears its wall's skin (supersedes amendment 3's "claw-scratch look" and amendment 2's overlay). (7) **Falling walls
+wear the floor's stone:** a falling block is never a column (`SoloRoomSkin.Solid.Shape`), so it takes the floor's fill,
+edges and ivy. A moving trap's side faces and post shafts draw their sprite tiled in its own UV (the rest-pose shader
+smeared `ENV_Side`/`ENV_Post`, which clamp across, into streaks). (8) **No floating plants:** a shrinking floor's tufts,
+ferns and ivy show only while they sit over what's left of it, and its face shade narrows with it (`ShownWith`).
+**Why:** the developer (2026-10-04): "The area of floor in between will shrink from both sides left and right till
+theres no more place to stand on, forcing the cat to jump and latch on to the walls, if you fall the cat dies"; "raise
+these platforms 25% higher, if the cat goes through the middle, the top floor should fall on top of the cat as a trap";
+"Falling floor should expand to the full length of the screenshot."
+
+### D-112 · 2026-10-04 · Accepted (the developer's L002 rework)
+**Decision:** L002's end of S1 is a ferry crossing ("Do 1+4": a moving platform that needs precise jumps, and a
+shortcut that isn't):
+(1) **The dock and the door's ledge.** S1_A4 is a 1.2 u dock (x 21.8–23.0); the door starts on it. S1_B, the door's
+ledge, is 1 u (x 29.5–30.5). Floor_9 and its jump are removed.
+(2) **The door backs away across the gap** (7.6 u over 40 ticks) as the cat comes to Block_1's hole (`Retreat`'s trigger
+is the column over the end of S1_A3, x 19.6–20.2). Spikes_5 (ground, x 22.5–28) and Spikes_5b (on Tread_1) rise with it.
+(3) **Ferry**, a 1.2 u carrying platform 1.25 u below the dock (top 3.75), shuttles x 24.0 → 26.4 (out over 50 ticks,
+8 there, back over 50, every 170; 62 at home). The cat drops onto it at home, rides it out and jumps up 1.25 u across
+1.9 u to the door. Measured windows: the drop 15 ticks, the jump 17 (band 1's 12 is the floor).
+(4) **The shortcut that isn't:** Stone, a fake slab at dock height in the gap (x 25.4–26.4, clear of the ferry at home),
+and Tread_3, the stair's top step where the ferry docks (now fake, raised to an underside of 3.6 so a jump from Tread_1
+can't touch it).
+**Exception:** D-106's "movers from level 3" for L002's Ferry (`EarlyMoverLevels` in the moving-floor validator). D-083
+is unchanged: no precision section; every window stays at 12 or more.
+**Why:** the developer (2026-10-04): "I think level two is too easy to pass ... Some sort of moving platform that
+requires precision jumping to solve ... I solved it without even dying once."
+
+### D-113 · 2026-10-05 · Accepted (the developer's L003 rework)
+**Decision:** L003's two upper storeys change places in difficulty ("Level 3 is way too easy"):
+(1) **S1 is the arrow floor.** A low post at each end of S1 holds a launcher at the cat's height: Arrow_L (in Post_L)
+flies right, Arrow_R (in Post_R) flies left, along the whole floor, every 100 ticks half a beat apart, so an arrow comes
+every 50 ticks from alternating ends ("non stop ... run jump run jump"). S1_Mid (the harmless drop, T3) is gone.
+(2) **Floors that move on S1:** Lift_1, a 2 u section that sinks to the ground and comes back up (every 200 ticks, 85
+up), beside a 2 u gap that is 4 u (too wide) while it's down; Shrink_1, a 4.6 u section over the ground's pits 1 and 3
+that shrinks away behind the cat (from its right end, over 50 ticks) once it comes on. A new spiked pit in the ground
+(Pit 5, 1.9 u, jumped on the way in) lies under the lift's gap. Post_L is the step up to the left tower.
+(3) **S2 has no arrows:** its four launchers and their corbels are gone. It is two 1 u deep spike trenches, each crossed
+on a carrying shuttle (Shift_1 the whole width; Shift_2 stops 1.4 u short, so the cat jumps off it).
+**Exception:** D-056 (1)'s walk-through window for `L003/Arrow_L` and `L003/Arrow_R` (`JumpedArrows` in the arrow
+validator): they are jumped, not waited out. D-083 is unchanged: no precision section; every solution window is 12+
+(measured: the hop over Post_R 12, the lift's gap 27, onto Shrink_1 16, onto Post_L 17). The solution takes 1129 ticks.
+**Not kept from the developer's ask:** the lift sinks below S1 rather than rising above it (a moving floor may not cross
+an arrow lane, D-056 (3)); hidden spikes that rise under a standing cat were dropped (they give no tell, D-057).
+**Why:** the developer (2026-10-05): "In the 1st level there are absolutely no traps ... I want arrows coming from the
+left and right repetitively (non stop) where you have to run jump run jump until getting to the left side. At the same
+time, certain portions of the floor are shrinking and other parts elevate"; "The arrows placed in the last floor are so
+bad. Remove them entirely ... change it to shifting and moving floors with spike traps."
+
+### D-113 amendment · 2026-10-05 · Accepted (the developer, on L003's S2)
+**Decision:** S2 is one spike bed (a 1 u deep spiked trench, x 9–26) between S2_A and S2_C, replacing the two trenches and
+their shuttles. Over it, every platform floats above the spikes: Hop_1 and Hop_2 (1 u stepping stones, top 10.8), Ride_1
+(shuttles 2.4 u right, top 10.4), Lift_2 (bobs up 1.4 u to top 11.6; the cat jumps up onto it while it's up), Ride_2
+(waits by S2_C and comes 1.2 u back to fetch the cat from Hop_2). Two false landings, fake platforms with only spikes under
+them: False_1, the obvious first step (as high as Hop_1 beside it), and False_2, the near step after the lift. The roof
+(14) caps the platforms' tops at 11.6 (a jump from higher hits it). Solution 966 ticks; S2 windows 12–20.
+**Why:** the developer (2026-10-05): "make the whole bottom full of spikes, and all the platforms that are moving above the
+ground. And add more platforms (precision jumping between them) You should jump up and down and onto the moving
+platforms. Make some false landings."
+
+### D-110 amendment 4 · 2026-10-05 · Accepted (the developer, after playing PAX-105)
+**Decision:** the latch is **automatic again, on grip faces only**, and grip faces are **mossy**.
+(1) **Automatic latch.** An airborne, not-rising, gravity-down cat whose collider touches a still grip face (a `GripWall`,
+or a grip falling block once landed, amendment 3) latches on by itself. No button. The Grab button (touch zone above
+jump, Left Shift), `CatCommand.GrabPressed`, the Grab buffer and latch mode are removed; every grip face behaves as latch
+mode did. Every other rule stands: face lock (the face just left needs a landing or another face first), two walls to
+climb, slide cap, wall jump, push-away release, move lock and carry, every release cause, gravity up never clings, vines
+win.
+(2) **Moss means grip.** A grip face wears a moss carpet over its full height (at least 80% of the face's height,
+the side the cat latches on), in a green clearly brighter than the platform stone. No other vertical face in the game
+carries moss over more than its top band (D-114), so a mossy side is always a wall the cat can hold. Supersedes D-111
+(6) ("a grip wall wears its wall's skin") for grip faces.
+**Why:** the developer (2026-10-05): "I want it to be automatic, no button needed to latch. With mobile it's too
+complicated and hard to jump and latch at the same time. And not all walls are latchable, I will decide which and only
+those that have moss on the side of the wall." Automatic latching was dropped on 2026-10-04 because every solid face
+opened shortcuts in 17 levels; with grip walls placed by the developer (amendment 2), it no longer can.
+**Supersedes:** amendment 1 (1)–(4) (Grab button, buffer, latch mode, its exits); amendment 2 (3) (button placement).
+
+### D-114 · 2026-10-05 · Accepted (the developer)
+**Decision:** no platform or wall side reads as a ruler-straight edge. Every exposed side face of floors, walls, blocks
+and solids is drawn as **broken stone**: an uneven, chipped outline, cracks, roots, and small ferns or grass at the top
+corners. Rules:
+(1) **Moss and ivy on ordinary faces stay in the top band**: drapes from the lip may hang at most 30% of the face's
+height and at most 0.6 u, never down a whole face (this shortens the longest ivy curtains PAX-A16 added). Full-height
+moss belongs only to grip faces (D-110 amendment 4). No dressing hangs as a single long strand that could read as a
+climbable vine (D-089).
+(2) **The drawing stays honest to the collider**: the chipped outline stays within ±0.06 u of the collider's side face;
+tops (where the cat stands) are unchanged, so standing and landing still look exact (D-052).
+(3) Dressing never covers a hazard, lane, door, checkpoint or flip (D-103's keep-outs), and D-108's hazard contrast
+must still pass on every level.
+**Why:** the developer (2026-10-05): "the floors walls are all too straight each side is super straight which looks
+weird, maybe just add like plants and moss on it." Chosen: broken stone with no side moss, so moss stays the grip sign.
+
+### D-115 · 2026-10-05 · Accepted (the developer)
+**Decision:** a moving floor that carries the cat upward and slows or stops keeps the cat on it: no launch. Supersedes
+D-056 (3)'s "A Solid that carries the cat upward launches it when it stops". The push into the cat stays physics' (PAX-093
+Q2); on the room tick a moving Solid rises less than it did the tick before, a cat touching its top that is rising no
+faster than the floor was (a jump is faster) and didn't jump this step keeps only the floor's new rise
+(`CatMotor2D.MatchSlowingFloor`, from `RoomManager` after the carry; `MovingTrap.PreviousDisplacement`). Carry and Legacy
+floors behave the same. `MovingFloorHarnessTests` now asserts the cat stops with the lift (apex 0.005 u above it). The
+validators' launch-box check (D-056 (3)) is left as it was: it only over-constrains.
+**Why:** the developer (2026-10-05), on L003's Lift_1: "when one is on top of it and not moving, it auto jumps".
+
+### D-113 amendment 2 · 2026-10-05 · Accepted (the developer, on L003)
+**Decision:** (1) **Post_R is 1.2 u tall** (was 0.8; "make this 50% taller"). A standing hop can't clear it, so its top is a
+perch over both arrow lanes: the cat hops up onto it, waits for Lift_1, and walks off onto the lift. (2) **S1_A is raised to
+the old Post_L's top** (top 5.8; "fill this empty space"): Post_L is gone, Arrow_L sits in S1_A's face (x 8), and both
+lanes run x 8–22.25; the jump off Shrink_1 goes up 0.8 u onto S1_A. (3) **Hop_2 moves** ("make this platform shift up"):
+it rises 0.8 u and sinks on a 180-tick cycle, up while Ride_2 waits to fetch the cat. (4) **S2_C is a solid block down
+to y 6.5** ("fill the empty space below"), clear of the right tower's climb and its dead end. Lift_1 is 2.5 u wide (its
+seam with S1_B is clear of the cat's landing: a landing across a seam made replays differ). Solution windows: the walk
+off the perch 20, the three S1 jumps 25, 21, 32; S2 12–20.

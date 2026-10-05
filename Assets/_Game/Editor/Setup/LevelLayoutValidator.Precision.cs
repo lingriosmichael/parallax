@@ -111,8 +111,21 @@ namespace Parallax.Editor.Setup
                 if (float.IsInfinity(reach)) continue;
                 if (distance - reach < margin)
                     errors.Add($"{levelId}: bait gap {gap.Name} can be crossed: best take-off reach {reach:F2} u against a gap of {distance:F2} u (margin {distance - reach:F2} u, needs at least {margin:F2} u, one run tick) (D-083).");
+                else if (BaitGapByWall(room, gap, config, gravity))
+                    errors.Add($"{levelId}: bait gap {gap.Name} can be crossed with a wall jump: from the take-off at x {gap.TakeoffX:F2} the cat reaches the target at x {gap.TargetX:F2} by clinging to a wall face (D-110 (7), D-083).");
             }
             return errors;
+        }
+
+        // PAX-105 (the audit's kind (c)): from the take-off surface, the target's paw point is reached with wall jumps (a
+        // grab on a pit wall, a kick back onto the target's top, a climb out) where it isn't without them.
+        static bool BaitGapByWall(SoloRoomDefinition room, BaitGap gap, CatMotorConfig config, float gravity)
+        {
+            var start = new Vector2(gap.TakeoffX, gap.TakeoffPawHeight);
+            var target = new Rect(gap.TargetX - .05f, gap.TargetPawHeight, .1f, config.ColliderSize.y);
+            var none = new Rect(-1e4f, -1e4f, 0f, 0f);
+            return TriggerCoverage.ReachesBox(room, none, float.NegativeInfinity, float.PositiveInfinity, start, config, gravity, target, walls: true)
+                && !TriggerCoverage.ReachesBox(room, none, float.NegativeInfinity, float.PositiveInfinity, start, config, gravity, target, walls: false);
         }
 
         // reach is +infinity when the target is higher than the jump can rise. margin is one run tick of distance.

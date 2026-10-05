@@ -215,3 +215,28 @@ The brief is `Docs/Design/L011-L020_concepts.md` (approved 2026-09-26). On top o
 - **A chaos moment per level:** ≥ 5 elements changing within about a second, as one fixed chain with an idea behind it (a crossfire that becomes a staircase, a room that rearranges itself). Chaos is choreography, never randomness.
 - **Kit reminders:** geysers and storm clouds can't start chains; snap vines and inverters can; a cat above the cloud can't be hit; a cat on the ceiling grabs a vine by pushing away from the ceiling (D-092).
 - Band-2 numbers: PAX-060 §2.2 (D-093 when written).
+
+## 10 · Grip walls (D-110 and its amendments, PAX-105)
+
+The cat grabs a **grip wall** (`GripWall`, its own look: claw-scratched stone) with the Grab button (touch: above jump;
+keyboard: Left Shift) while airborne, not rising, gravity down. Every other surface ignores Grab. On a grip wall the cat
+hangs, slides at 2 u/s and jumps off: a full jump (1.70 u at 50 Hz, the same as from the ground) plus 6 u/s away. Once
+latched it's in latch mode: the next grip wall it reaches latches without another press. A grip wall it has just left
+can't be grabbed again until it lands or grabs a different one. Grip walls are placed on purpose, like vines;
+`ValidateGripWall` and `ValidateWallJumpShortcuts` check every level.
+- **Rules for a grip wall (`ValidateGripWall`).** At least 1.0 u tall; inside the room (x 0 to its width, from y -4,
+  under its ceiling); overlapping no other solid; with no hazard on it, in the column a clinging cat fills beside either
+  face, or under that column where a sliding cat drops.
+- **Two grip walls make a climb.** Faces facing each other up to **5.08 u apart** (face to face) are crossed in latch
+  mode. Up to about 2 u apart the cat reaches the far wall still rising, rises against it and latches at the top of the
+  rise: **+1.67 u a hop** (measured in a 2 u shaft). Wider shafts gain less (about +1.3 u at 4 u).
+- **One grip wall is one kick.** A single grip wall gives one grab, a slide and one kick-off; it can't be climbed. The
+  kick reaches as a jump from the height of the grab would. With the stick held back after the move lock, the cat comes
+  back over the wall's own top if that top is at most **1.08 u** above the grab (measured): a lone grip wall up to about
+  2.75 u tall can be got onto from the floor.
+- **Plan for it.** No wall jump may skip a betrayal, reach the door off the solution, reach a bait the validator proves
+  out of reach, reach a trap floor's underside, or skip a section gate (`ValidateWallJumpShortcuts`, kinds (a)–(e)).
+  Fake or give-way grip walls (trolls) are a later kit ticket.
+- **Falling grip walls (D-110 amendment 3).** A falling block can be a grip wall once it lands (`GripSettings.On`):
+  two of them landing either side of the cat wall it in, and it climbs out (L001's Block_1 and Block_2: 4.5 u tall,
+  3.6 u apart: two latches, then a kick onto Block_1's top). The validators take it at its landed pose.

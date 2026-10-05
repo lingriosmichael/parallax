@@ -53,13 +53,14 @@ namespace Parallax.Tests.EditMode
             CollectionAssert.IsEmpty(errors, string.Join("\n", errors));
         }
 
-        // PAX-059: L004's FalseLanding, the one exemption, went with the redesign. The list is empty, and the frozen
-        // pre-PAX-059 L004 (RouteFixtures.FastFlipRoom) still fails on FalseLanding, so the rule behind it holds.
+        // PAX-059: L004's FalseLanding, the one exemption, went with the redesign. D-111 (2026-10-04): the developer approved
+        // L001's Squeeze by name, the only entry. The frozen pre-PAX-059 L004 (RouteFixtures.FastFlipRoom) still fails on
+        // FalseLanding, so the rule behind it holds.
         [Test]
-        public void NoExemptions_AndThePrePax059L004FailsOnFalseLanding()   // seen red: FastFlipRoom
+        public void OnlyApprovedExemptions_AndThePrePax059L004FailsOnFalseLanding()   // seen red: FastFlipRoom
         {
             var exemptions = (IDictionary)Validator.GetField("SurfaceCoverageExemptions").GetValue(null);
-            CollectionAssert.IsEmpty(exemptions.Keys.Cast<string>().ToArray());
+            CollectionAssert.AreEquivalent(new[] { "L001/Squeeze" }, exemptions.Keys.Cast<string>().ToArray());
             List<string> errors = Coverage("L004 before PAX-059", Fixture("FastFlipRoom"));
             TestContext.Out.WriteLine(string.Join("\n", errors));
             Assert.AreEqual(1, errors.Count, string.Join("\n", errors));

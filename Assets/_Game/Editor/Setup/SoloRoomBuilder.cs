@@ -331,6 +331,11 @@ namespace Parallax.Editor.Setup
             switch (e.Kind)
             {
                 case SoloRoomElementKind.Floor: case SoloRoomElementKind.Ceiling: case SoloRoomElementKind.Wall: case SoloRoomElementKind.PitBottom: BuildGeometry(parent, root, e.Name, position, e.Size, changes); break;
+                // PAX-105 (D-110 amendment 2): a Wall whose collider carries the GripSurface marker (the only face a cat can grab).
+                case SoloRoomElementKind.GripWall:
+                    BuildGeometry(parent, root, e.Name, position, e.Size, changes);
+                    SetupUtility.Ensure<GripSurface>(parent.Find(e.Name).gameObject, changes);
+                    break;
                 case SoloRoomElementKind.Checkpoint: CheckpointSetup.BuildMarkerCore(parent, root, e.Name, checkpoints, observers, room.Id, position + Vector2.up * -config.ColliderBottom, Vector2.down, changes); break;
                 case SoloRoomElementKind.Door:
                 {
@@ -343,7 +348,12 @@ namespace Parallax.Editor.Setup
                 case SoloRoomElementKind.Hazard: HazardSetup.BuildHazardCore(parent, root, e.Name, death, observers, rooms, position, e.Size, Red, -2, changes, HazardKind(room, e.Name)); break;
                 case SoloRoomElementKind.CollapsingFloor: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildCollapsingFloorCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings.DelayTicks, TrapFloorSortingOrder, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.HiddenSpikes: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildHiddenSpikesCore(parent, root, e.Name, position, e.Size, Red, room.Id, rooms, death, observers, e.Settings.TriggerName, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings.RevealDelayTicks, -2, changes), e.Settings, parent, changes); break;
-                case SoloRoomElementKind.FallingBlock: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildFallingBlockCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings.TriggerName, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings.Direction, e.Settings.DelayTicks, e.Settings.UnitsPerTick, e.Settings.TravelDistance, -2, changes), e.Settings, parent, changes); break;
+                case SoloRoomElementKind.FallingBlock:
+                    TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildFallingBlockCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings.TriggerName, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings.Direction, e.Settings.DelayTicks, e.Settings.UnitsPerTick, e.Settings.TravelDistance, -2, changes), e.Settings, parent, changes);
+                    // PAX-105 (D-110 amendment 3): a grip falling block is a grip wall once it has landed (the cling waits for
+                    // a body to be still, and lets go when it moves).
+                    if (e.Settings.Grip.IsConfigured) SetupUtility.Ensure<GripSurface>(parent.Find(e.Name).gameObject, changes);
+                    break;
                 case SoloRoomElementKind.GravityFlip: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildGravityFlipCore(parent, root, e.Name, position, e.Size, e.Settings.RendererEnabled ? Purple : Color.clear, room.Id, rooms, death, observers, e.Settings.GravityMode, e.Settings.DelayTicks, e.Settings.RearmOnExit, e.Settings.RendererEnabled ? -2 : null, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.DoorRetreat: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildDoorRetreatCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, parent.GetComponentInChildren<RoomDoor>(true)?.transform, e.Settings.Offset, e.Settings.MoveTicks, e.Settings.DelayTicks, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.FakePlatform: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildFakePlatformCore(parent, root, e.Name, position, e.Size, GeometryColor, room.Id, rooms, death, observers, TrapFloorSortingOrder, changes), TrapKitSetup.FakePlatformSettings, parent, changes); break;
@@ -409,7 +419,7 @@ namespace Parallax.Editor.Setup
             Rect box = new(launcher.Position - launcher.Size * .5f, launcher.Size);
             foreach (SoloRoomElement host in room.Elements)
             {
-                bool geometry = host.Kind == SoloRoomElementKind.Floor || host.Kind == SoloRoomElementKind.Ceiling || host.Kind == SoloRoomElementKind.Wall || host.Kind == SoloRoomElementKind.PitBottom;
+                bool geometry = host.Kind == SoloRoomElementKind.Floor || host.Kind == SoloRoomElementKind.Ceiling || host.Kind == SoloRoomElementKind.Wall || host.Kind == SoloRoomElementKind.GripWall || host.Kind == SoloRoomElementKind.PitBottom;
                 if (geometry && new Rect(host.Position - host.Size * .5f, host.Size).Overlaps(box)) return GeometryColor;
             }
             Debug.LogError($"SoloRoomBuilder: disguised arrow '{launcher.Name}' has no fixed geometry host; using the geometry colour.");

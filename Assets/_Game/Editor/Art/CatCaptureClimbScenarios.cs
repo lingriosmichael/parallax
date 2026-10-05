@@ -191,6 +191,7 @@ namespace Parallax.Editor.Art
             .Concat(ClimbPair("climb_side_left", "a grab from the ground coming from the right (facing left on the vine), climb, hang, climb down", g => SideClimb(g, -1f), 10.5f))
             .Concat(ClimbPair("climb_jump_leap", "a grab from a jump, climb, hang, a leap right with the facing; walk back, grab facing left, a leap right against the facing", JumpGrabLeap, 6.2f))
             .Concat(ClimbPair("climb_release", "grab the hanging vine, climb, hang, climb past its end: released in the air, the fall", Release, 12f))
-            .Concat(ClimbPair("parity_climb", "parity script: inputs during Climb, Hang and Leap", ParityClimb, 5.5f));
+            .Concat(ClimbPair("parity_climb", "parity script: inputs during Climb, Hang and Leap", ParityClimb, 5.5f))
+            .Concat(WallScenarios());   // PAX-105 (CatCaptureWallScenarios)
     }
 }

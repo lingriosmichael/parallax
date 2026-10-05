@@ -54,6 +54,9 @@ namespace Parallax.Gameplay.Presentation
         Collider2D floorGround;
         Transform carryFloor;
         Vector2 carryFloorAt;
+        // PAX-105: the wall face the cat clings to (or last clung to): its x and side (+1 a wall on the right).
+        float wallFaceX;
+        int wallSide;
 
         void Awake()
         {
@@ -225,17 +228,20 @@ namespace Parallax.Gameplay.Presentation
                     bodySurfaceSpeed: body != null ? GravityFrame.Along(body.linearVelocity, down) : rawAlong,
                     bodyVelocityAlongGravity: body != null ? Vector2.Dot(body.linearVelocity, down) : rawVelocityAlongGravity,
                     landDuration: landFrom, hardLandDuration: hardLandFrom, gaitSwitchReady: gaitReady,
-                    holding: holding, respawned: respawned, levelComplete: complete, stopping: stopping));
+                    holding: holding, respawned: respawned, levelComplete: complete, stopping: stopping,
+                    clinging: motor.IsClinging, clingSide: motor.ClingSide, wallJumped: motor.WallJumpedThisStep));
 
             UpdateEchoAlpha();
             if (next == CatAnimState.Turn) ShowFlipFrame(before != CatAnimState.Turn);
             else if (next == CatAnimState.Climb || next == CatAnimState.Hang) Vine(next, teleported ? 0f : -Vector2.Dot(delta, down), dt);
+            else if (next == CatAnimState.WallCling || next == CatAnimState.WallSlide) Wall(next, teleported ? 0f : -Vector2.Dot(delta, down), dt);
             else
             {
                 float progress = CatClipSet.AirProgress(next, rawVelocityAlongGravity, config.RiseExit, config.FallEnter, jumpSpeed);
                 airStateEnding = CatClip.AirFramesLeft(next, rawVelocityAlongGravity, config.RiseExit, config.FallEnter, gravity.Strength * dt) < config.MinStateFrames;
                 CatClip clip = next == CatAnimState.IdleFidget ? clips.ForState(next, stateMachine.FidgetIndex)
                     : next == CatAnimState.Death && deathClips != null ? deathClips.For(signals != null ? signals.HoldKind : CatDeathKind.Default) ?? clips.ForState(next)
+                    : next == CatAnimState.WallJump ? clips.ForState(CatAnimState.Leap)
                     : clips.ForState(next);
                 UpdateSprite(next, clip, Mathf.Abs(rawAlong), travelled, dt, byDistance: true, progress);
             }
@@ -243,6 +249,49 @@ namespace Parallax.Gameplay.Presentation
             // next frame shows the same pose mirrored, the gait continuing from it.
             ApplyFacing(stateMachine.Facing);
             shownFacing = Facing;
+            PlaceOnWall(next);
+        }
+
+        // PAX-105 (D-110, §2.4): on a wall, Hang (clinging still) and Climb played backwards by the distance slid (the paws
+        // scrape down; the vine's own clips, mirrored by the facing toward the wall).
+        void Wall(CatAnimState next, float climbed, float dt)
+        {
+            if (next == CatAnimState.WallCling) UpdateSprite(next, clips.ForState(CatAnimState.Hang), 0f, 0f, dt, byDistance: false);
+            else UpdateSprite(next, clips.ForState(CatAnimState.Climb), 0f, climbed, dt, byDistance: true);
+        }
+
+        // PAX-105 (D-110, §2.4; the one other move of Visual besides CarryDrawn): the vine frames are registered on the
+        // collider's centre, so on a wall their paws would hang short of the face. Clinging, the drawing's pivot goes to the
+        // face less the clip's reach toward it (CatVisualConfig, measured from the sheets), so the paws meet the face. On a
+        // wall jump the Leap frame's back edge starts at the face (pushed off it, never inside it) and the drawing eases to the
+        // cat's own place over the Leap clip.
+        void PlaceOnWall(CatAnimState next)
+        {
+            Collider2D face = motor.ClingFace;
+            if (face != null && motor.ClingSide != 0)
+            {
+                wallSide = motor.ClingSide;
+                Bounds b = face.bounds;
+                wallFaceX = wallSide > 0 ? b.min.x : b.max.x;
+            }
+            if (wallSide == 0) return;
+            Vector3 p = transform.position;
+            if (next == CatAnimState.WallCling || next == CatAnimState.WallSlide)
+            {
+                // The face just let go of still counts: a landing's first frame keeps the slide's pose.
+                float reach = next == CatAnimState.WallCling ? config.WallHangReach : config.WallSlideReach;
+                transform.position = new Vector3(wallFaceX - wallSide * reach, p.y, p.z);
+            }
+            else if (next == CatAnimState.WallJump)
+            {
+                float limit = wallFaceX - wallSide * config.WallJumpBackReach(FrameIndex);
+                float leap = LeapDuration();
+                float ease = leap > 0f ? Mathf.Clamp01(stateMachine.StateTime / leap) : 1f;
+                float x = Mathf.Lerp(limit, p.x, ease);
+                x = wallSide > 0 ? Mathf.Min(x, limit) : Mathf.Max(x, limit);
+                transform.position = new Vector3(x, p.y, p.z);
+            }
+            else wallSide = 0;
         }
 
         // Ruled 2026-09-30: the turn flips on the most symmetrical frame of the clip on screen (the one whose mirror moves the

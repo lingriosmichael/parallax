@@ -247,7 +247,17 @@ def bodies(emit, load_rgba, luminance_alpha, clean_alpha, trim, fit, resize, gri
         period = float(np.median(np.diff(centres)))
         x0 = centres[0] + period / 2
         n = int((centres[-1] - x0) // period)
-        return a[:, int(round(x0)):int(round(x0 + n * period))]
+        # The developer ("spikes ... appear somewhat cut"): the painted tips sit 26-30 px apart, so a strip cut to a whole
+        # number of teeth (SpikeArt) still sliced one. Each tooth goes into an equal cell, centred on its tip, so every
+        # cell edge falls in a gap between blades.
+        cell = int(round(period))
+        tips = [c for c in centres if x0 < c < x0 + n * period][:n]
+        cells = []
+        for c in tips:
+            left = int(round(c - cell / 2))
+            cells.append(a[:, max(0, left):left + cell])
+        if len(cells) != n or any(c.shape[1] != cell for c in cells): raise ValueError("couldn't cut the spikes into equal cells")
+        return np.concatenate(cells, axis=1)
 
     def straight_run(a, fraction=0.97, inset=2, threshold=0.5):
         """A shaft cropped to its full-thickness middle (rounded or capped ends removed), so it repeats as one pole."""

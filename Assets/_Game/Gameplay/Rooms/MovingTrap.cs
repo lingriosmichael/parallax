@@ -37,6 +37,11 @@ namespace Parallax.Gameplay.Rooms
         // DisplacementTick (the RoomLifeTick it was computed on): a room that isn't live doesn't step its traps.
         public Vector2 Displacement { get; private set; }
         public int DisplacementTick { get; private set; } = -1;
+        // D-115: the room tick before's move (zero when this trap didn't step then), so a floor that slows or stops can
+        // settle the cat riding it (RoomManager, CatMotor2D.MatchSlowingFloor).
+        public Vector2 PreviousDisplacement { get; private set; }
+        public bool IsSolid => kind == MovingTrapKind.Solid;
+        public Collider2D Box => box;
 
         protected override void Awake()
         {
@@ -52,6 +57,7 @@ namespace Parallax.Gameplay.Rooms
         protected override void OnLiveRoomStep()
         {
             if (!enabled) return;
+            PreviousDisplacement = DisplacementTick == RoomLifeTick - 1 ? Displacement : Vector2.zero;
             Displacement = Vector2.zero; DisplacementTick = RoomLifeTick;
             bool overlap = trigger != null && IsLocalHumanOverlapping(trigger, observers, filter, results, out _);
             StepTiming(overlap);

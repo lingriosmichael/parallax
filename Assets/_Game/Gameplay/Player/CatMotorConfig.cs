@@ -47,6 +47,30 @@ namespace Parallax.Gameplay.Player
         [Tooltip("PAX-087 (D-089): the Climb magnitude that grabs a vine (up only while grounded).")]
         [SerializeField] float grabThreshold = Parallax.Core.ClimbState.DefaultGrabThreshold;
 
+        [Tooltip("PAX-105 (D-110): the fastest a clinging cat slides down a wall, in units/second.")]
+        [SerializeField] float wallSlideSpeed = Parallax.Core.WallClingState.DefaultSlideSpeed;
+
+        [Tooltip("PAX-105 (D-110): a wall jump's speed away from the wall, in units/second (with the normal jump launch up).")]
+        [SerializeField] float wallJumpSideSpeed = Parallax.Core.WallClingState.DefaultWallJumpSideSpeed;
+
+        [Tooltip("PAX-105 (D-110): motor steps after a wall jump in which Move back toward that wall is ignored and, with no Move away, the sideways speed is kept.")]
+        [SerializeField] int wallJumpMoveLockTicks = Parallax.Core.WallClingState.DefaultMoveLockTicks;
+
+        [Tooltip("PAX-105 (D-110 amendment): motor steps a Grab press is remembered for (its own and the next ones).")]
+        [SerializeField] int grabBufferTicks = Parallax.Core.WallClingState.DefaultGrabBufferTicks;
+
+        [Tooltip("PAX-105 (D-110): the shortest wall face a cat can cling to, in units (the collider's height).")]
+        [SerializeField] float minClingFaceHeight = Parallax.Core.WallClingState.DefaultMinFaceHeight;
+
+        [Tooltip("PAX-105 (D-110): distance, in units, the wall casts probe left and right of the cat.")]
+        [SerializeField] float wallProbeDistance = Parallax.Core.WallClingState.DefaultProbeDistance;
+
+        [Tooltip("PAX-105 (D-110): minimum |normal.x| for a hit to count as a wall face.")]
+        [SerializeField] float wallNormalThreshold = Parallax.Core.WallClingState.DefaultNormalThreshold;
+
+        [Tooltip("PAX-105 (D-110): the |Move| away from the wall that lets go of it.")]
+        [SerializeField] float wallReleaseThreshold = Parallax.Core.WallClingState.DefaultReleaseThreshold;
+
         public float MaxSpeed => maxSpeed;
         public float Acceleration => acceleration;
         public float Deceleration => deceleration;
@@ -62,5 +86,13 @@ namespace Parallax.Gameplay.Player
         public float ClimbSpeed => climbSpeed;
         public int RegrabLockTicks => regrabLockTicks;
         public float GrabThreshold => grabThreshold;
+        public float WallSlideSpeed => wallSlideSpeed;
+        public float WallJumpSideSpeed => wallJumpSideSpeed;
+        public int WallJumpMoveLockTicks => wallJumpMoveLockTicks;
+        public int GrabBufferTicks => grabBufferTicks;
+        public float MinClingFaceHeight => minClingFaceHeight;
+        public float WallProbeDistance => wallProbeDistance;
+        public float WallNormalThreshold => wallNormalThreshold;
+        public float WallReleaseThreshold => wallReleaseThreshold;
     }
 }

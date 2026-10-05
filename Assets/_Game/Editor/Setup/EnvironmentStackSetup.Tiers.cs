@@ -14,7 +14,8 @@ namespace Parallax.Editor.Setup
 {
     /// <summary>PAX-A16 §3.1–3.5: what the A15 stack lacked. The sky plate, the sun's bloom halo and god rays, dust motes,
     /// the near-black foreground frame pinned to the view's corners and top, dark masonry outside the room (no void at
-    /// the frame's edge), chains holding up thin slabs, and the post-processing volume on the level camera. All of it is
+    /// the frame's edge), and the post-processing volume on the level camera (the chains that hung thin slabs were removed
+    /// at the developer's request, 2026-10-04: "it just looks weird"). All of it is
     /// presentation: no collider, trigger or tick is touched, and it lives outside the room (under Environment, or on
     /// the camera), so a saved room still matches a fresh build.</summary>
     public static partial class EnvironmentStackSetup
@@ -225,7 +226,6 @@ namespace Parallax.Editor.Setup
                 Compose(new ComposeContext { Tier = c, Palette = c.Palette, LevelId = c.LevelId, Signature = LevelPalettes.Signature(c.LevelId) });
                 NearTier(c);
                 Outside(c);
-                Chains(c);
                 // Phase 2 round 4: no arch fringe (Fringes). Critics, two rounds: "arcade strips hard-cut at their ends",
                 // "ghost pillars under the bridge like a broken reflection" (L008, L020); a floating floor shows its underside.
             }
@@ -567,43 +567,6 @@ namespace Parallax.Editor.Setup
                         r2.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); r2.sortingOrder = -3; go2.transform.position += new Vector3(0f, 0f, -0.04f);
                     }
                     x += w * (0.5f + 0.8f * SoloRoomSkin.Hash(c.LevelId ?? "t", 540 + i)) + (pick < 0.3f ? 0.5f : 0.05f);
-                }
-            }
-        }
-
-        /// <summary>§3.3: a thin slab hangs on two chains from the solid above it (or from beyond the frame's top). The
-        /// same rule for real and disguised slabs (P10); behind the play layer, dark, with no lip.</summary>
-        static void Chains(TierContext c)
-        {
-            SoloRoomDefinition room = c.Room.Value;
-            Sprite chain = EnvironmentKit.Sprite("ENV_Chain");
-            if (chain == null) return;
-            // Unlit, like the door's pocket drawn right after them (one shader run); the support tint stands in for the light.
-            Material lit = EnvironmentKit.UnlitMaterial;
-            List<SoloRoomSkin.Solid> solids = SoloRoomSkin.Solids(room);
-            List<Rect> keepOut = SoloRoomSkin.KeepOut(room);
-            Bounds frame = SoloRoomBuilder.ComputeRoomBounds(room, 2f);
-            string gameplay = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay);
-            Transform t = null;
-            float width = chain.bounds.size.x * 1.3f;
-            foreach (SoloRoomSkin.Solid s in solids.Where(s => s.Shape == SoloRoomSkin.Shape.Slab && s.Rect.width >= 1f))
-            {
-                foreach (float x in new[] { s.Rect.xMin + 0.3f, s.Rect.xMax - 0.3f })
-                {
-                    float from = s.Rect.yMax - 0.05f, to = frame.max.y;
-                    foreach (SoloRoomSkin.Solid o in solids)
-                        if (o.Name != s.Name && o.Rect.xMin < x && o.Rect.xMax > x && o.Rect.yMin >= s.Rect.yMax - 0.01f) to = Mathf.Min(to, o.Rect.yMin);
-                    var r = Rect.MinMaxRect(x - width * 0.5f, from, x + width * 0.5f, to);
-                    if (r.height < 0.4f || keepOut.Any(k => k.Overlaps(r))) continue;
-                    if (t == null) { t = new GameObject("Chains").transform; t.SetParent(c.EnvRoot, false); t.gameObject.layer = c.LayerIndex; }
-                    var go = new GameObject($"Chain_{s.Name}_{(x < s.Rect.center.x ? "L" : "R")}");
-                    go.transform.SetParent(t, false);
-                    go.layer = c.LayerIndex;
-                    go.transform.position = new Vector3(x, r.center.y, c.EnvRoot.position.z);
-                    var sr = go.AddComponent<SpriteRenderer>();
-                    sr.sprite = chain; sr.sharedMaterial = lit; sr.color = c.Config.SupportTint;
-                    sr.drawMode = SpriteDrawMode.Tiled; sr.size = new Vector2(width, r.height);
-                    sr.sortingLayerName = gameplay; sr.sortingOrder = -5;   // with the fringes (one shader run)
                 }
             }
         }

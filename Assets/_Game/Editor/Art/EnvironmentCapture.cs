@@ -315,7 +315,7 @@ namespace Parallax.Editor.Art
             var traps = new List<Rect>();
             foreach (SoloRoomElement e in room.Elements)
             {
-                if (e.Kind is SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.PitBottom
+                if (e.Kind is SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.GripWall or SoloRoomElementKind.PitBottom
                     or SoloRoomElementKind.Checkpoint or SoloRoomElementKind.Door or SoloRoomElementKind.CollapsingFloor or SoloRoomElementKind.FakePlatform) continue;
                 var r = new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size);
                 traps.Add(r);

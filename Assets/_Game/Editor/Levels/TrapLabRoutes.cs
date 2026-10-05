@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Parallax.Core;
 using Parallax.Editor.Routes;
 using static Parallax.Editor.Routes.R;
@@ -243,6 +244,29 @@ namespace Parallax.Editor.Levels
                 new Betrayal("ArrowD60 comes down on a cat that runs on past its cut", "ArrowD60", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Grounded)", "run on", Until(Dead()))));
         }
+
+        // PAX-105 (D-110 and amendment 2): Trap Lab room 14, the wall room. The solution walks right under Lone_Wall and
+        // Shaft_L into the shaft, grabs Shaft_L at the top of a jump and wall-jumps from side to side (latch mode: no more Grab)
+        // until the last kick off Shaft_L carries it onto the Plateau; then on to the door.
+        public static RoomRoutes Room14()
+        {
+            var solution = new Route("Trap Lab room 14 solution", ShaftClimb(Hold(Right), Until(XAtLeast(25f)), Release(), Until(Still())));
+            return new RoomRoutes(solution,
+                new Betrayal("Plain_Wall is no grip wall: a cat that jumps at it and grabs gets no hold and drops onto Spike_Floor, shown as it walked over its trigger",
+                    "Spike_Floor", DeathCause.Hazard,
+                    new Route("jump at Plain_Wall and grab", Hold(Left), Until(XAtMost(5.5f)), Release(), Until(Still()), Hold(Left), Jump(), Until(Falling()), Grab(), Until(Dead()))),
+                Betrayal.Recovers("Block_F rises when a cat jumps at it (no grip there either); it lands and climbs the shaft", "Block_F",
+                    new Route("jump at Block_F, then the shaft", ShaftClimb(Hold(Right), Until(XAtLeast(13.4f)), Release(), Until(Still()), Hold(Right), Jump(),
+                        Until(Falling()), Grab(), Until(Moving("Block_F")), Until(Grounded()), Hold(Right), Until(XAtLeast(25f)), Release(), Until(Still())))));
+        }
+
+        // From standing in the shaft: a jump at Shaft_L, Grab, then wall jumps from side to side up onto the Plateau.
+        static RouteStep[] ShaftClimb(params RouteStep[] before) => before.Concat(new[] {
+            Hold(Left), Jump(), Until(Falling()), Grab(), Until(ClingingLeft()), Release(),
+            Jump(), Hold(Right), Until(ClingingRight()), Release(),
+            Jump(), Hold(Left), Until(ClingingLeft()), Release(),
+            Jump(), Hold(Right), Until(GroundedOn("Plateau")), Until(RoomComplete()),
+        }).ToArray();
 
         public static RoomRoutes Room12()
         {

@@ -41,6 +41,9 @@ namespace Parallax.Editor.Setup
             public Shape Shape =>
                 Kind == SoloRoomElementKind.PitBottom ? Shape.PitBottom
                 : Rect.height <= 0.55f && Rect.width > Rect.height ? Shape.Slab
+                // D-111 (the developer, 2026-10-04: "give the walls that are falling a similar look and art as the floor"): a
+                // falling block is never a column; it wears the floor's stone, fill and edges.
+                : Kind == SoloRoomElementKind.FallingBlock ? Shape.Block
                 : Rect.width <= 0.55f && Rect.height > Rect.width ? Shape.SlimPost
                 : Rect.width <= 1.05f && Rect.height >= 2.5f && Name is not ("Wall_Left" or "Wall_Right") ? Shape.Post   // gauntlet: the room's walls are stone, not a column
                 : Shape.Block;
@@ -69,6 +72,9 @@ namespace Parallax.Editor.Setup
                 {
                     case SoloRoomElementKind.Floor: case SoloRoomElementKind.Ceiling: case SoloRoomElementKind.Wall: case SoloRoomElementKind.PitBottom:
                         list.Add(new Solid(e.Name, rect, false, e.Kind)); break;
+                    // PAX-105 (D-110 amendment 2): a grip wall wears the wall look (its claw marks are GripSurface's, at runtime).
+                    case SoloRoomElementKind.GripWall:
+                        list.Add(new Solid(e.Name, rect, false, SoloRoomElementKind.Wall)); break;
                     case SoloRoomElementKind.CollapsingFloor: case SoloRoomElementKind.FakePlatform: case SoloRoomElementKind.FallingBlock:
                         list.Add(new Solid(e.Name, rect, true, e.Kind)); break;
                     case SoloRoomElementKind.ShrinkingFloor:
@@ -283,6 +289,17 @@ namespace Parallax.Editor.Setup
                     // pixels at rest).
                     bool travels = s.Kind is SoloRoomElementKind.FallingBlock or SoloRoomElementKind.MovingTrap or SoloRoomElementKind.ShrinkingFloor;
                     if (owner == null || !travels) r.sharedMaterial = EnvironmentKit.TileMaterial(kind);
+                    // A moving trap's vertical trims (its side faces, a post's shaft; L001's falling grip walls, D-111): the sprite
+                    // tiled down the face in its own UV, so its pixels travel with it. The rest-pose shader's u comes from the
+                    // vertex, which batching puts in world space: on a texture that clamps across (ENV_Side, ENV_Post), every row
+                    // smeared its edge pixel.
+                    else if (kind is "Side" or "Post" or "SlimPost" && EnvironmentKit.TileMaterial("Sprite") is Material plainSprite)
+                    {
+                        r.sharedMaterial = plainSprite;
+                        r.drawMode = SpriteDrawMode.Tiled;
+                        r.size = size;
+                        t.localScale = Vector3.one;
+                    }
                     else
                     {
                         r.sharedMaterial = worldTile;

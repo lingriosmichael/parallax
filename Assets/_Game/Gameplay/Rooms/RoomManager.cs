@@ -166,6 +166,17 @@ namespace Parallax.Gameplay.Rooms
             motor.ApplyCarry(floor.Displacement, TickTime.SecondsPerTick);
         }
 
+        // D-115 (supersedes D-056 (3)'s launch): a moving Solid that was rising under the cat and slows or stops this tick keeps
+        // the cat on it (CatMotor2D.MatchSlowingFloor). A rising cat isn't grounded, so every Solid that stepped is offered it.
+        void SettleOnSlowingFloors()
+        {
+            ObserverContext observer = observers != null ? observers.Get(soloReality) : null;
+            if (observer == null || observer.Cat == null || observer.Driver == null || observer.Driver.Kind != InputSourceKind.LocalHuman) return;
+            for (int i = 0; i < trapSnapshot.Count; i++)
+                if (trapSnapshot[i] is MovingTrap floor && floor.IsSolid && floor.DisplacementTick == RoomLifeTick)
+                    observer.Cat.MatchSlowingFloor(floor.Box, floor.Displacement, floor.PreviousDisplacement, TickTime.SecondsPerTick);
+        }
+
         void OnStepped(int tick)
         {
             if (progress.LevelComplete || checkpoints == null) return;
@@ -195,6 +206,7 @@ namespace Parallax.Gameplay.Rooms
                 if (roomDeath != null && roomDeath.WasKilledThisTick(soloReality, tick)) return;
             }
             CarryOnMovingFloor();
+            SettleOnSlowingFloors();
             hazardSnapshot.Clear();
             hazardSnapshot.AddRange(hazards);
             for (int i = 0; i < hazardSnapshot.Count; i++) hazardSnapshot[i].KillOverlappingCat();

@@ -332,7 +332,7 @@ namespace Parallax.Editor.Setup
                 : accelerateTicks + (distance - accelerationDistance) / tickSpeed;
         }
 
-        static bool IsFixedSolid(SoloRoomElement e) => e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall || e.Kind == SoloRoomElementKind.Ceiling || e.Kind == SoloRoomElementKind.PitBottom;
+        static bool IsFixedSolid(SoloRoomElement e) => e.Kind == SoloRoomElementKind.Floor || e.Kind == SoloRoomElementKind.Wall || e.Kind == SoloRoomElementKind.GripWall || e.Kind == SoloRoomElementKind.Ceiling || e.Kind == SoloRoomElementKind.PitBottom;
         static string Describe(Rect r) => $"x [{r.xMin:F2}, {r.xMax:F2}] y [{r.yMin:F2}, {r.yMax:F2}]";
 
         static CatMotorConfig Config() => AssetDatabase.LoadAssetAtPath<CatMotorConfig>("Assets/_Game/Data/CatMotorConfig_Default.asset");

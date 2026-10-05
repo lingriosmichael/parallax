@@ -20,6 +20,10 @@ namespace Parallax.Editor.Setup
         internal const int ExplicitSurfaceMotionFromLevel = 3;
         internal const int FloorPatternsFromLevel = 3;
         internal const string MovingFloorLabRoom = "TrapLab12";
+        // D-111 (the developer, 2026-10-04): L001's floor between its falling grip walls shrinks away.
+        static readonly string[] EarlyShrinkerLevels = { "L001" };
+        // D-112 (the developer, 2026-10-04): L002's last gap is a ferry crossing.
+        static readonly string[] EarlyMoverLevels = { "L002" };
 
         static bool IsMovingSolid(SoloRoomElement e) => e.Kind == SoloRoomElementKind.MovingTrap && e.Settings.MovingKind == MovingTrapKind.Solid;
 
@@ -51,7 +55,7 @@ namespace Parallax.Editor.Setup
                         errors.Add($"{levelId}: {e.Name}'s swept path {Describe(swept)} runs into {f.Name}; a moving Solid's path overlaps no fixed geometry (D-056 (3)).");
                 if (s.Floor.Pushes) CheckPushPath(levelId, room, e, fixedSolids, errors);
                 if (!firstLevels) continue;
-                if (s.RepeatMode == TrapRepeatMode.Periodic) errors.Add($"{levelId}: mover '{e.Name}' in level {number}; movers are for levels {FloorPatternsFromLevel}+ only (D-106).");
+                if (s.RepeatMode == TrapRepeatMode.Periodic && System.Array.IndexOf(EarlyMoverLevels, levelId) < 0) errors.Add($"{levelId}: mover '{e.Name}' in level {number}; movers are for levels {FloorPatternsFromLevel}+ only (D-106).");
                 if (s.Floor.Pushes) errors.Add($"{levelId}: push wall '{e.Name}' in level {number}; push walls are for levels {FloorPatternsFromLevel}+ only (D-106).");
             }
 
@@ -65,7 +69,8 @@ namespace Parallax.Editor.Setup
                     if (k.MinWidth < 0f || k.MinWidth >= e.Size.x - eps)
                         errors.Add($"{levelId}: {e.Name}'s minimum width {k.MinWidth:F2} is outside [0, its width {e.Size.x:F2}); a shrinking floor shrinks (D-095 Q5).");
                 }
-                if (firstLevels) errors.Add($"{levelId}: shrinking floor '{e.Name}' in level {number}; shrinking floors are for levels {FloorPatternsFromLevel}+ only (D-106).");
+                if (firstLevels && System.Array.IndexOf(EarlyShrinkerLevels, levelId) < 0)
+                    errors.Add($"{levelId}: shrinking floor '{e.Name}' in level {number}; shrinking floors are for levels {FloorPatternsFromLevel}+ only (D-106).");
             }
             return errors;
         }

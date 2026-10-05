@@ -42,6 +42,8 @@ namespace Parallax.Presentation
         [Min(1f)] public float BodyScale = 1.1f;
         [Tooltip("Gauntlet (the developer: \"spikes need to be longer\"): spikes draw this many times their grey-box's height, from their base outward (art only; the hitbox is unchanged).")]
         [Min(1f)] public float SpikeHeightScale = 1.8f;
+        [Tooltip("The teeth in one tile of the spike strip (TRAP-04: equal cells, Tools/Art/trap_bodies.py). Spikes draw a whole number of them, so no end tooth is cut.")]
+        [Min(1)] public int SpikeStripTeeth = 11;
         [Header("Counts")]
         [Min(0)] public int ShardRows = 2;
         [Min(0)] public int DustPerFloor = 4;
