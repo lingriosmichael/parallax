@@ -99,8 +99,16 @@ namespace Parallax.Editor.Levels
             // Ride_A is phased to the tower's descent: home as a cat that climbs at once comes down, leaving ~20 ticks after it
             // boards; Ride_B leaves 110 ticks after Ride_A, as a cat that walks off Ride_A has just boarded it. It stays under the
             // corbel by the door (top 12.45 < 12.5) and clear of the door (its range ends at x 3).
-            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(26f,12.05f),(2f,.8f),(24.25f,12f),(1.5f,4f),
-                new SoloRoomTrapSettings(new StormCloudSettings(3f, 26f), new SoloRoomTrapSettings(delayTicks:0))));
+            // D-116 (the developer: "there is always a cloud constantly following the cat to zap it", toned down; then "I thought
+            // the cloud follows them all the way through"): it wakes as the cat starts (its trigger holds the start) and follows
+            // the cat floor to floor: low over the ground (under Corbel_G), under S2 over S1, and under the roof over S2, climbing
+            // or sinking 0.2 u a tick when the cat changes floor. It follows at 0.05 u/tick (2.5 u/s), strikes every 150 ticks,
+            // the first 80 ticks after it wakes; the 25-tick tell stays. Waiting is what it punishes, all the way up.
+            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(29f,2.05f),(2f,.8f),(29.4f,1.5f),(5.2f,3f),
+                new SoloRoomTrapSettings(new StormCloudSettings(new[] {
+                    new StormFloor(-100f, 2.05f, 2.6f, 30.9f),
+                    new StormFloor(4.5f, 8.4f, 1.1f, 30.9f),
+                    new StormFloor(9.5f, 12.05f, 3f, 26f) }, followSpeed:.05f, firstStrikeDelay:80, strikePeriod:150), new SoloRoomTrapSettings(delayTicks:0))));
             // The gaps' spikes: on S1 under each gap (and under Sink_S), hidden until the cat comes onto S2 (x 23.5-25; a chain
             // can't start from a cloud), then up for good, in view through the gaps from S2. A fall off a rider,
             // or through Sink_S, lands on them.

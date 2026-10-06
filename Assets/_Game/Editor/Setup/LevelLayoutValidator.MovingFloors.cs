@@ -48,10 +48,12 @@ namespace Parallax.Editor.Setup
                 if (s.RepeatMode != TrapRepeatMode.Once && s.CooldownTicks < motion)
                     errors.Add($"{levelId}: {e.Name}'s cooldown {s.CooldownTicks} ticks is below its move + hold + return ({motion}); it would snap home mid-motion (D-095 Q4).");
                 Rect start = Box(e, Vector2.zero), end = start;
+                // D-119: a hinge floor stands up beside its hinge, then moves: its path is the flat floor, the wall and the wall moved.
+                if (s.Floor.Hinges) { start = s.Floor.Upright(Box(e, Vector2.zero)); end = start; }
                 end.position += s.Offset;
                 Rect swept = Envelope(start, end);
                 foreach (SoloRoomElement f in fixedSolids)
-                    if (Overlap(swept, Box(f, Vector2.zero)) > eps)
+                    if (Overlap(swept, Box(f, Vector2.zero)) > eps || (s.Floor.Hinges && Overlap(Box(e, Vector2.zero), Box(f, Vector2.zero)) > eps))
                         errors.Add($"{levelId}: {e.Name}'s swept path {Describe(swept)} runs into {f.Name}; a moving Solid's path overlaps no fixed geometry (D-056 (3)).");
                 if (s.Floor.Pushes) CheckPushPath(levelId, room, e, fixedSolids, errors);
                 if (!firstLevels) continue;
@@ -69,10 +71,29 @@ namespace Parallax.Editor.Setup
                     if (k.MinWidth < 0f || k.MinWidth >= e.Size.x - eps)
                         errors.Add($"{levelId}: {e.Name}'s minimum width {k.MinWidth:F2} is outside [0, its width {e.Size.x:F2}); a shrinking floor shrinks (D-095 Q5).");
                 }
+                if (k.IsConfigured && k.Drops) CheckDrop(levelId, e, fixedSolids, errors);
                 if (firstLevels && System.Array.IndexOf(EarlyShrinkerLevels, levelId) < 0)
                     errors.Add($"{levelId}: shrinking floor '{e.Name}' in level {number}; shrinking floors are for levels {FloorPatternsFromLevel}+ only (D-106).");
             }
             return errors;
+        }
+
+        // D-116: a crush ledge's drop runs into no fixed geometry and ends flush on a fixed solid's top under its whole width,
+        // so a cat under it has nowhere to stand out of the crush; its tell lasts the reveal lead (D-057).
+        static void CheckDrop(string levelId, SoloRoomElement e, SoloRoomElement[] fixedSolids, List<string> errors)
+        {
+            const float eps = 1e-3f;
+            ShrinkSettings k = e.Settings.Shrink;
+            Rect start = Box(e, Vector2.zero), end = start;
+            end.y -= k.DropDistance;
+            Rect swept = Envelope(start, end);
+            foreach (SoloRoomElement f in fixedSolids)
+                if (Overlap(swept, Box(f, Vector2.zero)) > eps)
+                    errors.Add($"{levelId}: {e.Name}'s drop {Describe(swept)} runs into {f.Name} (D-116).");
+            bool floored = fixedSolids.Any(f => { Rect r = Box(f, Vector2.zero); return Mathf.Abs(r.yMax - end.yMin) <= eps && r.xMin <= start.xMin + eps && r.xMax >= start.xMax - eps; });
+            if (!floored) errors.Add($"{levelId}: {e.Name}'s drop ends at y {end.yMin:F2}, not flush on one fixed solid's top under its whole width (D-116).");
+            if (k.DropTellTicks < RevealLeadTicks) errors.Add($"{levelId}: {e.Name}'s drop tell {k.DropTellTicks} is below {RevealLeadTicks} ticks (D-057, D-116).");
+            if (k.DropMoveTicks < 1 || k.DropReturnTicks < 1) errors.Add($"{levelId}: {e.Name}'s drop moves over {k.DropMoveTicks} and returns over {k.DropReturnTicks} ticks; at least 1 each (D-116).");
         }
 
         // Q6: the push path is where the pushed cat goes: from the wall's leading edge to where it stops, plus one cat width, over
@@ -84,6 +105,7 @@ namespace Parallax.Editor.Setup
             if (Mathf.Abs(dx) <= eps) { errors.Add($"{levelId}: push wall {wall.Name} doesn't move sideways (D-095 Q6)."); return; }
             float width = Config() != null ? Config().ColliderSize.x : 1f;
             Rect box = Box(wall, Vector2.zero);
+            if (wall.Settings.Floor.Hinges) box = wall.Settings.Floor.Upright(box);   // D-119: a hinge floor pushes once it stands
             float lead0 = dx > 0f ? box.xMax : box.xMin, lead1 = lead0 + dx;
             Rect path = dx > 0f ? Rect.MinMaxRect(lead0, box.yMin, lead1 + width, box.yMax) : Rect.MinMaxRect(lead1 - width, box.yMin, lead0, box.yMax);
             Rect end = dx > 0f ? Rect.MinMaxRect(lead1, box.yMin, lead1 + width, box.yMax) : Rect.MinMaxRect(lead1 - width, box.yMin, lead1, box.yMax);

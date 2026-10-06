@@ -14,6 +14,23 @@ namespace Parallax.Core
     {
         public const float DefaultFollowSpeed = .08f, DefaultStrikeWidth = .8f;
         public const int DefaultFirstStrikeDelay = 50, DefaultStrikePeriod = 100, DefaultTellTicks = 25, DefaultStrikeTicks = 6;
+        /// <summary>D-116: how fast a cloud with floors rises or sinks to the cat's floor, u per tick.</summary>
+        public const float DefaultClimbSpeed = .2f;
+
+        /// <summary>D-116: the floor a cat whose centre is at `catY` is on: the last of `floors` (x the lowest cat centre y of
+        /// each, ascending) whose x is at or below catY; the first when none is. Each floor is (catMinY, cloudY, minX, maxX).</summary>
+        public static Vector4 FloorFor(IReadOnlyList<Vector4> floors, float catY)
+        {
+            Vector4 floor = floors[0];
+            for (int i = 1; i < floors.Count; i++) if (floors[i].x <= catY) floor = floors[i];
+            return floor;
+        }
+
+        /// <summary>D-116: one follow tick with floors: x toward the cat's x clamped to the floor's range, y toward the floor's
+        /// height, each by at most its speed (a cloud changing floors comes back into the new range as it moves).</summary>
+        public static Vector2 FollowFloor(Vector2 cloud, Vector2 cat, Vector4 floor, float speed, float climbSpeed) =>
+            new(Follow(cloud.x, Mathf.Clamp(cat.x, floor.z, floor.w), speed, float.NegativeInfinity, float.PositiveInfinity),
+                Mathf.MoveTowards(cloud.y, floor.y, climbSpeed));
 
         /// <summary>One follow tick: toward the cat by at most `speed`, clamped to [minX, maxX].</summary>
         public static float Follow(float x, float catX, float speed, float minX, float maxX) =>

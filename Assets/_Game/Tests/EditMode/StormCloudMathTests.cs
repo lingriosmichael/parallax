@@ -142,6 +142,33 @@ namespace Parallax.Tests.EditMode
             Assert.IsFalse(StormCloudMath.Hits(column, up), "gravity up: the box is wholly above the cloud's bottom");
         }
 
+        // ---------- D-116: floors ----------
+
+        static readonly Vector4[] Floors = { new(-100f, 2f, 2f, 30f), new(4.5f, 8f, 1f, 31f), new(9.5f, 12f, 3f, 26f) };
+
+        [Test]
+        public void FloorFor_IsTheHighestFloorTheCatHasReached()
+        {
+            Assert.AreEqual(2f, StormCloudMath.FloorFor(Floors, .2f).y, 1e-6f);
+            Assert.AreEqual(8f, StormCloudMath.FloorFor(Floors, 4.5f).y, 1e-6f);
+            Assert.AreEqual(8f, StormCloudMath.FloorFor(Floors, 9.4f).y, 1e-6f);
+            Assert.AreEqual(12f, StormCloudMath.FloorFor(Floors, 10.2f).y, 1e-6f);
+            Assert.AreEqual(2f, StormCloudMath.FloorFor(Floors, -200f).y, 1e-6f, "below every floor: the first");
+        }
+
+        [Test]
+        public void FollowFloor_ClimbsAtTheClimbSpeed_AndChasesTheCatsXInsideTheFloorsRange()
+        {
+            Vector2 next = StormCloudMath.FollowFloor(new Vector2(10f, 2f), new Vector2(10.5f, 5.2f), Floors[1], Speed, .2f);
+            Assert.AreEqual(10.08f, next.x, 1e-5f, "toward the cat at the follow speed");
+            Assert.AreEqual(2.2f, next.y, 1e-5f, "up toward the cat's floor at the climb speed");
+            Vector2 held = StormCloudMath.FollowFloor(new Vector2(26f, 12f), new Vector2(31f, 10.2f), Floors[2], Speed, .2f);
+            Assert.AreEqual(26f, held.x, 1e-5f, "the cat past the floor's range: the cloud waits at its end");
+            Assert.AreEqual(12f, held.y, 1e-5f, "on the cat's floor already: no climb");
+            Vector2 back = StormCloudMath.FollowFloor(new Vector2(30f, 8f), new Vector2(31f, 10.2f), Floors[2], Speed, .2f);
+            Assert.AreEqual(29.92f, back.x, 1e-5f, "outside the new floor's range: it moves back into it, never jumps");
+        }
+
         [Test] public void ClearDistance_IsHalfTheStrikePlusHalfTheCollider() => Assert.AreEqual(.9f, StormCloudMath.ClearDistance(.8f, 1f), 1e-6f);
     }
 }

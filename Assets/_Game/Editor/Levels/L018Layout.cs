@@ -93,8 +93,9 @@ namespace Parallax.Editor.Levels
             // Storm. The cloud wakes at the cut x 29.4-29.8, one step from the start; its centre ranges over x 1-30.9.
             elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(30.5f,CloudY),(2f,.8f),(29.6f,5f),(.4f,10f),
                 new SoloRoomTrapSettings(new StormCloudSettings(1f, 30.9f), new SoloRoomTrapSettings(delayTicks:0))));
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_2 keeps its first shot's trigger, then fires every 210 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_2",(21.25f,.28f),(.5f,.4f),(25.2f,5f),(.4f,10f),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,.28f,25.8f,unitsPerTick:.36f,tellTicks:40,disguised:true),new SoloRoomTrapSettings(delayTicks:0))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,.28f,25.8f,unitsPerTick:.36f,tellTicks:40,disguised:true),new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:210))));
             elements.Add(E(SoloRoomElementKind.Geyser,"G_1",(20.75f,.65f),(1f,.3f),settings:Geyser(150, 230)));
             elements.Add(E(SoloRoomElementKind.FakePlatform,"Fake_A",(18.5f,SkyTop - .25f),(1.4f,.5f)));
 
@@ -127,8 +128,9 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Geyser,"G_D",(11f,SkyBTop + 2.45f),(1f,.3f),settings:Geyser(100, 660, GeyserDirection.Down)));
             // Arrow_B (disguised, in Post_B) along SB_E at head height, over a standing cat and through one hopping Step_B,
             // set off by the landing cut at x 12.2-12.6.
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_B keeps its first shot's trigger, then fires every 170 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_B",(16.6f,SkyBTop + .85f),(.4f,.4f),(12.4f,(SkyBTop + CeilingY) * .5f),(.4f,CeilingY - SkyBTop),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,SkyBTop + .85f,0f,unitsPerTick:.36f,tellTicks:10,disguised:true),new SoloRoomTrapSettings(delayTicks:0))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,SkyBTop + .85f,0f,unitsPerTick:.36f,tellTicks:10,disguised:true),new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:170))));
             elements.Add(E(SoloRoomElementKind.Geyser,"G_B",(15.7f,SkyBTop - .15f),(1f,.3f),settings:Geyser(120, 800)));
             // The crumbles behind a running cat (each on its own touch), then Spikes_7 ahead (chained from TL_2) and Block_7.
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"TL_2",(19.9f,TopY - .25f),(1.8f,.5f),settings:new SoloRoomTrapSettings(delayTicks:18)));

@@ -29,6 +29,8 @@ namespace Parallax.Gameplay.Player
         CatClimber climber;
         // PAX-105 (D-110): the wall branch; null only when Awake disabled the motor.
         CatWallCling wallCling;
+        // D-119: the body collider (the ground tie-break measures overlap with it).
+        Collider2D bodyCollider;
 
         public bool IsGrounded { get; private set; }
         /// <summary>PAX-093 (D-095): the collider this step's ground test stood the cat on (null when not grounded).</summary>
@@ -47,8 +49,6 @@ namespace Parallax.Gameplay.Player
         /// <summary>PAX-105 (D-110): clinging to a wall, and on which side (+1 right, -1 left, 0 not clinging).</summary>
         public bool IsClinging => wallCling != null && wallCling.IsClinging;
         public int ClingSide => wallCling != null ? wallCling.ClingSide : 0;
-        /// <summary>PAX-105 (D-110 amendment): latch mode (the next wall reached latches without a Grab press).</summary>
-        public bool IsLatchMode => wallCling != null && wallCling.LatchMode;
         /// <summary>PAX-105 (D-110): true on the step the cat jumped off a wall.</summary>
         public bool WallJumpedThisStep => wallCling != null && wallCling.WallJumpedThisStep;
         /// <summary>PAX-105 (presentation only, read by CatVisualPresenter): the collider clung to (null when not clinging).</summary>
@@ -92,7 +92,7 @@ namespace Parallax.Gameplay.Player
             jumpBufferTimer = 0f;
             command = CatCommand.None;
             climber?.Clear();   // PAX-087 (D-089): a death, reset or respawn ends a climb, with no regrab lock
-            wallCling?.Clear(); // PAX-105 (D-110): and a cling, latch mode, a remembered Grab and the face lock
+            wallCling?.Clear(); // PAX-105 (D-110): and a cling and the face lock
             body.rotation = Vector2.SignedAngle(Vector2.down, gravity.Direction);
         }
 
@@ -103,7 +103,7 @@ namespace Parallax.Gameplay.Player
         {
             if (IsFrozen || body == null) return;
             climber?.Release();   // PAX-087 (D-089): a launch lets go of the vine (with the regrab lock)
-            wallCling?.Release(); // PAX-105 (D-110): and of a wall (the face lock), ending latch mode
+            wallCling?.Release(); // PAX-105 (D-110): and of a wall (the face lock)
             body.linearVelocity = GeyserMath.Launch(body.linearVelocity, direction, speed);
             coyoteTimer = 0f;
             IsGrounded = false;
@@ -185,7 +185,7 @@ namespace Parallax.Gameplay.Player
             groundFilter.useTriggers = false;
             groundFilter.SetLayerMask(reality != null ? reality.PhysicsMask : (LayerMask)0);
 
-            Collider2D bodyCollider = null;
+            bodyCollider = null;
             foreach (Collider2D c in GetComponents<Collider2D>()) if (!c.isTrigger) { bodyCollider = c; break; }
             climber = new CatClimber(body, bodyCollider, config);
             wallCling = new CatWallCling(body, bodyCollider, config, groundFilter);
@@ -284,21 +284,43 @@ namespace Parallax.Gameplay.Player
             body.rotation = Vector2.SignedAngle(Vector2.down, down);
         }
 
+        /// <summary>D-119: the floor a ground cast stands the cat on (null: none faces against gravity). A cat on a seam touches
+        /// two floors at the same distance, and the cast's order between them isn't stable from one session to the next (a
+        /// replay then reported a different ground): the nearer wins; on a tie (within 1e-3 u), the one under the cat's centre,
+        /// then the one it overlaps more, then the name. The route harness records the ground through this too.</summary>
+        public Collider2D BestGround(RaycastHit2D[] hits, int count, Vector2 down)
+        {
+            Collider2D ground = null;
+            float distance = 0f;
+            for (int i = 0; i < count; i++)
+            {
+                if (Vector2.Dot(hits[i].normal, -down) <= config.GroundNormalThreshold) continue;
+                Collider2D c = hits[i].collider;
+                if (ground == null || hits[i].distance < distance - 1e-3f || (hits[i].distance <= distance + 1e-3f && PreferredGround(c, ground)))
+                { ground = c; distance = hits[i].distance; }
+            }
+            return ground;
+        }
+
+        // D-119: the seam tie-break: true when `a` is the better ground than `b`.
+        bool PreferredGround(Collider2D a, Collider2D b)
+        {
+            float x = body.position.x;
+            Bounds ba = a.bounds, bb = b.bounds, cat = bodyCollider != null ? bodyCollider.bounds : new Bounds(body.position, Vector3.zero);
+            bool underA = x >= ba.min.x && x <= ba.max.x, underB = x >= bb.min.x && x <= bb.max.x;
+            if (underA != underB) return underA;
+            float overlapA = Mathf.Min(ba.max.x, cat.max.x) - Mathf.Max(ba.min.x, cat.min.x);
+            float overlapB = Mathf.Min(bb.max.x, cat.max.x) - Mathf.Max(bb.min.x, cat.min.x);
+            if (Mathf.Abs(overlapA - overlapB) > 1e-4f) return overlapA > overlapB;
+            return string.CompareOrdinal(a.name, b.name) < 0;
+        }
+
         void UpdateGrounded(Vector2 down, float fall)
         {
             int count = body.Cast(down, groundFilter, groundHits, config.GroundProbeDistance);
 
-            bool touchingGround = false;
-            Collider2D ground = null;
-            for (int i = 0; i < count; i++)
-            {
-                if (Vector2.Dot(groundHits[i].normal, -down) > config.GroundNormalThreshold)
-                {
-                    touchingGround = true;
-                    ground = groundHits[i].collider;
-                    break;
-                }
-            }
+            Collider2D ground = BestGround(groundHits, count, down);
+            bool touchingGround = ground != null;
 
             IsGrounded = touchingGround && fall >= -0.01f;
             GroundCollider = IsGrounded ? ground : null;

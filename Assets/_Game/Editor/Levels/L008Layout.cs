@@ -83,8 +83,9 @@ namespace Parallax.Editor.Levels
                 new ArrowLane(ArrowDirection.Left,7.9f,19.5f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
                 new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:0,cooldownTicks:60))));
             elements.Add(E(SoloRoomElementKind.Wall,"Corbel_O",(4.5f,3.25f),(1f,1.5f)));
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_O keeps its first shot's trigger, then fires every 150 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_O",(4.75f,2.9f),(.5f,.4f),(5.75f,2f),(.5f,4f),new SoloRoomTrapSettings(
-                new ArrowLane(ArrowDirection.Right,2.9f,5f + 2.9f,angleDegrees:-45f),new SoloRoomTrapSettings(delayTicks:0))));
+                new ArrowLane(ArrowDirection.Right,2.9f,5f + 2.9f,angleDegrees:-45f),new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:150))));
             var jumps = new[] {
                 J("Spikes_2",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,9.3f,12.2f,10f,10f,3f,.3f),
                 J("Lift_3",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,13.5f,16.4f,10f,10f,3f,sourceName:"S2_A",destinationName:"Floor_4"),

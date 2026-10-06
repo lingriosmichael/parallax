@@ -66,8 +66,9 @@ namespace Parallax.Editor.Levels
             // T4 (L9, L5): the floor flip at S1's left end is the way up; it fires an arrow out of the stub along the roof,
             // at the cat walking back upside down. The alcove is out of its lane.
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_4",(1f,6f),(1f,2f),settings:flip));
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_4 keeps its first shot's trigger, then fires every 200 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_4",(9.25f,13.7f),(.5f,.4f),(1f,9.5f),(1f,9f),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,13.7f,.5f,unitsPerTick:.36f,disguised:true),new SoloRoomTrapSettings(delayTicks:150))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,13.7f,.5f,unitsPerTick:.36f,disguised:true),new SoloRoomTrapSettings(delayTicks:150,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:200))));
             // PAX-102 (the developer: "add an inverter before you reach the door, I don't want the cat to reach a solution while
             // being in the ceiling"; "more moving platforms"): the room runs on east to x 32. A flip floating under the roof's
             // east end (x 16.5-17.5, from the roof down to y 11.75) turns a cat walking the roof upside down back down: it drops

@@ -81,7 +81,7 @@ namespace Parallax.Editor.Setup
                 errors.Add($"{levelId}: precision section '{room.PrecisionSections[0].Name}' in level {number}; levels 1-{EasyBandLastLevel} are the easy band and allow no precision (D-065).");
             foreach (SoloRoomElement spear in spears)
                 errors.Add($"{levelId}: spear '{spear.Name}' in level {number}; spears are for levels {EasyBandLastLevel + 1}+ only (D-086).");
-            foreach (SoloRoomElement inverter in inverters)
+            foreach (SoloRoomElement inverter in inverters.Where(i => !IsWholeLevelInverter(levelId, i)))
                 errors.Add($"{levelId}: inverter '{inverter.Name}' in level {number}; inverters are for levels {EasyBandLastLevel + 1}+ only (D-087).");
             foreach (SoloRoomElement geyser in geysers)
                 errors.Add($"{levelId}: geyser '{geyser.Name}' in level {number}; geysers are for levels {EasyBandLastLevel + 1}+ only (D-088).");

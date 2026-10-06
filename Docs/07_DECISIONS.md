@@ -3125,3 +3125,123 @@ it rises 0.8 u and sinks on a 180-tick cycle, up while Ride_2 waits to fetch the
 to y 6.5** ("fill the empty space below"), clear of the right tower's climb and its dead end. Lift_1 is 2.5 u wide (its
 seam with S1_B is clear of the cat's landing: a landing across a seam made replays differ). Solution windows: the walk
 off the perch 20, the three S1 jumps 25, 21, 32; S2 12–20.
+
+### D-116 · 2026-10-05 · Accepted (the developer's L005 and L007 notes)
+**Decision:** (1) **Arrows never depend on the camera.** An arrow fires on its trigger or its room clock alone; L005's Arrow_A
+was a one-shot that had already fired ("once the camera stops seeing an arrow launcher it stops launching arrows"). (2)
+**L005's Arrow_A repeats** ("throw several arrows in intervals, and it doesn't stop"): Periodic every 135 ticks (phase 33,
+cooldown 100 ≥ its 92-tick tell + flight), no trigger. It runs the whole of S2 at shin height, so it is jumped as it comes:
+it joins D-113's exemption from D-056's arrow walk-through window (`JumpedArrows`); D-056's general periodic slack still
+holds. (3) **A second launcher on L005's corbel** ("another launcher here throwing at 45 degree angle but in the opposite
+direction"): Arrow_X fires down-right at −45° from the corbel's right face onto S2 at x 18.5, every 110 ticks (phase 30,
+the drip's rhythm): wait right of its lane for a shot, then walk under the corbel; the drip comes 80 ticks after it. (4)
+**The crush ledge, a new pattern** ("if the cat tries to go underneath it gets squished. If it goes on top the platform
+starts to shrink but from the right, slowly sliding towards the spikes"): a shrinking floor (D-095) with a drop
+(`ShrinkSettings.DropDistance`; `ShrinkingFloorTrap`, one body on a kinematic Rigidbody2D). A cat in the space under what
+is left of it starts the drop: an 8-tick tell (it sinks 0.06 u), then it drops `DropDistance` over 6 ticks, holds 40, comes
+back over 30, and can drop again; a cat it presses into by the crush depth dies (Crushed). The drop's start tick is its
+snapshot's `ExtraInt`, so a rewind restores the pose by the same formula. Its shrink keeps the trap's timing and trigger.
+Validators: the drop runs into no fixed solid and ends flush on one fixed solid's top under the whole width; its tell is at
+least the reveal lead (D-057). The route harness names it as a killer through its own crush test. L005's Ledge_D is one:
+4 u at y 0.75–1.25 over the ground before the door, its trigger the band over it, shrinking from the right over 150 ticks
+to its spiked left end (x 13–14.5, Spikes_D). The way past: onto it, left along it, over the spikes off its end; under it
+is the dead end. (5) **L007's storm is toned down** ("there is always a cloud constantly following the cat to zap it"; the
+developer chose "tone it down"): it follows at 0.05 u/tick (was 0.08), strikes every 150 ticks (was 100), the first 80
+ticks after it wakes (was 50); the 25-tick tell stays.
+**Why:** the developer's play-test of L005 and L007 (2026-10-05). The screenshots named "level 4" are L005 (its corbel,
+S2 and the ledge before the door); no level before L007 has a storm.
+
+### D-116 amendment · 2026-10-06 · Accepted (the developer, after playing L005 and L007)
+**Decision:** (1) **L005's Arrow_A waits for the cat and fires less often** ("starts way too early. Wait till the cat has
+moved at least 2 … to the left"; "lower intervals", read as in D-113's "lower interval … more time in between arrows"): it
+is a Rearm arrow (no longer Periodic), its trigger S2's band from x 5.5 to 27.5 (2 u left of the start), cooldown 200: the
+first shot as the cat sets off along S2, then one every 200 ticks while it stays on S2. The solution jumps the first shot
+(window 24) and is past S2 before the next. (2) **A storm cloud may follow the cat from floor to floor** ("I thought the
+cloud follows them all the way through"; the developer chose one cloud that changes floors over a cloud per floor): a
+cloud's `StormCloudSettings` may list `StormFloor`s (the cat's lowest centre y on the floor, the cloud's y there, its x
+range). While following, the cloud moves toward the cat's floor's height at `ClimbSpeed` (0.2 u/tick) and toward the cat's
+x clamped to that floor's range; it holds still while charging and striking; the strike runs from its bottom to the first
+static top under it, as before. Its height is kept by value in the snapshot (`ExtraVector.x`). The climb between floors may
+pass through a slab (the cloud has no collider); each floor's range is validated as a one-height cloud's was (clear of
+static geometry, a top under every column pose, door clearance per floor). A cloud without floors is unchanged (L010).
+**L007's cloud** wakes at the start (its trigger holds the start) and has three floors: over the ground at y 2.05 (under
+Corbel_G; x 2.6–30.9), over S1 at y 8.4 (x 1.1–30.9) from a cat centre of 4.5, under the roof at y 12.05 (x 3–26) from 9.5.
+The solution is unchanged and survives it; T14's lead now counts from the start (1154).
+**Why:** the developer's play-test (2026-10-06).
+
+### D-117 · 2026-10-06 · Accepted (the developer's L004 notes)
+**Decision:** (1) **L004 is played inverted** ("Level 4 needs a direction inverter from the start and it should last for the
+whole level"): an honest inverter, Invert, stands at the start (x 9.5); the cat spawns in it, so left and right are swapped
+from the first tick, for 100000 ticks (longer than any attempt; a death resets it and the respawn sets it off again). It is
+exempt from D-087's 25–500-tick duration and from the levels-11+ band (`WholeLevelInverters`). L004's routes are
+mirrored stick input (D-087 (7)). The inverted start costs the jump over Spikes_1 a tick, so Spikes_1 starts at x 15.12
+(was 15; window 12). (2) **The way out from under the slab** ("a cat player can be stuck and forced to kill itself";
+the developer chose the L corbel with a gravity flip): a cat that flips up at Flip_L and turns back as it rises lands
+under the slab past Spikes_L, upside down, with no way down. Corbel_O grows an arm to the left (Corbel_Arm, x 11.75–14.5,
+top 3.6, just over Arrow_O's lane), a mossy grip wall stands on the arm against the corbel (Corbel_Moss, x 14.25–14.5, up to
+the slab; the corbel itself stays plain stone: Spikes_1 is under it), and a gravity flip hangs over the arm (Flip_Back, x
+12–13.4, y 5.35–6.55). The stuck cat walks or jumps into it, falls right side up onto the arm, and drops back to the ground.
+A Recovers betrayal proves it (revealed by Cat.Gravity: a flip shows nothing when it fires). This is the first fixed grip
+wall in levels 1–20 (CLAUDE.md "none in L001–L020"; the developer asked for moss on the wall). The grip-wall hazard rule
+now skips a side a solid covers from the grip wall's foot to its top (no cat can be beside it).
+**Why:** the developer's play-test of L004 (2026-10-06).
+
+### D-118 · 2026-10-06 · Accepted (the developer, after playing D-117's L004)
+**Decision:** (1) **A cat clings with gravity up too** (amends D-110 (2), "gravity up: no cling"; the developer chose
+"cling upside down"). `CatWallCling` works in the cat's frame: it finds faces along the motor's right, the slide runs along
+gravity (toward the ceiling it stands on), the wall jump launches against gravity and away from the face. Every other rule
+is D-110's (grip faces only, automatic latch while not rising, the face lock, the move lock). A gravity change while
+clinging lets go. `ClingSide` stays the world side. Gravity down, nothing changes (the runtime tests and every route are
+unchanged). `ValidateWallJumpShortcuts` still models gravity-down wall jumps only. (2) **L004's way out from under the slab
+is a climb** (supersedes D-117 (2); "remove the gravity inverter here", "make the moss vertical", "the L … looking right",
+"a vertical platform on the left side to do the wall climb and over to the other side"): Flip_Back, Corbel_Arm and
+Corbel_Moss are gone. Grip_Left (x 9–9.5, y 3.2–6.2, mossy, clear of the slab so an upside-down cat walks over it) and the
+L, a mossy wall (L_Wall, x 11.8–12.3, from the slab down to y 3.1) with its foot running right to the corbel (L_Foot, y
+3.1–3.6, over Arrow_O's lane). The stuck cat drops between the walls, clings to Grip_Left, wall-jumps to the L's wall, then
+off it, comes up under the L's foot, jumps under the corbel, and comes up through Flip_A right side up past Spikes_1. The
+Recovers betrayal "The way out from under the slab" replays it to the door.
+**Why:** the developer's play-test (2026-10-06).
+
+### D-118 amendment · 2026-10-06 · Accepted (the developer's sketch)
+**Decision:** L004's climb is laid out as the developer drew it (supersedes D-118 (2)'s walls): the corbel is the L, its foot
+running right from its bottom (L_Foot, x 15.5–18, y 2.5–3, short of Flip_A), its left face mossy (Corbel_Moss, a 0.25 u grip
+strip from y 3.2, just over Arrow_O's launcher, to the slab; Corbel_O and Corbel_Base are plain stone and host the launcher).
+Across a 2.3 u gap stands Left_Post (x 11.2–11.95, y 2.5–6.2, clear of the slab) with its right face mossy (Left_Moss). Grip_Left
+and L_Wall are gone. The stuck cat drops into the gap, clings to Left_Moss, wall-jumps to the corbel's moss, off it, comes up
+under Corbel_Base and the foot, and walks right into Flip_A. **Grip moss is drawn upright** ("not drawn on horizontally …
+but vertically"): each tuft on a grip face is turned a quarter, a narrow strand down the face line (footprint 0.2–0.3 u across,
+0.55–0.8 u down); the moss-sign rule (80 % of each grip face) is unchanged and passes everywhere.
+**Why:** the developer's sketch (2026-10-06).
+
+### D-119 · 2026-10-06 · Accepted (the developer's L004–L006 notes and "all launchers non-stop")
+**Decision:** (1) **Every arrow launcher fires non-stop** ("All arrow launchers in all the levels should shoot non stop, and
+shouldn't stop shooting even if the cat runs out of the screen"; the developer chose "start on the cat, then never stop"):
+a new `TrapRepeatMode.Continuous` (appended to the enum) fires first on its trigger (overlap or chain, with its delay) and
+then again every cooldown + delay, trigger or not, for the rest of the attempt; a room reset stops it until its trigger
+again. Every one-shot arrow in L004, L005, L008–L010, L012, L014–L018 and L020 is Continuous now, each launcher on its own
+interval; L005's Arrow_A (Rearm) is too. L019's Spear_9 stays one-shot (D-086: it becomes a platform). A chained trap
+follows its source: L015's Collapse_2 (chained to Arrow_3) collapses again on every shot (Arrow_3 every 260 ticks, so the
+floor is back ~110 ticks between). `ValidateArrowCooldown` covers Continuous; D-056's walk-through slack applies to an
+angled Continuous arrow (period = cooldown + delay); a level one runs along a walkway and is jumped (the route windows
+measure it). (2) **L004's left wall launchers** ("one at run height and one at jump height … at different intervals"): a
+pillar at the left wall (x 0–0.5, up to y 2) hosts Arrow_Run (y 0.3, every 170 ticks) and Arrow_Jump (y 1.4, every 280),
+firing right along the whole ground to a stub at the right wall (Stub_R, x 31.5–32); both start as the cat passes under
+Left_Post (trigger the ground band there; Arrow_Run 20 ticks later, Arrow_Jump 70) and never stop. The solution hops
+Arrow_Run past Flip_A (window 21); T11 and T12 prove both kill. (3) **L005 is harder** ("make the floors moving … add
+platforms"; "I asked for a cloud in level 5"): S1 past the nook has two holes wider than a jump (x 9.5–14, 15.5–20), each
+crossed on a rider (Ride_S1, Ride_S2: Carry, 3 u east, every 150), over ground pits crossed on riders on the way back (Ride_G2,
+Ride_G1: 3 u west); the crush ledge moves to x 23.5–27.5 (under S1_B3), where the drop off S1 comes down; a storm cloud wakes
+at the start and follows the cat over all three floors (D-116 amendment's floors). (4) **L006 has more moving floors and
+the hinge floor** ("floors that go from flat and turn up 90 degrees and start moving and pushing the cat towards traps"; the
+developer chose "hinges up, then pushes"): a `MovingTrap` Solid may hinge (`MovingFloorSettings.HingeTicks`, `HingeAtRight`):
+it swings 90° about the top corner of its hinged end over HingeTicks (tipping a cat on it, by physics; no crush or push
+while it swings), then moves by its offset, pushing (`pushes`) the cat in its way; pose and angle are functions of the ticks
+since the fire, so a reset and a rewind restore it exactly. The validators use the standing wall for the swept and push
+paths, and a hinge floor is no betraying surface (it never gives way under a cat on it). L006's ground under S1 is cut by
+Pit_7 (a rider, Ride_7, every 160) and Pit_8 under Flip_8, a hinge floor (x 15–17.5): a cat past it (its trigger is the
+space over Ground_2b, so the swing never meets a cat on it: a slab swinging up under a cat throws it unpredictably) sets it
+off; it swings up behind the cat, leaving Pit_8 open, and slides 2 u east, pushing a cat that stopped onto Floor_5 (T8). (5) **A cat on a
+seam has one ground**: two floors touching at the same height (a rider home against a floor) were reported in an order
+that wasn't stable between sessions, so replays differed. `CatMotor2D.BestGround` picks the nearer; on a tie (1e-3 u) the
+one under the cat's centre, then the larger overlap, then the name; the route harness records the ground through it.
+**Why:** the developer's play-test (2026-10-06).

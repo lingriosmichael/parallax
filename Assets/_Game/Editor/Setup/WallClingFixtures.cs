@@ -18,43 +18,45 @@ namespace Parallax.Editor.Setup
 
         // ---------- one grip wall on the right, x 14-15, y 0-6 ----------
 
-        // A running jump at the wall (it touches the face while rising, so it rises against it), Grab at the top of the rise,
-        // then nothing until the cat lands at the wall's foot.
-        public static RouteCase GrabSlideLand(bool grab) => new($"jump at the wall, {(grab ? "" : "no ")}grab, slide, land", WallRoom(Wall()),
-            new Route("grab and slide", Hold(Right), Jump(), Until(Falling()), grab ? Grab() : Release(), Release(), Until(Grounded()), For(10)));
+        // A running jump at the wall (it touches the face while rising, so it rises against it; PAX-106, D-110 amendment 4: it
+        // latches by itself at the top of the rise), then nothing until the cat lands at the wall's foot.
+        public static RouteCase SlideLand() => new("jump at the wall, slide, land", WallRoom(Wall()),
+            new Route("latch and slide", Hold(Right), Jump(), Until(Falling()), Release(), Until(Grounded()), For(10)));
 
         // The same, then a wall jump with the stick held back toward the wall (the move lock, then Move toward it): the
-        // single wall can't be latched again before the cat lands, even with a second press.
+        // single wall can't be latched again before the cat lands.
         public static RouteCase SingleWall() => new("one wall can't be climbed", WallRoom(Wall()),
-            new Route("grab, wall jump, come back, grab again", Hold(Right), Jump(), Until(Falling()), Grab(), Until(Clinging()), Release(),
-                Jump(), Hold(Right), Until(Falling()), Grab(), For(4), Grab(), Until(Grounded()), For(10)));
+            new Route("latch, wall jump, come back", Hold(Right), Jump(), Until(Falling()), Until(Clinging()), Release(),
+                Jump(), Hold(Right), Until(Falling()), For(4), Until(Grounded()), For(10)));
 
-        // Clinging, then the stick pushed away (left): the cat lets go and falls; latch mode ends.
-        public static RouteCase PushAway() => new("grab, push away", WallRoom(Wall()),
-            new Route("grab and push away", Hold(Right), Jump(), Until(Falling()), Grab(), Until(Clinging()), For(5), Hold(Left), For(2), Release(), Until(Grounded())));
+        // Clinging, then the stick pushed away (left): the cat lets go and falls.
+        public static RouteCase PushAway() => new("latch, push away", WallRoom(Wall()),
+            new Route("latch and push away", Hold(Right), Jump(), Until(Falling()), Until(Clinging()), For(5), Hold(Left), For(2), Release(), Until(Grounded())));
 
-        // Clinging with Jump pressed in the same step as the latch (a jump buffered onto the latch tick).
+        // Jump pressed near the top of the rise, while still rising against the face: airborne, so it waits in the jump buffer,
+        // and the step the cat latches (the top of the rise) wall-jumps at once.
         public static RouteCase BufferedWallJump() => new("a jump buffered onto the latch", WallRoom(Wall()),
-            new Route("press jump just before the grab", Hold(Right), Jump(), Until(Falling()), Jump(), Grab(), Release(), Until(Grounded())));
+            new Route("press jump just before the latch", Hold(Right), Jump(), Until(Airborne()), For(13), Jump(), Release(), Until(Grounded())));
 
         // A hazard where the wall was (a trigger: never clung to) kills.
-        public static RouteCase HazardWall() => new("grab a hazard wall", WallRoom(E(SoloRoomElementKind.Hazard, "Spikes", (14.5f, 3f), (1f, 6f))),
-            new Route("grab the hazard", Hold(Right), Jump(), Until(Falling()), Grab(), Release(), For(60)));
+        public static RouteCase HazardWall() => new("jump at a hazard wall", WallRoom(E(SoloRoomElementKind.Hazard, "Spikes", (14.5f, 3f), (1f, 6f))),
+            new Route("into the hazard", Hold(Right), Jump(), Until(Falling()), Release(), For(60)));
 
         // A grip block hanging at y 1.5 (height 0.5 or 1.0), x 14-18: the running jump meets its face near the top of the rise.
         public static RouteCase HangingBlock(float height) => new($"grab a {height:0.0} u face", WallRoom(
                 E(SoloRoomElementKind.GripWall, "Block", (16f, 1.5f + height * .5f), (4f, height))),
-            new Route("grab the block's face", Hold(Right), Jump(), Until(Falling()), Grab(), Release(), For(30)));
+            new Route("at the block's face", Hold(Right), Jump(), Until(Falling()), Release(), For(30)));
 
-        // The same running jump and Grab at a plain Wall where the grip wall was: no grip, the cat drops (amendment 2).
-        public static RouteCase PlainWall() => new("grab a plain wall", WallRoom(E(SoloRoomElementKind.Wall, "Wall", (14.5f, 3f), (1f, 6f))),
-            new Route("grab the plain wall", Hold(Right), Jump(), Until(Falling()), Grab(), Release(), Until(Grounded()), For(10)));
+        // The same running jump at a plain Wall where the grip wall was: no grip, the cat drops (amendments 2 and 4: touching a
+        // plain wall never latches).
+        public static RouteCase PlainWall() => new("jump at a plain wall", WallRoom(E(SoloRoomElementKind.Wall, "Wall", (14.5f, 3f), (1f, 6f))),
+            new Route("at the plain wall", Hold(Right), Jump(), Until(Falling()), Release(), Until(Grounded()), For(10)));
 
         // ---------- two facing walls: a shaft ----------
 
         // The shaft's faces `gap` apart: Left_Wall x 12-13 (grip, face 13, 11 tall) and Right_Grip x 13+gap to 14+gap (grip, top 8),
         // the face of the plateau beyond it (to x 20, top 8). The cat
-        // stands in the middle, jumps at the left wall, grabs it and wall-jumps from side to side (latch mode: no more presses)
+        // stands in the middle, jumps at the left wall, latches on and wall-jumps from side to side (every face latches by itself)
         // until it lands on the plateau; `hops` is even, so the last jump leaves the left wall toward the plateau.
         public static RouteCase Shaft(float gap, int hops) => new($"climb a {gap:0.00} u shaft", ShaftRoom(gap), ShaftRoute(hops));
 
@@ -65,7 +67,7 @@ namespace Parallax.Editor.Setup
 
         static Route ShaftRoute(int hops)
         {
-            var steps = new List<RouteStep> { Hold(Left), Jump(), Until(Falling()), Grab(), Until(ClingingLeft()), Release() };
+            var steps = new List<RouteStep> { Hold(Left), Jump(), Until(Falling()), Until(ClingingLeft()), Release() };
             for (int i = 0; i < hops; i++)
             {
                 bool fromLeft = i % 2 == 0;
@@ -83,12 +85,12 @@ namespace Parallax.Editor.Setup
         // A wall jump off a left wall with the stick held right, across open floor: where it comes down measures the crossing
         // reach (no far wall).
         public static RouteCase KickAcross() => new("kick off a left wall across the room", Room(13.6f, E(SoloRoomElementKind.GripWall, "Left_Wall", (12.5f, 5.5f), (1f, 11f))),
-            new Route("grab and kick across", Hold(Left), Jump(), Until(Falling()), Grab(), Until(ClingingLeft()), Release(), For(10), Jump(), Hold(Right), Until(Grounded()), For(2)));
+            new Route("latch and kick across", Hold(Left), Jump(), Until(Falling()), Until(ClingingLeft()), Release(), For(10), Jump(), Hold(Right), Until(Grounded()), For(2)));
 
-        // A wall x 14-15 standing on the floor, `top` high: grab it at the top of a running jump, kick off (left) and hold the
+        // A wall x 14-15 standing on the floor, `top` high: latch at the top of a running jump, kick off (left) and hold the
         // stick back toward it: past the move lock the cat comes back over the wall's top when it's low enough.
         public static RouteCase KickBack(float top) => new($"kick back onto a {top:0.00} u wall", WallRoom(E(SoloRoomElementKind.GripWall, "Wall", (14.5f, top * .5f), (1f, top))),
-            new Route("grab, kick off, hold back", Hold(Right), Jump(), Until(Falling()), Grab(), Until(Clinging()), Release(), Jump(), Hold(Right), Until(Grounded()), For(5)));
+            new Route("latch, kick off, hold back", Hold(Right), Jump(), Until(Falling()), Until(Clinging()), Release(), Jump(), Hold(Right), Until(Grounded()), For(5)));
 
         // ---------- the static rules' grip-wall cases (amendment 2: only grip faces add reach) ----------
 

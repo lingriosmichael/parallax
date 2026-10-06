@@ -374,8 +374,107 @@ def build():
     # PAX-A16: the depth tiers (env_tiers.py).
     import env_tiers  # noqa: E402
     env_tiers.build(sys.modules[__name__], load, put, play, layers)
+    # PAX-106 (D-114): broken-stone sides and the shortened thick underside.
+    broken_stone(play, slots, put)
+    # PAX-106 (ruling R9): the grip faces' moss carpet, once the developer paints it (§12's prompt) as ENV-31; until then the
+    # builder stacks ENV_Moss tufts.
+    if (SRC / "ENV-31.png").exists():
+        put(play, "ENV_MossCarpet", fit_width(tp.trim(load("ENV-31")), round(0.42 * WORLD_PPU)), WORLD_PPU, kind="dressing")
     env_v2.finish(layers, slots)
     return play, layers, slots
+
+
+# PAX-106 (D-114 (2), ruling R6 as amended 2026-10-05: the strips are cut from each level's own fill stone, since ENV_Side
+# carries full-height painted ivy): the chipped outline stays within CHIP_REACH of the collider's face, both ways; the
+# strip covers the face's edge band, CHIP_REACH outside to CHIP_INNER inside, fading into the fill (which stops CHIP_REACH
+# inside the face) over CHIP_BLEND.
+CHIP_REACH = 0.06
+CHIP_INNER = 0.14
+CHIP_BLEND = 0.07
+FILL_SLOTS = (("ENV_Fill_A", "A"), ("ENV_Fill_A2", "A2"), ("ENV_Fill_A3", "A3"))
+# PAX-106 (D-114 (1), ruling R8): the thick underside keeps its stone band (the builder's ThickSolidDepth, 0.95 u below the
+# floor, drawn from 0.04 u above it) and at most THICK_IVY of ivy below it, fading out over THICK_FADE.
+THICK_IVY = 0.6
+THICK_SOLID = 0.95 + 0.04
+THICK_FADE = 0.15
+
+
+def chip_strip(stone, reach_px, inner_px, blend_px, seed):
+    """One broken-stone side strip (a left face; the builder mirrors it for right faces). `stone` is a seamless stone tile
+    at the play layer's PPU; the strip is a column of it reach_px + inner_px wide whose face line sits reach_px from its
+    left (air) side. The air side is cut by a seamless (periodic in y) chipped profile between 0 and 2 * reach_px, so the
+    outline runs within reach_px of the face both ways; the stone darkens toward the broken edge, with a dark rim, a few
+    cracks and two or three short roots; the inner side fades out into the fill. Deterministic per seed."""
+    rng = np.random.default_rng(1060 + seed)
+    w = int(round(reach_px + inner_px))
+    x0 = int(rng.integers(0, stone.shape[1] - w))
+    a = stone[:, x0:x0 + w].copy()
+    h = a.shape[0]
+    y = np.arange(h, dtype=np.float32)
+    # Broken stone: straight facets 0.08-0.35 u long between random depths (angular, not wavy), closing on itself so the
+    # tile repeats without a seam.
+    knots = [0.0]
+    while knots[-1] < h:
+        knots.append(knots[-1] + rng.uniform(0.08, 0.35) * WORLD_PPU)
+    knots = np.array(knots[:-1] + [h], np.float32)
+    values = rng.uniform(0.15, 0.85, len(knots)).astype(np.float32)
+    values[-1] = values[0]
+    depth = np.interp(y, knots, values).astype(np.float32)
+    # Chips: notches with steep sides, cut toward the inner limit, wrapping round the tile.
+    for _ in range(int(rng.integers(3, 6))):
+        c, half = rng.uniform(0, h), rng.uniform(6, 24)
+        dist = np.minimum(np.abs(y - c), h - np.abs(y - c))
+        depth = np.maximum(depth, np.where(dist < half, rng.uniform(0.8, 1.0) * np.clip(1.4 - dist / half, 0, 1), 0))
+    # Knobs: stones standing a little proud, toward the outer limit.
+    for _ in range(int(rng.integers(2, 5))):
+        c, half = rng.uniform(0, h), rng.uniform(8, 30)
+        dist = np.minimum(np.abs(y - c), h - np.abs(y - c))
+        depth = np.where(dist < half, np.minimum(depth, rng.uniform(0.0, 0.2)), depth)
+    cut = np.clip(depth, 0, 1) * 2 * reach_px                   # 0: the outer limit; 2 * reach_px: the inner limit
+    x = np.arange(w, dtype=np.float32)[None, :]
+    a[..., 3] = np.clip(x - cut[:, None] + 0.5, 0, 1)           # the broken edge, one antialiased pixel
+    a[..., 3] *= np.clip((w - x) / blend_px, 0, 1)                # the inner side fades into the fill
+    # The block turns away at its edge: darker toward the cut, and a dark rim along it.
+    turn = np.clip(1 - (x - cut[:, None]) / (2.5 * reach_px), 0, 1)
+    rim = np.clip(1 - (x - cut[:, None]) / 3.0, 0, 1)
+    a[..., :3] *= (1 - 0.32 * turn - 0.4 * rim)[..., None]
+    # Cracks: thin dark lines from the edge into the stone, slanting down, clear of the tile's seam.
+    for _ in range(int(rng.integers(2, 4))):
+        y0 = rng.uniform(20, h - 80)
+        length, slope = rng.uniform(0.6, 1.0) * w, rng.uniform(0.3, 1.0)
+        for s in np.arange(0, length, 0.5):
+            yy = int(y0 + s * slope + 2 * np.sin(s / 6.0))
+            xx = int(cut[min(max(yy, 0), h - 1)] + s)
+            if 0 <= yy < h and 0 <= xx < w:
+                a[yy, xx, :3] *= 0.42
+                if xx + 1 < w: a[yy, xx + 1, :3] *= 0.72
+    # Roots: short thin brown strands down the face just inside the edge.
+    for _ in range(int(rng.integers(1, 3))):
+        y0, length = rng.uniform(20, h - 120), rng.uniform(0.12, 0.3) * WORLD_PPU
+        xr = 2 * reach_px + rng.uniform(1, 6)
+        for s in np.arange(0, length, 0.5):
+            yy, xx = int(y0 + s), int(xr + 2.0 * np.sin(s / 9.0))
+            if 0 <= yy < h and 0 <= xx < w and a[yy, xx, 3] > 0.5:
+                a[yy, xx, :3] = a[yy, xx, :3] * 0.3 + np.array([0.20, 0.13, 0.07], np.float32) * 0.7
+    return a
+
+
+def broken_stone(play, slots, put):
+    """PAX-106 (D-114): for each fill stone, four chipped side strips (ENV_SideChip_<fill>_0..3; the builder picks one per
+    face by hash) cut from that stone at the play layer's PPU; and ENV_ThickUnderShort, the thick underside cut to its
+    stone band and THICK_IVY of ivy, fading out."""
+    reach_px, inner_px, blend_px = CHIP_REACH * WORLD_PPU, CHIP_INNER * WORLD_PPU, CHIP_BLEND * WORLD_PPU
+    for fill_key, suffix in FILL_SLOTS:
+        stone = play[fill_key]   # the gauntlet bakes the fills at the play layer's PPU (env_tiers' thick underside reads them so)
+        for v in range(4):
+            put(play, f"ENV_SideChip_{suffix}_{v}", chip_strip(stone, reach_px, inner_px, blend_px, v + 10 * len(suffix)), WORLD_PPU,
+                kind="vstrip", normal=True, outside=round(reach_px / WORLD_PPU, 4))
+    thick = play["ENV_ThickUnder"]
+    rows = min(thick.shape[0], int(round((THICK_SOLID + THICK_IVY) * WORLD_PPU)))
+    short = thick[:rows].copy()
+    fade = int(round(THICK_FADE * WORLD_PPU))
+    short[rows - fade:, :, 3] *= np.linspace(1.0, 0.0, fade, dtype=np.float32)[:, None]
+    put(play, "ENV_ThickUnderShort", short, WORLD_PPU, kind="strip", normal=False)
 
 
 def write(play, layers, slots):

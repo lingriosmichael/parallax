@@ -76,6 +76,17 @@ namespace Parallax.Tests.EditMode
         // ---------- §8.6 Crush boundary (Parallax.Core, direct) ----------
         // Solid 2x2 at the origin (right edge x = 1.0), depth 0.15, cat 1.0 x 0.5.
 
+        // D-119: Continuous waits for its trigger, then fires every cooldown + delay with the trigger gone; a reset stops it.
+        [Test] public void Continuous_FiresOnItsTrigger_ThenEveryCooldownPlusDelay_WithoutIt()
+        {
+            var t = new TrapTiming(TrapTriggerSource.Overlap, TrapRepeatMode.Continuous, 2, 10, 1, 0);
+            var fires = new List<int>();
+            for (int tick = 1; tick <= 60; tick++) if (t.Step(tick, tick >= 5 && tick <= 6)) fires.Add(tick);
+            CollectionAssert.AreEqual(new[] { 7, 19, 31, 43, 55 }, fires, "first at the overlap + delay, then every 10 + 2, overlap or not");
+            t.Reset();
+            for (int tick = 61; tick <= 120; tick++) Assert.IsFalse(t.Step(tick, false), "after a reset it waits for the trigger again");
+        }
+
         [Test] public void Crush_BoundaryCases()
         {
             Bounds solid = new(Vector3.zero, new Vector3(2f, 2f));

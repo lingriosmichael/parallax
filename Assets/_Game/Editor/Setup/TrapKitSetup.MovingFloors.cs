@@ -13,9 +13,16 @@ namespace Parallax.Editor.Setup
         // A MovingTrap's PAX-093 fields: its SurfaceMotion, its push opt-in and, for a PAX-093 floor only, its trigger delay
         // (a MovingTrap before PAX-093 never had one, and keeps none). The crush partner is wired by WireCrushPartners once
         // every element of the room is built.
-        internal static void ConfigureMovingFloor(MovingTrap trap, SoloRoomTrapSettings settings, List<string> changes) =>
+        internal static void ConfigureMovingFloor(MovingTrap trap, SoloRoomTrapSettings settings, List<string> changes)
+        {
             Write(trap, changes, ("surfaceMotion", (int)settings.Floor.Motion), ("pushes", settings.Floor.Pushes),
                 ("delayTicks", settings.Floor.IsConfigured ? settings.DelayTicks : 0));
+            // D-119: a hinge floor's hinge (its top corner at the hinged end) and turn; nothing for every other mover.
+            if (!settings.Floor.Hinges) return;
+            Vector2 half = trap.GetComponent<BoxCollider2D>().size * .5f;
+            Write(trap, changes, ("hingeTicks", settings.Floor.HingeTicks), ("hingeSign", settings.Floor.HingeAtRight ? -1f : 1f),
+                ("hingePivot", new Vector2(settings.Floor.HingeAtRight ? half.x : -half.x, half.y)));
+        }
 
         internal static void WireCrushPartners(Transform roomRoot, SoloRoomDefinition room, List<string> changes)
         {
@@ -42,6 +49,16 @@ namespace Parallax.Editor.Setup
             ShrinkingFloorTrap trap = go.GetComponent<ShrinkingFloorTrap>();
             Write(trap, changes, ("visual", visual), ("trigger", trigger), ("delayTicks", settings.DelayTicks), ("shrinkTicks", settings.Shrink.ShrinkTicks),
                 ("minWidth", settings.Shrink.MinWidth), ("shrinkFrom", (int)settings.Shrink.From));
+            // D-116: a crush ledge also drops; it moves on a kinematic body, as a MovingTrap does. A plain shrinking floor
+            // gets nothing new (every pin identical).
+            if (settings.Shrink.Drops)
+            {
+                Rigidbody2D body = SetupUtility.Ensure<Rigidbody2D>(go, changes); SetupUtility.SetBodyType(body, RigidbodyType2D.Kinematic, changes);
+                ShrinkSettings k = settings.Shrink;
+                Write(trap, changes, ("dropDistance", k.DropDistance), ("dropTellTicks", k.DropTellTicks), ("dropMoveTicks", k.DropMoveTicks),
+                    ("dropHoldTicks", k.DropHoldTicks), ("dropReturnTicks", k.DropReturnTicks),
+                    ("crushConfig", UnityEditor.AssetDatabase.LoadAssetAtPath<CrushConfig>("Assets/_Game/Data/CrushConfig_Default.asset")));
+            }
             return trap;
         }
     }

@@ -95,8 +95,9 @@ namespace Parallax.Editor.Levels
             // degrees when a cat climbing down V3 enters its trigger (which contains the lane, D-074: at y 25.9), and stops in
             // Shaft_W's face. Slow (0.16 u/tick), it crosses the vine around ticks 19-31, at y 23.5-24.1, where a cat that climbs
             // straight on is (4 u/s); a cat that stops when it fires is 1.4 u above it. Stop, let it stick, go on down.
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_V keeps its first shot's trigger, then fires every 220 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_V",(31.25f,25.5f),(.5f,.4f),(28.25f,23.925f),(5.7f,3.45f),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,25.5f,25.5f,unitsPerTick:.16f,angleDegrees:-30f),new SoloRoomTrapSettings(delayTicks:0))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,25.5f,25.5f,unitsPerTick:.16f,angleDegrees:-30f),new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:220))));
             elements.Add(Spear("Spear_4", 31.25f, 16.8f, ArrowDirection.Left, 21f, 4f, (26f, 17.3f), (10f, 1.4f), new SoloRoomTrapSettings(delayTicks:0), tell: 12));
             // Spear_L sweeps the Low walk at body height from Low_E once the cat is on it, and sticks in Curb_L: the one place
             // below its lane is the Trough.

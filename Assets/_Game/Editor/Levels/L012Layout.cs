@@ -83,8 +83,9 @@ namespace Parallax.Editor.Levels
             // hall 5's slab behind the orb (within 3 u of it).
             elements.Add(E(SoloRoomElementKind.Inverter,"Orb_A",(9.3f,16.5f),(.6f,3f),(11.7f,16.5f),(5.4f,3f),new SoloRoomTrapSettings(new InverterSettings(OrbADuration),new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Rearm))));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Collapse_B",(10.85f,14.25f),(1.5f,1.5f),settings:new SoloRoomTrapSettings(delayTicks:10,triggerSource:TrapTriggerSource.Chain,chainSource:"Orb_A")));
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_C keeps its first shot's trigger, then fires every 160 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_C",(16.25f,15.9f),(.5f,.4f),settings:new SoloRoomTrapSettings(
-                new ArrowLane(ArrowDirection.Left,15.9f,3.7f,unitsPerTick:1f,tellTicks:10,disguised:true),new SoloRoomTrapSettings(delayTicks:40,triggerSource:TrapTriggerSource.Chain,chainSource:"Orb_A"))));
+                new ArrowLane(ArrowDirection.Left,15.9f,3.7f,unitsPerTick:1f,tellTicks:10,disguised:true),new SoloRoomTrapSettings(delayTicks:40,triggerSource:TrapTriggerSource.Chain,chainSource:"Orb_A",repeatMode:TrapRepeatMode.Continuous,cooldownTicks:160))));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D",(13.65f,15.15f),(1.3f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:55,triggerSource:TrapTriggerSource.Chain,chainSource:"Orb_A")));
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_E",(7.6f,18.5f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:8,unitsPerTick:.36f,travelDistance:3f,triggerSource:TrapTriggerSource.Chain,chainSource:"Orb_A")));
             // Orb_B under the Shelf, its trigger box over Collapse_F (one step ahead of it) and under the Shelf.

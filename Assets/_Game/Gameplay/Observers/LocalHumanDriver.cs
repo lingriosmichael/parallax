@@ -59,8 +59,6 @@ namespace Parallax.Gameplay.Observers
             if (InvertsMove()) motorCommand.Move = -motorCommand.Move;
             // PAX-087 (D-089): a seated cat never climbs (SeatCommandFilter is frozen co-op code). Climb is never inverted.
             if (seated) motorCommand.Climb = 0f;
-            // PAX-105 (D-110 amendment): nor grabs a wall.
-            if (seated) motorCommand.GrabPressed = false;
             observer.Cat.Step(motorCommand, Time.fixedDeltaTime);
             if (stand) seat.Release();
             if (interactor != null) interactor.Step(in cmd, observer);

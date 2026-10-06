@@ -94,7 +94,6 @@ namespace Parallax.Gameplay.Input
                 result.JumpHeld        |= cmd.JumpHeld;
                 result.InteractPressed |= cmd.InteractPressed;
                 result.InteractHeld    |= cmd.InteractHeld;
-                result.GrabPressed     |= cmd.GrabPressed;   // PAX-105 (D-110 amendment): merged like jump
             }
 
             return result;

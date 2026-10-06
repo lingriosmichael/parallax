@@ -53,6 +53,29 @@ namespace Parallax.Editor.Setup
         public static RouteCase StandOnShrinker(ShrinkFrom from) => new($"stand on a shrinker ({from})", PitRoom(9.5f, Shrinker(from, 40, 0f)),
             new Route("stand on the shrinker", For(120)));
 
+        // D-116: the crush ledge, Ledge x 8-12 (y 0.75-1.25) over the floor, drops 0.75 onto a cat under it (8-tick tell, 6 to
+        // drop, hold 40, back over 30) and shrinks from its right end over 40 ticks to 1 u once the cat is in the space over
+        // it (y 1.25-4). Under: the cat walks right from x 4, under the ledge. On: the cat stands on the ledge at x 11.
+        public static RouteCase UnderCrushLedge() => new("walk under a crush ledge", FloorRoom(new Vector2(4f, 0f), CrushLedge()),
+            new Route("walk under the ledge", Hold(Right), For(120)));
+        public static RouteCase OnCrushLedge() => new("stand on a crush ledge", FloorRoom(new Vector2(11f, 1.25f), CrushLedge()),
+            new Route("stand on the ledge", For(120)));
+
+        // D-119: hinge floors. Hinge x 6-10 (top 0) over the pit, hinged at its east end: the cat standing on it at x 8 sets it
+        // off (+8), it swings up over 12 ticks into a wall (x 9.5-10, y 0-4) and the cat is tipped into the pit. PushedByHinge:
+        // Hinge x 6-10 lies on the floor (y 0-0.5); the cat stands at x 12; it swings up into a wall (x 9.5-10, y 0.5-4.5) and
+        // moves 4 east over 80 ticks (0.05 u/tick), pushing the cat flush in front of it.
+        public static RouteCase StandOnHinge() => new("stand on a hinge floor", PitRoom(8f,
+            E(SoloRoomElementKind.MovingTrap, "Hinge", (8f, -.25f), (4f, .5f), (8f, .5f), (4f, 1f), new SoloRoomTrapSettings(
+                new MovingFloorSettings(SurfaceMotion.Slip, hingeTicks: 12, hingeAtRight: true),
+                new SoloRoomTrapSettings(delayTicks: 8, holdTicks: 600, moveTicks: 1, movingKind: MovingTrapKind.Solid)))),
+            new Route("stand on the hinge", For(80)));
+        public static RouteCase PushedByHinge() => new("stand in front of a hinge floor", FloorRoom(new Vector2(12f, 0f),
+            E(SoloRoomElementKind.MovingTrap, "Hinge", (8f, .25f), (4f, .5f), (12f, 1f), (2f, 2f), new SoloRoomTrapSettings(
+                new MovingFloorSettings(SurfaceMotion.Slip, pushes: true, hingeTicks: 12, hingeAtRight: true),
+                new SoloRoomTrapSettings(delayTicks: 8, offset: new Vector2(4f, 0f), moveTicks: 80, holdTicks: 600, movingKind: MovingTrapKind.Solid)))),
+            new Route("stand in front of the hinge", For(140)));
+
         // Pusher x 2.5-3.5 (y 0-2) on the floor moves 8 right over 80 ticks (0.1 u/tick) once the cat, standing at x 6, is in
         // its trigger. With a partner, Anvil (x 12-13, y 0-2) ends the push path: the cat is crushed against it. Without, the
         // path ends in open space and the cat is left flush against the stopped wall.
@@ -141,6 +164,10 @@ namespace Parallax.Editor.Setup
             E(SoloRoomElementKind.ShrinkingFloor, "Shrink", (8f, -.25f), (4f, .5f), settings: shrinkTicks > 0
                 ? new SoloRoomTrapSettings(new ShrinkSettings(shrinkTicks, minWidth, from), new SoloRoomTrapSettings(delayTicks: 10))
                 : new SoloRoomTrapSettings(delayTicks: 10));
+
+        static SoloRoomElement CrushLedge() =>
+            E(SoloRoomElementKind.ShrinkingFloor, "Ledge", (10f, 1f), (4f, .5f), (10f, 2.625f), (4f, 2.75f),
+                new SoloRoomTrapSettings(new ShrinkSettings(40, 1f, ShrinkFrom.Right, dropDistance: .75f), new SoloRoomTrapSettings(delayTicks: 0)));
 
         static SoloRoomElement Pusher(string partner) =>
             E(SoloRoomElementKind.MovingTrap, "Pusher", (3f, 1f), (1f, 2f), (6f, 1f), (2f, 2f), new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Slip, pushes: true, crushPartner: partner),

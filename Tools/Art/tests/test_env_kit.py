@@ -109,3 +109,28 @@ if __name__ == "__main__":
         if name.startswith("test_") and callable(fn):
             fn()
             print("ok", name)
+
+
+def test_side_chip_strips_stay_within_the_reach_of_the_face():
+    """PAX-106 (D-114 (2)): twelve broken-stone strips (four per fill); each reaches CHIP_REACH outside the face and its
+    chipped edge never cuts deeper than CHIP_REACH inside it; inside that limit the stone is solid."""
+    from PIL import Image
+    kit = tool.KIT
+    slots = {s["name"]: s for s in json.loads((kit / "env_kit.json").read_text())["slots"]}
+    chips = sorted(n for n in slots if n.startswith("ENV_SideChip_"))
+    assert len(chips) == 12, chips
+    reach = tool.CHIP_REACH * tool.WORLD_PPU
+    for name in chips:
+        assert abs(slots[name]["outside"] - tool.CHIP_REACH) < 1e-3, name
+        alpha = np.asarray(Image.open(kit / f"{name}.png").convert("RGBA"), np.float32)[..., 3] / 255
+        first = (alpha > 0.5).argmax(axis=1)
+        assert first.max() <= 2 * reach + 1, (name, first.max())
+        assert (alpha[:, int(2 * reach) + 1] > 0.9).all(), name
+
+
+def test_the_short_thick_underside_keeps_its_band_and_six_tenths_of_ivy():
+    """PAX-106 (D-114 (1), ruling R8): ENV_ThickUnderShort is the stone band plus at most THICK_IVY of ivy."""
+    kit = tool.KIT
+    slots = {s["name"]: s for s in json.loads((kit / "env_kit.json").read_text())["slots"]}
+    assert slots["ENV_ThickUnderShort"]["height"] <= tool.THICK_SOLID + tool.THICK_IVY + 1 / tool.WORLD_PPU   # a pixel of rounding
+    assert slots["ENV_ThickUnderShort"]["width"] == slots["ENV_ThickUnder"]["width"]

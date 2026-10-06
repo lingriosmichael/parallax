@@ -17,10 +17,10 @@ namespace Parallax.Editor.Levels
             var solution = new Route("L001 solution",
                 Hold(Right), Until(XAtLeast(4.4f)), Jump(), Until(GroundedOn("Ground_2")),
                 // Stop as Block_1 goes: it lands ahead of the cat (and Block_2 behind it), walling it in. PAX-105 (D-110 amendment 3):
-                // jump at Block_1, Grab, and wall-jump from wall to wall (latch mode) until the kick off Block_2 lands the cat on
+                // jump at Block_1 (it latches by itself, PAX-106) and wall-jump from wall to wall until the kick off Block_2 lands the cat on
                 // Block_1's top; then run off it onto the shelf.
                 Until(Fired("Block_1")), Release(), Until(Still()), Until(Stopped("Block_1")), Until(Stopped("Block_2")),
-                Hold(Right), Jump(), Until(Falling()), Grab(), Until(ClingingRight()), Release(),
+                Hold(Right), Jump(), Until(Falling()), Until(ClingingRight()), Release(),
                 Jump(), Hold(Left), Until(ClingingLeft()), Release(),
                 Jump(), Hold(Right), Until(GroundedOn("Block_1")), Until(GroundedOn("Shelf")),
                 // Off the end of the shelf, then over the last floor.

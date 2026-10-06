@@ -71,8 +71,9 @@ namespace Parallax.Editor.Levels
             // Out. The lever, the cut at x 2.3-2.7, sets Gate_1 (x 18-18.8, too tall to jump) sliding up, Arrow_1 flying east
             // from Post_W at standing height to Post_P, and Push_3 (0.4 tall, under the arrow's lane) shoving east to a
             // cat's width short of Post_P, its crush partner.
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_1 keeps its first shot's trigger, then fires every 180 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_1",(.2f,MidY + .53f),(.4f,.4f),(2.5f,(MidY + TopY) * .5f),(.4f,TopY - MidY),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,MidY + .53f,PostX,unitsPerTick:.36f,tellTicks:8,disguised:true),new SoloRoomTrapSettings(delayTicks:32))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,MidY + .53f,PostX,unitsPerTick:.36f,tellTicks:8,disguised:true),new SoloRoomTrapSettings(delayTicks:32,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:180))));
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Gate_1",(18.4f,MidY + 1.25f),(.8f,2.5f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Slip),
                 new SoloRoomTrapSettings(offset:new Vector2(0f,4f),moveTicks:20,holdTicks:5000,triggerSource:TrapTriggerSource.Chain,chainSource:"Arrow_1",delayTicks:1,movingKind:MovingTrapKind.Solid))));
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Push_3",(.9f,MidY + .2f),(1f,.4f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Slip,pushes:true,crushPartner:"Post_P"),

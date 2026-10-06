@@ -51,8 +51,9 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_1",(12.725f,9.85f),(4.95f,.3f),(12.725f,7f),(4.95f,6f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             // T2 (L4's answer, punished): walking under that flip sends an arrow along S1 from the post behind; the nook is
             // under its lane.
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_2 keeps its first shot's trigger, then fires every 180 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_2",(7.25f,5.3f),(.5f,.4f),(11f,7.5f),(1.5f,5f),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,5.3f,31.5f,unitsPerTick:.36f,disguised:true),new SoloRoomTrapSettings(delayTicks:45))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,5.3f,31.5f,unitsPerTick:.36f,disguised:true),new SoloRoomTrapSettings(delayTicks:45,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:180))));
             // T3: spikes on S1.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_3",(21.75f,5.15f),(1.5f,.3f),(19.75f,11f),(.5f,12f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             // T4: the floor flip at S1's right end is the way up. An arrow runs along the roof from the pillar behind the cat

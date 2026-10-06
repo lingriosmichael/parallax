@@ -50,17 +50,19 @@ namespace Parallax.Tests.EditMode
         // Arrow_9 fires once from a cut on P1; the finale's Spear_10 runs under Floor_F1.
         // 2026-09-29 (the developer's play, D-093 (4c)): every roof under a cloud is real, so L015's T4 (Fake_4) and
         // L018's T1 (Fake_1) are gone; L018's launch jump window is 31 (was 29).
-        [TestCase("L015", 1284, new[] { 21, 51, 45, 51, 51, 40, 24, 32, 51, 51 },
-            new[] { "Cloud=74", "Cloud=174", "Collapse_2=62", "Arrow_3=12", "Mover_M=146", "Spear_P=86", "Cloud=674", "Block_1=24", "Block_3=24", "Cloud=974", "D3=282", "D3=191", "Arrow_9=50", "Spear_10=36" },
-            new[] { "Cloud visible t25, complete t1411", "Mover_M visible t2, complete t1411" })]
+        // D-119: the motor's seam tie-break (one ground on a seam) moves L015 and L018 by a tick here and there.
+        [TestCase("L015", 1283, new[] { 21, 51, 45, 51, 51, 40, 23, 31, 51, 51 },
+            new[] { "Cloud=74", "Cloud=174", "Collapse_2=62", "Arrow_3=12", "Mover_M=146", "Spear_P=86", "Cloud=674", "Block_1=24", "Block_3=24", "Cloud=974", "D3=284", "D3=193", "Arrow_9=50", "Spear_10=36" },
+            new[] { "Cloud visible t25, complete t1409", "Mover_M visible t2, complete t1409" })]
         // PAX-060 half B (L016-L020, as built and accepted pending play; D-093 (4b)).
         [TestCase("L016", 1202, new[] { 26, 26, 26, 16, 44, 12 },
             new[] { "Lip_2=42", "Arrow_3=8", "Arrow_U=6", "Spikes_X=108", "Tile_6=8", "Spikes_X=8", "Spikes_7=19", "Spikes_8=463", "Block_S3=23", "Spikes_S1=32", "Spikes_H=25", "Spikes_S5=145", "Spikes_C=75" },
             new string[0])]
-        [TestCase("L017", 1152, new[] { 45, 51, 29, 12, 15 },
+        // D-119: L017's and L018's arrows fire non-stop (windows re-pinned; leads and recoveries unchanged).
+        [TestCase("L017", 1152, new[] { 45, 35, 29, 12, 15 },
             new[] { "Spear_1=8", "Spikes_D1=10", "Block_2=19", "Collapse_3=58", "Slide_4=41", "Arrow_5a=16", "Block_6=21", "Spikes_5e=15", "Arrow_8=60" },
             new[] { "Sink_9 visible t927, complete t1340", "Slide_4 visible t172, complete t1468" })]
-        [TestCase("L018", 1143, new[] { 26, 51, 30, 48, 49, 33 },
+        [TestCase("L018", 1143, new[] { 26, 50, 25, 31, 29, 33 },
             new[] { "Arrow_2=40", "Cloud=174", "Fake_A=9", "Spear_S=24", "SL_2=27", "SL_3=27", "Cloud=474", "Spikes_3=22", "Cloud=574", "Collapse_V=74", "Block_T=14", "G_D=762", "Arrow_B=10", "TL_3=21", "Block_7=24", "Spikes_7=18", "G_C=988" },
             new[] { "Cloud visible t6, complete t1143" })]
         [TestCase("L019", 1142, new[] { 43, 43, 43, 27, 49, 51, 51, 51, 9, 51 },

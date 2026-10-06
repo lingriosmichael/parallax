@@ -217,7 +217,7 @@ namespace Parallax.Editor.Setup
             foreach (SoloRoomElement e in room.Elements.Where(IsArrow))
             {
                 TrapRepeatMode repeat = e.Settings.RepeatMode;
-                if (repeat != TrapRepeatMode.Rearm && repeat != TrapRepeatMode.Periodic) continue;
+                if (repeat != TrapRepeatMode.Rearm && repeat != TrapRepeatMode.Periodic && repeat != TrapRepeatMode.Continuous) continue;
                 int stop = ArrowStopTick(e);
                 if (e.Settings.CooldownTicks < stop)
                     errors.Add($"{levelId}: {e.Name} cooldown {e.Settings.CooldownTicks} ends before the arrow stops (tell + flight = {stop} ticks).");
@@ -230,14 +230,17 @@ namespace Parallax.Editor.Setup
 
         // D-113 (the developer, 2026-10-05): L003's S1 arrows fly non-stop and are jumped, not waited out; the solution's jumps
         // keep their 12-tick windows (the route validator).
-        static readonly string[] JumpedArrows = { "L003/Arrow_L", "L003/Arrow_R" };
+        static readonly string[] JumpedArrows = { "L003/Arrow_L", "L003/Arrow_R", "L005/Arrow_A" };
 
         // D-056 (1): a Periodic arrow's window from its stop to the next fire (the next tell counts as
         // unsafe) clears a from-rest crossing of the lane by PeriodicSlackTicks.
         public static List<string> ValidateArrowPeriodicSlack(string levelId, SoloRoomDefinition room)
         {
             var errors = new List<string>();
-            SoloRoomElement[] periodic = room.Elements.Where(e => IsArrow(e) && e.Settings.RepeatMode == TrapRepeatMode.Periodic).ToArray();
+            // D-119: a Continuous arrow repeats every cooldown + delay once set off; a level one runs along a walkway and is jumped
+            // (the route validator's windows measure it), so only an angled one, which a walk crosses, is checked here.
+            SoloRoomElement[] periodic = room.Elements.Where(e => IsArrow(e) && (e.Settings.RepeatMode == TrapRepeatMode.Periodic
+                || e.Settings.RepeatMode == TrapRepeatMode.Continuous && e.Settings.Arrow.AngleDegrees != 0f)).ToArray();
             if (periodic.Length == 0) return errors;
             CatMotorConfig config = Config();
             if (config == null) { errors.Add($"{levelId}: no CatMotorConfig; arrow periodic slack is undefined."); return errors; }
@@ -258,7 +261,8 @@ namespace Parallax.Editor.Setup
             float a = Mathf.Abs(e.Settings.Arrow.AngleDegrees) * Mathf.Deg2Rad;
             float footprint = a == 0f ? lane.width : Mathf.Min(lane.width, (config.ColliderSize.y + e.Settings.Arrow.Thickness / Mathf.Cos(a)) / Mathf.Tan(a));
             float crossing = FromRestCrossingTicks(footprint + config.ColliderSize.x + .5f, config);
-            int window = e.Settings.PeriodTicks - ArrowStopTick(e);
+            int period = e.Settings.RepeatMode == TrapRepeatMode.Continuous ? e.Settings.CooldownTicks + e.Settings.DelayTicks : e.Settings.PeriodTicks;
+            int window = period - ArrowStopTick(e);
             if (window < crossing + slackTicks)
                 errors.Add($"{levelId}: {e.Name} periodic slack {window - crossing:F1} is below {slackTicks} ticks (window {window} against a from-rest crossing of {crossing:F1}, D-056).");
         }

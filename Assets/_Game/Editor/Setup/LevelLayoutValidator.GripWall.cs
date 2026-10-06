@@ -46,7 +46,12 @@ namespace Parallax.Editor.Setup
                         errors.Add($"{levelId}: grip wall {g.Name} {Describe(r)} overlaps {o.Name} {Describe(b)}; a grip wall stands on its own (D-110 amendment 2).");
                 }
                 var columns = new[] { Rect.MinMaxRect(r.xMin - catWidth, r.yMin, r.xMin, r.yMax), r, Rect.MinMaxRect(r.xMax, r.yMin, r.xMax + catWidth, r.yMax) };
-                foreach (Rect column in columns)
+                // D-117: a face a solid covers from its foot to its top (L004's Corbel_Moss against Corbel_O) has no cat beside it.
+                bool Covered(float line, int side) => room.Elements.Where(o => o.Name != g.Name && IsSolidForGrip(o)).Select(o => Box(o, Vector2.zero))
+                    .Any(b => Mathf.Abs((side < 0 ? b.xMax : b.xMin) - line) <= eps && b.yMin <= r.yMin + eps && b.yMax >= r.yMax - eps);
+                if (Covered(r.xMin, -1)) columns[0] = Rect.zero;
+                if (Covered(r.xMax, 1)) columns[2] = Rect.zero;
+                foreach (Rect column in columns.Where(c => c != Rect.zero))
                 {
                     float landing = room.Elements.Where(o => o.Name != g.Name && IsSolidForGrip(o)).Select(o => Box(o, Vector2.zero))
                         .Where(b => b.xMax > column.xMin + eps && b.xMin < column.xMax - eps && b.yMax <= column.yMin + eps).Select(b => b.yMax).DefaultIfEmpty(-4f).Max();

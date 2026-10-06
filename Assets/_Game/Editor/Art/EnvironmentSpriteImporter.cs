@@ -83,13 +83,15 @@ namespace Parallax.Editor.Art
         static void ApplyWrap(TextureImporter importer, string spritePath)
         {
             string file = System.IO.Path.GetFileNameWithoutExtension(spritePath);
-            bool horizontal = System.Array.IndexOf(KitHorizontal, file) >= 0, vertical = System.Array.IndexOf(KitVertical, file) >= 0;
+            bool horizontal = System.Array.IndexOf(KitHorizontal, file) >= 0, vertical = System.Array.IndexOf(KitVertical, file) >= 0
+                // PAX-106 (D-114): the broken-stone side strips tile down a face, as ENV_Side does.
+                || file.StartsWith("ENV_SideChip_") && !file.EndsWith("_n");
             bool fill = file.StartsWith("ENV_Fill_");
             importer.wrapModeU = fill || horizontal ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
             importer.wrapModeV = fill || vertical ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
         }
 
-        static readonly string[] KitHorizontal = { "ENV_Cap", "ENV_Under", "ENV_Slab", "ENV_Water", "ENV_CloudsFar", "ENV_CloudsMid", "ENV_CloudsNear", "ENV_Haze", "ENV_Fog", "ENV_MidAqueduct", "ENV_BackWall", "ENV_CapWash", "ENV_FarCity", "ENV_FrameTop", "ENV_ArchFringe", "ENV_LipVines", "ENV_ArchShade", "ENV_ThickUnder" };
+        static readonly string[] KitHorizontal = { "ENV_Cap", "ENV_Under", "ENV_Slab", "ENV_Water", "ENV_CloudsFar", "ENV_CloudsMid", "ENV_CloudsNear", "ENV_Haze", "ENV_Fog", "ENV_MidAqueduct", "ENV_BackWall", "ENV_CapWash", "ENV_FarCity", "ENV_FrameTop", "ENV_ArchFringe", "ENV_LipVines", "ENV_ArchShade", "ENV_ThickUnder", "ENV_ThickUnderShort" };
         static readonly string[] KitVertical = { "ENV_Side", "ENV_Post", "ENV_SlimPost", "ENV_VineMid", "ENV_Waterfall", "ENV_Chain" };
 
         static bool IsKit(string path) => path.Contains("/Environment/Kit/") || path.Contains("/Environment/Backgrounds/Kit/");

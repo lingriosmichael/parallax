@@ -155,6 +155,72 @@ namespace Parallax.Tests.EditMode
             Assert.IsTrue(records.Any(r => r.Dead), "the cat near the right edge falls\n" + Dump(replay));
         }
 
+        // ---------- the crush ledge (D-116) ----------
+
+        [Test]
+        public void ACrushLedge_DropsOntoACatUnderIt_AndCrushesIt()
+        {
+            object replay = Replay(session, Case("UnderCrushLedge"));
+            List<Rec> records = Records(replay);
+            int moved = FirstMove(replay, "Ledge", records);
+            Assert.Greater(moved, 0, "the ledge never moved\n" + Dump(replay));
+            int dead = records.FindIndex(r => r.Dead);
+            Assert.GreaterOrEqual(dead, 0, "a cat under the ledge is crushed\n" + Dump(replay));
+            Rec death = records[dead];
+            TestContext.Out.WriteLine($"the ledge moves t{records[moved].Tick}; the cat dies t{death.Tick} at x {death.X:F3}");
+            Assert.AreEqual("Ledge", (string)F(F(replay, "Kill"), "Killer"), "the ledge is the killer");
+            Assert.GreaterOrEqual(death.Tick - records[moved].Tick, 6, "the tell leads the crush by the reveal lead (D-057)");
+            Assert.AreEqual(4f, Drawn(replay, "Ledge", moved).width, 1e-3f, "a cat under it doesn't start the shrink");
+            Assert.AreEqual(.75f - ShrinkingTell, Drawn(replay, "Ledge", moved).yMin, 1e-3f, "the tell sinks it a little first");
+        }
+
+        [Test]
+        public void ACrushLedge_ShrinksFromItsRightEnd_UnderAStandingCat_AndDoesNotDrop()
+        {
+            object replay = Replay(session, Case("OnCrushLedge"));
+            List<Rec> records = Records(replay);
+            int moved = FirstMove(replay, "Ledge", records);
+            Assert.Greater(moved, 0, "the ledge never shrank\n" + Dump(replay));
+            Rect end = Drawn(replay, "Ledge", records.Count - 1);
+            TestContext.Out.WriteLine($"shrinking from t{records[moved].Tick}; at the end x [{end.xMin:F3}, {end.xMax:F3}] y {end.yMin:F3}");
+            Assert.AreEqual(8f, end.xMin, 1e-3f, "the left end stays");
+            Assert.AreEqual(1f, end.width, 1e-3f, "down to its minimum width");
+            Assert.AreEqual(.75f, end.yMin, 1e-3f, "it never dropped: the cat fell off its edge, not under it");
+            Assert.IsFalse(records.Any(r => r.Dead), "the cat falls off the edge that moves in, onto the floor\n" + Dump(replay));
+            Assert.AreEqual("Floor", records[records.Count - 1].Ground, "on the floor at the end");
+        }
+
+        // ---------- the hinge floor (D-119) ----------
+
+        [Test]
+        public void AHingeFloor_SwingsUpIntoAWallBesideItsHinge()
+        {
+            object replay = Replay(session, Case("StandOnHinge"));
+            List<Rec> records = Records(replay);
+            int moved = FirstMove(replay, "Hinge", records);
+            Assert.Greater(moved, 0, "the hinge never moved\n" + Dump(replay));
+            Rect up = Drawn(replay, "Hinge", moved + 20);
+            TestContext.Out.WriteLine($"swinging from t{records[moved].Tick}; standing: x [{up.xMin:F3}, {up.xMax:F3}] y [{up.yMin:F3}, {up.yMax:F3}]");
+            Assert.AreEqual(4f, up.height, .05f, "a wall as tall as the floor was long");
+            Assert.AreEqual(10f, up.xMax, .05f, "standing at its east end, the hinge");
+        }
+
+        [Test]
+        public void AHingeFloor_ThenPushesTheCatInFrontOfIt()
+        {
+            object replay = Replay(session, Case("PushedByHinge"));
+            List<Rec> records = Records(replay);
+            float half = PrecisionTestApi.Motor().ColliderSize.x * .5f;
+            Rec last = records[records.Count - 1];
+            Rect wall = Drawn(replay, "Hinge", records.Count - 1);
+            TestContext.Out.WriteLine($"the wall ends at x [{wall.xMin:F3}, {wall.xMax:F3}]; the cat at x {last.X:F3}");
+            Assert.AreEqual(14f, wall.xMax, .05f, "stood up at x 10 and moved 4 east");
+            Assert.AreEqual(wall.xMax + half, last.X, .02f, "the cat pushed flush in front of it");
+            Assert.IsFalse(records.Any(r => r.Dead), "open space: pushed, not crushed");
+        }
+
+        static float ShrinkingTell => (float)Type.GetType("Parallax.Gameplay.Rooms.ShrinkingFloorTrap, Parallax.Gameplay").GetField("DropTellNudge").GetValue(null);
+
         // ---------- the push wall (Q6) ----------
 
         [Test]

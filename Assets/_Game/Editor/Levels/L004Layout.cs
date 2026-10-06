@@ -18,6 +18,9 @@ namespace Parallax.Editor.Levels
     // climb and the roof's underside over it, so the door is only reached standing.
     static class L004Layout
     {
+        // D-117: the inverter's duration, longer than any attempt at the level (a death resets it, and the respawn sets it off again).
+        internal const int WholeLevelTicks = 100000;
+
         public static SoloRoomDefinition Build()
         {
             var elements = new List<SoloRoomElement> {
@@ -50,8 +53,8 @@ namespace Parallax.Editor.Levels
             // Dead end: the flip toward the door, onto spikes under the slab.
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_L",(5.5f,1f),(1f,2f),settings:flip));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_L",(3f,6.85f),(6f,.3f),(5.5f,3.5f),(1f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            // T1: spikes on the ground. T2: the flip floating over the ground, onto spikes under the slab.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_1",(15.75f,.15f),(1.5f,.3f),(13.25f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // T1: spikes on the ground (D-117: from x 15.12, was 15: the inverted start costs the jump over them a tick). T2: the flip floating over the ground, onto spikes under the slab.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_1",(15.81f,.15f),(1.38f,.3f),(13.25f,3.5f),(.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_A",(19.25f,2.8f),(1.5f,2f),settings:flip));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_A",(21.25f,6.85f),(5.5f,.3f),(19.25f,3.5f),(1.5f,7f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             // The way up: a flip on the ground under the gap past the slab.
@@ -81,9 +84,34 @@ namespace Parallax.Editor.Levels
             // PAX-102 (approved): the opening run's angled arrow. A corbel hangs from the slab (x 14.5-15.5, down to y 2.5); its
             // honest launcher fires down-left at -60 degrees 8 ticks after the cat sets off, onto the ground at x 12.8, ahead of a cat that
             // stops at once. Stop, let it land, walk on through it (L003's T3a, before the flips).
-            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_O",(15f,4.75f),(1f,4.5f)));
+            // D-118 (the developer's sketch, 2026-10-06): the way out from under the slab is a climb between two mossy faces. The
+            // corbel is the L: its foot runs right from its bottom (L_Foot, x 15.5-18, y 2.5-3, short of Flip_A), and its left face
+            // is mossy (Corbel_Moss, a grip strip from just over Arrow_O's launcher, y 3.2, to the slab; Corbel_Base hosts the
+            // launcher under it). Across a 2.3 u gap stands a pillar (Left_Post, x 11.2-11.95, y 2.5-6.2, clear of the slab so an
+            // upside-down cat walks over it) whose right face is mossy (Left_Moss). A cat stuck upside down under the slab drops
+            // into the gap and climbs down it (cling slides toward the slab, a wall jump launches away from it), comes up under
+            // the corbel's foot, and walks right into Flip_A, which turns it right side up.
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_O",(15.125f,4.75f),(.75f,4.5f)));
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_Base",(14.625f,2.85f),(.25f,.7f)));
+            elements.Add(E(SoloRoomElementKind.GripWall,"Corbel_Moss",(14.625f,5.1f),(.25f,3.8f)));
+            elements.Add(E(SoloRoomElementKind.Floor,"L_Foot",(16.75f,2.75f),(2.5f,.5f)));
+            elements.Add(E(SoloRoomElementKind.Wall,"Left_Post",(11.575f,4.35f),(.75f,3.7f)));
+            elements.Add(E(SoloRoomElementKind.GripWall,"Left_Moss",(12.075f,4.35f),(.25f,3.7f)));
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_O",(14.75f,2.9f),(.5f,.4f),(10.85f,3.5f),(.5f,7f),new SoloRoomTrapSettings(
-                new ArrowLane(ArrowDirection.Left,2.9f,14.5f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),new SoloRoomTrapSettings(delayTicks:8))));
+                new ArrowLane(ArrowDirection.Left,2.9f,14.5f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
+                new SoloRoomTrapSettings(delayTicks:8,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:120))));   // D-119: then every 128 ticks, non-stop
+            // D-119 (the developer: "On the very left I want arrows shooting one at run height and one at jump height. The launchers
+            // should shoot repeatedly but at different intervals"; all launchers non-stop): a stone pillar at the left wall (x 0-0.5,
+            // up to y 2) hosts two launchers firing right along the whole ground to a stub at the right wall (x 31.5-32). Arrow_Run
+            // (shin height, every 150 ticks) is jumped; Arrow_Jump (jump height, every 210) passes over a cat on the ground and
+            // meets one in the air. Both start as the cat sets off (their trigger is the ground band under Left_Post, x 11.35-11.85;
+            // Arrow_Run 20 ticks later, Arrow_Jump 70) and never stop.
+            elements.Add(E(SoloRoomElementKind.Wall,"Pillar_Arrows",(.25f,1f),(.5f,2f)));
+            elements.Add(E(SoloRoomElementKind.Wall,"Stub_R",(31.75f,1f),(.5f,2f)));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_Run",(.25f,.3f),(.5f,.4f),(11.6f,1.25f),(.5f,2.5f),new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Right,.3f,31.5f),new SoloRoomTrapSettings(delayTicks:20,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:150))));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_Jump",(.25f,1.4f),(.5f,.4f),(11.6f,1.25f),(.5f,2.5f),new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Right,1.4f,31.5f),new SoloRoomTrapSettings(delayTicks:70,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:210))));
             // PAX-102 (approved): the roof walk's rising section. Upside down on the roof, Sink_R (x 26.5-28.5) rises 3 u into the
             // new recess, 40 ticks after a cat stops under it, carrying it into RecessC_Hazard; it comes back after a hold. A cat
             // walking across is off it in about 25 ticks.
@@ -99,6 +127,9 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_7",(23.75f,12.6f),(.5f,.4f),settings:new SoloRoomTrapSettings(
                 new ArrowLane(ArrowDirection.Right,12.6f,24f + 2.4f / Mathf.Tan(60f * Mathf.Deg2Rad),tellTicks:18,angleDegrees:60f),
                 new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:130,phaseTicks:300,cooldownTicks:60))));
+            // D-117 (the developer: "Level 4 needs a direction inverter from the start and it should last for the whole level"):
+            // the cat spawns in it, so left and right are swapped from the first tick (and again after every respawn).
+            elements.Add(E(SoloRoomElementKind.Inverter,"Invert",(9.5f,1.5f),(.6f,3f),settings:new SoloRoomTrapSettings(new InverterSettings(WholeLevelTicks),new SoloRoomTrapSettings(delayTicks:0))));
             var jumps = new[] {
                 J("Spikes_1",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,14.3f,17f,0f,0f,3f,.3f),
                 J("Spikes_3",RequiredJumpKind.Hazard,RequiredJumpFrame.Ceiling,RequiredJumpDirection.Left,22.4f,20f,0f,0f,3f,.3f),

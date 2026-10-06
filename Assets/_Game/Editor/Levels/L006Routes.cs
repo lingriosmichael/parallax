@@ -18,8 +18,12 @@ namespace Parallax.Editor.Levels
                 // Down by the wall: landing sets off the sweep; stand still while it comes out and goes home, then over the post.
                 Release(), Until(Still()), Until(Moving("Sweep_3")), Until(Home("Sweep_3")),
                 Hold(Right).Timed(TimedMode.Hesitate), Until(XAtLeast(3.4f)), Jump(), Until(Airborne()), Until(Grounded()),
-                // Straight on over the floor that isn't there; then (PAX-100, D-106) wait for Ride_6 to come home, board it,
-                // ride it across Pit_6 and step off onto the door's floor.
+                // D-119: on past the landing to Pit_7's edge, wait for Ride_7 to come home, ride it across, and from its far end
+                // jump the hinge floor (it swings up behind the cat and pushes): straight on over the floor that isn't there.
+                Until(XAtLeast(9.6f)), Release(), Until(Still()), Until(Moving("Ride_7")), Until(Home("Ride_7")),
+                Hold(Right), Until(XAtLeast(11.4f)), Release(), Until(Stopped("Ride_7")),
+                Hold(Right), Until(XAtLeast(14.6f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
+                // Then (PAX-100, D-106) wait for Ride_6 to come home, board it, ride it across Pit_6 and step off onto the door's floor.
                 Until(XAtLeast(19.1f)), Jump(), Until(Airborne()), Until(Grounded()),
                 Release(), Until(Still()), Until(Moving("Ride_6")), Until(Home("Ride_6")),
                 Hold(Right), Until(GroundedOn("Ride_6").And(XAtLeast(25.5f))), Release(), Until(Still()),
@@ -34,6 +38,11 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(Grounded)", "go on", Hold(Right), Until(Dead()))),
                 new Betrayal("T4: the landing past the post gives way under a cat that stops", "Pit4_Hazard", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X>=3.4)", "stop past the post", Jump(), Until(Airborne()), Until(Grounded()), Release(), Until(Dead())), revealedBy: "Floor_4"),
+                // D-119: the rider and the hinge floor.
+                new Betrayal("T7: a cat that walks on without waiting for Ride_7 falls into Pit_7", "Pit7_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X>=9.6)", "walk on", Until(Dead())), revealedBy: "Ride_7"),
+                new Betrayal("T8: the hinge floor's wall pushes a cat that stops past it onto Floor_5", "Pit5_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X>=14.6)", "stop past it", Jump(), Until(Airborne()), Until(Grounded()), Release(), Until(Dead())), revealedBy: "Flip_8"),
                 new Betrayal("T5: the next floor gives way under a cat that runs on", "Pit5_Hazard", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X>=19.1)", "run on", Until(Dead())), revealedBy: "Floor_5"),
                 new Betrayal("T6: a cat that runs on without waiting for Ride_6 falls into Pit_6", "Pit6_Hazard", DeathCause.Hazard,

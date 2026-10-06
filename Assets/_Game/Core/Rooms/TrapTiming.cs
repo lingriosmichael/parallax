@@ -1,7 +1,9 @@
 namespace Parallax.Core
 {
     public enum TrapTriggerSource { Overlap, Chain }
-    public enum TrapRepeatMode { Once, Rearm, Periodic }
+    /// <summary>D-119 adds Continuous (appended, so serialized values keep their meaning): the first fire comes from the trigger
+    /// (overlap or chain, as Rearm), then it fires again every time it rearms, trigger or not, for the rest of the attempt.</summary>
+    public enum TrapRepeatMode { Once, Rearm, Periodic, Continuous }
 
     /// <summary>PAX-090 (D-091): every field TrapTiming changes after construction, by value.</summary>
     public struct TrapTimingState
@@ -41,6 +43,8 @@ namespace Parallax.Core
                 if (IsArmed && sourceFireTick >= armedSinceTick && pendingTick < 0) pendingTick = sourceFireTick + delay;
             }
             if (!IsArmed) return false;
+            // D-119: once it has fired, a Continuous trap needs no trigger: it goes again `delay` after each rearm.
+            if (repeat == TrapRepeatMode.Continuous && LatestFireTick >= 0 && pendingTick < 0) pendingTick = roomTick + delay;
             if (repeat == TrapRepeatMode.Periodic)
                 return roomTick >= phase && (roomTick - phase) % period == 0 && Fire(roomTick);
             if (source != TrapTriggerSource.Chain && pendingTick < 0 && overlapping) pendingTick = roomTick + delay;
@@ -71,7 +75,7 @@ namespace Parallax.Core
 
         void RearmIfDue(int tick)
         {
-            if ((repeat != TrapRepeatMode.Rearm && repeat != TrapRepeatMode.Periodic) || IsArmed || LatestFireTick < 0 || tick - LatestFireTick < cooldown) return;
+            if ((repeat != TrapRepeatMode.Rearm && repeat != TrapRepeatMode.Periodic && repeat != TrapRepeatMode.Continuous) || IsArmed || LatestFireTick < 0 || tick - LatestFireTick < cooldown) return;
             IsArmed = true; JustRearmed = true; armedSinceTick = tick;
         }
     }

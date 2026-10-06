@@ -56,9 +56,6 @@ namespace Parallax.Gameplay.Player
         [Tooltip("PAX-105 (D-110): motor steps after a wall jump in which Move back toward that wall is ignored and, with no Move away, the sideways speed is kept.")]
         [SerializeField] int wallJumpMoveLockTicks = Parallax.Core.WallClingState.DefaultMoveLockTicks;
 
-        [Tooltip("PAX-105 (D-110 amendment): motor steps a Grab press is remembered for (its own and the next ones).")]
-        [SerializeField] int grabBufferTicks = Parallax.Core.WallClingState.DefaultGrabBufferTicks;
-
         [Tooltip("PAX-105 (D-110): the shortest wall face a cat can cling to, in units (the collider's height).")]
         [SerializeField] float minClingFaceHeight = Parallax.Core.WallClingState.DefaultMinFaceHeight;
 
@@ -89,7 +86,6 @@ namespace Parallax.Gameplay.Player
         public float WallSlideSpeed => wallSlideSpeed;
         public float WallJumpSideSpeed => wallJumpSideSpeed;
         public int WallJumpMoveLockTicks => wallJumpMoveLockTicks;
-        public int GrabBufferTicks => grabBufferTicks;
         public float MinClingFaceHeight => minClingFaceHeight;
         public float WallProbeDistance => wallProbeDistance;
         public float WallNormalThreshold => wallNormalThreshold;

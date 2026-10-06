@@ -13,7 +13,10 @@ namespace Parallax.Gameplay.Rooms
     /// read in the room step, before this tick's physics: never the Transform, which Play interpolates (§11 Q1, ruling C).
     /// Everything is an offset from this object's authored pose, which never moves; the "Cloud", "Target" and "Bolt"
     /// children do. The phase is a function of room ticks since the wake, so the death hold and the pause freeze it; the
-    /// room reset returns it to its authored pose, dormant.</summary>
+    /// room reset returns it to its authored pose, dormant.
+    /// D-116: with floors, it also follows the cat from floor to floor: while following it moves toward the cat's floor's
+    /// height at climbSpeed and toward the cat's x clamped to that floor's range; the strike still runs down from its bottom
+    /// to the first static top under it.</summary>
     public sealed class StormCloudTrap : RoomTrap
     {
         const float TargetWidth = .08f;
@@ -31,6 +34,10 @@ namespace Parallax.Gameplay.Rooms
         [Tooltip("Static tops (xMin, xMax, top), as offsets from the authored pose. Baked by the builder from Floor, Wall, PitBottom and Ceiling.")]
         [SerializeField] Vector3[] profile = new Vector3[0];
         [SerializeField] Color chargeColor = new(.25f, .25f, .32f, 1f);
+        [Header("D-116 floors (empty: one height, the range above)")]
+        [Tooltip("Per floor, as offsets from the authored pose: (the cat's lowest centre y on it, the cloud's y, its x range min, max), ascending.")]
+        [SerializeField] Vector4[] floors = new Vector4[0];
+        [SerializeField] float climbSpeed = StormCloudMath.DefaultClimbSpeed;
 
         ContactFilter2D filter;
         readonly Collider2D[] results = new Collider2D[8];
@@ -40,11 +47,13 @@ namespace Parallax.Gameplay.Rooms
         public StormCloudPhase Phase { get; private set; }
         /// <summary>The cloud's x as an offset from its authored x.</summary>
         public float OffsetX { get; private set; }
+        /// <summary>D-116: the cloud's y as an offset from its authored y (0 without floors).</summary>
+        public float OffsetY { get; private set; }
         public SpriteRenderer Cloud => cloud;
         public SpriteRenderer Target => target;
         public SpriteRenderer Bolt => bolt;
 
-        float CloudBottom => -cloudSize.y * .5f;
+        float CloudBottom => OffsetY - cloudSize.y * .5f;
 
         /// <summary>The column under the cloud's current x, in world space (what charges, then strikes).</summary>
         public Rect StrikeColumn
@@ -65,7 +74,7 @@ namespace Parallax.Gameplay.Rooms
             if (profile == null || profile.Length == 0) Debug.LogError($"StormCloudTrap '{name}': no baked strike profile; its strikes have no floor to stop on (D-090).", this);
             filter = new ContactFilter2D { useLayerMask = true, layerMask = Reality.PhysicsMask, useTriggers = false };
             idleColor = cloud.color;
-            OffsetX = 0f;
+            OffsetX = 0f; OffsetY = 0f;
             Phase = StormCloudPhase.Dormant;
             ApplyVisuals();
         }
@@ -80,7 +89,16 @@ namespace Parallax.Gameplay.Rooms
             int since = LatestFireTick < 0 ? -1 : RoomLifeTick - LatestFireTick;
             Phase = StormCloudMath.PhaseSince(since, firstStrikeDelay, strikePeriod, tellTicks, strikeTicks);
             if (Phase == StormCloudPhase.Follow && TryGetCat(out Rigidbody2D body, out Collider2D collider))
-                OffsetX = StormCloudMath.Follow(OffsetX, CatBox(body, collider).center.x - transform.position.x, followSpeed, rangeMin, rangeMax);
+            {
+                Vector2 cat = CatBox(body, collider).center - (Vector2)transform.position;
+                if (floors == null || floors.Length == 0) OffsetX = StormCloudMath.Follow(OffsetX, cat.x, followSpeed, rangeMin, rangeMax);
+                else
+                {
+                    // D-116: the cloud goes with the cat from floor to floor.
+                    Vector2 next = StormCloudMath.FollowFloor(new Vector2(OffsetX, OffsetY), cat, StormCloudMath.FloorFor(floors, cat.y), followSpeed, climbSpeed);
+                    OffsetX = next.x; OffsetY = next.y;
+                }
+            }
             ApplyVisuals();
             if (Phase == StormCloudPhase.Strike && TryGetCat(out body, out collider) && StrikeHits(body, collider))
                 Death.Kill(Reality.Id, DeathCause.Hazard, this);
@@ -129,7 +147,7 @@ namespace Parallax.Gameplay.Rooms
         {
             if (cloud == null) return;
             bool charging = Phase == StormCloudPhase.Charge, striking = Phase == StormCloudPhase.Strike;
-            cloud.transform.localPosition = new Vector3(OffsetX, 0f, 0f);
+            cloud.transform.localPosition = new Vector3(OffsetX, OffsetY, 0f);
             cloud.color = charging || striking ? chargeColor : idleColor;
             if (target != null) { target.enabled = charging; if (charging) Place(target, LocalColumn(TargetWidth * .5f)); }
             if (bolt != null) { bolt.enabled = striking; if (striking) Place(bolt, LocalColumn(strikeWidth * .5f)); }
@@ -146,11 +164,13 @@ namespace Parallax.Gameplay.Rooms
         {
             snapshot.ExtraFloat = OffsetX;
             snapshot.ExtraInt = (int)Phase;
+            snapshot.ExtraVector = new Vector3(OffsetY, 0f, 0f);   // D-116
         }
 
         protected override void OnRestore(in TrapSnapshot snapshot, int roomTick)
         {
             OffsetX = snapshot.ExtraFloat;
+            OffsetY = snapshot.ExtraVector.x;
             Phase = (StormCloudPhase)snapshot.ExtraInt;
             ApplyVisuals();
         }
@@ -158,7 +178,7 @@ namespace Parallax.Gameplay.Rooms
         // Disabled mid-chase: drawn at its authored pose, dormant, as the room reset leaves it.
         protected override void OnDisable()
         {
-            OffsetX = 0f;
+            OffsetX = 0f; OffsetY = 0f;
             Phase = StormCloudPhase.Dormant;
             ApplyVisuals();
             base.OnDisable();
@@ -166,7 +186,7 @@ namespace Parallax.Gameplay.Rooms
 
         protected override void OnReset()
         {
-            OffsetX = 0f;
+            OffsetX = 0f; OffsetY = 0f;
             Phase = StormCloudPhase.Dormant;
             ApplyVisuals();
         }

@@ -164,6 +164,7 @@ namespace Parallax.Editor.Routes
             public ArrowTrap Arrow; public int ArrowTell;
             public InverterTrap Inverter;
             public StormCloudTrap StormCloud;   // PAX-088 (D-090)
+            public ShrinkingFloorTrap CrushLedge;   // D-116: a shrinking floor that drops
         }
 
         sealed class Rig
@@ -308,6 +309,12 @@ namespace Parallax.Editor.Routes
                 e.Arrow = go.GetComponent<ArrowTrap>();
                 e.Inverter = go.GetComponent<InverterTrap>();
                 e.StormCloud = go.GetComponent<StormCloudTrap>();
+                ShrinkingFloorTrap shrink = go.GetComponent<ShrinkingFloorTrap>();
+                if (shrink != null && shrink.Drops)
+                {
+                    e.CrushLedge = shrink;
+                    e.CrushDepth = ((CrushConfig)Get(shrink, "crushConfig")).DefaultCrushDepth;
+                }
                 if (e.Arrow != null)
                 {
                     e.ArrowTell = (int)Get(e.Arrow, "tellTicks");
@@ -338,7 +345,7 @@ namespace Parallax.Editor.Routes
                     Dead = Death.IsHolding || Death.WasKilledThisTick(ObserverId.A, tick), Holding = Death.IsHolding, Complete = Rooms.LevelComplete,
                     Move = Mathf.RoundToInt(command.Move), JumpPressed = command.JumpPressed,
                     Climb = Mathf.RoundToInt(command.Climb), IsClimbing = Cat.IsClimbing,
-                    GrabPressed = command.GrabPressed, IsClinging = Cat.IsClinging, ClingSide = Cat.ClingSide, LatchMode = Cat.IsLatchMode,
+                    IsClinging = Cat.IsClinging, ClingSide = Cat.ClingSide,
                     FireTick = new int[Elements.Count + 2], Signature = new int[Elements.Count + 2],
                     RenderBounds = new Rect[Elements.Count + 2], Rendered = new bool[Elements.Count + 2],
                     TurnedCorners = new Vector2[Elements.Count + 2][],
@@ -348,12 +355,12 @@ namespace Parallax.Editor.Routes
                 r.CatX = catPosition.x - Origin.x; r.CatY = catPosition.y - Origin.y;
                 // The same ground test CatMotor2D.UpdateGrounded makes at the start of the next step.
                 int count = Body.Cast(down, filter, hits, Motor.GroundProbeDistance);
-                for (int i = 0; i < count; i++)
+                // D-119: the motor's own choice among the hits (its seam tie-break), so the record is stable.
+                Collider2D ground = Cat.BestGround(hits, count, down);
+                if (ground != null)
                 {
-                    if (Vector2.Dot(hits[i].normal, -down) <= Motor.GroundNormalThreshold) continue;
                     r.Grounded = Vector2.Dot(v, down) >= -0.01f;
-                    r.Ground = hits[i].collider.gameObject.name;
-                    break;
+                    r.Ground = ground.gameObject.name;
                 }
                 for (int i = 0; i < Elements.Count; i++)
                 {
@@ -459,6 +466,9 @@ namespace Parallax.Editor.Routes
                         match = Overlaps(arrowBox, e.Arrow.KillAngle);   // PAX-099 (D-106): turned with an angled arrow
                     // PAX-088 (D-090) ruling C: the cloud's own strike test, on its body box (no physics query).
                     else if (e.StormCloud != null) match = e.StormCloud.StrikeHits(Body, CatCollider);
+                    // D-116: a crush ledge's own test, on its pose this tick, while its drop runs.
+                    else if (e.CrushLedge != null && e.CrushLedge.DropStartTick >= 0 && e.Box != null && e.Box.enabled)
+                        match = TrapMotion.Crushes(CatCollider.bounds, new Bounds(e.CrushLedge.GetComponent<Rigidbody2D>().position + e.Box.offset, e.Box.size), e.CrushDepth);
                     if (match) names.Add(e.Name);
                 }
                 return names;
@@ -489,7 +499,7 @@ namespace Parallax.Editor.Routes
         {
             CatCommand next;
             public void Queue(CatCommand command) => next = command;
-            public CatCommand Read() { CatCommand c = next; next.JumpPressed = false; next.InteractPressed = false; next.GrabPressed = false; return c; }
+            public CatCommand Read() { CatCommand c = next; next.JumpPressed = false; next.InteractPressed = false; return c; }
             public void ResetTransientState() => next = CatCommand.None;
         }
 
@@ -534,7 +544,7 @@ namespace Parallax.Editor.Routes
 
         readonly Route route; readonly ReplayOptions options; readonly ReplayResult result;
         int index, move, climb, forLeft = -1, insertLeft;
-        bool jump, grab, inserted, idle;
+        bool jump, inserted, idle;
         // PAX-090 (D-091): Route.FromSection's jump to its Rewind step.
         public RoomManager Rooms;
         int gateSeenTick = -1;
@@ -581,7 +591,6 @@ namespace Parallax.Editor.Routes
                     case RouteStepKind.HoldClimb: climb = step.Direction; index++; continue;
                     case RouteStepKind.ReleaseClimb: climb = 0; index++; continue;
                     case RouteStepKind.Jump: jump = true; index++; continue;
-                    case RouteStepKind.Grab: grab = true; index++; continue;
                     case RouteStepKind.Margin: index++; continue;
                     case RouteStepKind.Rewind:
                         if (RewindTarget <= 0 || Rooms.CurrentSection < RewindTarget)
@@ -591,7 +600,7 @@ namespace Parallax.Editor.Routes
                             return false;
                         }
                         rewound = true; rewindDue = true;
-                        move = 0; climb = 0; jump = false; grab = false;
+                        move = 0; climb = 0; jump = false;
                         index++;
                         command = default;
                         return true;
@@ -616,9 +625,8 @@ namespace Parallax.Editor.Routes
 
         bool Emit(out CatCommand command)
         {
-            command = new CatCommand { Move = move, Climb = climb, JumpPressed = jump, GrabPressed = grab };
+            command = new CatCommand { Move = move, Climb = climb, JumpPressed = jump };
             jump = false;
-            grab = false;
             return true;
         }
     }

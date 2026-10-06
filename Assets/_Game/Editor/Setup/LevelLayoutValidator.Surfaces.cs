@@ -84,6 +84,9 @@ namespace Parallax.Editor.Setup
         {
             if (e.Kind == SoloRoomElementKind.FakePlatform || e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.ShrinkingFloor) return true;
             if (e.Kind != SoloRoomElementKind.MovingTrap || e.Settings.MovingKind != MovingTrapKind.Solid) return false;
+            // D-119: a hinge floor never gives way under a cat on it: it swings up behind one past it (its trigger), and the wall
+            // that pushes is its betrayal.
+            if (e.Settings.Floor.Hinges) return false;
             // The moved pose covers the strip's x span only when it doesn't move sideways.
             return e.Settings.Offset.y < 0f || !Mathf.Approximately(e.Settings.Offset.x, 0f);
         }

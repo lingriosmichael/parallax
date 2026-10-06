@@ -11,7 +11,7 @@ namespace Parallax.Editor.Routes
     // PAX-087 (D-089): HoldClimb and ReleaseClimb are appended; Climb is held beside Move, and Release() clears Move only.
     // PAX-090 (D-091): Rewind is appended: the harness kills the cat (a forced death, not the route's) and steps the death
     // hold until the rewind to the current checkpoint section; the next step starts on the tick after it.
-    public enum RouteStepKind { Hold, Release, Jump, Until, For, Margin, HoldClimb, ReleaseClimb, Rewind, Grab }
+    public enum RouteStepKind { Hold, Release, Jump, Until, For, Margin, HoldClimb, ReleaseClimb, Rewind }
     public enum TimedMode { None, Shift, Hesitate }
     // PAX-087 (D-089): a vertical hold, screen-relative like Hold(Right/Left) (Climb is never gravity-projected).
     public enum Vertical { Down = -1, Up = 1 }
@@ -55,7 +55,6 @@ namespace Parallax.Editor.Routes
             RouteStepKind.Until => "Until(" + Condition.Label + ")",
             RouteStepKind.For => "For(" + Ticks + ")",
             RouteStepKind.Rewind => "Rewind()",
-            RouteStepKind.Grab => "Grab()",
             _ => "Margin(" + MarginName + ")",
         };
     }
@@ -172,8 +171,6 @@ namespace Parallax.Editor.Routes
         // PAX-090 (D-091): see RouteStepKind.Rewind. Only Route.FromSection places it.
         public static RouteStep Rewind() => new(RouteStepKind.Rewind);
         public static RouteStep Jump() => new(RouteStepKind.Jump);
-        // PAX-105 (D-110 amendment): a one-tick Grab press (latches onto a wall; a wall jump is Jump() while clinging).
-        public static RouteStep Grab() => new(RouteStepKind.Grab);
         public static RouteStep Until(RouteCondition condition) => new(RouteStepKind.Until, condition: condition);
         public static RouteStep For(int ticks) => new(RouteStepKind.For, ticks: ticks);
         public static RouteStep Margin(string name, RouteCondition from, RouteCondition to, int atLeast) =>
@@ -202,12 +199,11 @@ namespace Parallax.Editor.Routes
         public static RouteCondition Dead() => new("Dead", v => v.Last.Dead);
         // PAX-087 (D-089): the cat was on a vine at the end of the last tick.
         public static RouteCondition Climbing() => new("Climbing", v => v.Last.IsClimbing);
-        // PAX-105 (D-110): on a wall (either side, the left one, the right one), and latch mode.
+        // PAX-105 (D-110): on a wall (either side, the left one, the right one).
         public static RouteCondition Clinging() => new("Clinging", v => v.Last.IsClinging);
         public static RouteCondition ClingingLeft() => new("ClingingLeft", v => v.Last.IsClinging && v.Last.ClingSide < 0);
         public static RouteCondition ClingingRight() => new("ClingingRight", v => v.Last.IsClinging && v.Last.ClingSide > 0);
-        public static RouteCondition LatchMode() => new("LatchMode", v => v.Last.LatchMode);
-        // PAX-105: moving along gravity (past the top of a rise), the moment a Grab latches.
+        // PAX-105: moving along gravity (past the top of a rise), the moment a grip face latches (PAX-106: by itself).
         public static RouteCondition Falling() => new("Falling", v => !v.Last.Grounded && (v.Last.GravityUp ? v.Last.Vy > 0f : v.Last.Vy < 0f));
     }
 }

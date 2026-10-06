@@ -69,10 +69,14 @@ namespace Parallax.Editor.Setup
                         EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
                         if (def == null) { x += 0.5f; continue; }
                         // Lengths from a short tuft to a long curtain (a skewed spread, so most are short and a few run deep).
+                        // PAX-106 (D-114 (1), R7): never past the face's top band (measured from the walk line; it hangs from 0.18
+                        // under it).
                         float u = Hash(e.Owner.Name, 410 + i);
                         float h = Mathf.Min(e.Owner.Rect.height - 0.3f, 0.35f + 3.2f * u * u * u + 0.4f * Hash(e.Owner.Name, 415 + i));
+                        h = Mathf.Min(h, TopBand(e.Owner.Rect.height) - IvyDrop);
+                        if (h < MinDressing) { x += 0.4f; continue; }
                         float w = def.width * h / def.height * (0.75f + 0.5f * Hash(e.Owner.Name, 425 + i));
-                        var centre = new Vector2(x + w * 0.5f, e.Line - 0.18f - h * 0.5f);
+                        var centre = new Vector2(x + w * 0.5f, e.Line - IvyDrop - h * 0.5f);
                         x += w * (0.6f + 1.1f * Hash(e.Owner.Name, 420 + i)) + (pick < 0.4f ? 1.0f + 2.2f * Hash(e.Owner.Name, 430 + i) : 0f);
                         if (pick < 0.22f) continue;   // a gap
                         if (centre.x - w * 0.5f < e.From - 0.05f || centre.x + w * 0.5f > e.To + 0.05f) continue;
@@ -124,6 +128,9 @@ namespace Parallax.Editor.Setup
                         EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
                         if (def == null) { x += 0.5f; continue; }
                         float h = 0.25f + 0.75f * Hash(e.Owner.Name, 130 + i) * Hash(e.Owner.Name, 135 + i);
+                        // PAX-106 (D-114 (1), R7): at most the face's top band below the overhang.
+                        h = Mathf.Min(h, TopBand(e.Owner.Rect.height));
+                        if (h < MinDressing) { x += 0.4f; continue; }
                         float w = def.width * h / def.height * (0.7f + 0.5f * Hash(e.Owner.Name, 140 + i));
                         var centre = new Vector2(x + w * 0.5f, e.Line - h * 0.5f + 0.05f);
                         x += w * (0.5f + 0.8f * Hash(e.Owner.Name, 145 + i)) + (pick < 0.3f ? 0.3f + Hash(e.Owner.Name, 150 + i) : 0f);
@@ -131,6 +138,12 @@ namespace Parallax.Editor.Setup
                         if (ClearOfVisible(Box(centre, new Vector2(w, h)))) { place(e.Owner, $"Drape_{Idx(e)}_{i}", slot, centre, new Vector2(Hash(e.Owner.Name, 155 + i) < 0.5f ? -w : w, h), ZDrape + 0.0001f + AtlasNudge(slot)); drapeCount++; }
                     }
                 }
+
+            // PAX-106 (D-110 amendment 4 (2)): moss means grip. Each side face of a grip solid wears a moss carpet over at least
+            // GripMossCover of its height, brighter than the stone: the kit's ENV_MossCarpet when it has one (R9), stacked
+            // ENV_Moss tufts otherwise. A trap's carpet hangs on its skin (a grip falling block's moves and lands with it).
+            foreach (Edge e in edges.Where(e => e.Owner.Grip && e.Side is Side.Left or Side.Right))
+                GripMoss(e, place, ClearOfVisible);
 
             // Banners and glyph panels: on the biggest faces, at most two of each per room, largest first (ties by name).
             List<Solid> faces = solids.Where(s => s.Shape == Shape.Block).OrderByDescending(s => s.Rect.width * s.Rect.height).ThenBy(s => s.Name, System.StringComparer.Ordinal).ToList();
@@ -160,6 +173,66 @@ namespace Parallax.Editor.Setup
                     if (Clear(Box(centre, size))) { place(s, "Glyph", slot, centre, size, ZPanel); n++; }
                 }
             }
+        }
+
+        // ---------- PAX-106 (D-114 (1), D-110 amendment 4 (2)) ----------
+
+        /// <summary>D-114 (1): how far moss and ivy may hang down an ordinary face from its top: 30% of its height, at most 0.6 u.</summary>
+        public static float TopBand(float faceHeight) => Mathf.Min(0.3f * faceHeight, 0.6f);
+        /// <summary>A lip curtain hangs from this far under the walk line; dressing shorter than MinDressing isn't placed.</summary>
+        public const float IvyDrop = 0.18f, MinDressing = 0.12f;
+        /// <summary>D-110 amendment 4 (2): a grip face's moss covers at least this share of its height.</summary>
+        public const float GripMossCover = 0.8f;
+        /// <summary>D-118: the stacked grip-moss tufts are drawn turned upright: their footprint is (width across the face,
+        /// height down it); the sprite lies along the height.</summary>
+        static bool UprightMoss(string name) => name.StartsWith("GripMoss_") && !name.Contains("Carpet") && name.Split('_').Length >= 3;
+        static readonly Color GripMossTint = new(0.8f, 1f, 0.52f, 1f);
+
+        static void GripMoss(Edge e, Placer place, System.Func<Rect, bool> clear)
+        {
+            string side = e.Side == Side.Left ? "L" : "R", n = e.Owner.Name + side;   // both faces of a block share their y (Idx)
+            float into = e.Side == Side.Left ? 1f : -1f;   // from the face line into the stone
+            if (EnvironmentKit.Get("ENV_MossCarpet") is EnvironmentKit.Slot carpet)
+            {
+                float w = 0.42f, h = e.Length * 0.96f;
+                var centre = new Vector2(e.Line + into * (w * 0.5f - 0.06f), (e.From + e.To) * 0.5f);
+                if (clear(Box(centre, new Vector2(w, h)))) Tint(place(e.Owner, $"GripMoss_{side}{Idx(e)}", carpet.name, centre, new Vector2(e.Side == Side.Left ? w : -w, h), ZMoss));
+                return;
+            }
+            // D-118 (the developer: "not drawn on horizontally like it is now but vertically"): a strand of tufts stood upright
+            // (each sprite turned a quarter, UprightMoss), narrow across the face line and long down it, overlapping from the foot
+            // to the top. Sizes here are the footprint (width across, height down the face).
+            float y = e.From + 0.02f;
+            for (int i = 0; y < e.To - 0.06f && i < 400; i++)
+            {
+                string slot = "ENV_Moss_" + (int)(Hash(n, 900 + i) * 3f);
+                EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
+                if (def == null) return;
+                float h = 0.55f + 0.25f * Hash(n, 920 + i), w = h * def.height / def.width * (0.9f + 0.3f * Hash(n, 940 + i));
+                float inward = 0.02f + 0.06f * Hash(n, 960 + i);
+                var centre = new Vector2(e.Line + into * inward, Mathf.Min(y + h * 0.5f, e.To - h * 0.5f));
+                if (clear(Box(centre, new Vector2(w, h))))
+                    Tint(place(e.Owner, $"GripMoss_{side}{Idx(e)}_{i}", slot, centre, new Vector2(w, Hash(n, 980 + i) < 0.5f ? -h : h), ZMoss));
+                y += h * (0.42f + 0.22f * Hash(n, 990 + i));
+            }
+
+            static void Tint(SpriteRenderer r) { if (r != null) r.color = GripMossTint; }
+        }
+
+        /// <summary>PAX-106 (tests): the dressing a room gets, without building it: each piece's owner, name, slot and box.</summary>
+        public static List<(string owner, string name, string slot, Rect box)> PlanDressing(SoloRoomDefinition room)
+        {
+            List<Solid> solids = Solids(room);
+            Bounds content = SoloRoomBuilder.ComputeRoomBounds(room, 0f);
+            List<Edge> edges = ExposedEdges(solids).Where(e => !FacesOut(e, content)).ToList();
+            var list = new List<(string, string, string, Rect)>();
+            Dress(room, solids, edges, (s, name, slot, centre, size, z) =>
+            {
+                Vector2 a = new(Mathf.Abs(size.x), Mathf.Abs(size.y));
+                list.Add((s.Name, name, slot, new Rect(centre - a * 0.5f, a)));
+                return null;
+            });
+            return list;
         }
 
         /// <summary>Where dressing never goes: within 0.5 u of hazards, checkpoints, trigger boxes, flip zones and arrow

@@ -15,6 +15,11 @@ namespace Parallax.Editor.Setup
 
         internal static bool IsInverter(SoloRoomElement e) => e.Kind == SoloRoomElementKind.Inverter;
 
+        // D-117 (the developer, 2026-10-06): L004 is played inverted from the start to the end; its inverter is exempt from the
+        // duration cap and from the levels-11+ band (ValidateBand).
+        static readonly string[] WholeLevelInverters = { "L004/Invert" };
+        internal static bool IsWholeLevelInverter(string levelId, SoloRoomElement e) => System.Array.IndexOf(WholeLevelInverters, $"{levelId}/{e.Name}") >= 0;
+
         public static List<string> ValidateInverter(string levelId, SoloRoomDefinition room)
         {
             var errors = new List<string>();
@@ -24,7 +29,7 @@ namespace Parallax.Editor.Setup
             foreach (SoloRoomElement e in inverters)
             {
                 int duration = e.Settings.Inverter.Duration;
-                if (duration < InverterMinDurationTicks || duration > InverterMaxDurationTicks)
+                if ((duration < InverterMinDurationTicks || duration > InverterMaxDurationTicks) && !IsWholeLevelInverter(levelId, e))
                     errors.Add($"{levelId}: {e.Name} duration {duration} ticks is outside {InverterMinDurationTicks}-{InverterMaxDurationTicks} (D-087).");
                 if (e.Settings.IsConfigured && e.Settings.RepeatMode == TrapRepeatMode.Periodic)
                     errors.Add($"{levelId}: {e.Name} is an inverter set to Periodic; an inverter is Once or Rearm (D-087).");

@@ -426,7 +426,7 @@ namespace Parallax.Editor.Art
             for (int i = 1; i < result.Records.Count; i++)
             {
                 TickRecord r = result.Records[i];
-                commands[i - 1] = new CatCommand { Move = r.Move, JumpPressed = r.JumpPressed, Climb = r.Climb, GrabPressed = r.GrabPressed };
+                commands[i - 1] = new CatCommand { Move = r.Move, JumpPressed = r.JumpPressed, Climb = r.Climb };
             }
             return commands;
         }

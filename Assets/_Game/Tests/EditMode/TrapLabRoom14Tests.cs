@@ -8,9 +8,9 @@ using static Parallax.Tests.EditMode.RouteTestApi;
 namespace Parallax.Tests.EditMode
 {
     // PAX-105 (D-110 and amendment 2): Trap Lab room 14, the wall room (TrapLabLayout.WallCling.cs): its routes pass the route
-    // validator (the solution climbs the grip shaft wall to wall with one Grab; Plain_Wall gives no hold and Spike_Floor kills
-    // with a lead of at least 6; Block_F's rise is survived), Grab does nothing at the plain wall, and its grip walls pass
-    // ValidateGripWall.
+    // validator (the solution climbs the grip shaft wall to wall; Plain_Wall gives no hold and Spike_Floor kills with a lead of
+    // at least 6; Block_F's rise is survived), touching the plain wall never latches (PAX-106, D-110 amendment 4), and its
+    // grip walls pass ValidateGripWall.
     public sealed class TrapLabRoom14Tests
     {
         static readonly Type Layout = Type.GetType("Parallax.Editor.Setup.TrapLabLayout, Parallax.Editor");
@@ -31,27 +31,25 @@ namespace Parallax.Tests.EditMode
         }
 
         [Test]
-        public void TheSolution_ClimbsTheShaft_WithOneGrab_AndLatchesThreeTimes()
+        public void TheSolution_ClimbsTheShaft_LatchingThreeTimes_WithNoButton()
         {
             using IDisposable session = OpenSession();
             object replay = ReplayRoute(session, Room(), F(RoomRoutes(), "Solution"));
             Assert.IsTrue((bool)F(replay, "Completed"), Dump(replay));
             var records = ((IList)F(replay, "Records")).Cast<object>().ToList();
-            Assert.AreEqual(1, records.Count(r => (bool)F(r, "GrabPressed")), "one Grab press");
             int latches = 0;
             for (int i = 1; i < records.Count; i++) if ((bool)F(records[i], "IsClinging") && !(bool)F(records[i - 1], "IsClinging")) latches++;
             Assert.AreEqual(3, latches, "Shaft_L, Shaft_R, Shaft_L");
         }
 
-        // §14 G5: Grab does nothing against Plain_Wall: the Dies route presses it there and never clings.
+        // §14 G5, D-110 amendment 4: touching Plain_Wall never latches: the Dies route jumps at it and never clings.
         [Test]
-        public void GrabAtThePlainWall_NeverClings()
+        public void TouchingThePlainWall_NeverLatches()
         {
             using IDisposable session = OpenSession();
             object betrayal = ((IList)F(RoomRoutes(), "Betrayals"))[0];
             object replay = ReplayRoute(session, Room(), F(betrayal, "Route"));
             var records = ((IList)F(replay, "Records")).Cast<object>().ToList();
-            Assert.IsTrue(records.Any(r => (bool)F(r, "GrabPressed")), "Grab was pressed");
             Assert.IsFalse(records.Any(r => (bool)F(r, "IsClinging")), Dump(replay));
         }
 

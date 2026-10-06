@@ -37,6 +37,21 @@ namespace Parallax.Editor.Setup
             Write(trap, changes, ("trigger", trigger), ("cloud", cloud), ("target", target), ("bolt", bolt), ("cloudSize", e.Size),
                 ("rangeMin", c.MinX - e.Position.x), ("rangeMax", c.MaxX - e.Position.x), ("followSpeed", c.FollowSpeed), ("strikeWidth", c.StrikeWidth),
                 ("firstStrikeDelay", c.FirstStrikeDelay), ("strikePeriod", c.StrikePeriod), ("tellTicks", c.TellTicks), ("strikeTicks", c.StrikeTicks), ("delayTicks", e.Settings.DelayTicks));
+            // D-116: the floors, as offsets from the authored pose (none: an empty array, the cloud keeps one height).
+            Vector4[] floors = c.HasFloors ? System.Array.ConvertAll(c.Floors, f => new Vector4(f.CatMinY - e.Position.y, f.CloudY - e.Position.y, f.MinX - e.Position.x, f.MaxX - e.Position.x)) : new Vector4[0];
+            Write(trap, changes, ("climbSpeed", c.ClimbSpeed));
+            SerializedObject floorsObject = new(trap);
+            SerializedProperty floorList = floorsObject.FindProperty("floors");
+            bool sameFloors = floorList.arraySize == floors.Length;
+            for (int i = 0; sameFloors && i < floors.Length; i++) sameFloors = floorList.GetArrayElementAtIndex(i).vector4Value == floors[i];
+            if (!sameFloors)
+            {
+                floorList.arraySize = floors.Length;
+                for (int i = 0; i < floors.Length; i++) floorList.GetArrayElementAtIndex(i).vector4Value = floors[i];
+                floorsObject.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(trap);
+                changes.Add("set " + e.Name + ".floors");
+            }
             Vector3[] profile = LevelLayoutValidator.StrikeProfile(room);
             for (int i = 0; i < profile.Length; i++) profile[i] -= new Vector3(e.Position.x, e.Position.x, e.Position.y);
             SerializedObject serialized = new(trap);

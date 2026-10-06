@@ -73,9 +73,26 @@ namespace Parallax.Editor.Setup
     {
         public readonly bool IsConfigured; public readonly float MinX; public readonly float MaxX; public readonly float FollowSpeed;
         public readonly int FirstStrikeDelay; public readonly int StrikePeriod; public readonly int TellTicks; public readonly int StrikeTicks; public readonly float StrikeWidth;
+        // D-116: a cloud that follows the cat from floor to floor (empty: one height, MinX-MaxX). Room-local, ascending by CatMinY.
+        public readonly StormFloor[] Floors; public readonly float ClimbSpeed;
         public StormCloudSettings(float minX, float maxX, float followSpeed = StormCloudMath.DefaultFollowSpeed, int firstStrikeDelay = StormCloudMath.DefaultFirstStrikeDelay,
             int strikePeriod = StormCloudMath.DefaultStrikePeriod, int tellTicks = StormCloudMath.DefaultTellTicks, int strikeTicks = StormCloudMath.DefaultStrikeTicks, float strikeWidth = StormCloudMath.DefaultStrikeWidth)
-        { IsConfigured = true; MinX = minX; MaxX = maxX; FollowSpeed = followSpeed; FirstStrikeDelay = firstStrikeDelay; StrikePeriod = strikePeriod; TellTicks = tellTicks; StrikeTicks = strikeTicks; StrikeWidth = strikeWidth; }
+        { IsConfigured = true; MinX = minX; MaxX = maxX; FollowSpeed = followSpeed; FirstStrikeDelay = firstStrikeDelay; StrikePeriod = strikePeriod; TellTicks = tellTicks; StrikeTicks = strikeTicks; StrikeWidth = strikeWidth; Floors = System.Array.Empty<StormFloor>(); ClimbSpeed = StormCloudMath.DefaultClimbSpeed; }
+        // D-116: with floors; MinX/MaxX are the floors' widest span (what the range checks without floors would see).
+        public StormCloudSettings(StormFloor[] floors, float followSpeed = StormCloudMath.DefaultFollowSpeed, int firstStrikeDelay = StormCloudMath.DefaultFirstStrikeDelay,
+            int strikePeriod = StormCloudMath.DefaultStrikePeriod, float climbSpeed = StormCloudMath.DefaultClimbSpeed, int tellTicks = StormCloudMath.DefaultTellTicks,
+            int strikeTicks = StormCloudMath.DefaultStrikeTicks)
+            : this(System.Linq.Enumerable.Min(floors, f => f.MinX), System.Linq.Enumerable.Max(floors, f => f.MaxX), followSpeed, firstStrikeDelay, strikePeriod, tellTicks, strikeTicks)
+        { Floors = floors; ClimbSpeed = climbSpeed; }
+        public bool HasFloors => Floors != null && Floors.Length > 0;
+    }
+
+    // D-116: one floor of a storm cloud that follows the cat through the room: a cat whose centre is at CatMinY or above (and
+    // below the next floor's) is on it; the cloud flies at CloudY there, over MinX-MaxX. Room-local.
+    public readonly struct StormFloor
+    {
+        public readonly float CatMinY, CloudY, MinX, MaxX;
+        public StormFloor(float catMinY, float cloudY, float minX, float maxX) { CatMinY = catMinY; CloudY = cloudY; MinX = minX; MaxX = maxX; }
     }
 
     // PAX-093 (D-095): a MovingTrap Solid's floor behaviour: the SurfaceMotion (Q1), and a push wall's opt-in (Q6) with its
@@ -83,8 +100,16 @@ namespace Parallax.Editor.Setup
     public readonly struct MovingFloorSettings
     {
         public readonly bool IsConfigured; public readonly SurfaceMotion Motion; public readonly bool Pushes; public readonly string CrushPartner;
-        public MovingFloorSettings(SurfaceMotion motion, bool pushes = false, string crushPartner = null)
-        { IsConfigured = true; Motion = motion; Pushes = pushes; CrushPartner = crushPartner; }
+        // D-119: a hinge floor swings up 90 degrees about one end (its top corner) over HingeTicks before it moves (0: none).
+        public readonly int HingeTicks; public readonly bool HingeAtRight;
+        public MovingFloorSettings(SurfaceMotion motion, bool pushes = false, string crushPartner = null, int hingeTicks = 0, bool hingeAtRight = false)
+        { IsConfigured = true; Motion = motion; Pushes = pushes; CrushPartner = crushPartner; HingeTicks = hingeTicks; HingeAtRight = hingeAtRight; }
+        public bool Hinges => HingeTicks > 0;
+        /// <summary>D-119: the wall a hinge floor of `flat` stands up into, room-local: as thick as the floor, as tall as it was
+        /// long, beside its hinge (left of a right-end hinge, right of a left-end one), from the floor's top up.</summary>
+        public Rect Upright(Rect flat) => HingeAtRight
+            ? Rect.MinMaxRect(flat.xMax - flat.height, flat.yMax, flat.xMax, flat.yMax + flat.width)
+            : Rect.MinMaxRect(flat.xMin, flat.yMax, flat.xMin + flat.height, flat.yMax + flat.width);
     }
 
     // PAX-093 (D-095): a shrinking floor's width over time. Default (IsConfigured false) never occurs on a ShrinkingFloor:
@@ -92,8 +117,16 @@ namespace Parallax.Editor.Setup
     public readonly struct ShrinkSettings
     {
         public readonly bool IsConfigured; public readonly int ShrinkTicks; public readonly float MinWidth; public readonly ShrinkFrom From;
+        // D-116 (the crush ledge): with DropDistance > 0 the floor also drops onto a cat under it (ShrinkingFloorTrap).
+        public readonly float DropDistance; public readonly int DropTellTicks, DropMoveTicks, DropHoldTicks, DropReturnTicks;
         public ShrinkSettings(int shrinkTicks, float minWidth, ShrinkFrom from)
-        { IsConfigured = true; ShrinkTicks = shrinkTicks; MinWidth = minWidth; From = from; }
+        { IsConfigured = true; ShrinkTicks = shrinkTicks; MinWidth = minWidth; From = from; DropDistance = 0f; DropTellTicks = 8; DropMoveTicks = 6; DropHoldTicks = 40; DropReturnTicks = 30; }
+        public ShrinkSettings(int shrinkTicks, float minWidth, ShrinkFrom from, float dropDistance, int dropTellTicks = 8, int dropMoveTicks = 6, int dropHoldTicks = 40, int dropReturnTicks = 30)
+        {
+            IsConfigured = true; ShrinkTicks = shrinkTicks; MinWidth = minWidth; From = from;
+            DropDistance = dropDistance; DropTellTicks = dropTellTicks; DropMoveTicks = dropMoveTicks; DropHoldTicks = dropHoldTicks; DropReturnTicks = dropReturnTicks;
+        }
+        public bool Drops => DropDistance > 0f;
     }
 
     // PAX-105 (D-110 amendment 3): a falling block that is a grip wall once it has landed (GripSurface on its collider).

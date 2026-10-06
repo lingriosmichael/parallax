@@ -84,6 +84,9 @@ namespace Parallax.Editor.Art
         {
             ("Fill", "ENV_Fill_A", 0), ("Cap", "ENV_Cap", 1), ("CapWash", "ENV_CapWash", 1), ("LipVines", "ENV_LipVines", 1), ("ArchShade", "ENV_ArchShade", 1), ("ThickUnder", "ENV_ThickUnder", 1), ("Under", "ENV_Under", 1), ("Slab", "ENV_Slab", 1), ("Water", "ENV_Water", 1),
             ("Side", "ENV_Side", 2), ("Post", "ENV_Post", 2), ("SlimPost", "ENV_SlimPost", 2),
+            // PAX-106 (D-114): the broken-stone side strips (every variant shares ENV_SideChip_A_0's size) and the cut thick
+            // underside. Optional: without their materials the builder keeps ENV_Side and ENV_ThickUnder.
+            ("SideChip", "ENV_SideChip_A_0", 2), ("ThickUnderShort", "ENV_ThickUnderShort", 1),
             // PAX-A16: plain sprites (dressing, ends, capitals, chains, fringes) on the same shader, sprite UV.
             ("Sprite", "ENV_Moss_0", 3),
         };
@@ -100,7 +103,9 @@ namespace Parallax.Editor.Art
 
         public static string MaterialPath(string kind) => $"{MaterialFolder}/ENV_{kind}.mat";
         public static Material TileMaterial(string kind) => AssetDatabase.LoadAssetAtPath<Material>(MaterialPath(kind));
-        public static bool MaterialsReady => materialsCache ??= TileKinds.All(k => TileMaterial(k.kind) != null);
+        /// <summary>PAX-106: tile kinds the builder falls back from when their material is missing (made by Environment Stack).</summary>
+        static readonly string[] OptionalKinds = { "SideChip", "ThickUnderShort" };
+        public static bool MaterialsReady => materialsCache ??= TileKinds.Where(k => System.Array.IndexOf(OptionalKinds, k.kind) < 0).All(k => TileMaterial(k.kind) != null);
 
         public static void EnsureMaterials(List<string> changes)
         {

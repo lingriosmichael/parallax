@@ -15,7 +15,8 @@ namespace Parallax.Editor.Setup
     // (c) a BaitGap's target reached from its take-off (D-083; ValidateBaitGaps);
     // (d) a trap floor that gives way on a touch, its underside within reach from below (D-085; ValidateTrapFloorHeadroom);
     // (e) a checkpoint section's checkpoint reached without passing through its gate (D-091).
-    // Gravity up is never checked: no cling with gravity up (D-110 amendment (2)).
+    // Gravity up is never checked. D-118 lets a cat cling with gravity up; its wall jumps are not modelled here (only L004 has a
+    // place for them, and its escape route proves the climb through the real game code).
     public static partial class LevelLayoutValidator
     {
         // (a)'s named exemptions ("level/trap" -> reason), each approved by the developer by name.

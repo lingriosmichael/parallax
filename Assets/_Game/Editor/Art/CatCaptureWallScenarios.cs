@@ -25,33 +25,24 @@ namespace Parallax.Editor.Art
             Element(SoloRoomElementKind.GripWall, "Right_Wall", new Vector2(11.5f, 3.25f), new Vector2(1f, 6.5f)),
         }, Array.Empty<SoloRoomOpening>(), Array.Empty<RequiredJump>());
 
-        /// <summary>One tick with Grab pressed (and a move).</summary>
-        sealed class GrabPress : CaptureStep
-        {
-            readonly float move;
-            public GrabPress(float move, string label) { this.move = move; Label = label; }
-            public override bool Next(CatCaptureRig rig, int done, out CatCommand c) { c = new CatCommand { Move = move, GrabPressed = true }; return done < 1; }
-        }
-
         static bool Falling(CatCaptureRig r) => !r.Cat.IsGrounded && Vector2.Dot(r.Body.linearVelocity, r.Gravity.Direction) > 0f;
         static bool Clinging(CatCaptureRig r) => r.Cat.IsClinging;
         static bool NotClinging(CatCaptureRig r) => !r.Cat.IsClinging;
 
-        // `dir` +1: the wall is on the cat's right. A running jump at it, Grab at the top of the rise, hang, slide to the floor;
-        // walk back, jump at it again, Grab, a wall jump away, land.
+        // `dir` +1: the wall is on the cat's right. A running jump at it, the latch at the top of the rise (by itself, PAX-106),
+        // hang, slide to the floor; walk back, jump at it again, latch, a wall jump away, land.
         static List<CaptureStep> WallScript(float dir) => new()
         {
             new Hold(0f, .3f, "stand 0.3 s"),
             new Press(dir, "a running jump at the wall"),
             new Until(dir, Falling, 1f, "rise against the wall"),
-            new GrabPress(0f, "Grab: the latch") { Cut = true },
+            new Until(0f, Clinging, .2f, "the latch") { Cut = true },
             new Until(0f, Grounded, 3f, "slide down to the floor"),
             new Hold(0f, .4f, "stand 0.4 s"),
             new Until(-dir, r => Mathf.Abs(r.ColliderCentre.x - r.Origin.x - (dir > 0f ? 6.2f : 13.8f)) <= .15f, 3f, "walk back"),
             new Until(0f, Still, 1f, "stop"),
             new Press(dir, "a running jump at the wall"),
             new Until(dir, Falling, 1f, "rise against the wall"),
-            new GrabPress(0f, "Grab"),
             new Until(0f, Clinging, .2f, "the latch"),
             new Hold(0f, .25f, "slide 0.25 s"),
             new Press(0f, "wall jump") { Cut = true },
@@ -59,15 +50,14 @@ namespace Parallax.Editor.Art
             new Hold(0f, .5f, "stand 0.5 s"),
         };
 
-        // From the shaft's middle: a jump at Left_Wall, Grab, then two wall jumps from side to side (latch mode), then the
+        // From the shaft's middle: a jump at Left_Wall (it latches by itself), then two wall jumps from side to side, then the
         // stick pushed away from the wall: the fall.
         static List<CaptureStep> ShaftScript() => new()
         {
             new Hold(0f, .3f, "stand 0.3 s"),
             new Press(-1f, "a jump at Left_Wall"),
             new Until(-1f, Falling, 1f, "rise against it"),
-            new GrabPress(0f, "Grab: the latch") { Cut = true },
-            new Until(0f, Clinging, .2f, "latched"),
+            new Until(0f, Clinging, .2f, "the latch") { Cut = true },
             new Press(0f, "wall jump right"),
             new Until(1f, Clinging, 1f, "latch Right_Wall") { Cut = true },
             new Press(0f, "wall jump left"),

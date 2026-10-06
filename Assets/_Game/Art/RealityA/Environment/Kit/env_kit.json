@@ -687,6 +687,126 @@
       "outside": 0.1056
     },
     {
+      "name": "ENV_SideChip_A2_0",
+      "file": "ENV_SideChip_A2_0.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
+      "name": "ENV_SideChip_A2_1",
+      "file": "ENV_SideChip_A2_1.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
+      "name": "ENV_SideChip_A2_2",
+      "file": "ENV_SideChip_A2_2.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
+      "name": "ENV_SideChip_A2_3",
+      "file": "ENV_SideChip_A2_3.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
+      "name": "ENV_SideChip_A3_0",
+      "file": "ENV_SideChip_A3_0.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
+      "name": "ENV_SideChip_A3_1",
+      "file": "ENV_SideChip_A3_1.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
+      "name": "ENV_SideChip_A3_2",
+      "file": "ENV_SideChip_A3_2.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
+      "name": "ENV_SideChip_A3_3",
+      "file": "ENV_SideChip_A3_3.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
+      "name": "ENV_SideChip_A_0",
+      "file": "ENV_SideChip_A_0.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
+      "name": "ENV_SideChip_A_1",
+      "file": "ENV_SideChip_A_1.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
+      "name": "ENV_SideChip_A_2",
+      "file": "ENV_SideChip_A_2.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
+      "name": "ENV_SideChip_A_3",
+      "file": "ENV_SideChip_A_3.png",
+      "folder": "Kit",
+      "width": 0.1983,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.06
+    },
+    {
       "name": "ENV_SkyFade",
       "file": "ENV_SkyFade.png",
       "folder": "Backgrounds/Kit",
@@ -841,6 +961,15 @@
       "folder": "Kit",
       "width": 11.7356,
       "height": 1.9119,
+      "kind": "strip",
+      "normal": false
+    },
+    {
+      "name": "ENV_ThickUnderShort",
+      "file": "ENV_ThickUnderShort.png",
+      "folder": "Kit",
+      "width": 11.7356,
+      "height": 1.5915,
       "kind": "strip",
       "normal": false
     },

@@ -246,23 +246,23 @@ namespace Parallax.Editor.Levels
         }
 
         // PAX-105 (D-110 and amendment 2): Trap Lab room 14, the wall room. The solution walks right under Lone_Wall and
-        // Shaft_L into the shaft, grabs Shaft_L at the top of a jump and wall-jumps from side to side (latch mode: no more Grab)
-        // until the last kick off Shaft_L carries it onto the Plateau; then on to the door.
+        // Shaft_L into the shaft, latches onto Shaft_L at the top of a jump (by itself, PAX-106, D-110 amendment 4) and
+        // wall-jumps from side to side until the last kick off Shaft_L carries it onto the Plateau; then on to the door.
         public static RoomRoutes Room14()
         {
             var solution = new Route("Trap Lab room 14 solution", ShaftClimb(Hold(Right), Until(XAtLeast(25f)), Release(), Until(Still())));
             return new RoomRoutes(solution,
-                new Betrayal("Plain_Wall is no grip wall: a cat that jumps at it and grabs gets no hold and drops onto Spike_Floor, shown as it walked over its trigger",
+                new Betrayal("Plain_Wall is no grip wall: a cat that jumps at it gets no hold and drops onto Spike_Floor, shown as it walked over its trigger",
                     "Spike_Floor", DeathCause.Hazard,
-                    new Route("jump at Plain_Wall and grab", Hold(Left), Until(XAtMost(5.5f)), Release(), Until(Still()), Hold(Left), Jump(), Until(Falling()), Grab(), Until(Dead()))),
+                    new Route("jump at Plain_Wall", Hold(Left), Until(XAtMost(5.5f)), Release(), Until(Still()), Hold(Left), Jump(), Until(Falling()), Until(Dead()))),
                 Betrayal.Recovers("Block_F rises when a cat jumps at it (no grip there either); it lands and climbs the shaft", "Block_F",
                     new Route("jump at Block_F, then the shaft", ShaftClimb(Hold(Right), Until(XAtLeast(13.4f)), Release(), Until(Still()), Hold(Right), Jump(),
-                        Until(Falling()), Grab(), Until(Moving("Block_F")), Until(Grounded()), Hold(Right), Until(XAtLeast(25f)), Release(), Until(Still())))));
+                        Until(Falling()), Until(Moving("Block_F")), Until(Grounded()), Hold(Right), Until(XAtLeast(25f)), Release(), Until(Still())))));
         }
 
-        // From standing in the shaft: a jump at Shaft_L, Grab, then wall jumps from side to side up onto the Plateau.
+        // From standing in the shaft: a jump at Shaft_L (it latches by itself), then wall jumps from side to side up onto the Plateau.
         static RouteStep[] ShaftClimb(params RouteStep[] before) => before.Concat(new[] {
-            Hold(Left), Jump(), Until(Falling()), Grab(), Until(ClingingLeft()), Release(),
+            Hold(Left), Jump(), Until(Falling()), Until(ClingingLeft()), Release(),
             Jump(), Hold(Right), Until(ClingingRight()), Release(),
             Jump(), Hold(Left), Until(ClingingLeft()), Release(),
             Jump(), Hold(Right), Until(GroundedOn("Plateau")), Until(RoomComplete()),

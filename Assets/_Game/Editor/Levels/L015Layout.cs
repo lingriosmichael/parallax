@@ -89,8 +89,9 @@ namespace Parallax.Editor.Levels
             // Open. Arrow_3's trigger is floor to ceiling from x 10.6 to its launcher (the cat enters it as it lands after the
             // gap), so it cuts the whole band for Collapse_2, chained from it. Collapse_2 (x 13-16.5; Pit_2 shows beyond it, before Post_C),
             // 3 u ahead, gives way with it and comes back 150 ticks later; Arrow_3 fires once, so it stays.
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_3 keeps its first shot's trigger, then fires every 260 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_3",(17.25f,.28f),(.5f,.4f),(13.8f,4.5f),(6.4f,9f),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,.28f,9.4f,unitsPerTick:.36f,tellTicks:12,disguised:true),new SoloRoomTrapSettings(delayTicks:0))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,.28f,9.4f,unitsPerTick:.36f,tellTicks:12,disguised:true),new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:260))));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Collapse_2",(14.75f,-.25f),(3.5f,.5f),
                 settings:new SoloRoomTrapSettings(delayTicks:1,triggerSource:TrapTriggerSource.Chain,chainSource:"Arrow_3",repeatMode:TrapRepeatMode.Rearm,cooldownTicks:150)));
 
@@ -111,8 +112,9 @@ namespace Parallax.Editor.Levels
             // Arrow_9 crosses P2 once, from Floor_F1's west face to P1's east face (Stop_9 above it), set off by the cut at
             // x 54-54.4 as the cat jumps onto P1: a 50-tick tell the cat on P1 sees, then about 8 ticks across P2, where a cat
             // that hopped on at once has just landed. Wait under Roof_9 until it has stopped.
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_9 keeps its first shot's trigger, then fires every 230 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_9",(58.2f,.3f),(.4f,.4f),(54.2f,4.5f),(.4f,9f),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,.3f,55.2f,unitsPerTick:.36f,tellTicks:50),new SoloRoomTrapSettings(delayTicks:0))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,.3f,55.2f,unitsPerTick:.36f,tellTicks:50),new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:230))));
             // The finale: the cut at x 58.5-58.9, on Floor_F1, sets off Spear_10 (disguised, 36-tick tell) from Curb_F along
             // Floor_F2 at shin height; it sticks in Floor_F1's east face. A cat that stops on Floor_F1 is above the lane; a cat
             // that runs on drops onto Floor_F2 into it.

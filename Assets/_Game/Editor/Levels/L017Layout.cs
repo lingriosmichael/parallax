@@ -89,8 +89,9 @@ namespace Parallax.Editor.Levels
 
             // Far. The far cut (x 29.6-30, the shaft's full height) fires Arrow_5a from Face_R along the shaft's floor at shin
             // height into the Sill; 150 ticks later the volley, 12 ticks apart.
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_5a keeps its first shot's trigger, then fires every 200 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_5a",(FaceR + .2f,.3f),(.4f,.4f),(29.8f,CeilingY * .5f),(.4f,CeilingY),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,.3f,29f,unitsPerTick:.36f,tellTicks:16,disguised:true),new SoloRoomTrapSettings(delayTicks:30))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,.3f,29f,unitsPerTick:.36f,tellTicks:16,disguised:true),new SoloRoomTrapSettings(delayTicks:30,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:200))));
             for (int k = 1; k <= 5; k++)
             {
                 bool east = k % 2 == 1;   // odd steps stick in Face_R, even ones in the Spine's east face
@@ -114,8 +115,9 @@ namespace Parallax.Editor.Levels
             // 15), holds 40 and comes back, carrying a cat that stayed: it recovers, under Arrow_8's lane.
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Sink_9",(16.75f,UpperY - .35f),(2.5f,.7f),(16.75f,UpperY + .28f),(2.5f,.56f),new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
                 new SoloRoomTrapSettings(delayTicks:30,offset:new Vector2(0f,-3f),moveTicks:60,holdTicks:40,returnTicks:60,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:170,movingKind:MovingTrapKind.Solid))));
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_8 keeps its first shot's trigger, then fires every 250 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_8",(19.2f,UpperY + .9f),(.4f,.4f),(15f,(UpperY + CeilingY) * .5f),(.4f,CeilingY - UpperY),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,UpperY + .9f,8f,unitsPerTick:.36f,tellTicks:60,disguised:true),new SoloRoomTrapSettings(delayTicks:0))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,UpperY + .9f,8f,unitsPerTick:.36f,tellTicks:60,disguised:true),new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:250))));
 
             var sections = new[] {
                 CheckpointSection.Start("Out", new Vector2(2f, 0f), new[] { "Spear_D", "Spear_1", "Block_2", "Collapse_U", "Collapse_3", "Slide_4", "Spikes_D1" }),

@@ -80,10 +80,12 @@ namespace Parallax.Editor.Levels
             // down-left at -45 degrees when the cat, walking the floor west, reaches x 16.8 (its cut spans the floor band, 0-9.5),
             // and the arrow stops in the floor at x 10.8, where a cat that walks on is (ticks 44-47 of the fire). Stop at once, let
             // it land, walk on through it.
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_U keeps its first shot's trigger, then fires every 190 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_U",(20.25f,9.2f),(.5f,.4f),(16.05f,4.75f),(.5f,9.5f),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,9.2f,10.8f,angleDegrees:-45f),new SoloRoomTrapSettings(delayTicks:0))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,9.2f,10.8f,angleDegrees:-45f),new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:190))));
+            // D-119 (the developer: all launchers shoot non-stop): Arrow_3 keeps its first shot's trigger, then fires every 240 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_3",(26f,1.2f),(.4f,.4f),(30.5f,(CeilingY - .5f) * .5f),(3f,CeilingY + .5f),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,1.2f,32f,unitsPerTick:.36f,tellTicks:8,disguised:true),new SoloRoomTrapSettings(delayTicks:41))));
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,1.2f,32f,unitsPerTick:.36f,tellTicks:8,disguised:true),new SoloRoomTrapSettings(delayTicks:41,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:240))));
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_VA",(8f,7.6f),(1f,1f),settings:up));
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_VB",(3f,7.6f),(1f,1f),settings:up));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Tile_6",(8f,9.175f),(1f,.35f),settings:new SoloRoomTrapSettings(delayTicks:20)));

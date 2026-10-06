@@ -23,14 +23,14 @@ namespace Parallax.Tests.EditMode
         sealed class Scripted : ICatCommandSource
         {
             public float Move, Climb;
-            public bool Jump, Grab;
+            public bool Jump;
             public CatCommand Read()
             {
-                var c = new CatCommand { Move = Move, Climb = Climb, JumpPressed = Jump, JumpHeld = Jump, GrabPressed = Grab };
-                Jump = false; Grab = false;
+                var c = new CatCommand { Move = Move, Climb = Climb, JumpPressed = Jump, JumpHeld = Jump };
+                Jump = false;
                 return c;
             }
-            public void ResetTransientState() { Jump = false; Grab = false; }
+            public void ResetTransientState() { Jump = false; }
         }
 
         [SetUp]
@@ -74,31 +74,20 @@ namespace Parallax.Tests.EditMode
             return rig.CatBody.linearVelocity;
         }
 
+        // PAX-106 (D-110 amendment 4): the latch is automatic; a step touching a grip face is enough.
         void Latch()
         {
-            input.Grab = true;
             Step();
             Assert.IsTrue(rig.Cat.IsClinging, "precondition: latched");
         }
 
         [Test]
-        public void TouchingAWall_WithoutGrab_TheMotorsOwnStep_Unchanged()
+        public void TouchingAGripWall_LatchesWithoutInput_OntoTheFace_FacingIt_AndSlides()
         {
             AddWall();
             Vector2 v = Step();
-            Assert.IsFalse(rig.Cat.IsClinging);
-            Assert.AreEqual(new Vector2(0f, -G * Dt), v, "the ordinary fall");
-        }
-
-        [Test]
-        public void Grab_TouchingAWall_Latches_OntoTheFace_FacingIt_AndSlides()
-        {
-            AddWall();
-            input.Grab = true;
-            Vector2 v = Step();
-            Assert.IsTrue(rig.Cat.IsClinging);
+            Assert.IsTrue(rig.Cat.IsClinging, "no button: touching the grip face is enough");
             Assert.AreEqual(1, rig.Cat.ClingSide, "the wall is on the right");
-            Assert.IsTrue(rig.Cat.IsLatchMode);
             Assert.AreEqual(FaceX, CatCollider.bounds.max.x, .015f, "x snaps onto the face");
             Assert.AreEqual(new Vector2(0f, -G * Dt), v, "from rest: normal gravity, no sideways speed");
             Assert.AreEqual(new Vector2(0f, -Config.WallSlideSpeed), Step(new Vector2(0f, -15f)), "a fast fall is cut to the slide speed");
@@ -106,35 +95,33 @@ namespace Parallax.Tests.EditMode
         }
 
         [Test]
-        public void Grab_WhileRising_DoesntLatch_TheTopOfTheRiseDoes()
+        public void WhileRising_NoLatch_TheTopOfTheRiseLatches()
         {
             AddWall();
-            input.Grab = true;
             Step(new Vector2(0f, 1f));
             Assert.IsFalse(rig.Cat.IsClinging, "rising");
             Step(new Vector2(0f, 0f));
-            Assert.IsTrue(rig.Cat.IsClinging, "the press is remembered to the top of the rise");
+            Assert.IsTrue(rig.Cat.IsClinging, "the top of the rise");
         }
 
         [Test]
         public void AFaceUnderOneUnit_IsntLatched_OneUnitIs()
         {
             BoxCollider2D low = AddWall(height: .99f);
-            input.Grab = true;
             Step();
             Assert.IsFalse(rig.Cat.IsClinging, "0.99 u");
             low.size = new Vector2(1f, 1f);
             Physics2D.SyncTransforms();
             Step();
-            Assert.IsTrue(rig.Cat.IsClinging, "1.0 u (the press still remembered)");
+            Assert.IsTrue(rig.Cat.IsClinging, "1.0 u");
         }
 
-        // D-110 amendment 2: only a grip wall's collider (GripSurface) can be grabbed.
+        // D-110 amendment 2: only a grip wall's collider (GripSurface) can be held; amendment 4: touching a plain wall never
+        // latches, and the motor's own step runs unchanged.
         [Test]
-        public void APlainSolid_IsntLatched()
+        public void TouchingAPlainSolid_NeverLatches_TheMotorsOwnStep_Unchanged()
         {
             AddWall(grip: false);
-            input.Grab = true;
             Vector2 v = Step();
             Assert.IsFalse(rig.Cat.IsClinging);
             Assert.AreEqual(new Vector2(0f, -G * Dt), v, "the ordinary fall");
@@ -144,24 +131,44 @@ namespace Parallax.Tests.EditMode
         public void ATriggerFace_IsntLatched()
         {
             AddWall().isTrigger = true;
-            input.Grab = true;
             Step();
             Assert.IsFalse(rig.Cat.IsClinging);
         }
 
+        // D-118 (amends D-110 (2)): gravity up clings too, in the cat's frame. The step the gravity changes only takes the new
+        // frame; the next latches. The slide runs up (along gravity) and the wall jump launches down (against it) and away.
         [Test]
-        public void GravityUp_NeverClings()
+        public void GravityUp_ClingsToo_SlidesAlongGravity_AndWallJumpsAgainstIt()
         {
             AddWall();
             Gravity.SetTargetDirection(Vector2.up);
-            input.Grab = true;
             Step();
+            Step();
+            Assert.IsTrue(rig.Cat.IsClinging, "latched upside down");
+            Assert.AreEqual(1, rig.Cat.ClingSide, "the wall is on the cat's right in the world");
+            Vector2 slide = Step(new Vector2(0f, 5f));
+            Assert.AreEqual(0f, slide.x, 1e-5f);
+            Assert.AreEqual(Config.WallSlideSpeed, slide.y, 1e-4f, "the slide, capped, along gravity (up)");
+            input.Jump = true;
+            Vector2 jump = Step();
+            Assert.Less(jump.x, 0f, "away from the wall");
+            Assert.AreEqual(-JumpSpeed, jump.y, 1e-3f, "the jump launch, against gravity (down)");
             Assert.IsFalse(rig.Cat.IsClinging);
-            Assert.IsFalse(rig.Cat.IsLatchMode);
         }
 
         [Test]
-        public void MoveTowardTheWall_DoesNothing_PushingAwayReleases_AndEndsLatchMode()
+        public void AGravityChange_WhileClinging_LetsGo()
+        {
+            AddWall();
+            Latch();
+            Assert.IsTrue(rig.Cat.IsClinging);
+            Gravity.SetTargetDirection(Vector2.up);
+            Step();
+            Assert.IsFalse(rig.Cat.IsClinging);
+        }
+
+        [Test]
+        public void MoveTowardTheWall_DoesNothing_PushingAwayReleases_AndLocksTheFace()
         {
             AddWall();
             Latch();
@@ -174,21 +181,19 @@ namespace Parallax.Tests.EditMode
             input.Move = -.5f;
             Step();
             Assert.IsFalse(rig.Cat.IsClinging);
-            Assert.IsFalse(rig.Cat.IsLatchMode);
-            input.Move = 0f; input.Grab = true;
+            input.Move = 0f;
             Step();
             Assert.IsFalse(rig.Cat.IsClinging, "the face just left is locked until the cat lands");
         }
 
         [Test]
-        public void WallJump_IsTheJumpLaunchPlusSideSpeedAway_NoCoyote_KeepsLatchMode()
+        public void WallJump_IsTheJumpLaunchPlusSideSpeedAway_NoCoyote()
         {
             AddWall();
             Latch();
             input.Jump = true;
             Vector2 v = Step();
             Assert.IsFalse(rig.Cat.IsClinging);
-            Assert.IsTrue(rig.Cat.IsLatchMode);
             Assert.AreEqual(new Vector2(-Config.WallJumpSideSpeed, JumpSpeed), v);
             Assert.AreEqual(6f, Config.WallJumpSideSpeed);
             Assert.AreEqual(0f, PauseTestRig.GetPrivate<float>(rig.Cat, "coyoteTimer"));
@@ -200,8 +205,8 @@ namespace Parallax.Tests.EditMode
         {
             AddWall();
             input.Jump = true;
-            Step();   // airborne, no coyote: the press waits in the buffer
-            input.Grab = true;
+            Step(new Vector2(0f, 1f));   // rising (no latch), airborne, no coyote: the press waits in the buffer
+            Assert.IsFalse(rig.Cat.IsClinging);
             Vector2 v = Step();
             Assert.AreEqual(new Vector2(-Config.WallJumpSideSpeed, JumpSpeed), v);
             Assert.IsFalse(rig.Cat.IsClinging);
@@ -227,18 +232,16 @@ namespace Parallax.Tests.EditMode
         }
 
         [Test]
-        public void ALaunch_AndAPush_LetGo_AndEndLatchMode()
+        public void ALaunch_AndAPush_LetGo()
         {
             AddWall();
             Latch();
             rig.Cat.ApplyLaunch(Vector2.up, 10f);
             Assert.IsFalse(rig.Cat.IsClinging, "launch");
-            Assert.IsFalse(rig.Cat.IsLatchMode);
             rig.Cat.ResetMotion();
             Latch();
             rig.Cat.ApplyPush(new Vector2(-.01f, 0f));
             Assert.IsFalse(rig.Cat.IsClinging, "push");
-            Assert.IsFalse(rig.Cat.IsLatchMode);
         }
 
         [Test]
@@ -249,7 +252,6 @@ namespace Parallax.Tests.EditMode
             Gravity.Flip();
             Step();
             Assert.IsFalse(rig.Cat.IsClinging);
-            Assert.IsFalse(rig.Cat.IsLatchMode);
         }
 
         [Test]
@@ -266,8 +268,7 @@ namespace Parallax.Tests.EditMode
             rig.Cat.Unfreeze();
             rig.Cat.ResetMotion();
             Assert.IsFalse(rig.Cat.IsClinging);
-            Assert.IsFalse(rig.Cat.IsLatchMode);
-            input.Move = 0f; input.Grab = true;
+            input.Move = 0f;
             Step();
             Assert.IsTrue(rig.Cat.IsClinging, "a reset clears the face lock too");
         }
@@ -276,7 +277,6 @@ namespace Parallax.Tests.EditMode
         public void ABodiedSolid_LatchesAfterAStillStep_AndLetsGoWhenItMoves()
         {
             BoxCollider2D wall = AddWall(body: true);
-            input.Grab = true;
             Step();
             Assert.IsFalse(rig.Cat.IsClinging, "a solid with a body needs one still step first");
             Step();
@@ -286,7 +286,6 @@ namespace Parallax.Tests.EditMode
             Physics2D.SyncTransforms();
             Step();
             Assert.IsFalse(rig.Cat.IsClinging, "it moved");
-            Assert.IsFalse(rig.Cat.IsLatchMode);
         }
 
         [Test]

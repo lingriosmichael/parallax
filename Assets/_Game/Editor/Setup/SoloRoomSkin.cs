@@ -37,7 +37,10 @@ namespace Parallax.Editor.Setup
         public readonly struct Solid
         {
             public readonly string Name; public readonly Rect Rect; public readonly bool Trap; public readonly SoloRoomElementKind Kind; public readonly bool Shrinks;
-            public Solid(string name, Rect rect, bool trap, SoloRoomElementKind kind, bool shrinks = false) { Name = name; Rect = rect; Trap = trap; Kind = kind; Shrinks = shrinks; }
+            /// <summary>PAX-106 (D-110 amendment 4): its side faces can be held (a grip wall, or a grip falling block), so they wear
+            /// the moss carpet.</summary>
+            public readonly bool Grip;
+            public Solid(string name, Rect rect, bool trap, SoloRoomElementKind kind, bool shrinks = false, bool grip = false) { Name = name; Rect = rect; Trap = trap; Kind = kind; Shrinks = shrinks; Grip = grip; }
             public Shape Shape =>
                 Kind == SoloRoomElementKind.PitBottom ? Shape.PitBottom
                 : Rect.height <= 0.55f && Rect.width > Rect.height ? Shape.Slab
@@ -72,11 +75,13 @@ namespace Parallax.Editor.Setup
                 {
                     case SoloRoomElementKind.Floor: case SoloRoomElementKind.Ceiling: case SoloRoomElementKind.Wall: case SoloRoomElementKind.PitBottom:
                         list.Add(new Solid(e.Name, rect, false, e.Kind)); break;
-                    // PAX-105 (D-110 amendment 2): a grip wall wears the wall look (its claw marks are GripSurface's, at runtime).
+                    // PAX-105 (D-110 amendment 2): a grip wall wears the wall look; PAX-106 (amendment 4): and the moss carpet.
                     case SoloRoomElementKind.GripWall:
-                        list.Add(new Solid(e.Name, rect, false, SoloRoomElementKind.Wall)); break;
-                    case SoloRoomElementKind.CollapsingFloor: case SoloRoomElementKind.FakePlatform: case SoloRoomElementKind.FallingBlock:
+                        list.Add(new Solid(e.Name, rect, false, SoloRoomElementKind.Wall, grip: true)); break;
+                    case SoloRoomElementKind.CollapsingFloor: case SoloRoomElementKind.FakePlatform:
                         list.Add(new Solid(e.Name, rect, true, e.Kind)); break;
+                    case SoloRoomElementKind.FallingBlock:
+                        list.Add(new Solid(e.Name, rect, true, e.Kind, grip: e.Settings.Grip.IsConfigured)); break;
                     case SoloRoomElementKind.ShrinkingFloor:
                         list.Add(new Solid(e.Name, rect, true, e.Kind, shrinks: true)); break;
                     case SoloRoomElementKind.MovingTrap:
@@ -162,7 +167,13 @@ namespace Parallax.Editor.Setup
             string layer = RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay);
             Color body = Body;
             HostSkin skin = HostSkin.WorldTiledFor("fill", fill, worldTile, body, layer);
-            foreach (Solid s in Solids(room).Where(s => !s.Trap))
+            // PAX-106 (D-114 (2)): with the broken-stone strips, the fill stops ChipInset inside each wholly exposed side, so the
+            // chipped edge's notches show the air behind it.
+            List<Solid> all = Solids(room);
+            bool chips = ChipsReady(room);
+            Bounds content = SoloRoomBuilder.ComputeRoomBounds(room, 0f);
+            List<Edge> sides = chips ? ExposedEdges(all).Where(e => e.Side is Side.Left or Side.Right && !FacesOut(e, content)).ToList() : new List<Edge>();
+            foreach (Solid s in all.Where(s => !s.Trap))
             {
                 Transform t = roomRoot.Find(s.Name);
                 SpriteRenderer r = t != null ? t.GetComponent<SpriteRenderer>() : null;
@@ -177,7 +188,9 @@ namespace Parallax.Editor.Setup
                 child.localPosition = new Vector3(0f, 0f, ZFill); child.localRotation = Quaternion.identity; child.localScale = Vector3.one;
                 SpriteRenderer visible = SetupUtility.Ensure<SpriteRenderer>(child.gameObject, changes);
                 visible.sprite = fill; visible.sharedMaterial = fillMaterial; visible.color = body;
-                visible.drawMode = SpriteDrawMode.Sliced; visible.size = s.Rect.size;
+                float inLeft = WhollyExposed(s, Side.Left, sides) ? ChipInset : 0f, inRight = WhollyExposed(s, Side.Right, sides) ? ChipInset : 0f;
+                child.localPosition = new Vector3((inLeft - inRight) * 0.5f, 0f, ZFill);
+                visible.drawMode = SpriteDrawMode.Sliced; visible.size = new Vector2(s.Rect.width - inLeft - inRight, s.Rect.height);
                 visible.sortingLayerName = layer; visible.sortingOrder = r.sortingOrder;
             }
         }
@@ -293,7 +306,7 @@ namespace Parallax.Editor.Setup
                     // tiled down the face in its own UV, so its pixels travel with it. The rest-pose shader's u comes from the
                     // vertex, which batching puts in world space: on a texture that clamps across (ENV_Side, ENV_Post), every row
                     // smeared its edge pixel.
-                    else if (kind is "Side" or "Post" or "SlimPost" && EnvironmentKit.TileMaterial("Sprite") is Material plainSprite)
+                    else if (kind is "Side" or "SideChip" or "Post" or "SlimPost" && EnvironmentKit.TileMaterial("Sprite") is Material plainSprite)
                     {
                         r.sharedMaterial = plainSprite;
                         r.drawMode = SpriteDrawMode.Tiled;
@@ -333,7 +346,7 @@ namespace Parallax.Editor.Setup
             // no play space: no trims there (each would be a draw call at the frame's edge).
             Bounds content = SoloRoomBuilder.ComputeRoomBounds(room, 0f);
             List<Edge> edges = ExposedEdges(solids).Where(e => !FacesOut(e, content)).ToList();
-            EnvironmentKit.Slot cap = EnvironmentKit.Get("ENV_Cap"), capWash = EnvironmentKit.Get("ENV_CapWash"), lipVines = EnvironmentKit.Get("ENV_LipVines"), faceShade = EnvironmentKit.Get("ENV_FaceShade"), shadeSolid = EnvironmentKit.Get("ENV_FaceShadeSolid"), thickUnder = EnvironmentKit.Get("ENV_ThickUnder"), under = EnvironmentKit.Get("ENV_Under"), side = EnvironmentKit.Get("ENV_Side");
+            EnvironmentKit.Slot cap = EnvironmentKit.Get("ENV_Cap"), capWash = EnvironmentKit.Get("ENV_CapWash"), lipVines = EnvironmentKit.Get("ENV_LipVines"), faceShade = EnvironmentKit.Get("ENV_FaceShade"), shadeSolid = EnvironmentKit.Get("ENV_FaceShadeSolid"), thickUnder = ThickUnderSlot(), under = EnvironmentKit.Get("ENV_Under"), side = EnvironmentKit.Get("ENV_Side");
             EnvironmentKit.Slot slab = EnvironmentKit.Get("ENV_Slab"), slabEnd = EnvironmentKit.Get("ENV_SlabEnd"), water = EnvironmentKit.Get("ENV_Water");
             EnvironmentKit.Slot post = EnvironmentKit.Get("ENV_Post"), slim = EnvironmentKit.Get("ENV_SlimPost"), postCap = EnvironmentKit.Get("ENV_PostCap"), postBase = EnvironmentKit.Get("ENV_PostBase");
 
@@ -403,11 +416,16 @@ namespace Parallax.Editor.Setup
                             new Vector2(under.width, under.height), new Vector4(mid, under.height * 0.5f, 1f, 1f), false, ZUnder, true, "Under"), face);
                         break;
                     default:
+                    {
+                        // PAX-106 (D-114): broken stone, a chipped strip cut from the level's fill (ENV_Side before the kit had them).
                         bool left = e.Side == Side.Left;
-                        float cx = left ? e.Line - side.outside + side.width * 0.5f : e.Line + side.outside - side.width * 0.5f;
-                        Tint(Add(s, (left ? "SideL_" : "SideR_") + Idx(e), "ENV_Side", new Vector2(cx, mid), new Vector2(side.width, e.Length),
-                            new Vector2(side.width, side.height), new Vector4(side.width * 0.5f, mid, 1f, 1f), !left, ZSide, true, "Side"), face);
+                        string chip = ChipSlot(room, e);
+                        EnvironmentKit.Slot def = chip != null ? EnvironmentKit.Get(chip) : side;
+                        Rect strip = SideStrip(e, def);
+                        Tint(Add(s, (left ? "SideL_" : "SideR_") + Idx(e), chip ?? "ENV_Side", strip.center, strip.size,
+                            new Vector2(def.width, def.height), new Vector4(def.width * 0.5f, mid, 1f, 1f), !left, ZSide, true, chip != null ? "SideChip" : "Side"), chip != null ? body : face);
                         break;
+                    }
                 }
             }
 
@@ -416,8 +434,9 @@ namespace Parallax.Editor.Setup
             {
                 if (thickUnder == null || !ThickUnderFits(e, solids, flips, visualKeepOut)) return false;
                 float mid = (e.From + e.To) * 0.5f, h = thickUnder.height;
-                Tint(Add(s, "Thick_" + Idx(e), "ENV_ThickUnder", new Vector2(mid, e.Line + 0.04f - h * 0.5f), new Vector2(e.Length, h),
-                    new Vector2(thickUnder.width, h), new Vector4(mid, h * 0.5f, 1f, 1f), false, ZUnder, true, "ThickUnder"), body);
+                bool shortened = thickUnder.name == "ENV_ThickUnderShort";
+                Tint(Add(s, "Thick_" + Idx(e), thickUnder.name, new Vector2(mid, e.Line + 0.04f - h * 0.5f), new Vector2(e.Length, h),
+                    new Vector2(thickUnder.width, h), new Vector4(mid, h * 0.5f, 1f, 1f), false, ZUnder, true, shortened ? "ThickUnderShort" : "ThickUnder"), body);
                 return true;
             }
 
@@ -468,7 +487,14 @@ namespace Parallax.Editor.Setup
                 Add(s, name, slot, new Vector2(at.x, top ? at.y - h * 0.5f + 0.12f : at.y + h * 0.5f - 0.05f), new Vector2(width, h), Vector2.zero, Vector4.zero, false, ZCap, false);
             }
 
-            Dress(room, solids, edges, (s, name, slot, centre, size, z) => Add(s, name, slot, centre, size, Vector2.zero, Vector4.zero, false, z, false));
+            Dress(room, solids, edges, (s, name, slot, centre, size, z) =>
+            {
+                if (!UprightMoss(name)) return Add(s, name, slot, centre, size, Vector2.zero, Vector4.zero, false, z, false);
+                // D-118: the sprite's length down the face (a quarter turn), its footprint as planned.
+                SpriteRenderer r = Add(s, name, slot, centre, new Vector2(size.y, size.x), Vector2.zero, Vector4.zero, false, z, false);
+                if (r != null) r.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
+                return r;
+            });
 
             // A trap's trims follow its skin.
             foreach (KeyValuePair<string, List<SpriteRenderer>> pair in trapTrims)
@@ -491,6 +517,46 @@ namespace Parallax.Editor.Setup
             }
             changes.Add($"built {roomRoot.name} environment trims ({edges.Count} exposed edges)");
         }
+
+        // ---------- PAX-106 (D-114): broken-stone sides ----------
+
+        /// <summary>D-114 (2): how far the stone fill stops inside a wholly exposed side, for the chipped edge's notches.</summary>
+        public const float ChipInset = 0.06f;
+
+        /// <summary>The broken-stone strips are in the kit, cut from this room's fill, with their material.</summary>
+        static bool ChipsReady(SoloRoomDefinition room) => ChipSlotName(room, 0) is string slot && EnvironmentKit.Get(slot) != null && EnvironmentKit.TileMaterial("SideChip") != null;
+
+        static string ChipSlotName(SoloRoomDefinition room, int variant)
+        {
+            Sprite fill = FillSprite(room);
+            return fill == null || !fill.name.StartsWith("ENV_Fill_") ? null : $"ENV_SideChip_{fill.name.Substring("ENV_Fill_".Length)}_{variant}";
+        }
+
+        /// <summary>The broken-stone strip a side face draws: one of four cut from the room's fill, picked by hash (deterministic per
+        /// element and face); null when the kit or its material lacks them (ENV_Side then).</summary>
+        public static string ChipSlot(SoloRoomDefinition room, Edge e)
+        {
+            if (!ChipsReady(room)) return null;
+            int variant = Mathf.Min(3, (int)(Hash(e.Owner.Name, 700 + (e.Side == Side.Left ? 0 : 1) + Mathf.RoundToInt(e.From * 4f)) * 4f));
+            string slot = ChipSlotName(room, variant);
+            return EnvironmentKit.Get(slot) != null ? slot : null;
+        }
+
+        /// <summary>Where a side face's strip is drawn: its air side `outside` beyond the face line, the rest inside, along the
+        /// face's exposed stretch.</summary>
+        public static Rect SideStrip(Edge e, EnvironmentKit.Slot def)
+        {
+            float xMin = e.Side == Side.Left ? e.Line - def.outside : e.Line + def.outside - def.width;
+            return new Rect(xMin, e.From, def.width, e.Length);
+        }
+
+        static bool WhollyExposed(Solid s, Side side, List<Edge> sides) =>
+            sides.Where(e => e.Owner.Name == s.Name && e.Side == side).Sum(e => e.Length) >= s.Rect.height - 0.01f;
+
+        /// <summary>D-114 (1), ruling R8: the thick underside cut to its stone band and 0.6 u of ivy, when the kit has it (and its
+        /// material); the original otherwise.</summary>
+        static EnvironmentKit.Slot ThickUnderSlot() =>
+            EnvironmentKit.Get("ENV_ThickUnderShort") is EnvironmentKit.Slot cut && EnvironmentKit.TileMaterial("ThickUnderShort") != null ? cut : EnvironmentKit.Get("ENV_ThickUnder");
 
         static bool FacesOut(Edge e, Bounds content) => e.Side switch
         {
