@@ -50,9 +50,10 @@ namespace Parallax.Tests.EditMode
         // Arrow_9 fires once from a cut on P1; the finale's Spear_10 runs under Floor_F1.
         // 2026-09-29 (the developer's play, D-093 (4c)): every roof under a cloud is real, so L015's T4 (Fake_4) and
         // L018's T1 (Fake_1) are gone; L018's launch jump window is 31 (was 29).
-        // D-119: the motor's seam tie-break (one ground on a seam) moves L015 and L018 by a tick here and there.
-        [TestCase("L015", 1283, new[] { 21, 51, 45, 51, 51, 40, 23, 31, 51, 51 },
-            new[] { "Cloud=74", "Cloud=174", "Collapse_2=62", "Arrow_3=12", "Mover_M=146", "Spear_P=86", "Cloud=674", "Block_1=24", "Block_3=24", "Cloud=974", "D3=284", "D3=193", "Arrow_9=50", "Spear_10=36" },
+        // D-119: the motor's seam tie-break moves L015 and L018 by a tick here and there. PAX-107: the clouds 20 % faster, zapping
+        // 10 % faster (L015, L018, L020 re-pinned).
+        [TestCase("L015", 1283, new[] { 21, 51, 45, 51, 51, 29, 23, 31, 51, 51 },
+            new[] { "Cloud=74", "Cloud=164", "Collapse_2=62", "Arrow_3=12", "Mover_M=146", "Spear_P=86", "Cloud=614", "Block_1=24", "Block_3=24", "Cloud=974", "D3=284", "D3=193", "Arrow_9=50", "Spear_10=36" },
             new[] { "Cloud visible t25, complete t1409", "Mover_M visible t2, complete t1409" })]
         // PAX-060 half B (L016-L020, as built and accepted pending play; D-093 (4b)).
         [TestCase("L016", 1202, new[] { 26, 26, 26, 16, 44, 12 },
@@ -63,14 +64,14 @@ namespace Parallax.Tests.EditMode
             new[] { "Spear_1=8", "Spikes_D1=10", "Block_2=19", "Collapse_3=58", "Slide_4=41", "Arrow_5a=16", "Block_6=21", "Spikes_5e=15", "Arrow_8=60" },
             new[] { "Sink_9 visible t927, complete t1340", "Slide_4 visible t172, complete t1468" })]
         [TestCase("L018", 1143, new[] { 26, 50, 25, 31, 29, 33 },
-            new[] { "Arrow_2=40", "Cloud=174", "Fake_A=9", "Spear_S=24", "SL_2=27", "SL_3=27", "Cloud=474", "Spikes_3=22", "Cloud=574", "Collapse_V=74", "Block_T=14", "G_D=762", "Arrow_B=10", "TL_3=21", "Block_7=24", "Spikes_7=18", "G_C=988" },
+            new[] { "Arrow_2=40", "Cloud=164", "Fake_A=79", "Spear_S=24", "SL_2=27", "SL_3=27", "Cloud=434", "Spikes_3=22", "Cloud=524", "Collapse_V=74", "Block_T=14", "G_D=762", "Arrow_B=10", "TL_3=21", "Block_7=24", "Spikes_7=18", "G_C=988" },
             new[] { "Cloud visible t6, complete t1143" })]
         [TestCase("L019", 1142, new[] { 43, 43, 43, 27, 49, 51, 51, 51, 9, 51 },
             new[] { "Spear_4=8", "Sweeper_2=8", "Sweeper_3=8", "Sweeper_4=8", "Sweeper_H=8", "Cat.Inverted=21", "P2=32", "Cat.Inverted=188", "Mover_1=633", "Cat.Inverted=449", "Mover_2=1010", "Mover_2=1109", "Spear_9=12", "Floor_C=19" },
             new[] { "Mover_1 visible t2, complete t1342" })]
         // PAX-099 (D-106): the door drops onto Door_Ledge and the ride steers west onto it (window 30); dead end D3 steers back.
         [TestCase("L020", 1164, new[] { 21, 51, 51, 33, 32, 38, 35, 34, 26, 30 },
-            new[] { "Arrow_1=8", "Push_3=153", "Collapse_2=29", "Spear_4a=8", "Spear_4b=8", "V_5=55", "Cat.Inverted=25", "Cloud=174", "Shrink_8=207", "Door=94" },
+            new[] { "Arrow_1=8", "Push_3=153", "Collapse_2=29", "Spear_4a=8", "Spear_4b=8", "V_5=55", "Cat.Inverted=25", "Cloud=74", "Shrink_8=207", "Door=94" },
             new[] { "Cloud visible t593, complete t1164", "G_9 visible t61, complete t1314", "Door visible t969, complete t1314" })]
         // A level's whole route measurement runs inside its case, over NUnit's default 180 s for the larger levels (L014).
         [Timeout(600000)]

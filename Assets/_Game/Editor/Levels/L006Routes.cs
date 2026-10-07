@@ -49,8 +49,9 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(X>=19.1)", "run on", Jump(), Until(Airborne()), Until(Grounded()), Until(Dead())), revealedBy: "Ride_6"),
                 new Betrayal("Dead end: the jump off S1's end toward the door lands on the lid", "Spikes_L", DeathCause.Hazard,
                     new Route("toward the door", Hold(Right), Until(XAtLeast(19.3f)), Jump(), Until(Dead()))),
-                new Betrayal("Dead end: stepping off S1's end drops the cat onto Floor_5", "Pit5_Hazard", DeathCause.Hazard,
-                    new Route("step off", Hold(Right), Until(Airborne()), Release(), Until(Dead())), revealedBy: "Floor_5"),
+                // PAX-107: the lid now reaches x 20.5, so a cat stepping off S1's end comes down on its spikes.
+                new Betrayal("Dead end: stepping off S1's end drops the cat onto the lid's spikes", "Spikes_L", DeathCause.Hazard,
+                    new Route("step off", Hold(Right), Until(Airborne()), Release(), Until(Dead()))),
                 new Betrayal("Dead end: running off S1's end carries the cat onto the lid", "Spikes_L", DeathCause.Hazard,
                     new Route("run off", Hold(Right), Until(Dead()))));
         }

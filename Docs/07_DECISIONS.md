@@ -3245,3 +3245,51 @@ seam has one ground**: two floors touching at the same height (a rider home agai
 that wasn't stable between sessions, so replays differed. `CatMotor2D.BestGround` picks the nearer; on a tie (1e-3 u) the
 one under the cat's centre, then the larger overlap, then the name; the route harness records the ground through it.
 **Why:** the developer's play-test (2026-10-06).
+
+### D-120 · 2026-10-06 · Accepted (PAX-107 Parts A and B; the developer: "Proceed with its implementation")
+**Decision:** PAX-107's open questions were taken at the ticket's recommended defaults (the developer asked to proceed):
+(1) **L004's start launchers fire from the start** (Q1): their trigger holds the spawn; Arrow_Run 50 ticks in, then every
+170; Arrow_Jump 90 ticks in, then every 280; their lanes end at Left_Post. (2) **Left_Post reaches the floor** (Q2, "make
+this wall extend all the way to the floor"): the start is closed in, so L004's way is the climb (D-118): flip up at Flip_L
+turning back as the cat rises (straight up is still the dead end onto Spikes_L), over Left_Post upside down, down the mossy
+gap, under the corbel and up through Flip_A. Left_Moss stays on Left_Post's upper part (y 2.5–6.2; Left_Base is plain
+stone below), so the gap is no climb for a cat right side up from the ground. The ground route's betrayals (T1, T6, the
+recovering way out) are gone; T11/T12 punish waiting at the start; Arrow_7's first shot moves to tick 420 (the climb brings
+the cat to the roof later). (3) **L005's cloud waits on the middle floor** ("start appearing from the middle level"): it is
+authored over S1, wakes as the cat comes onto S1_A, and has two floors (S1, the ground). (4) **Every storm cloud is 20 %
+faster and strikes 10 % more often** (Q3: strike period × 0.9): L005/L007 follow 0.06 u/tick, strike every 135; L010, L015,
+L018, L020 and Trap Lab rooms 10 and 11 follow 0.096, strike every 90. L007's T7 (waiting on Tread_RC) now dies to the storm
+instead of recovering. (5) **L006:** the lid and Spikes_L reach x 21.5 (0.5 u longer); Flip_8 slides its 2 u over 33 ticks
+(20 % faster; Q4: the swing is unchanged). (6) **L007:** Arrow_G and Corbel_G are gone ("it doesn't do anything"). (7)
+**L008:** S1 runs to the east wall (the drop to the door, Ledge_D, Spikes_D and the pillar by the door are gone); Spikes_E,
+hidden spikes on S1's east end, is the dead end there. (8) **L010:** the start is at S1's east end (x 30.5); the ground
+under S1 is a chasm (its kill strip just under the old ground's top), so every fall off S1 kills; a hole (x 24–28.5) is
+crossed on Ride_A and Sink_S (x 19–21) sinks under a cat that stops; the stair, Stair_Wall and the stair's dead end are
+gone; Spikes_3's wait is for the spikes to come up and go down.
+**Open:** Part C (L009's new spike puzzle) waits for the developer's pick (PAX-107 §2.C).
+**Why:** the developer's play-test (2026-10-06).
+
+### D-121 · 2026-10-07 · Accepted (PAX-107 follow-up: L006 tuning, L008 rebuilt, Part C = L009)
+**Decision:** from the developer's second round of notes ("Level 8 can be better. I need moving platforms especially those
+that turn up and push you against a trap … a waterfall of spikes … or perhaps a wall climbing obstacle"; "level 9 doesnt
+need any arrow launcher"), with the picks "Waterfall shaft + wall climb finish" (L008) and "Mirror spikes + platform
+gauntlet" (L009). (1) **L006:** Flip_8 swings up over 10 ticks and slides its 2 u over 28 (another 20 % faster on both); the
+lid and Spikes_L reach 1 u further west (x 20.5–32), so a cat stepping off S1's end now lands on the lid's spikes (that dead
+end's killer is Spikes_L). (2) **L008 rebuilt, no arrows:** S2's lift and collapse are a hinge floor (Hinge_S2) that stands
+up behind a cat reaching S2_B and slides 5.5 u east over 110 ticks, shoving a cat that waits off S2_B's end into the
+**waterfall shaft** (x 21–22.4, S2 down to S1): three bands of hidden spikes on each wall (0.8 u apart when out, less than
+the cat), the top band started by the same trigger (Continuous: out 30 ticks, every 72, first 42 ticks after the trigger),
+each band below chained 10 ticks after the one above. The wave is locked to the hinge floor, so the push always lands in
+the second wave; the way is to let the first wave pass and drop in behind it (window 13). On S1 (back west), Spikes_4
+(hidden, under the hinge floor's hole) are jumped, and S1's hinge floor (Hinge_S1) slides 5.5 u west behind the cat,
+pushing a cat that stops onto Spikes_5 (jumped). The ground keeps Block_6 and Ride_A; the second pit and Ride_B are
+replaced by a **chimney**: drop into a sunken floor, walk under a grip wall, and wall-jump up between its east face and
+Ground_E's mossy face to the door (D-110). L008 still passes every Band 1 rule (solution 967 ticks).
+(3) **L009 (Part C) rebuilt, no launchers:** S1 ends at x 15 over a chasm (x 15–26.5); three **mirror pairs** (floor
+strip and roof strip over it, each up half of a 200-tick rhythm, half a rhythm apart: F1/R1, F2/R2, F3/R3); two lifts
+(Lift_A, Lift_B, Carry) rise 8.7 u under roof spikes that come out during each rise (Spikes_LA/LB: a lift doesn't crush,
+so the spikes are what it pushes the cat into); a hinge floor (Hinge_9) pushes a cat that stops past it onto F3; Roof_5
+sits between the lifts. Solution 870 ticks (windows 17, 14), 16 betrayals, the four dead ends kept.
+**Supersedes:** D-110 amendment 2 (1)'s "L001–L020 get no grip walls" for L008's chimney (Sump_Wall, Sump_Moss), as
+D-118 did for L004; `ValidateWallJumpShortcuts` passes L008 with them.
+**Why:** the developer's play-test notes (2026-10-07): L008 lacked "umpf", L009 was too easy, moving platforms are harder than arrows.

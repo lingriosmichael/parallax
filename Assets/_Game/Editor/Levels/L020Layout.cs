@@ -95,8 +95,9 @@ namespace Parallax.Editor.Levels
             // then Block_7b onto it, out of Lintel_7 onto the Top's east end.
             elements.Add(E(SoloRoomElementKind.Vine,"V_5",(28.8f,(StepTop(4) + .1f + 18.5f) * .5f),(.6f,18.5f - StepTop(4) - .1f),(28.8f,15.2f),(.6f,.8f),new SoloRoomTrapSettings(delayTicks:60)));
             elements.Add(E(SoloRoomElementKind.Inverter,"Inv_6",(24f,TopY + 1.5f),(.6f,3f),settings:new SoloRoomTrapSettings(new InverterSettings(150),Chain("V_5", 1))));
+            // PAX-107 (the developer: clouds 20 % faster, zap 10 % faster): follow 0.08 -> 0.096, strike every 100 -> 90 ticks.
             elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(29f,22.5f),(2f,.8f),
-                settings:new SoloRoomTrapSettings(new StormCloudSettings(20f, 30f), Chain("V_5", 25))));
+                settings:new SoloRoomTrapSettings(new StormCloudSettings(20f, 30f, followSpeed:.096f, strikePeriod:90), Chain("V_5", 25))));
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_7a",(26f,19.5f),(1f,1f),(26.5f,(TopY + CeilingY) * .5f),(.4f,CeilingY - TopY),
                 new SoloRoomTrapSettings(delayTicks:41,unitsPerTick:.36f,travelDistance:3f)));
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_7b",(26f,20.5f),(1f,1f),settings:new SoloRoomTrapSettings(delayTicks:4,unitsPerTick:.36f,travelDistance:3f,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_7a")));

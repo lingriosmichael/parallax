@@ -110,14 +110,14 @@ namespace Parallax.Editor.Levels
             elements.Add(Rider("Ride_G1",(13.25f,-.25f),-3f,RideG1Phase));
             L001Layout.AddShaft(elements, 1, 9.5f, 14f);
             L001Layout.AddShaft(elements, 2, 15.5f, 20f);
-            // D-119 (the developer: "I asked for a cloud in level 5"; all the way through): a storm cloud wakes at the start and
-            // follows the cat floor to floor: under the corbel over S2, under S2 over S1, and under S1 over the ground. It follows at
-            // 0.05 u/tick, strikes every 150 ticks, the first 80 ticks after it wakes (25-tick tell).
-            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(28.5f,11.2f),(2f,.8f),(30f,11f),(2f,2f),
+            // D-119 (the developer: "I asked for a cloud in level 5"): a storm cloud follows the cat floor to floor. PAX-107 (the
+            // developer: "make the cloud start appearing from the middle level, not from the top"; clouds 20 % faster, zap 10 %
+            // faster): it waits over S1 and wakes as the cat comes down onto S1_A, then follows it under S2 over S1 and under S1
+            // over the ground, at 0.06 u/tick, striking every 135 ticks, the first 80 ticks after it wakes (25-tick tell).
+            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(7f,8.3f),(2f,.8f),(2.25f,6f),(4.5f,2f),
                 new SoloRoomTrapSettings(new StormCloudSettings(new[] {
                     new StormFloor(-100f, 3.3f, 7.6f, 30.9f),
-                    new StormFloor(4.5f, 8.3f, 6.6f, 30.9f),
-                    new StormFloor(9.5f, 11.2f, 2.5f, 30.4f) }, followSpeed:.05f, firstStrikeDelay:80, strikePeriod:150), new SoloRoomTrapSettings(delayTicks:0))));
+                    new StormFloor(4.5f, 8.3f, 6.6f, 30.9f) }, followSpeed:.06f, firstStrikeDelay:80, strikePeriod:135), new SoloRoomTrapSettings(delayTicks:0))));
             // T6: T1 of level 1 again, before the door.
             L001Layout.AddShaft(elements, 6, 4.2f, 5.8f);
             elements.Add(E(SoloRoomElementKind.FakePlatform,"Floor_6",(5f,-1.5f),(1.6f,3f)));

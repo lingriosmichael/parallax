@@ -83,8 +83,9 @@ namespace Parallax.Editor.Levels
             };
 
             // The cloud: wakes at the cut x 5-5.5; its centre ranges over x 2-55 (P2 from 56 is past it).
+            // PAX-107 (the developer: clouds 20 % faster, zap 10 % faster): follow 0.08 -> 0.096, strike every 100 -> 90 ticks.
             elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(3f,7.6f),(2f,.8f),(5.25f,4.5f),(.5f,9f),
-                new SoloRoomTrapSettings(new StormCloudSettings(2f, 55f), new SoloRoomTrapSettings(delayTicks:0))));
+                new SoloRoomTrapSettings(new StormCloudSettings(2f, 55f, followSpeed:.096f, strikePeriod:90), new SoloRoomTrapSettings(delayTicks:0))));
 
             // Open. Arrow_3's trigger is floor to ceiling from x 10.6 to its launcher (the cat enters it as it lands after the
             // gap), so it cuts the whole band for Collapse_2, chained from it. Collapse_2 (x 13-16.5; Pit_2 shows beyond it, before Post_C),

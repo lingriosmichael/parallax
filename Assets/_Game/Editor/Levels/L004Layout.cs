@@ -95,23 +95,28 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Wall,"Corbel_Base",(14.625f,2.85f),(.25f,.7f)));
             elements.Add(E(SoloRoomElementKind.GripWall,"Corbel_Moss",(14.625f,5.1f),(.25f,3.8f)));
             elements.Add(E(SoloRoomElementKind.Floor,"L_Foot",(16.75f,2.75f),(2.5f,.5f)));
-            elements.Add(E(SoloRoomElementKind.Wall,"Left_Post",(11.575f,4.35f),(.75f,3.7f)));
+            // PAX-107 (the developer: "Make this wall extend all the way to the floor that you cant go through from the bottom"):
+            // Left_Post and its moss reach the ground. The start is closed in between the left wall and it: the way out is the
+            // flip up at Flip_L, turning as it rises so it lands past Spikes_L, over Left_Post upside down, and down the climb.
+            // Its moss stays on the upper part (y 2.5-6.2): from the ground, the gap is no climb for a cat right side up.
+            elements.Add(E(SoloRoomElementKind.Wall,"Left_Post",(11.575f,3.1f),(.75f,6.2f)));
+            elements.Add(E(SoloRoomElementKind.Wall,"Left_Base",(12.075f,1.25f),(.25f,2.5f)));
             elements.Add(E(SoloRoomElementKind.GripWall,"Left_Moss",(12.075f,4.35f),(.25f,3.7f)));
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_O",(14.75f,2.9f),(.5f,.4f),(10.85f,3.5f),(.5f,7f),new SoloRoomTrapSettings(
                 new ArrowLane(ArrowDirection.Left,2.9f,14.5f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
                 new SoloRoomTrapSettings(delayTicks:8,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:120))));   // D-119: then every 128 ticks, non-stop
             // D-119 (the developer: "On the very left I want arrows shooting one at run height and one at jump height. The launchers
             // should shoot repeatedly but at different intervals"; all launchers non-stop): a stone pillar at the left wall (x 0-0.5,
-            // up to y 2) hosts two launchers firing right along the whole ground to a stub at the right wall (x 31.5-32). Arrow_Run
-            // (shin height, every 150 ticks) is jumped; Arrow_Jump (jump height, every 210) passes over a cat on the ground and
-            // meets one in the air. Both start as the cat sets off (their trigger is the ground band under Left_Post, x 11.35-11.85;
-            // Arrow_Run 20 ticks later, Arrow_Jump 70) and never stop.
+            // up to y 2) hosts two launchers firing right across the start to Left_Post. Arrow_Run (shin height) is jumped;
+            // Arrow_Jump (jump height) passes over a cat on the ground and meets one in the air. PAX-107 (the developer: "I just
+            // stood for 2 minutes the arrows never got triggered"): they fire from the start (their trigger holds the spawn),
+            // Arrow_Run 50 ticks in and every 170, Arrow_Jump 90 ticks in and every 280, and never stop: waiting at the start is
+            // what they punish.
             elements.Add(E(SoloRoomElementKind.Wall,"Pillar_Arrows",(.25f,1f),(.5f,2f)));
-            elements.Add(E(SoloRoomElementKind.Wall,"Stub_R",(31.75f,1f),(.5f,2f)));
-            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_Run",(.25f,.3f),(.5f,.4f),(11.6f,1.25f),(.5f,2.5f),new SoloRoomTrapSettings(
-                new ArrowLane(ArrowDirection.Right,.3f,31.5f),new SoloRoomTrapSettings(delayTicks:20,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:150))));
-            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_Jump",(.25f,1.4f),(.5f,.4f),(11.6f,1.25f),(.5f,2.5f),new SoloRoomTrapSettings(
-                new ArrowLane(ArrowDirection.Right,1.4f,31.5f),new SoloRoomTrapSettings(delayTicks:70,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:210))));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_Run",(.25f,.3f),(.5f,.4f),(9.5f,3.5f),(1.6f,7f),new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Right,.3f,11.2f),new SoloRoomTrapSettings(delayTicks:50,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:120))));
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_Jump",(.25f,1.4f),(.5f,.4f),(9.5f,3.5f),(1.6f,7f),new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Right,1.4f,11.2f),new SoloRoomTrapSettings(delayTicks:90,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:190))));
             // PAX-102 (approved): the roof walk's rising section. Upside down on the roof, Sink_R (x 26.5-28.5) rises 3 u into the
             // new recess, 40 ticks after a cat stops under it, carrying it into RecessC_Hazard; it comes back after a hold. A cat
             // walking across is off it in about 25 ticks.
@@ -126,12 +131,11 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Wall,"Pillar_7",(23.5f,10.5f),(1f,5f)));
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_7",(23.75f,12.6f),(.5f,.4f),settings:new SoloRoomTrapSettings(
                 new ArrowLane(ArrowDirection.Right,12.6f,24f + 2.4f / Mathf.Tan(60f * Mathf.Deg2Rad),tellTicks:18,angleDegrees:60f),
-                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:130,phaseTicks:300,cooldownTicks:60))));
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:130,phaseTicks:420,cooldownTicks:60))));   // PAX-107: first shot 420 (the climb gets the cat here later)
             // D-117 (the developer: "Level 4 needs a direction inverter from the start and it should last for the whole level"):
             // the cat spawns in it, so left and right are swapped from the first tick (and again after every respawn).
             elements.Add(E(SoloRoomElementKind.Inverter,"Invert",(9.5f,1.5f),(.6f,3f),settings:new SoloRoomTrapSettings(new InverterSettings(WholeLevelTicks),new SoloRoomTrapSettings(delayTicks:0))));
             var jumps = new[] {
-                J("Spikes_1",RequiredJumpKind.Hazard,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,14.3f,17f,0f,0f,3f,.3f),
                 J("Spikes_3",RequiredJumpKind.Hazard,RequiredJumpFrame.Ceiling,RequiredJumpDirection.Left,22.4f,20f,0f,0f,3f,.3f),
                 J("Roof_4",RequiredJumpKind.Pit,RequiredJumpFrame.Ceiling,RequiredJumpDirection.Left,17.5f,15.4f,0f,0f,1f,sourceName:"Roof_4",destinationName:"Roof_M"),
             };

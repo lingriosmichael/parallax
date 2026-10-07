@@ -37,7 +37,6 @@ namespace Parallax.Editor.Levels
             var solution = new Route("L007 solution", new Route("L007 solution",
                 // Left along the ground: jump the floor that drops, and run on off the one that lands you.
                 Hold(Left), Until(Fired("Spikes_1")), Until(XAtMost(27.2f)), Jump(), Until(Airborne()), Until(Grounded()),
-                // PAX-104: Arrow_G's shot lands just ahead of a cat that keeps walking: walk on through it.
                 // Up the left tower to S1.
                 Until(XAtMost(6.4f)), Jump(), Until(GroundedOn("Tread_LA")), Release(), Until(Still()),
                 Hold(Left), Jump(), Until(GroundedOn("Tread_LB")), Release(), Until(Still()),
@@ -75,8 +74,6 @@ namespace Parallax.Editor.Levels
                 new Betrayal("Dead end: the tower's rhythm goes on past S2", "Spikes_F", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Tread_RE))", "keep climbing", Release(), Until(Still()), Hold(Right), Jump(), Until(Dead())), revealedBy: "Tread_RF"),
                 // PAX-102: the ground's arrows, the riders, the sinking section and the door's arrow.
-                new Betrayal("T8: Arrow_G's next shot hits a cat that stops in its lane on the ground", "Arrow_G", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Grounded)", "stop in the lane", Until(XAtMost(15.9f)), Release(), Until(Dead()))),
                 new Betrayal("T10: a cat that comes down before Ride_A is home falls into gap A", "Spikes_GapA", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Tread_RE))", "come down at once", Release(), Until(Still()), Until(Home("Ride_A")), For(10), Until(Moving("Ride_A")), For(10),
                         Hold(Left), Jump(), Until(GroundedOn("S2_East")), Until(Dead())), revealedBy: "Ride_A"),
@@ -90,9 +87,10 @@ namespace Parallax.Editor.Levels
                 new Betrayal("T13: Arrow_S's next shot hits a cat that stops in its lane before the door", "Arrow_S", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Stopped(Ride_B))", "stop in the lane", Hold(Left), Until(XAtMost(4f)), Release(), Until(Dead()))),
                 // PAX-100 (D-106): the sinking tread. A cat that waits on it rides it down and back up, then goes on.
-                Betrayal.Recovers("T7: a cat that waits on Tread_RC sinks with it, rides it back up and goes on", "Tread_RC",
-                    new Route("wait on the tread", Route.PrefixOf(solution, "Until(GroundedOn(Tread_RC))", "wait on the tread",
-                        Release(), Until(Still()), Until(Moving("Tread_RC")), Until(Home("Tread_RC"))).Steps.Concat(AfterRC(waitForRideA: true)).ToArray())));
+                // PAX-107: with the storm 20 % faster and striking 10 % more often, a cat that waits on Tread_RC to ride it down and
+                // back up is struck before it comes back (it recovered before).
+                new Betrayal("T7: a cat that waits on Tread_RC as it sinks is struck by the storm", "Cloud", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Tread_RC))", "wait on the tread", Release(), Until(Dead())), revealedBy: "Cloud"));
         }
     }
 }

@@ -91,8 +91,9 @@ namespace Parallax.Editor.Levels
             };
 
             // Storm. The cloud wakes at the cut x 29.4-29.8, one step from the start; its centre ranges over x 1-30.9.
+            // PAX-107 (the developer: clouds 20 % faster, zap 10 % faster): follow 0.08 -> 0.096, strike every 100 -> 90 ticks.
             elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(30.5f,CloudY),(2f,.8f),(29.6f,5f),(.4f,10f),
-                new SoloRoomTrapSettings(new StormCloudSettings(1f, 30.9f), new SoloRoomTrapSettings(delayTicks:0))));
+                new SoloRoomTrapSettings(new StormCloudSettings(1f, 30.9f, followSpeed:.096f, strikePeriod:90), new SoloRoomTrapSettings(delayTicks:0))));
             // D-119 (the developer: all launchers shoot non-stop): Arrow_2 keeps its first shot's trigger, then fires every 210 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_2",(21.25f,.28f),(.5f,.4f),(25.2f,5f),(.4f,10f),
                 new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,.28f,25.8f,unitsPerTick:.36f,tellTicks:40,disguised:true),new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:210))));

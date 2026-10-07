@@ -297,7 +297,8 @@ namespace Parallax.Editor.Setup
                 E(SoloRoomElementKind.Ceiling,"Overhang",(21f,1.65f),(3f,.5f)),
                 E(SoloRoomElementKind.FakePlatform,"Fake_Overhang",(7.5f,1.65f),(2f,.5f)),
                 E(SoloRoomElementKind.Door,"Door",(26f,.75f),(.6f,1.5f)),
-                E(SoloRoomElementKind.StormCloud,"StormCloud",(4f,5.5f),(2f,.8f),(5.75f,3.5f),(.5f,7f),new SoloRoomTrapSettings(new StormCloudSettings(1.5f,24f),new SoloRoomTrapSettings(delayTicks:0))),
+                // PAX-107 (the developer: clouds 20 % faster, zap 10 % faster): follow 0.08 -> 0.096, strike every 100 -> 90 ticks.
+                E(SoloRoomElementKind.StormCloud,"StormCloud",(4f,5.5f),(2f,.8f),(5.75f,3.5f),(.5f,7f),new SoloRoomTrapSettings(new StormCloudSettings(1.5f,24f,followSpeed:.096f,strikePeriod:90),new SoloRoomTrapSettings(delayTicks:0))),
             };
             return new SoloRoomDefinition(10, 415f, 28f, elements, System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
         }
@@ -332,7 +333,8 @@ namespace Parallax.Editor.Setup
                 E(SoloRoomElementKind.Arrow,"Spear_1",(.75f,.9f),(.5f,.4f),(12.75f,3.5f),(.5f,7f),new SoloRoomTrapSettings(ArrowLane.SpearLane(ArrowDirection.Right,.9f,18f),new SoloRoomTrapSettings(delayTicks:30))),
                 E(SoloRoomElementKind.Floor,"Floor_C",(39f,-.5f),(36f,1f)),
                 E(SoloRoomElementKind.Ceiling,"Overhang",(28.2f,1.65f),(3f,.5f)),
-                E(SoloRoomElementKind.StormCloud,"StormCloud",(22f,6.3f),(2f,.8f),(19.5f,3.5f),(.5f,7f),new SoloRoomTrapSettings(new StormCloudSettings(20f,38f),new SoloRoomTrapSettings(delayTicks:0))),
+                // PAX-107 (the developer: clouds 20 % faster, zap 10 % faster): follow 0.08 -> 0.096, strike every 100 -> 90 ticks.
+                E(SoloRoomElementKind.StormCloud,"StormCloud",(22f,6.3f),(2f,.8f),(19.5f,3.5f),(.5f,7f),new SoloRoomTrapSettings(new StormCloudSettings(20f,38f,followSpeed:.096f,strikePeriod:90),new SoloRoomTrapSettings(delayTicks:0))),
                 E(SoloRoomElementKind.Geyser,"Geyser",(32f,-.15f),(1f,.3f),settings:new SoloRoomTrapSettings(new GeyserSettings(),new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:100,phaseTicks:80))),
                 E(SoloRoomElementKind.Ceiling,"Vent_Roof",(32.75f,5.3f),(4.5f,.4f)),
                 E(SoloRoomElementKind.Hazard,"Vent_Spikes",(32.75f,4.95f),(4.5f,.3f)),

@@ -101,14 +101,15 @@ namespace Parallax.Editor.Levels
             // corbel by the door (top 12.45 < 12.5) and clear of the door (its range ends at x 3).
             // D-116 (the developer: "there is always a cloud constantly following the cat to zap it", toned down; then "I thought
             // the cloud follows them all the way through"): it wakes as the cat starts (its trigger holds the start) and follows
-            // the cat floor to floor: low over the ground (under Corbel_G), under S2 over S1, and under the roof over S2, climbing
-            // or sinking 0.2 u a tick when the cat changes floor. It follows at 0.05 u/tick (2.5 u/s), strikes every 150 ticks,
+            // the cat floor to floor: low over the ground, under S2 over S1, and under the roof over S2, climbing
+            // or sinking 0.2 u a tick when the cat changes floor. PAX-107 (the developer: clouds 20 % faster, zap 10 % faster): it
+            // follows at 0.06 u/tick (3 u/s), strikes every 135 ticks,
             // the first 80 ticks after it wakes; the 25-tick tell stays. Waiting is what it punishes, all the way up.
             elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(29f,2.05f),(2f,.8f),(29.4f,1.5f),(5.2f,3f),
                 new SoloRoomTrapSettings(new StormCloudSettings(new[] {
                     new StormFloor(-100f, 2.05f, 2.6f, 30.9f),
                     new StormFloor(4.5f, 8.4f, 1.1f, 30.9f),
-                    new StormFloor(9.5f, 12.05f, 3f, 26f) }, followSpeed:.05f, firstStrikeDelay:80, strikePeriod:150), new SoloRoomTrapSettings(delayTicks:0))));
+                    new StormFloor(9.5f, 12.05f, 3f, 26f) }, followSpeed:.06f, firstStrikeDelay:80, strikePeriod:135), new SoloRoomTrapSettings(delayTicks:0))));
             // The gaps' spikes: on S1 under each gap (and under Sink_S), hidden until the cat comes onto S2 (x 23.5-25; a chain
             // can't start from a cloud), then up for good, in view through the gaps from S2. A fall off a rider,
             // or through Sink_S, lands on them.
@@ -117,14 +118,9 @@ namespace Parallax.Editor.Levels
             // fall through Sink_S, so it gets its own.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapB",(8.75f,5.15f),(7.5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_GapA")));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapO",(16.75f,7.75f),(1.5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_GapA")));
-            // PAX-102: two repeating arrows on the same rhythm (every 150 ticks), each from a carved corbel, crossing the walk on a short
-            // steep lane: on the ground (from under S1_B) and on S2 before the door (from under the roof). A cat that stops in a
-            // lane is hit by the next shot. PAX-104: Arrow_G is timed to the cat: its first shot lands just ahead of a cat that
-            // walks the ground at once, so it reads as a near miss and the cat walks on through.
-            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_G",(17.5f,3.25f),(1f,1.5f)));
-            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_G",(17.25f,2.9f),(.5f,.4f),settings:new SoloRoomTrapSettings(
-                new ArrowLane(ArrowDirection.Left,2.9f,17f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
-                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:94,cooldownTicks:60))));
+            // PAX-102: a repeating arrow (every 150 ticks) from a carved corbel under the roof, crossing S2 before the door on a short
+            // steep lane: a cat that stops in it is hit by the next shot. PAX-107 (the developer: "Remove this arrow launcher. It
+            // doesn't do anything"): the ground's Arrow_G and its corbel are gone.
             elements.Add(E(SoloRoomElementKind.Wall,"Corbel_S",(5.5f,13.25f),(1f,1.5f)));
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_S",(5.25f,12.9f),(.5f,.4f),settings:new SoloRoomTrapSettings(
                 new ArrowLane(ArrowDirection.Left,12.9f,5f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
