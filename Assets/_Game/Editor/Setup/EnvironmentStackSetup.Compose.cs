@@ -53,8 +53,8 @@ namespace Parallax.Editor.Setup
         const float UnderRowOpen = 3f;
 
         /// <summary>Round 6: the lower row's tops (world y at mid travel) in levels the open-below rule can't read: L016 walks
-        /// the beds at y 9-10 over sky down to its floor at 0; L019 walks at y 0-4 over pits at -2.5 (its row stands behind the
-        /// ledges, or the view never reaches it).</summary>
+        /// three corridors over sky (PAX-107 D-142: the row stands behind corridors 1 and 2); L019 (PAX-107 D-149) has L016's frame (its row
+        /// stands behind corridors 1 and 2 too).</summary>
         static readonly Dictionary<string, float> UnderRowTop = new() { ["L016"] = 8f, ["L019"] = 8f };
 
         /// <summary>Round 2: how far the frame must open under the lowest floor before the far lake shows.</summary>
@@ -240,7 +240,9 @@ namespace Parallax.Editor.Setup
             string gameplay = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay);
             List<SoloRoomSkin.Solid> solids = SoloRoomSkin.Solids(room);
             int n = 0;
-            foreach (SoloRoomElement e in room.Elements.Where(x => x.Kind == SoloRoomElementKind.Hazard && x.HazardRole == SoloRoomHazardRole.OpeningBottom))
+            // PAX-107: or the hidden spikes a pit opening names as its hazard (L007's shaft 1: its spikes are T1's trigger).
+            foreach (SoloRoomElement e in room.Elements.Where(x => (x.Kind == SoloRoomElementKind.Hazard && x.HazardRole == SoloRoomHazardRole.OpeningBottom)
+                || (x.Kind == SoloRoomElementKind.HiddenSpikes && (room.Openings ?? System.Array.Empty<SoloRoomOpening>()).Any(o => o.Kind == SoloRoomOpeningKind.Pit && o.HazardName == x.Name))))
             {
                 var r = new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size);
                 // The pit's lip: the lower of the floors at its two sides (a tall neighbour must not pull the void up the sky).

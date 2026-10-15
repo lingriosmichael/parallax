@@ -11,7 +11,8 @@ namespace Parallax.Gameplay.Rooms
 
     // D-119: a Solid may be a hinge floor: it swings 90 degrees about a corner over hingeTicks (tipping a cat on it, by
     // physics), then moves by offset as any mover, pushing (pushes) a cat in its way. Its pose is a function of the ticks
-    // since the fire, so a reset and a rewind restore it exactly.
+    // since the fire, so a reset and a rewind restore it exactly. PAX-107 (D-124): a hinge floor may be spiked (its top face,
+    // which faces the cat once it stands: a touch kills), and a mover may rise first (an L-shaped move).
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
     public sealed class MovingTrap : RoomTrap
     {
@@ -36,10 +37,18 @@ namespace Parallax.Gameplay.Rooms
         [SerializeField] Vector2 hingePivot;
         [Tooltip("+1 swings counter-clockwise, -1 clockwise.")]
         [SerializeField] float hingeSign = 1f;
+        [Header("PAX-107 (D-124)")]
+        [Tooltip("The move follows an L: the vertical part of offset first, then the horizontal (a lift that rises, then carries).")]
+        [SerializeField] bool riseFirst;
+        [Header("PAX-107 (D-140)")]
+        [Tooltip("A slam: coming down, it kills a cat it lands on, even one physics would push aside (SlamHits).")]
+        [SerializeField] bool slams;
+        [Tooltip("A hinge floor's spiked face (the grey-box strip on its top face, shown from the swing): standing, a touch kills. Null: none.")]
+        [SerializeField] SpriteRenderer spikes;
         Rigidbody2D body; BoxCollider2D box; ContactFilter2D filter; readonly Collider2D[] results = new Collider2D[8]; Vector2 start; float startAngle;
 
         // PAX-V07 §4: a Solid mover (push wall, crusher, lift, drop-and-return, falling ceiling) crushes; a Hazard one spikes.
-        protected override CatDeathKind DeclaredDeathKind => kind == MovingTrapKind.Solid ? CatDeathKind.Crushed : CatDeathKind.Spiked;
+        protected override CatDeathKind DeclaredDeathKind => kind == MovingTrapKind.Solid && spikes == null ? CatDeathKind.Crushed : CatDeathKind.Spiked;
 
         public SurfaceMotion Motion => surfaceMotion;
         protected override int DelayTicks => delayTicks;
@@ -62,17 +71,22 @@ namespace Parallax.Gameplay.Rooms
             // PAX-A14: drawn between its tick poses, like the cat, so a floor moving at 50 Hz doesn't judder on a 60 Hz screen.
             body.interpolation = RigidbodyInterpolation2D.Interpolate;
             filter = new ContactFilter2D { useLayerMask = true, layerMask = Reality.PhysicsMask, useTriggers = false };
+            ShowSpikes(false);
         }
+
+        // PAX-107 (D-124): the spiked face shows from the fire (as the floor starts to swing up) until a reset.
+        void ShowSpikes(bool shown) { if (spikes != null) spikes.enabled = shown; }
 
         protected override void OnLiveRoomStep()
         {
             if (!enabled) return;
             PreviousDisplacement = DisplacementTick == RoomLifeTick - 1 ? Displacement : Vector2.zero;
-            Displacement = Vector2.zero; DisplacementTick = RoomLifeTick;
+            Displacement = Vector2.zero; DisplacementTick = RoomLifeTick; descending = false;
             bool overlap = trigger != null && IsLocalHumanOverlapping(trigger, observers, filter, results, out _);
             StepTiming(overlap);
             if (!IsTimingEffectActive) return;
             int since = RoomLifeTick - LatestFireTick;
+            ShowSpikes(since >= 0);
             Vector2 position = PositionAt(since);
             // Physics has resolved the cat against this pose. Checking it before the next
             // MovePosition distinguishes a pinned cat from one the solid safely pushed clear.
@@ -93,13 +107,33 @@ namespace Parallax.Gameplay.Rooms
                 return;
             }
             float depth = crushDepth > 0f ? crushDepth : crushConfig.DefaultCrushDepth;
+            // PAX-107 (D-124): a spiked hinge floor, standing, kills a cat touching it where it is or where it moves to (before
+            // any push).
+            if (spikes != null && TryGetLocalHumanColliderBounds(observers, out Bounds touched)
+                && (TrapMotion.Touches(touched, pose, SpikeSkin) || TrapMotion.Touches(touched, PoseBounds(position, body.rotation), SpikeSkin)))
+            { Death.Kill(Reality.Id, DeathCause.Hazard, this); return; }
             if (TryGetLocalHumanColliderBounds(observers, out Bounds catBounds) && TrapMotion.Crushes(catBounds, pose, depth)) { Death.Kill(Reality.Id, DeathCause.Hazard, this); return; }
+            // PAX-107 (D-140): a slam coming down kills a cat it lands on, before physics can push the cat aside.
+            descending = slams && position.y < body.position.y - 1e-4f;
+            if (descending) { slamFrom = pose; slamTo = PoseBounds(position, body.rotation); }
+            if (descending && TryGetLocalHumanColliderBounds(observers, out catBounds) && SlamHits(catBounds)) { Death.Kill(Reality.Id, DeathCause.Hazard, this); return; }
+            // PAX-107 (D-123): a mover that carries the cat into its named crush partner (a floor rising into a ceiling) crushes
+            // it there: physics lets a pinned cat sink into the static solid, never into the mover.
+            if (crushPartner != null && TryGetLocalHumanColliderBounds(observers, out catBounds) && TrapMotion.Crushes(catBounds, crushPartner.bounds, depth)) { Death.Kill(Reality.Id, DeathCause.Hazard, this); return; }
             if (pushes && Push(position, pose, depth)) return;
             Displacement = position - body.position;
             body.MovePosition(position);
         }
 
         bool Hinges => hingeTicks > 0;
+        // PAX-107 (D-124): how near a spiked face counts as touching it (physics keeps a resting cat this close to a solid).
+        public const float SpikeSkin = .03f;
+        // PAX-107 (D-140): how much of a descending solid's top doesn't count as landing on the cat (a rider), as a falling block's
+        // kill shrink (LevelLayoutValidator.BlockKillShrink).
+        public const float SlamSkin = .04f;
+        bool descending; Bounds slamFrom, slamTo;   // a slam's downward move this step (D-140), for the kill and the route harness
+        /// <summary>D-140: a slam whose move this step was down lands on a cat with these bounds (the kill test, also the harness's).</summary>
+        public bool SlamHits(Bounds catBounds) => descending && TrapMotion.SlamsOnto(catBounds, slamFrom, slamTo, SlamSkin);
 
         // D-119: the angle `ticks` after the fire: the start's, swung 90 degrees over hingeTicks (none without a hinge).
         float AngleAt(int ticks) => !Hinges || ticks <= 0 ? startAngle : startAngle + hingeSign * 90f * TrapMotion.Progress(ticks, hingeTicks);
@@ -107,7 +141,8 @@ namespace Parallax.Gameplay.Rooms
         // The body's position `ticks` after the fire: a hinge floor swings about its hinge, then moves by `offset` as any mover.
         Vector2 PositionAt(int ticks)
         {
-            if (!Hinges) return start + TrapMotion.MovingOffset(offset, ticks, moveTicks, holdTicks, returnTicks);
+            if (!Hinges) return start + (riseFirst ? TrapMotion.RiseFirstOffset(offset, ticks, moveTicks, holdTicks, returnTicks)
+                : TrapMotion.MovingOffset(offset, ticks, moveTicks, holdTicks, returnTicks));
             Vector2 pivot = start + hingePivot;
             Vector2 swung = pivot + (Vector2)(Quaternion.Euler(0f, 0f, AngleAt(ticks) - startAngle) * (start - pivot));
             return swung + TrapMotion.MovingOffset(offset, ticks - hingeTicks, moveTicks, holdTicks, returnTicks);
@@ -142,13 +177,14 @@ namespace Parallax.Gameplay.Rooms
             return true;
         }
 
-        protected override void OnReset() { if (body != null) { body.position = start; body.rotation = startAngle; } }
-        protected override void OnTimingRearmed() { if (body != null) { body.position = start; body.rotation = startAngle; } }
+        protected override void OnReset() { ShowSpikes(false); descending = false; if (body != null) { body.position = start; body.rotation = startAngle; } }
+        protected override void OnTimingRearmed() { ShowSpikes(false); if (body != null) { body.position = start; body.rotation = startAngle; } }
         // PAX-090 (D-091) Q2: as FallingBlockTrap, the pose at roomTick from its formula.
         protected override void OnRestore(in TrapSnapshot snapshot, int roomTick)
         {
             if (body == null) return;
             int since = roomTick - LatestFireTick;
+            ShowSpikes(IsTimingEffectActive && since >= 0);
             Vector2 pose = IsTimingEffectActive ? PositionAt(since) : start;
             float angle = IsTimingEffectActive ? AngleAt(since) : startAngle;
             body.position = pose; body.rotation = angle;

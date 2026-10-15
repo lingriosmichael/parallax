@@ -21,7 +21,9 @@ namespace Parallax.Editor.Setup
         {
             var errors = new List<string>();
             if (motor == null || gravity <= 0f) { errors.Add($"{levelId}: door upright: no CatMotorConfig or gravity."); return errors; }
-            List<SoloRoomElement> flips = room.Elements.Where(e => e.Kind is SoloRoomElementKind.GravityFlip or SoloRoomElementKind.Inverter).ToList();
+            // D-126: only gravity flips; an inverter swaps left and right (D-087) and never turns the cat upside down (L006's
+            // Invert_Drop, in a room with no flip, had made every underside count).
+            List<SoloRoomElement> flips = room.Elements.Where(e => e.Kind is SoloRoomElementKind.GravityFlip).ToList();
             if (flips.Count == 0) return errors;
             List<(string pose, Rect box)> doors = DoorPoses(room);
             if (doors.Count == 0) return errors;

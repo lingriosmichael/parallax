@@ -37,6 +37,9 @@ namespace Parallax.Editor.Levels
             var solution = new Route("L007 solution", new Route("L007 solution",
                 // Left along the ground: jump the floor that drops, and run on off the one that lands you.
                 Hold(Left), Until(Fired("Spikes_1")), Until(XAtMost(27.2f)), Jump(), Until(Airborne()), Until(Grounded()),
+                // PAX-107: jump the ground's spikes, stop as the block drops ahead, and hop over it once it lands.
+                Until(XAtMost(19.4f)), Jump(), Until(Airborne()), Until(GroundedOn("Ground_B")), Release(), Until(Still()),
+                Until(Moving("Block_G")), Until(Stopped("Block_G")), Hold(Left), Jump(), Until(Airborne()), Until(Grounded()),
                 // Up the left tower to S1.
                 Until(XAtMost(6.4f)), Jump(), Until(GroundedOn("Tread_LA")), Release(), Until(Still()),
                 Hold(Left), Jump(), Until(GroundedOn("Tread_LB")), Release(), Until(Still()),
@@ -61,6 +64,11 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(Grounded)", "stop where it lands", Release(), Until(Dead())), revealedBy: "Floor_2"),
                 new Betrayal("T3: S2's end, the step L3 taught, gives way onto spikes on S1", "Spikes_3", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Tread_RC))", "step onto S2's end", Release(), Until(Still()), Hold(Left), Jump(), Until(Dead())), revealedBy: "S2_End"),
+                // PAX-107: the ground walk's spikes and ceiling block.
+                new Betrayal("T15: spikes come up on the ground ahead of a cat that runs on", "Spikes_G1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X<=19.4)", "run on", Until(Dead()))),
+                new Betrayal("T16: a block drops from the ceiling onto a cat that runs on where the spikes' jump lands", "Block_G", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Ground_B))", "run on", Until(Dead()))),
                 new Betrayal("T4: an S1 section gives way under a cat that walks onto it", "Spikes_4", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(S1_A))", "walk on", Until(Dead())), revealedBy: "S1_T4"),
                 new Betrayal("T5: spikes under the overhang meet a cat that jumps the next stretch too", "Spikes_5", DeathCause.Hazard,
@@ -88,9 +96,12 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(Stopped(Ride_B))", "stop in the lane", Hold(Left), Until(XAtMost(4f)), Release(), Until(Dead()))),
                 // PAX-100 (D-106): the sinking tread. A cat that waits on it rides it down and back up, then goes on.
                 // PAX-107: with the storm 20 % faster and striking 10 % more often, a cat that waits on Tread_RC to ride it down and
-                // back up is struck before it comes back (it recovered before).
-                new Betrayal("T7: a cat that waits on Tread_RC as it sinks is struck by the storm", "Cloud", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Tread_RC))", "wait on the tread", Release(), Until(Dead())), revealedBy: "Cloud"));
+                // back up is struck before it comes back (it recovered before). D-125: the storm at the cat's run no longer follows
+                // into the right tower (its S1 range ends at x 24.5), so that cat recovers again: it rides the tread down and back up,
+                // and waits for Ride_A up on Tread_RE.
+                Betrayal.Recovers("T7: a cat that waits on Tread_RC sinks with it, rides it back up and goes on", "Tread_RC",
+                    new Route("wait on the tread", Route.PrefixOf(solution, "Until(GroundedOn(Tread_RC))", "wait on the tread",
+                        Release(), Until(Still()), Until(Moving("Tread_RC")), Until(Home("Tread_RC"))).Steps.Concat(AfterRC(waitForRideA: true)).ToArray())));
         }
     }
 }

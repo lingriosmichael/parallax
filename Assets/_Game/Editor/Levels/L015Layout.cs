@@ -66,6 +66,9 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Ceiling,"Overhang_B",(10.7f,CoverY),(2.2f,CoverH)),
                 E(SoloRoomElementKind.Ceiling,"Roof_4",(20.5f,CoverY),(2f,CoverH)),
                 E(SoloRoomElementKind.Ceiling,"Overhang_4",(24.25f,CoverY),(1.5f,CoverH)),
+                // PAX-107 (D-125): a roof over the Run section's checkpoint (Floor_E's west end, short of the cave-in's cut): the
+                // cloud at the cat's run is over the gate as the cat crosses it, and a cat respawned there must outlast a strike.
+                E(SoloRoomElementKind.Ceiling,"Roof_R",(41.2f,CoverY),(1.2f,CoverH)),
                 E(SoloRoomElementKind.Ceiling,"Roof_S",(34.4f,CoverY),(1.6f,CoverH)),
                 // Roof_9 covers P1 (top 0.8), so it sits 0.8 higher than the others.
                 E(SoloRoomElementKind.Ceiling,"Roof_9",(54.5f,CoverY + .8f),(1.8f,CoverH)),
@@ -83,9 +86,9 @@ namespace Parallax.Editor.Levels
             };
 
             // The cloud: wakes at the cut x 5-5.5; its centre ranges over x 2-55 (P2 from 56 is past it).
-            // PAX-107 (the developer: clouds 20 % faster, zap 10 % faster): follow 0.08 -> 0.096, strike every 100 -> 90 ticks.
+            // PAX-107 (the developer: clouds 20 % faster, zap 10 % faster): follow 0.08 -> 0.096, strike every 100 -> 90 ticks; then (D-124) the cat's run, 0.12.
             elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(3f,7.6f),(2f,.8f),(5.25f,4.5f),(.5f,9f),
-                new SoloRoomTrapSettings(new StormCloudSettings(2f, 55f, followSpeed:.096f, strikePeriod:90), new SoloRoomTrapSettings(delayTicks:0))));
+                new SoloRoomTrapSettings(new StormCloudSettings(2f, 55f, followSpeed:.12f, strikePeriod:90), new SoloRoomTrapSettings(delayTicks:0))));   // PAX-107 (the developer: "it doesn't matter if it moves at same speed"): the cat's run, 0.12 u/tick
 
             // Open. Arrow_3's trigger is floor to ceiling from x 10.6 to its launcher (the cat enters it as it lands after the
             // gap), so it cuts the whole band for Collapse_2, chained from it. Collapse_2 (x 13-16.5; Pit_2 shows beyond it, before Post_C),

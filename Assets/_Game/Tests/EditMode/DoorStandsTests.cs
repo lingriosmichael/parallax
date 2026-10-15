@@ -50,7 +50,7 @@ namespace Parallax.Tests.EditMode
         [TestCase("L004", "Door_Step", "its authored pose")]   // PAX-103: the door stands on the climb's top step (no retreat now)
         [TestCase("L009", "Slab_D", "its authored pose")]   // PAX-102: the door stands on Slab_D now
         [TestCase("L010", "Ledge_E3", "its authored pose")]   // PAX-102: the door stands on Ledge_E3 (no retreat now)
-        [TestCase("L016", "Door_Ledge", "its authored pose")]
+        [TestCase("L016", "SB_4", "its authored pose")]   // PAX-107 (D-142): the door stands on corridor 3's floor
         [TestCase("L020", "Door_Ledge", "its retreated pose")]
         public void WithoutItsPlatform_TheDoorHangs_AndIsRejected(string id, string platform, string pose)
         {

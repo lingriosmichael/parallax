@@ -7,7 +7,8 @@ namespace Parallax.Gameplay.Rooms
     /// <summary>PAX-085 (D-087): touching it swaps the LocalHuman cat's left and right for durationTicks motor steps.
     /// LocalHumanDriver negates the motor's Move while InvertsMove is true; jump is untouched. The timer counts room
     /// ticks, so the death hold and the pause freeze it; the room reset and the room ending (no longer live) clear it.
-    /// The cue (ring behind the cat, mark over it) is switched in the room step and follows the cat in LateUpdate.</summary>
+    /// The cue (ring behind the cat, mark over it) is switched in the room step and follows the cat in LateUpdate.
+    /// PAX-107: an optional end box (endTrigger) ends the window early when the cat reaches it.</summary>
     [RequireComponent(typeof(BoxCollider2D))]
     public sealed class InverterTrap : RoomTrap, IControlModifier
     {
@@ -19,8 +20,10 @@ namespace Parallax.Gameplay.Rooms
         [SerializeField] int durationTicks = ControlInversion.DefaultDurationTicks;
         [SerializeField] int delayTicks;
         [SerializeField] float markHeight = .75f;        // above the cat's collider centre, against gravity
+        [SerializeField] BoxCollider2D endTrigger;       // PAX-107 (L009): optional; a cat that reaches it ends the window there
 
         readonly ControlInversion inversion = new ControlInversion();
+        int windowTicks;   // the open window's length: durationTicks, or less once the cat reached the end box
         readonly Collider2D[] results = new Collider2D[8];
         ContactFilter2D filter;
         Collider2D catCollider;   // presentation only: where LateUpdate draws the cue
@@ -66,7 +69,10 @@ namespace Parallax.Gameplay.Rooms
         {
             if (!enabled) return;
             bool overlap = trigger != null && IsLocalHumanOverlapping(trigger, observers, filter, results, out _);
-            if (StepTiming(overlap)) inversion.Fire(RoomLifeTick, durationTicks);
+            if (StepTiming(overlap)) inversion.Fire(RoomLifeTick, windowTicks = durationTicks);
+            // PAX-107 (L009): the cat reached the end box with the window open: it ends with this tick.
+            if (endTrigger != null && inversion.IsActive(RoomLifeTick + 1) && IsLocalHumanOverlapping(endTrigger, observers, filter, results, out _))
+                inversion.Fire(inversion.FireTick, windowTicks = RoomLifeTick - inversion.FireTick);
             ApplyVisuals(RoomLifeTick);
         }
 
@@ -76,13 +82,14 @@ namespace Parallax.Gameplay.Rooms
             ApplyVisuals(-1);
         }
 
-        // PAX-090 (D-091): the window's fire tick (its duration is this trap's), and the cue as it was at the gate tick.
-        protected override void CaptureExtra(ref TrapSnapshot snapshot) => snapshot.ExtraInt = inversion.FireTick;
+        // PAX-090 (D-091): the window's fire tick and length (PAX-107: shorter once the cat reached the end box), and the
+        // cue as it was at the gate tick.
+        protected override void CaptureExtra(ref TrapSnapshot snapshot) { snapshot.ExtraInt = inversion.FireTick; snapshot.ExtraFloat = windowTicks; }
 
         protected override void OnRestore(in TrapSnapshot snapshot, int roomTick)
         {
             if (snapshot.ExtraInt < 0) inversion.Clear();
-            else inversion.Fire(snapshot.ExtraInt, durationTicks);
+            else inversion.Fire(snapshot.ExtraInt, windowTicks = Mathf.RoundToInt(snapshot.ExtraFloat));
             ApplyVisuals(roomTick);
         }
 

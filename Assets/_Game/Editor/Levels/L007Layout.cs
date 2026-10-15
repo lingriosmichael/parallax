@@ -48,16 +48,28 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Floor,"S2_East",(23.9f,9.5f),(2.8f,1f)),
             };
             L001Layout.AddShaft(elements, 0, 0f, 5f);
-            // T1: the floor one step ahead drops as the cat comes up to it (its trigger is the spikes in the shaft).
-            L001Layout.AddShaft(elements, 1, 24.8f, 26.8f);
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_1",(25.8f,-2.55f),(2f,.3f),(27.75f,7f),(.5f,14f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // T1: the floor one step ahead drops as the cat comes up to it (its trigger is the spikes in the shaft). PAX-107 (the
+            // developer: "weird looking double spikes"): they are the shaft's spikes (its opening names them; y -2.85, was -2.55
+            // on top of a second row), so the shaft has its bottom and no Pit1_Hazard. Floor_1 hides the shaft until they show.
+            elements.Add(E(SoloRoomElementKind.PitBottom,"Pit1_Bottom",(25.8f,-3.5f),(2f,1f)));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_1",(25.8f,-2.85f),(2f,.3f),(27.75f,7f),(.5f,14f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Floor_1",(25.8f,-1.5f),(2f,3f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_1",delayTicks:1)));
             // T2: the floor where T1's jump lands gives way under a cat that stops.
             L001Layout.AddShaft(elements, 2, 22f, 23.8f);
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Floor_2",(22.9f,-1.5f),(1.8f,3f),settings:new SoloRoomTrapSettings(delayTicks:18)));
             // T4: an S1 section gives way under a cat that walks onto it (L3 taught jumping it).
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"S1_T4",(10.4f,4.5f),(1.8f,1f),settings:new SoloRoomTrapSettings(delayTicks:4)));
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_4",(12.5f,.15f),(6f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"S1_T4")));
+            // PAX-107: Spikes_4 x 9-12.5 (was 9.5-15.5), where a cat that walks onto S1_T4 lands, clear of Block_G's landing.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_4",(10.75f,.15f),(3.5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"S1_T4")));
+            // PAX-107 (the developer: "there is a whole section in bottom floor with no floor or ceiling traps at all. Add a few
+            // here"): the ground walk under S1. T15: spikes come up on the ground (x 17-18) as the cat comes onto the ground past
+            // the shafts (their trigger is the storey under S1_D, x 21.5-23.5): jump them. T16: a lintel hangs under S1_B (x
+            // 12.5-15.5, down to y 3) with a block in it (x 13.5-14.5) that drops as the cat comes down from that jump (its
+            // trigger is the storey under the lintel's east end, x 14.5-15.5): a cat that runs on is crushed; stop, let it land,
+            // and hop it.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_G1",(17.5f,.15f),(1f,.3f),(22.5f,2f),(2f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.Ceiling,"Lintel_G",(14f,3.5f),(3f,1f)));
+            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_G",(14f,3.5f),(1f,1f),(15f,1.5f),(1f,3f),new SoloRoomTrapSettings(delayTicks:0,unitsPerTick:.2f,travelDistance:3f)));
             // T5: the stretch after T4 is real, but spikes show under the overhang as the cat comes to it: a cat that jumps
             // it, as T4 taught, meets them; a cat that walks passes under.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_5",(15.75f,6.45f),(3.5f,.3f),(15.4f,7f),(4.2f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
@@ -73,7 +85,8 @@ namespace Parallax.Editor.Levels
                 new SoloRoomTrapSettings(delayTicks:30,offset:new Vector2(0f,-1.8f),moveTicks:60,holdTicks:40,returnTicks:60,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:170,movingKind:MovingTrapKind.Solid))));
             // T3 (L3, reversed): from Tread_RC, S2's end is the step L3 taught; it gives way onto spikes on S1. The wall
             // step (Tread_RD) is real.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_3",(24.75f,5.15f),(5.5f,.3f),(26.4f,12f),(2.2f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // PAX-107: x 22.5-27.5 (was 22-27.5), so it doesn't overlap Spikes_GapA's east piece.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_3",(25f,5.15f),(5f,.3f),(26.4f,12f),(2.2f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"S2_End",(26.4f,9.5f),(2.2f,1f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_3",delayTicks:1)));
             // Dead end: the tower's rhythm goes on past S2; that tread gives way onto spikes on Tread_RD.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_F",(31.5f,10.4f),(1f,.3f),(31.5f,13.375f),(1f,1.25f),new SoloRoomTrapSettings(revealDelayTicks:6)));
@@ -87,9 +100,9 @@ namespace Parallax.Editor.Levels
             // level's 150-tick rhythm). Each waits at its gap's east side, carries the cat 3 u west, holds, and comes back. Wait
             // for it, ride it, step off; a cat that runs on as it arrives finds it gone and falls in.
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Ride_A",(21.75f,9.75f),(1.5f,.5f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
-                new SoloRoomTrapSettings(offset:new Vector2(-3f,0f),moveTicks:40,holdTicks:20,returnTicks:40,repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:26,cooldownTicks:100,movingKind:MovingTrapKind.Solid))));
+                new SoloRoomTrapSettings(offset:new Vector2(-3f,0f),moveTicks:40,holdTicks:20,returnTicks:40,repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:53,cooldownTicks:100,movingKind:MovingTrapKind.Solid))));
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Ride_B",(11.75f,9.75f),(1.5f,.5f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
-                new SoloRoomTrapSettings(offset:new Vector2(-3f,0f),moveTicks:40,holdTicks:20,returnTicks:40,repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:136,cooldownTicks:100,movingKind:MovingTrapKind.Solid))));
+                new SoloRoomTrapSettings(offset:new Vector2(-3f,0f),moveTicks:40,holdTicks:20,returnTicks:40,repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:13,cooldownTicks:100,movingKind:MovingTrapKind.Solid))));
             // PAX-103: the section where Ride_A sets the cat down (x 16-18) gives way 30 ticks after a landing, onto the gap's
             // spikes on S1 (it sank into the floating kill strip in PAX-102): step off and walk on.
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Sink_S",(17f,9.5f),(2f,1f),settings:new SoloRoomTrapSettings(delayTicks:30)));
@@ -97,23 +110,29 @@ namespace Parallax.Editor.Levels
             // amendment): a storm cloud over S2, following the cat left along it (it starts over S2's east end, behind the cat).
             // PAX-104: it wakes as the cat comes onto S2 (x 23.5-25), so all of S2 is under it; waiting is what it punishes.
             // Ride_A is phased to the tower's descent: home as a cat that climbs at once comes down, leaving ~20 ticks after it
-            // boards; Ride_B leaves 110 ticks after Ride_A, as a cat that walks off Ride_A has just boarded it. It stays under the
+            // boards (PAX-107: phases 26 and 136 -> 53 and 13, 27 ticks later, for the ground walk's new traps); Ride_B leaves 110 ticks after Ride_A, as a cat that walks off Ride_A has just boarded it. It stays under the
             // corbel by the door (top 12.45 < 12.5) and clear of the door (its range ends at x 3).
             // D-116 (the developer: "there is always a cloud constantly following the cat to zap it", toned down; then "I thought
             // the cloud follows them all the way through"): it wakes as the cat starts (its trigger holds the start) and follows
             // the cat floor to floor: low over the ground, under S2 over S1, and under the roof over S2, climbing
             // or sinking 0.2 u a tick when the cat changes floor. PAX-107 (the developer: clouds 20 % faster, zap 10 % faster): it
-            // follows at 0.06 u/tick (3 u/s), strikes every 135 ticks,
-            // the first 80 ticks after it wakes; the 25-tick tell stays. Waiting is what it punishes, all the way up.
+            // follows at 0.12 u/tick (PAX-107, D-125: the cat's run, 6 u/s; over S1 and S2 only to x 24.5, so the right tower's
+            // climb, whose zigzag stops at the cloud's height, and the fall through S2_End are out of its reach), strikes every 135 ticks,
+            // the first 130 ticks after it wakes (D-125: was 80; at the cat's run its strikes are placed off the solution's waits);
+            // the 25-tick tell stays. Waiting is what it punishes, all the way up.
             elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(29f,2.05f),(2f,.8f),(29.4f,1.5f),(5.2f,3f),
                 new SoloRoomTrapSettings(new StormCloudSettings(new[] {
                     new StormFloor(-100f, 2.05f, 2.6f, 30.9f),
-                    new StormFloor(4.5f, 8.4f, 1.1f, 30.9f),
-                    new StormFloor(9.5f, 12.05f, 3f, 26f) }, followSpeed:.06f, firstStrikeDelay:80, strikePeriod:135), new SoloRoomTrapSettings(delayTicks:0))));
+                    new StormFloor(4.5f, 8.4f, 1.1f, 24.5f),
+                    new StormFloor(9.5f, 12.05f, 3f, 24.5f) }, followSpeed:.12f, firstStrikeDelay:130, strikePeriod:135, climbSpeed:.24f), new SoloRoomTrapSettings(delayTicks:0))));
             // The gaps' spikes: on S1 under each gap (and under Sink_S), hidden until the cat comes onto S2 (x 23.5-25; a chain
             // can't start from a cloud), then up for good, in view through the gaps from S2. A fall off a rider,
             // or through Sink_S, lands on them.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapA",(19.25f,5.15f),(6.5f,.3f),(24.25f,12f),(1.5f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // PAX-107 (the developer: spikes "where there wasn't any" over the hole S1_T6 leaves): gap A's spikes are in two pieces,
+            // on S1_B (x 16-19.5) and on S1_D (x 21.5-22.5), not over the hole (x 19.5-21.5); a fall through it lands on Spikes_6
+            // on the ground, up since T6.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapA",(17.75f,5.15f),(3.5f,.3f),(24.25f,12f),(1.5f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapA2",(22f,5.15f),(1f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_GapA")));
             // Gap B's reach west to x 5 (a cat that runs off Ride_B lands as far as x 6.8); the overhang's top (x 16-17.5) catches a
             // fall through Sink_S, so it gets its own.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapB",(8.75f,5.15f),(7.5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_GapA")));
@@ -138,7 +157,7 @@ namespace Parallax.Editor.Levels
                 J("Tread_RC",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Left,31.5f,29.4f,7.5f,8.75f,1f,sourceName:"Tread_RB",destinationName:"Tread_RC"),
                 J("Tread_RE",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Left,31.2f,29.5f,10.25f,11.5f,1f,sourceName:"Tread_RD",destinationName:"Tread_RE"),
             };
-            return new SoloRoomDefinition(0,0f,32f,elements.ToArray(),new[] { L001Layout.Shaft(0,0f,5f), L001Layout.Shaft(1,24.8f,26.8f), L001Layout.Shaft(2,22f,23.8f) },jumps);
+            return new SoloRoomDefinition(0,0f,32f,elements.ToArray(),new[] { L001Layout.Shaft(0,0f,5f), O(SoloRoomOpeningKind.Pit,24.8f,26.8f,"","","Pit1_Bottom","Spikes_1"), L001Layout.Shaft(2,22f,23.8f) },jumps);
         }
     }
 }

@@ -59,9 +59,10 @@ namespace Parallax.Editor.Levels
             // intervals, and it doesn't stop"; then "wait till the cat has moved at least 2 to the left", "lower intervals"): it
             // rearms, every 200 ticks while the cat is on S2 (its trigger, x 5.5-27.5: 2 u left of the start, so the first shot
             // waits for the cat to set off), and the walk along S2 jumps it as it comes (a jumped arrow, as L003's S1, D-113).
+            // D-126 (the developer: "too slow. Half the current time"): every 100 ticks (was 200).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_A",(31.75f,10.3f),(.5f,.4f),(16.5f,12f),(22f,4f),new SoloRoomTrapSettings(
                 new ArrowLane(ArrowDirection.Left,10.3f,.5f,unitsPerTick:.36f,disguised:true),
-                new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:200))));   // D-119: never stops once set off
+                new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:100))));   // D-119: never stops once set off
             // T1b (PAX-100, D-106): a repeating arrow. A corbel hangs from the roof over S2 (x 15.5-16.5, down to y 11.7, above
             // Arrow_B's lane); its honest launcher fires down-left at -60 degrees every 110 ticks, onto S2 at x 14.3. Its lane
             // crosses the cat's band only over about half a unit: count, then pass; a cat that stops under it is hit.
@@ -113,11 +114,11 @@ namespace Parallax.Editor.Levels
             // D-119 (the developer: "I asked for a cloud in level 5"): a storm cloud follows the cat floor to floor. PAX-107 (the
             // developer: "make the cloud start appearing from the middle level, not from the top"; clouds 20 % faster, zap 10 %
             // faster): it waits over S1 and wakes as the cat comes down onto S1_A, then follows it under S2 over S1 and under S1
-            // over the ground, at 0.06 u/tick, striking every 135 ticks, the first 80 ticks after it wakes (25-tick tell).
+            // over the ground, at 0.12 u/tick (PAX-107, D-124: the cat's run), striking every 135 ticks, the first 80 ticks after it wakes (25-tick tell).
             elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(7f,8.3f),(2f,.8f),(2.25f,6f),(4.5f,2f),
                 new SoloRoomTrapSettings(new StormCloudSettings(new[] {
                     new StormFloor(-100f, 3.3f, 7.6f, 30.9f),
-                    new StormFloor(4.5f, 8.3f, 6.6f, 30.9f) }, followSpeed:.06f, firstStrikeDelay:80, strikePeriod:135), new SoloRoomTrapSettings(delayTicks:0))));
+                    new StormFloor(4.5f, 8.3f, 6.6f, 30.9f) }, followSpeed:.12f, firstStrikeDelay:80, strikePeriod:135, climbSpeed:.24f), new SoloRoomTrapSettings(delayTicks:0))));
             // T6: T1 of level 1 again, before the door.
             L001Layout.AddShaft(elements, 6, 4.2f, 5.8f);
             elements.Add(E(SoloRoomElementKind.FakePlatform,"Floor_6",(5f,-1.5f),(1.6f,3f)));

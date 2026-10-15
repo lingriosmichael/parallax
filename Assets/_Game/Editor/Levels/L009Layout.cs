@@ -18,11 +18,28 @@ namespace Parallax.Editor.Levels
     // way right is up when it comes back over it upside down. S1 is cut by a chasm (x 15-26.5) crossed on two lifts that rise
     // toward spikes in the roof that impale what rides them up (and an upside-down cat walking the roof over them); a hinge floor at its east
     // end pushes a cat that stops past it onto the third floor strip.
+    // PAX-107 round three (the developer: "only arrow launchers are missing so that even if you have to wait for spikes to go
+    // down, you are always jumping … when the cat reaches this gravity inverter it also automatically inverts arrow directions as
+    // well. I want arrow launchers going from left to right, non stop, and in intervals regardless of where the cat is"; the pick:
+    // mirror to the roof): two launchers in the left wall fire along S1_A to a kerb at the chasm's edge, on the room's clock, each
+    // once a rhythm while F1 is up (never while a cat waits out F2 under the floating flip, where it can't jump). A shot fired
+    // while the cat's gravity is up flies on the mirrored lane along the roof, to a kerb hanging from it.
     static class L009Layout
     {
         // PAX-107: the mirror rhythm and the lifts' places in it (fire ticks; a strip is up for the first half after its fire).
         internal const int Period = 200, Half = 100;
         internal const int F1Phase = 0, F2Phase = 100, F3Phase = 130, LiftAPhase = 130, LiftBPhase = 190;
+        // PAX-107 round three: the launchers' places in the rhythm (both inside F1's up half), and the line their lanes mirror
+        // across (halfway between S1's top and the roof's underside).
+        internal const int ArrowW1Phase = 20, ArrowW2Phase = 55;
+        internal const float MirrorAxis = 9.5f;
+
+        // PAX-107 round three: a launcher in the jamb firing right along S1_A to the kerb (x 14.5), on the rhythm, mirroring
+        // with gravity.
+        static SoloRoomElement Launcher(string name, float y, int phase) =>
+            E(SoloRoomElementKind.Arrow,name,(.25f,y),(.5f,.25f),settings:new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Right,y,14.5f,mirrorWithGravity:true,mirrorAxisY:MirrorAxis),
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:Period,phaseTicks:phase,cooldownTicks:60)));
 
         // PAX-107: a 1.5 u spike strip on the rhythm: up from `phase` for half a period.
         static SoloRoomElement Mirror(string name, float x, float y, int phase) =>
@@ -54,25 +71,41 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Ceiling,"Recess_Top",(18.75f,17.5f),(3.5f,1f)),
                 E(SoloRoomElementKind.Hazard,"Recess5_Hazard",(18.75f,16.85f),(2.5f,.3f)),
                 // PAX-107: S1 to the chasm's edge (x 15); S1_E1, an island between Lift_B and the hinge floor; S1_E2 past the
-                // hinge floor to the wall. The chasm's kill strip is 3 u under S1's top.
+                // hinge floor to the wall. The chasm's kill strip is 1.2 u under S1's top (PAX-107, the developer: "why are the spikes so
+                // far down"; was 3 u).
                 E(SoloRoomElementKind.Floor,"S1_A",(7.5f,4.5f),(15f,1f)),
                 E(SoloRoomElementKind.Floor,"S1_E1",(23.25f,4.5f),(1.5f,1f)),
                 E(SoloRoomElementKind.Floor,"S1_E2",(29.25f,4.5f),(5.5f,1f)),
-                E(SoloRoomElementKind.PitBottom,"Chasm_Bottom",(20.75f,1.5f),(11.5f,1f)),
-                E(SoloRoomElementKind.Hazard,"Chasm_Hazard",(20.75f,2.15f),(11.5f,.3f),hazardRole:SoloRoomHazardRole.OpeningBottom),
+                E(SoloRoomElementKind.PitBottom,"Chasm_Bottom",(20.75f,3f),(11.5f,1f)),
+                E(SoloRoomElementKind.Hazard,"Chasm_Hazard",(20.75f,3.65f),(11.5f,.3f),hazardRole:SoloRoomHazardRole.OpeningBottom),
                 // The small slabs over the floating flips.
                 // PAX-100 item 0: Slab_D reaches back to x 1.5 (it began at 4), so a cat that jumps into Flip_D1 moving left meets
                 // its spikes too, instead of rising past its end to the roof by the door (the bypass PAX-099 found).
                 // PAX-102: 0.5 u higher, so the door on it is far enough from the start (D-085).
                 E(SoloRoomElementKind.Floor,"Slab_D",(5.1f,10.75f),(7.2f,.5f)),
                 E(SoloRoomElementKind.Floor,"Slab_1",(12.6f,10.25f),(5.2f,.5f)),
+                // PAX-107 round three: the kerb at S1_A's east end (x 14.5-15, 0.7 tall) where the arrows stop, and its mirror
+                // hanging from the roof over it.
+                E(SoloRoomElementKind.Wall,"Kerb",(14.75f,5.35f),(.5f,.7f)),
+                E(SoloRoomElementKind.Wall,"Kerb_R",(14.75f,13.65f),(.5f,.7f)),
+                // PAX-107 round three: the jamb, the left wall 0.5 u thicker from S1's top to the roof, that hosts the launchers
+                // (and their mirrored lanes under the roof).
+                E(SoloRoomElementKind.Wall,"Jamb",(.25f,9.5f),(.5f,9f)),
             };
+            // PAX-107 round three: the launchers. Arrow_W1 at the cat's middle, Arrow_W2 at its head: a standing cat is hit by
+            // either, a jumping one clears both.
+            elements.Add(Launcher("Arrow_W1",5.25f,ArrowW1Phase));
+            elements.Add(Launcher("Arrow_W2",5.55f,ArrowW2Phase));
             var flip = new SoloRoomTrapSettings(gravityMode:GravityFlipMode.Flip,rearmOnExit:true,rendererEnabled:true);
             // T1 (L4's lure): a flip floating over S1 sends a cat that jumps into it up onto spikes under the slab above it (they
             // show as the cat comes under the slab). PAX-107: it hangs between the first two floor strips, so neither can be
             // jumped: wait them out under it (it reaches F2's west edge, x 10.25-12).
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_1",(11.125f,7.8f),(1.75f,2f),settings:flip));
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_1",(12.725f,9.85f),(4.95f,.3f),(12.725f,7f),(4.95f,6f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // PAX-107 (the developer: "spikes should only come out once the cat lands on this. Not before"): the slabs' spikes are
+            // set off by a cat rising toward them, flipped (the trigger is the space under the slab from y 7.3, over the top of a
+            // jump from S1, 7.16; it holds the strip a rising cat crosses first: TriggerCoverage.CoveredOverhead), not as the
+            // cat walks under it.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_1",(12.725f,9.85f),(4.95f,.3f),(12.75f,8.5f),(5.5f,2.4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             // PAX-107: the mirror pairs. F1 (x 8.5-10) is up from the start; F2 (x 12-13.5) takes the other half; F3 (x 28-29.5)
             // is past the hinge floor. Each roof strip is its floor strip's mirror.
             elements.Add(Mirror("Spikes_F1",9.25f,5.15f,F1Phase));
@@ -94,19 +127,24 @@ namespace Parallax.Editor.Levels
             // trigger is the space over S1_E2's west end, x 26.6-28.5) sets it off; 8 ticks later it swings up about its east
             // end over 10 into a wall (x 26-26.5) and slides 2 u east over 28, pushing a cat that stopped there onto F3.
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Hinge_9",(25.25f,4.75f),(2.5f,.5f),(27.55f,7f),(1.9f,4f),new SoloRoomTrapSettings(
-                new MovingFloorSettings(SurfaceMotion.Slip,pushes:true,hingeTicks:10,hingeAtRight:true),
-                new SoloRoomTrapSettings(delayTicks:8,offset:new Vector2(2f,0f),moveTicks:28,holdTicks:600,movingKind:MovingTrapKind.Solid))));
+                new MovingFloorSettings(SurfaceMotion.Slip,pushes:true,hingeTicks:3,hingeAtRight:true),
+                new SoloRoomTrapSettings(delayTicks:8,offset:new Vector2(2f,0f),moveTicks:10,holdTicks:600,movingKind:MovingTrapKind.Solid))));
             // T4: the floor flip at S1's right end is the way up (PAX-107: against the wall, past F3).
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_4",(31.5f,6f),(1f,2f),settings:flip));
+            // PAX-107 (the developer: "In level 9 the cat starts with arrow directions inverted until it reaches the gravity
+            // inverter in the bottom right of the map, then it goes back to normal"): the cat spawns in an inverter (left and
+            // right swapped from the first tick, and again after every respawn) whose window ends in Flip_4 (its end box).
+            elements.Add(E(SoloRoomElementKind.Inverter,"Invert",(3f,6.5f),(.6f,3f),settings:new SoloRoomTrapSettings(
+                new InverterSettings(L004Layout.WholeLevelTicks,endPosition:new Vector2(31.5f,6f),endSize:new Vector2(1f,2f)),new SoloRoomTrapSettings(delayTicks:0))));
             // T5: the roof between the lifts gives way under a cat that stops (PAX-107: where a cat waits out the lifts).
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Roof_5",(18.75f,15.5f),(2.5f,3f),settings:new SoloRoomTrapSettings(delayTicks:28)));
             // Dead ends, both "straight up to the door": a flip floating in front of the start, onto spikes under the slab
             // over it; and the ledge by the wall behind the start, "the first step up", which gives way onto spikes on S1 under
             // it (its trigger is the space over it).
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_D1",(5f,7.8f),(1.5f,2f),settings:flip));
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D1",(5.1f,10.35f),(7.2f,.3f),(5.1f,7.75f),(7.2f,5.5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D2",(.75f,5.15f),(1.5f,.3f),(.75f,10.125f),(1.5f,7.75f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Ledge_D2",(.75f,6f),(1.5f,.5f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_D2",delayTicks:1)));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D1",(5.1f,10.35f),(7.2f,.3f),(5.1f,8.75f),(7.8f,2.9f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D2",(1f,5.15f),(1f,.3f),(1f,10.125f),(1f,7.75f),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Ledge_D2",(1f,6f),(1f,.5f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_D2",delayTicks:1)));
             // PAX-102 (the developer: "I don't want to be able to solve this level by jumping on a door while inverted"): the
             // door stands on Slab_D's top (the platform on the far left), and a flip floating under the roof over Slab_D's east
             // end (x 7.5-8.5, from the roof down to the slab) turns a cat walking the roof upside down back down before it gets

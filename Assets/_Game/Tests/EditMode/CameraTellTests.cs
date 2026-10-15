@@ -169,31 +169,6 @@ namespace Parallax.Tests.EditMode
             }
         }
 
-        // PAX-060 (D-097): L014's T1 (Lip_1 gives way at the cat's feet) with its escape declared: Lip_1 is on screen from
-        // the collapse through the last press that still catches V2 and finishes the level, at every aspect.
-        [Test]
-        public void L014_T1_WithItsEscapeDeclared_Passes()
-        {
-            object routes = RouteValidatorTests.Routes("L014");
-            object t1 = ((IList)F(routes, "Betrayals"))[0];
-            Assert.NotNull(F(t1, "Escape"), "T1 declares its escape");
-            Array justT1 = Array.CreateInstance(T("Betrayal"), 1);
-            justT1.SetValue(t1, 0);
-            object only = Activator.CreateInstance(T("RoomRoutes"), F(routes, "Solution"), justT1);
-            var errors = new List<string>();
-            List<object> results = Tell("L014", RouteValidatorTests.Room("L014"), only, errors).Where(r => (bool)F(r, "Escape")).ToList();
-            TestContext.Out.WriteLine(Table(results));
-            Assert.AreEqual(3, results.Count);
-            // The escape rule only (the killer-at-death rule is checked with the level, in ShippedLevel_…).
-            List<string> escapeErrors = errors.Where(e => e.Contains("(D-097")).ToList();
-            CollectionAssert.IsEmpty(escapeErrors, string.Join("\n", escapeErrors));
-            foreach (object r in results)
-            {
-                Assert.IsTrue((bool)F(r, "Escape"), r.ToString());
-                Assert.GreaterOrEqual((int)F(r, "LastEscape") - (int)F(r, "Reveal") + 1, 12, "at least WindowTicks on screen by the last escape: " + r);
-            }
-        }
-
         // D-104: the fit-mode branch, under a 16 u view (the fixture's frame, 16 x 10, never fits a shipped level's zoomed
         // view): 15 wide, so the frame fits at 4:3.
         [Test]

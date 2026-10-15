@@ -172,8 +172,11 @@ namespace Parallax.Gameplay.Presentation
                 initialized = true;
             }
 
+            // PAX-107 (the developer: "It should actually just be still or idle"): a cat riding a rising solid floor isn't
+            // grounded (D-115), yet it stands on it: the table sees it grounded, and its motion against the floor's.
+            bool riding = RidingRisingFloor();
             // PAX-A14: the cat's own motion: what a moving floor carried it (the floor's drawn move) isn't walking.
-            Vector2 delta = currentPosition - lastWorldPosition - CarryFloorMoved();
+            Vector2 delta = currentPosition - lastWorldPosition - CarryFloorMoved(riding);
             bool teleported = (currentPosition - lastWorldPosition).magnitude >= config.TeleportDistance;
             lastWorldPosition = currentPosition;
             Vector2 measuredVelocity = !teleported && dt > 0f
@@ -202,7 +205,9 @@ namespace Parallax.Gameplay.Presentation
             float height = -Vector2.Dot(currentPosition, down);
             Vector2 paws = motionRoot.TransformPoint(restLocalPosition);
             Collider2D ground = motor.GroundCollider;
-            bool rollingOff = ground != null && !motor.JumpedThisStep && CatPresentationSignals.SunkBelow(ground.bounds, paws, down, config.GroundSinkTolerance);
+            // PAX-107: not on a rising floor, whose collider is up to a tick ahead of where it's drawn (the paws would read as sunk).
+            bool rollingOff = ground != null && !motor.JumpedThisStep && !RisingFloor(ground, down, out _)
+                && CatPresentationSignals.SunkBelow(ground.bounds, paws, down, config.GroundSinkTolerance);
             // Ruled 2026-09-30: a landing enters Land / HardLand on the frame matching the pose on screen (the fall's last
             // pose), and Walk↔Run changes only on a frame whose paws match the other gait.
             Vector2 pose = current != null ? current.PoseCentroid(FrameIndex) : Vector2.zero;
@@ -223,13 +228,13 @@ namespace Parallax.Gameplay.Presentation
             CatAnimState before = stateMachine.State;
             CatAnimState next = teleported && !respawned
                 ? stateMachine.State
-                : stateMachine.Step(new CatAnimInput(motor.IsGrounded && !rollingOff, motor.IsClimbing, rawAlong, rawVelocityAlongGravity, dt,
+                : stateMachine.Step(new CatAnimInput((motor.IsGrounded || riding) && !rollingOff, motor.IsClimbing, rawAlong, rawVelocityAlongGravity, dt,
                     motor.JumpedThisStep, down.y > 0f ? 1f : -1f, height, rollingOff: rollingOff,
                     bodySurfaceSpeed: body != null ? GravityFrame.Along(body.linearVelocity, down) : rawAlong,
                     bodyVelocityAlongGravity: body != null ? Vector2.Dot(body.linearVelocity, down) : rawVelocityAlongGravity,
                     landDuration: landFrom, hardLandDuration: hardLandFrom, gaitSwitchReady: gaitReady,
                     holding: holding, respawned: respawned, levelComplete: complete, stopping: stopping,
-                    clinging: motor.IsClinging, clingSide: motor.ClingSide, wallJumped: motor.WallJumpedThisStep));
+                    clinging: motor.IsClinging, clingSide: GravityFrame.LocalSide(motor.ClingSide, down), wallJumped: motor.WallJumpedThisStep));
 
             UpdateEchoAlpha();
             if (next == CatAnimState.Turn) ShowFlipFrame(before != CatAnimState.Turn);
@@ -335,13 +340,13 @@ namespace Parallax.Gameplay.Presentation
 
         // PAX-A14: how far the Carry floor under the cat moved on screen since the last frame (zero on any other ground, and on
         // the frame the cat reaches a floor). Interpolated like the drawn cat, so a still rider's own motion is zero.
-        Vector2 CarryFloorMoved()
+        Vector2 CarryFloorMoved(bool riding)
         {
-            Collider2D ground = motor.IsGrounded ? motor.GroundCollider : null;
+            Collider2D ground = motor.IsGrounded ? motor.GroundCollider : riding ? motor.GroundContact : null;
             if (ground != floorGround)
             {
                 floorGround = ground;
-                carryFloor = ground != null && ground.TryGetComponent(out MovingTrap trap) && trap.Motion == SurfaceMotion.Carry ? ground.transform : null;
+                carryFloor = ground != null && ground.TryGetComponent(out MovingTrap trap) && (trap.Motion == SurfaceMotion.Carry || riding) ? ground.transform : null;
                 carryFloorAt = carryFloor != null ? (Vector2)carryFloor.position : Vector2.zero;
                 return Vector2.zero;
             }
@@ -349,6 +354,25 @@ namespace Parallax.Gameplay.Presentation
             Vector2 at = carryFloor.position, moved = at - carryFloorAt;
             carryFloorAt = at;
             return moved;
+        }
+
+        // PAX-107: the cat stands on a solid floor that rose this tick and isn't rising faster than it (no jump or launch off
+        // it), though the motor doesn't call it ground (D-115).
+        bool RidingRisingFloor()
+        {
+            Collider2D contact = motor.GroundContact;
+            if (motor.IsGrounded || motor.JumpedThisStep || contact == null || body == null) return false;
+            Vector2 down = gravity.Direction;
+            return RisingFloor(contact, down, out float floorFall) && Vector2.Dot(body.linearVelocity, down) >= floorFall - config.RidingSpeedTolerance;
+        }
+
+        // A solid MovingTrap that moved against gravity on its latest tick; floorFall is its speed along gravity (negative).
+        static bool RisingFloor(Collider2D c, Vector2 down, out float floorFall)
+        {
+            floorFall = 0f;
+            if (!c.TryGetComponent(out MovingTrap floor) || !floor.IsSolid) return false;
+            floorFall = Vector2.Dot(floor.Displacement, down) / TickTime.SecondsPerTick;
+            return floorFall < 0f;
         }
 
         // D-034: the presenter owns Visual's facing; the state machine decides it (a ground reversal flips at Turn's end).

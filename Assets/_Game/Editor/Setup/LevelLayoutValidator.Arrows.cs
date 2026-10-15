@@ -25,6 +25,17 @@ namespace Parallax.Editor.Setup
 
         // The lane box: from the mouth to the lane end, LaneY +/- Thickness / 2, in origin + room-local space. PAX-099
         // (D-106): for an angled lane, the axis-aligned box around the turned lane (ArrowLaneCorners).
+        // PAX-107 (D-123): an arrow, and for one that mirrors with gravity, the same launcher on its mirrored lane (moved up by the
+        // lane's MirrorShift), checked as an arrow of its own.
+        internal static IEnumerable<SoloRoomElement> WithMirroredLane(SoloRoomElement e)
+        {
+            yield return e;
+            ArrowLane lane = e.Settings.Arrow;
+            if (!lane.IsConfigured || !lane.MirrorWithGravity) yield break;
+            yield return new SoloRoomElement(e.Kind, e.Name + "'s mirrored lane", e.Position + new Vector2(0f, lane.MirrorShift), e.Size,
+                e.SecondaryPosition, e.SecondarySize, new SoloRoomTrapSettings(lane.Mirrored, e.Settings), e.HazardRole);
+        }
+
         internal static Rect ArrowLaneBox(SoloRoomElement e, Vector2 origin)
         {
             ArrowLane lane = e.Settings.Arrow;
@@ -109,10 +120,11 @@ namespace Parallax.Editor.Setup
             const float eps = 1e-3f;
             (float minY, float maxY) = VerticalBounds(room);
             SoloRoomElement[] fixedSolids = room.Elements.Where(IsFixedSolid).ToArray();
-            foreach (SoloRoomElement e in room.Elements.Where(IsArrow))
+            foreach (SoloRoomElement e in room.Elements.Where(IsArrow).SelectMany(WithMirroredLane))
             {
                 ArrowLane lane = e.Settings.Arrow;
                 if (!lane.IsConfigured) { errors.Add($"{levelId}: {e.Name} is an arrow with no ArrowLane."); continue; }
+                if (lane.MirrorWithGravity && (lane.Spear || lane.AngleDegrees != 0f)) { errors.Add($"{levelId}: {e.Name} mirrors with gravity but is a spear or angled; only a level arrow mirrors (D-123)."); continue; }
                 if (!ArrowMath.IsAllowedAngle(lane.AngleDegrees)) { errors.Add($"{levelId}: {e.Name} angle {lane.AngleDegrees:0.##} is not one of 0, ±30, ±45, ±60 (D-106)."); continue; }
                 if (lane.Spear && lane.AngleDegrees != 0f) { errors.Add($"{levelId}: {e.Name} is a spear at {lane.AngleDegrees:0.##} degrees; spears fly level (D-106)."); continue; }
                 if (lane.AngleDegrees != 0f) { CheckAngledLane(levelId, room, e, fixedSolids, minY, maxY, errors); continue; }
@@ -204,7 +216,7 @@ namespace Parallax.Editor.Setup
             SoloRoomElement? retreatOpt = room.Elements.Where(e => e.Kind == SoloRoomElementKind.DoorRetreat).Cast<SoloRoomElement?>().FirstOrDefault();
             if (retreatOpt.HasValue) retreated.position += retreatOpt.Value.Settings.Offset;
             Rect sweep = Envelope(authored, retreated);
-            foreach (SoloRoomElement e in room.Elements.Where(IsArrow))
+            foreach (SoloRoomElement e in room.Elements.Where(IsArrow).SelectMany(WithMirroredLane))
                 if (Grow(ArrowLaneBox(e, room.Origin), margin).Overlaps(sweep))
                     errors.Add($"{levelId}: door (authored pose or retreat sweep) is within {margin:F2} u of {e.Name}'s lane.");
             return errors;
@@ -230,7 +242,8 @@ namespace Parallax.Editor.Setup
 
         // D-113 (the developer, 2026-10-05): L003's S1 arrows fly non-stop and are jumped, not waited out; the solution's jumps
         // keep their 12-tick windows (the route validator).
-        static readonly string[] JumpedArrows = { "L003/Arrow_L", "L003/Arrow_R", "L005/Arrow_A" };
+        // PAX-107 (D-123): L009's launchers along S1_A, jumped while the cat waits out F1 and at the chasm's edge.
+        static readonly string[] JumpedArrows = { "L003/Arrow_L", "L003/Arrow_R", "L005/Arrow_A", "L009/Arrow_W1", "L009/Arrow_W2" };
 
         // D-056 (1): a Periodic arrow's window from its stop to the next fire (the next tell counts as
         // unsafe) clears a from-rest crossing of the lane by PeriodicSlackTicks.

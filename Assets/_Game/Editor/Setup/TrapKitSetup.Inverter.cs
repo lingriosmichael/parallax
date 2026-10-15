@@ -23,16 +23,25 @@ namespace Parallax.Editor.Setup
         internal static readonly Vector2 CueRingSize = new(1.5f, 1.1f), CueMarkSize = new(.7f, .2f);
         internal const int CueRingSortingOrder = -1, CueMarkSortingOrder = 1;
 
-        internal static InverterTrap BuildInverterCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, SoloRoomTrapSettings settings, Vector2 triggerLocalPosition, Vector2 triggerSize, List<string> changes)
+        internal static InverterTrap BuildInverterCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, SoloRoomTrapSettings settings, Vector2 triggerLocalPosition, Vector2 triggerSize, List<string> changes, Vector2 elementPosition = default)
         {
             bool disguised = settings.Inverter.Disguised;
             GameObject go = CreateTrap<InverterTrap>(parent, root, name, position, size, disguised ? Color.clear : InverterCyan, roomId, rooms, death, observers, true, -1, changes);
             BoxCollider2D trigger = triggerSize != Vector2.zero ? CreateTrigger(go.transform, root, settings.TriggerName, triggerLocalPosition, triggerSize, changes) : go.GetComponent<BoxCollider2D>();
             SpriteRenderer ring = BuildCue(go.transform, root, "Cue_Ring", CueRingSize, CueRingColor, CueRingSortingOrder, changes);
             SpriteRenderer mark = BuildCue(go.transform, root, "Cue_Mark", CueMarkSize, CueMarkColor, CueMarkSortingOrder, changes);
+            // PAX-107 (L009): the end box, a child trigger (EndTrigger) where the cat's window ends; gone when there's none.
+            BoxCollider2D end = null;
+            if (settings.Inverter.HasEnd)
+            {
+                end = CreateTrigger(go.transform, root, "EndTrigger", settings.Inverter.EndPosition - elementPosition, settings.Inverter.EndSize, changes);
+                SetupUtility.SetLocalPosition(end.transform, settings.Inverter.EndPosition - elementPosition, changes);
+                SetupUtility.SetColliderSize(end, settings.Inverter.EndSize, changes);
+            }
+            else if (go.transform.Find("EndTrigger") is Transform stale) { Object.DestroyImmediate(stale.gameObject); changes.Add($"removed {name}.EndTrigger"); }
             InverterTrap trap = go.GetComponent<InverterTrap>();
             Write(trap, changes, ("trigger", trigger), ("orb", disguised ? null : go.GetComponent<SpriteRenderer>()), ("ring", ring), ("mark", mark),
-                ("durationTicks", settings.Inverter.Duration), ("delayTicks", settings.DelayTicks));
+                ("durationTicks", settings.Inverter.Duration), ("delayTicks", settings.DelayTicks), ("endTrigger", end));
             return trap;
         }
 

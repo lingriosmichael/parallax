@@ -250,5 +250,36 @@ namespace Parallax.Tests.EditMode
             for (int k = 1; k <= Duration; k++) Assert.Less(Step(), 0f, $"T'+{k} (the first window ended at T+{Duration}, tick {t + Duration})");
             Assert.Greater(Step(), 0f, $"T'+{Duration + 1} (tick {refire + Duration + 1}) moves right");
         }
+
+        // PAX-107 (L009, D-125 (6)): an end box ends the window on the tick the cat reaches it; a rewind to before it restores
+        // the open window, and one to after it keeps the window ended.
+        [Test]
+        public void ReachingTheEndBox_EndsTheWindowThere_AndRewindsRestoreEitherSide()
+        {
+            trap = AddInverter();
+            var endGo = new GameObject("EndTrigger") { layer = rig.CatGo.layer };
+            endGo.transform.SetParent(trap.transform, false);
+            endGo.transform.localPosition = new Vector3(10f, 0f, 0f);
+            BoxCollider2D end = endGo.AddComponent<BoxCollider2D>();
+            end.isTrigger = true;
+            end.size = Vector2.one;
+            PauseTestRig.SetPrivate(trap, "endTrigger", end);
+            Physics2D.SyncTransforms();
+
+            FireAt(2);
+            for (int k = 1; k <= 10; k++) Assert.Less(Step(), 0f, $"T+{k} inverted before the end box");
+            TrapSnapshot open = trap.Capture();
+            MoveCat(TriggerAt + new Vector2(10f, 0f));
+            Step();
+            Assert.IsFalse(trap.InvertsMove, "the window ends on the tick the cat reaches the end box");
+            MoveCat(Vector2.zero);
+            Assert.Greater(Step(), 0f, "right again after the end box");
+            TrapSnapshot ended = trap.Capture();
+
+            trap.Restore(open, rig.Rooms.RoomLifeTick);
+            Assert.IsTrue(trap.InvertsMove, "a rewind to before the end box restores the open window");
+            trap.Restore(ended, rig.Rooms.RoomLifeTick);
+            Assert.IsFalse(trap.InvertsMove, "a rewind to after the end box keeps it ended");
+        }
     }
 }

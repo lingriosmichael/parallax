@@ -17,8 +17,19 @@ namespace Parallax.Editor.Setup
 
         // D-117 (the developer, 2026-10-06): L004 is played inverted from the start to the end; its inverter is exempt from the
         // duration cap and from the levels-11+ band (ValidateBand).
-        static readonly string[] WholeLevelInverters = { "L004/Invert" };
+        // PAX-107 (the developer: "In level 9 the cat starts with arrow directions inverted until it reaches the gravity inverter
+        // in the bottom right of the map"): L009's, from the start to Flip_4 (its end box).
+        // PAX-107 (D-141, the developer: "arrow inverter at the begining of this level 13"; "the ground floor"): L013's, from
+        // the start to G_1's launch (its end box).
+        // PAX-107 (D-150): L020's Inv_2, from G_1's launch to its end box at S2's turn (Flip_D2).
+        static readonly string[] WholeLevelInverters = { "L004/Invert", "L009/Invert", "L013/Invert", "L020/Inv_2" };
         internal static bool IsWholeLevelInverter(string levelId, SoloRoomElement e) => System.Array.IndexOf(WholeLevelInverters, $"{levelId}/{e.Name}") >= 0;
+
+        // D-126 (the developer: "if you fall through we automatically invert your arrow direction, to force a death"): L006's
+        // hidden inverter in the drop beside S1 closes a shortcut; it is exempt from the levels-11+ band, not the duration cap.
+        static readonly string[] BandOneInverters = { "L006/Invert_Drop" };
+        internal static bool IsBandExemptInverter(string levelId, SoloRoomElement e) =>
+            IsWholeLevelInverter(levelId, e) || System.Array.IndexOf(BandOneInverters, $"{levelId}/{e.Name}") >= 0;
 
         public static List<string> ValidateInverter(string levelId, SoloRoomDefinition room)
         {

@@ -43,5 +43,15 @@ namespace Parallax.Editor.Routes
             new SoloRoomElement(SoloRoomElementKind.FallingBlock, "Block", new Vector2(10.8f, 4.5f), new Vector2(1.6f, 1f), new Vector2(9.5f, 4.5f), new Vector2(3f, 9f),
                 new SoloRoomTrapSettings(delayTicks: 6, unitsPerTick: .36f, travelDistance: 4f)),
             El(SoloRoomElementKind.Door, "Door", 18f, .75f, .6f, 1.5f) }, Array.Empty<SoloRoomOpening>(), Array.Empty<RequiredJump>());
+
+        // PAX-107 (D-131): a 1.6 u falling block in a raised slab's walkable top (the slab's collider and stone stay where it
+        // fell from), or (underside) hung in the slab's underside, short of its top (a drawn notch, the top still there).
+        public static SoloRoomDefinition FloorBlockRoom(bool underside) => new(0, 0f, 20f, new[] {
+            El(SoloRoomElementKind.Checkpoint, "Checkpoint", 2f, 0f, 0f, 0f),
+            El(SoloRoomElementKind.Floor, "Ground", 10f, -.5f, 20f, 1f),
+            El(SoloRoomElementKind.Floor, "Slab", 10f, 4.5f, 20f, 1f),
+            new SoloRoomElement(SoloRoomElementKind.FallingBlock, "Block", new Vector2(10.8f, underside ? 4.25f : 4.75f), new Vector2(1.6f, .5f), new Vector2(9.5f, 2f), new Vector2(3f, 4f),
+                new SoloRoomTrapSettings(delayTicks: 6, unitsPerTick: .36f, travelDistance: underside ? 4f : 4.5f)),
+            El(SoloRoomElementKind.Door, "Door", 18f, .75f, .6f, 1.5f) }, Array.Empty<SoloRoomOpening>(), Array.Empty<RequiredJump>());
     }
 }

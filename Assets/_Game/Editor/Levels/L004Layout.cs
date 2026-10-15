@@ -91,10 +91,12 @@ namespace Parallax.Editor.Levels
             // upside-down cat walks over it) whose right face is mossy (Left_Moss). A cat stuck upside down under the slab drops
             // into the gap and climbs down it (cling slides toward the slab, a wall jump launches away from it), comes up under
             // the corbel's foot, and walks right into Flip_A, which turns it right side up.
-            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_O",(15.125f,4.75f),(.75f,4.5f)));
-            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_Base",(14.625f,2.85f),(.25f,.7f)));
-            elements.Add(E(SoloRoomElementKind.GripWall,"Corbel_Moss",(14.625f,5.1f),(.25f,3.8f)));
-            elements.Add(E(SoloRoomElementKind.Floor,"L_Foot",(16.75f,2.75f),(2.5f,.5f)));
+            // PAX-107 (the developer: "This is too hard to climb move it further up so its easier to reach"): the corbel ends 1 u
+            // higher (y 3.5), with its base, launcher, moss (from y 4.2) and foot (L_Foot, y 3.5-4): the climb is 1 u shorter.
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_O",(15.125f,5.25f),(.75f,3.5f)));
+            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_Base",(14.625f,3.85f),(.25f,.7f)));
+            elements.Add(E(SoloRoomElementKind.GripWall,"Corbel_Moss",(14.625f,5.6f),(.25f,2.8f)));
+            elements.Add(E(SoloRoomElementKind.Floor,"L_Foot",(16.75f,3.75f),(2.5f,.5f)));
             // PAX-107 (the developer: "Make this wall extend all the way to the floor that you cant go through from the bottom"):
             // Left_Post and its moss reach the ground. The start is closed in between the left wall and it: the way out is the
             // flip up at Flip_L, turning as it rises so it lands past Spikes_L, over Left_Post upside down, and down the climb.
@@ -102,8 +104,8 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Wall,"Left_Post",(11.575f,3.1f),(.75f,6.2f)));
             elements.Add(E(SoloRoomElementKind.Wall,"Left_Base",(12.075f,1.25f),(.25f,2.5f)));
             elements.Add(E(SoloRoomElementKind.GripWall,"Left_Moss",(12.075f,4.35f),(.25f,3.7f)));
-            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_O",(14.75f,2.9f),(.5f,.4f),(10.85f,3.5f),(.5f,7f),new SoloRoomTrapSettings(
-                new ArrowLane(ArrowDirection.Left,2.9f,14.5f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
+            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_O",(14.75f,3.9f),(.5f,.4f),(10.85f,3.5f),(.5f,7f),new SoloRoomTrapSettings(
+                new ArrowLane(ArrowDirection.Left,3.9f,14.5f - 3.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
                 new SoloRoomTrapSettings(delayTicks:8,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:120))));   // D-119: then every 128 ticks, non-stop
             // D-119 (the developer: "On the very left I want arrows shooting one at run height and one at jump height. The launchers
             // should shoot repeatedly but at different intervals"; all launchers non-stop): a stone pillar at the left wall (x 0-0.5,

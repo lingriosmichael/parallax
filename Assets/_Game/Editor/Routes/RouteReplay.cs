@@ -161,6 +161,7 @@ namespace Parallax.Editor.Routes
             public RoomTrap Trap; public Hazard Hazard; public BoxCollider2D Box;
             public FallingBlockTrap Block; public Vector2 BlockLanded;
             public MovingTrap Moving; public bool MovingHazard; public float MovingStep, CrushDepth; public Collider2D PushPartner;
+            public bool SpikedFace;   // PAX-107 (D-124): a spiked hinge floor (a touch kills once it stands)
             public ArrowTrap Arrow; public int ArrowTell;
             public InverterTrap Inverter;
             public StormCloudTrap StormCloud;   // PAX-088 (D-090)
@@ -304,7 +305,8 @@ namespace Parallax.Editor.Routes
                     e.MovingStep = ((Vector2)Get(e.Moving, "offset")).magnitude / Mathf.Max(1, (int)Get(e.Moving, "moveTicks"));
                     float depth = (float)Get(e.Moving, "crushDepth");
                     e.CrushDepth = depth > 0f ? depth : ((CrushConfig)Get(e.Moving, "crushConfig")).DefaultCrushDepth;
-                    if ((bool)Get(e.Moving, "pushes")) e.PushPartner = Get(e.Moving, "crushPartner") as Collider2D;   // PAX-093
+                    e.PushPartner = Get(e.Moving, "crushPartner") as Collider2D;   // PAX-093; PAX-107 (D-123): any mover's partner crushes
+                    e.SpikedFace = Get(e.Moving, "spikes") is SpriteRenderer face && face != null;
                 }
                 e.Arrow = go.GetComponent<ArrowTrap>();
                 e.Inverter = go.GetComponent<InverterTrap>();
@@ -457,8 +459,13 @@ namespace Parallax.Editor.Routes
                     else if (e.Moving != null && e.Trap.LatestFireTick >= 0 && e.Box != null)
                     {
                         match = TrapMotion.Crushes(CatCollider.bounds, new Bounds(e.Moving.GetComponent<Rigidbody2D>().position + e.Box.offset, e.Box.size), e.CrushDepth);
-                        // PAX-093 (D-095) Q6: a push wall kills against its named partner, through the same test.
+                        // PAX-093 (D-095) Q6: a push wall kills against its named partner, through the same test (PAX-107, D-123: and a
+                        // floor carrying the cat up into its partner).
                         if (!match && e.PushPartner != null) match = TrapMotion.Crushes(CatCollider.bounds, e.PushPartner.bounds, e.CrushDepth);
+                        // PAX-107 (D-124): a spiked hinge floor's own touch test, on its turned box, grown by a tick's move.
+                        if (!match && e.SpikedFace) match = TrapMotion.Touches(CatCollider.bounds, e.Box.bounds, MovingTrap.SpikeSkin + 2f * e.MovingStep);
+                        // PAX-107 (D-140): a solid coming down, through its own test on this step's move.
+                        if (!match) match = e.Moving.SlamHits(CatCollider.bounds);
                     }
                     // PAX-084 (D-086) R3: only on the ticks the arrow's own kill test runs, through the same function
                     // (flight and stop ticks; a spear's stop + 1 check). A stopped arrow or a stuck spear is harmless.

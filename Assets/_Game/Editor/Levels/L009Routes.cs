@@ -11,6 +11,10 @@ namespace Parallax.Editor.Levels
     // waits out F1 and F2 under the floating flip, crosses the chasm on Lift_A and Lift_B while each is down, waits out F3 on
     // S1_E1 and goes over the hinge floor and F3 into Flip_4 without stopping; back on the roof it waits out each floor
     // strip's mirror (up while the floor's is down) and the spikes over Lift_B, and crosses the lifts and Roof_5 in one go.
+    // PAX-107 round three: Arrow_W1 comes as the cat reaches F1 (hop it as it stops) and Arrow_W2 while it waits F1 out (jump
+    // it); A1 and A2 punish standing still. The chasm's edge is the kerb now, and the way back along the roof hops its mirror.
+    // PAX-107: the cat is inverted from the start to Flip_4 (L009Layout's Invert); route moves are stick input, so until
+    // then every Hold(Left) walks it right and every Hold(Right) left (D-087 (7)); it lets go as it flips.
     static class L009Routes
     {
         // A spike strip on the rhythm, waited out: its next change, then down.
@@ -19,33 +23,40 @@ namespace Parallax.Editor.Levels
         public static RoomRoutes Build()
         {
             var solution = new Route("L009 solution", Concat(
-                // S1: F1 is up from the start: stop short of it, cross as it drops; F2 is up by then: wait under the flip.
-                new[] { Hold(Right), Until(XAtLeast(7.4f)), Release(), Until(Still()) }, WaitOut("Spikes_F1"),
-                new[] { Hold(Right), Until(XAtLeast(11.2f)), Release(), Until(Still()) }, WaitOut("Spikes_F2"),
+                // S1: F1 is up from the start: stop short of it, hopping Arrow_W1 as it comes, and jump Arrow_W2 (its tell shows
+                // during the hop) as soon as the cat lands (round three); F1 has dropped by then: cross; F2 is up: wait under the flip.
+                new[] { Hold(Left), Until(XAtLeast(6.6f)), Release(), Jump(), Until(Airborne()), Until(Grounded()), Until(Still()),
+                    For(2), Jump(), Until(Airborne()), Until(Grounded()), Until(Home("Spikes_F1")) },
+                new[] { Hold(Left), Until(XAtLeast(11.2f)), Release(), Until(Still()) }, WaitOut("Spikes_F2"),
                 // The chasm: to its edge, onto Lift_A as it comes home, to Lift_B as it comes home, off it onto S1_E1.
-                new[] { Hold(Right), Until(XAtLeast(14.3f)), Release(), Until(Still()), Until(Home("Lift_A")),
-                    Hold(Right), Jump(), Until(XAtLeast(16.3f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Lift_A")), Until(Still()), Until(Home("Lift_B")),
-                    Hold(Right), Jump(), Until(GroundedOn("Lift_B")), Jump(), Until(XAtLeast(22.6f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("S1_E1")), Until(Still()) },
+                new[] { Hold(Left), Until(XAtLeast(13.9f)), Release(), Until(Still()), Until(Home("Lift_A")),
+                    Hold(Left), Jump(), Until(XAtLeast(16.3f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Lift_A")), Until(Still()), Until(Home("Lift_B")),
+                    Hold(Left), Jump(), Until(GroundedOn("Lift_B")), Jump(), Until(XAtLeast(22.6f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("S1_E1")), Until(Still()) },
                 // F3 is up: wait it out at the hinge floor's east end (it only goes for a cat past it), then over F3 into Flip_4
                 // and up to the roof, quick enough that R3 is still up there.
-                new[] { Hold(Right), Until(XAtLeast(25.7f)), Release(), Until(Still()) }, WaitOut("Spikes_F3"),
-                new[] { Hold(Right), Until(GravityUp()), Until(Grounded()), Release(), Until(Still()) },
+                new[] { Hold(Left), Until(XAtLeast(25.7f)), Release(), Until(Still()) }, WaitOut("Spikes_F3"),
+                new[] { Hold(Left), Until(GravityUp()), Release(), Until(Grounded()), Until(Still()) },
                 // The roof: R3 (F3's mirror) is up: wait it out, then stop short of Lift_B's column for the spikes over it.
                 WaitOut("Spikes_R3"),
                 new[] { Hold(Left), Until(XAtMost(22.8f)), Release(), Until(Still()) }, WaitOut("Spikes_LB"), new[] {
-                    // Over Lift_B, Roof_5, Lift_A and R2 (down by then) in one go, to short of R1.
-                    Hold(Left), Until(XAtMost(11f)), Release(), Until(Still()) },
+                    // Over Lift_B, Roof_5, Lift_A, the kerb (round three: hopped) and R2 (down by then) in one go, to short of R1.
+                    Hold(Left), Until(XAtMost(15.9f)), Jump(), Until(Airborne()), Until(Grounded()), Until(XAtMost(11f)), Release(), Until(Still()) },
                 WaitOut("Spikes_R1"),
                 // Over R1 into Flip_E, down onto Slab_D, and to the door standing.
                 new[] { Hold(Left), Until(GravityDown()), Until(GroundedOn("Slab_D")), Until(RoomComplete()) }));
 
             return new RoomRoutes(solution,
                 new Betrayal("T1: the floating flip sends a cat that jumps F1 onto spikes under the slab", "Spikes_1", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=7.4)", "jump F1", Jump(), Until(Dead()))),
+                    Route.PrefixOf(solution, "Until(Still)", "jump F1", Hold(Left), Until(XAtLeast(7.4f)), Jump(), Until(Dead()))),
+                // PAX-107 round three: the arrows.
+                new Betrayal("A1: Arrow_W1 hits a cat that stops short of F1", "Arrow_W1", DeathCause.Hazard,
+                    new Route("stop short of F1", Hold(Left), Until(XAtLeast(7.4f)), Release(), Until(Dead()))),
+                new Betrayal("A2: Arrow_W2 hits a cat that stands waiting for F1", "Arrow_W2", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Still)", "stand and wait", Until(Dead()))),
                 new Betrayal("T1: the floating flip sends a cat that jumps F2 onto spikes under the slab", "Spikes_1", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=11.2)", "jump F2 from where it waits", Release(), Until(Still()), Hold(Right), Jump(), Until(Dead()))),
+                    Route.PrefixOf(solution, "Until(X>=11.2)", "jump F2 from where it waits", Release(), Until(Still()), Hold(Left), Jump(), Until(Dead()))),
                 new Betrayal("M1: F1 is up under a cat that runs on from the start", "Spikes_F1", DeathCause.Hazard,
-                    new Route("run on", Hold(Right), Until(Dead()))),
+                    new Route("run on", Hold(Left), Until(Dead()))),
                 new Betrayal("M2: F2 comes up under a cat that runs on past F1", "Spikes_F2", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X>=11.2)", "run on", Until(Dead()))),
                 new Betrayal("L1: Lift_A carries a cat that stays on it up into the roof's spikes", "Spikes_LA", DeathCause.Hazard,
@@ -53,9 +64,9 @@ namespace Parallax.Editor.Levels
                 new Betrayal("L2: Lift_B carries a cat that stays on it up into the roof's spikes", "Spikes_LB", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Lift_B))", "stay on", Release(), Until(Dead()))),
                 new Betrayal("L3: a cat that jumps for Lift_A before it is down falls into the chasm", "Chasm_Hazard", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=14.3)", "jump at once", Jump(), Until(Dead())), revealedBy: "Lift_A"),
+                    Route.PrefixOf(solution, "Until(X>=13.9)", "jump at once", Jump(), Until(Dead())), revealedBy: "Lift_A"),
                 new Betrayal("H: the hinge floor pushes a cat that stops past it onto F3", "Spikes_F3", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Home(Spikes_F3))", "stop past the hinge floor", Hold(Right), Until(XAtLeast(27.2f)), Release(), Until(Dead())), revealedBy: "Hinge_9"),
+                    Route.PrefixOf(solution, "Until(Home(Spikes_F3))", "stop past the hinge floor", Hold(Left), Until(XAtLeast(27.2f)), Release(), Until(Dead())), revealedBy: "Hinge_9"),
                 new Betrayal("M3: R3 is up over a cat that walks the roof back at once", "Spikes_R3", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GravityUp)", "walk back at once", Until(Grounded()), Hold(Left), Until(Dead()))),
                 new Betrayal("L4: the spikes over Lift_B come out under a cat that stops on the roof over it", "Spikes_LB", DeathCause.Hazard,
@@ -65,15 +76,15 @@ namespace Parallax.Editor.Levels
                 new Betrayal("M5: R1 is up over a cat that runs on to Flip_E", "Spikes_R1", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X<=11)", "run on", Until(Dead()))),
                 new Betrayal("Dead end: the flip floating in front of the start, straight up to the door", "Spikes_D1", DeathCause.Hazard,
-                    new Route("straight up", Hold(Right), Until(XAtLeast(4f)), Jump(), Until(Dead()))),
+                    new Route("straight up", Hold(Left), Until(XAtLeast(4f)), Jump(), Until(Dead()))),
                 new Betrayal("Dead end: the ledge behind the start, the first step up to the door", "Spikes_D2", DeathCause.Hazard,
-                    new Route("up the ledge", Hold(Left), Jump(), Until(Fired("Spikes_D2")), Release(), Until(Dead())), revealedBy: "Ledge_D2"),
+                    new Route("up the ledge", Hold(Right), Jump(), Until(Fired("Spikes_D2")), Release(), Until(Dead())), revealedBy: "Ledge_D2"),
                 new Betrayal("Dead end: the flip floating in front of the start, jumped into at its far edge", "Spikes_D1", DeathCause.Hazard,
-                    new Route("straight up", Hold(Right), Until(XAtLeast(4.6f)), Jump(), Until(Dead()))),
-                // PAX-099 ruling 3 (the room auditor's open question): the same flip entered moving left, from a run-up.
+                    new Route("straight up", Hold(Left), Until(XAtLeast(4.6f)), Jump(), Until(Dead()))),
+                // PAX-099 ruling 3 (the room auditor's open question): the same flip entered moving left, from a run-up. PAX-107
+                // round three: after hopping both arrows (as the solution does), between their volleys.
                 new Betrayal("Dead end: the flip floating in front of the start, jumped into moving left", "Spikes_D1", DeathCause.Hazard,
-                    new Route("straight up, moving left", Hold(Right), Until(XAtLeast(6.4f)), Release(), Until(Still()),
-                        Hold(Left), Until(XAtMost(6f)), Jump(), Until(Dead()))));
+                    Route.PrefixOf(solution, "Until(Home(Spikes_F1))", "straight up, moving left", Hold(Right), Until(XAtMost(6f)), Jump(), Until(Dead()))));
         }
 
         static RouteStep[] Concat(params RouteStep[][] parts) => System.Linq.Enumerable.ToArray(System.Linq.Enumerable.SelectMany(parts, p => p));

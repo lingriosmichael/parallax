@@ -56,6 +56,17 @@ namespace Parallax.Tests
             Assert.AreEqual(90f, GravityFrame.RotationAngle(Right), 0.001f);
         }
 
+        // PAX-107 (D-118): an upside-down cat on a wall faces it; the presenter turns the motor's world side into the frame's.
+        [Test]
+        public void LocalSide_KeepsTheWorldSideWithGravityDown_AndFlipsItWithGravityUp()
+        {
+            Assert.AreEqual(1, GravityFrame.LocalSide(1, Down));
+            Assert.AreEqual(-1, GravityFrame.LocalSide(-1, Down));
+            Assert.AreEqual(-1, GravityFrame.LocalSide(1, Up));
+            Assert.AreEqual(1, GravityFrame.LocalSide(-1, Up));
+            Assert.AreEqual(0, GravityFrame.LocalSide(0, Up));
+        }
+
         [Test]
         public void RotationAngle_FortyFiveDegrees()
         {

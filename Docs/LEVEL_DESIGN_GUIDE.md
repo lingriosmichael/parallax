@@ -125,6 +125,35 @@ A late death replays every solved trap before it. Level Devil keeps retries to a
 - **Declare every way off a dead end.** A cat can step off, run off, jump, or steer in the air after a flip. Each one needs its own Dies route, or a shortcut to the door hides in the one nobody declared (the review of L006, L008 and L009).
 - **Permanent chain results sit off the path or narrow enough to jump.** Spikes that come up and stay up on a storey the way crosses later must be jumpable (≤ 1.5 u) or out of the way.
 
+## 4c · What makes a level fun (the developer's play-tests, PAX-107)
+
+These come from 21 play-test rounds on L001–L013. On 2026-10-15 the developer rejected the first L014 and L016 outright ("traps are poorly placed, not challenging, its not even fun to complete … Camera view is totally off, too many things off screen").
+
+**Fit the camera.** The level camera is 1.8× with a 1.5 u lift. The view is 8.9 u tall and 15.8 u wide at 16:9, and only about 2.9 u below the cat is visible.
+- Space storeys about 4–5 u apart, so the next storey is in view.
+- Avoid long falls: a 12 u drop lands off screen, and so does everything at its foot.
+- Keep each trap within about 8 u of where it acts.
+- Keep a level about 32 wide and 16–27 tall. The old L014 was 46 tall, with storeys 12 u apart and spears launched 22 u away.
+
+**Make every stretch move.**
+- Traps act on the path a normal run takes, and unexpectedly, not only on a wrong stop (D-130). Examples:
+  - slabs that slam onto the walkway;
+  - floors that stand up behind the cat and push it toward spikes;
+  - lifts that squish;
+  - bridges that fall piece by piece behind the cat (L011);
+  - a storm cloud that follows at run speed, floor to floor;
+  - launchers that never stop, at run and jump height.
+- Moving platforms are harder, and more fun, than arrows (D-121): ferries and hops over a spike bed with fake landings (L003).
+- Start with action: something moves under or behind the cat in the first second (L011's Riser, L013's Hinge_1).
+- Long passive waits, slow vine climbs, hidden flips and hidden spikes with nothing to read make a level feel empty, not hard.
+
+**Use the space.**
+- Never leave dead space ("a waste of an opportunity to have good traps"; "just cover it wall"). Fill it with stone or use it.
+- Nothing floats, nothing is doubled, every fall leaves a real hole (D-131), and every door stands on a platform (D-106).
+- Every trap must make sense where it is ("this trap … makes absolutely no sense here in the corner").
+
+**Make it hard.** "Too easy" and "I solved it without even dying once" are complaints. Windows stay ≥ 12, but each storey should take a few tries.
+
 ---
 
 ## 5 · Pattern library (current kit)

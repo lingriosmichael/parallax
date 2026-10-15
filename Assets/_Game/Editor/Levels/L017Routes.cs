@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Parallax.Core;
 using Parallax.Editor.Routes;
@@ -6,8 +5,8 @@ using static Parallax.Editor.Routes.R;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-060 (D-093): level 17's routes. Every wait is on a chain the cat set off (an element's fire tick) or on a
-    // moving floor's own motion.
+    // PAX-107 (D-147): level 17's routes ("Deja Vu"). Every wait is on a chain the cat set off (an element's fire tick) or on a
+    // moving trap's own motion. On lane 2 left and right are swapped: Hold(Right) walks the cat west.
     static class L017Routes
     {
         // At least `ticks` room ticks since the element last fired.
@@ -16,42 +15,57 @@ namespace Parallax.Editor.Levels
             int i = v.Result.Elements.IndexOf(element);
             return i >= 0 && v.Last.FireTick[i] >= 0 && v.Last.RoomLifeTick - v.Last.FireTick[i] >= ticks;
         });
-        // A cat standing on step k: its centre's height.
-        static float StepY(int k) => L017Layout.StepTop(k) + .285f;
+        // An arrow's shot as drawn has just passed the cat (its trailing end within 2 u beyond the cat's far side; the cat is 1 u
+        // wide). `dir` is the shot's direction (+1 east, -1 west). A shot stuck in its kerb is never "just past".
+        static RouteCondition ShotPast(string arrow, int dir) => new($"{arrow} past", v =>
+        {
+            int i = v.Result.Elements.IndexOf(arrow);
+            if (i < 0 || !v.Last.Rendered[i]) return false;
+            // The drawn bounds hold the launcher and the shot: the shot's tail is 0.8 behind its tip, the bounds' far end.
+            UnityEngine.Rect b = v.Last.RenderBounds[i];
+            float gap = dir > 0 ? b.xMax - .8f - (v.Last.X + .5f) : (v.Last.X - .5f) - (b.xMin + .8f);
+            return gap > 0f && gap <= 2f;
+        });
 
-        // Out: east over Crack_1 (walking, under Spear_1); stop short of Block_2's column and let it land; hop it and keep
-        // going over Collapse_3; step onto Slide_4 and stand still while it carries the cat to Ground_F.
+        // Out: run the crumbling bridge; stop as Slam_1 comes down, hop onto it; over Kerb_1 once a shot has hit it; wait short of
+        // Hinge_1 for the next shot to pass over, then run and jump Spikes_1 ahead of the hinge; under the Spine into well 1; up
+        // V1-V4 as each sticks; onto lane 2.
         static RouteStep[] Out() => new[] {
-            Hold(Right), Until(XAtLeast(11.3f)), Release(), Until(Still()), Until(Since("Block_2", 24)),
-            Hold(Right).Timed(TimedMode.Shift), Jump(), Until(Airborne()), Until(Grounded()),
-            Until(XAtLeast(19.5f)), Release(), Until(GroundedOn("Slide_4")), Until(Still()),
-            Until(Moving("Slide_4")), Until(Stopped("Slide_4")), Hold(Right), Until(XAtLeast(26f)),
+            Hold(Right), Until(Fired("Slam_1")), Release(), Until(Still()), Until(Stopped("Slam_1")),
+            Hold(Right), Jump(), Until(XAtLeast(13.4f)), Release(), Until(GroundedOn("Slam_1")),
+            Until(Since("Arrow_1", 47)), Hold(Right).Timed(TimedMode.Shift), Jump(), Until(Airborne()), Until(Grounded()),
+            Until(XAtLeast(20.5f)), Release(), Until(Still()), Until(ShotPast("Arrow_1", -1)),
+            Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(22.4f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
+            Until(XAtLeast(28.2f)), Release(), Until(Still()), Until(Since("V1", 13)),
+            Jump().Timed(TimedMode.Shift), Hold(Right), Until(GroundedOn("V1_Shaft")), Release(), Until(Since("V2", 13)),
+            Jump().Timed(TimedMode.Shift), Hold(Left), Until(GroundedOn("V2_Shaft")), Release(), Until(Since("V3", 13)),
+            Jump().Timed(TimedMode.Shift), Hold(Right), Until(GroundedOn("V3_Shaft")), Release(), Until(Since("V4", 13)),
+            Jump().Timed(TimedMode.Shift), Hold(Left), Until(Fired("Inv_2")),
         };
 
-        // Far: hop the Sill, on past the far cut; back over the Sill into the nook before Arrow_5a arrives; wait there
-        // while the volley builds the stair; out again and up it, V1 to V5, and west onto the upper floor.
-        static RouteStep[] Far() => new[] {
-            Until(XAtLeast(28f)), Jump(), Until(Airborne()), Until(Grounded()), Until(XAtLeast(30.3f)), Release(), Until(Still()),
-            Hold(Left), Until(XAtMost(29.6f)), Jump(), Until(Airborne()), Until(Grounded()), Until(XAtMost(26.4f)), Release(), Until(Still()),
-            Until(Since("V5", 12)),
-            Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(28f)), Jump(), Until(XAtLeast(29.4f)), Release(), Until(Grounded()), Until(Still()),
-            Jump(), Until(YAtLeast(StepY(0) + .6f)), Hold(Right), Until(XAtLeast(30.6f)), Release(), Until(GroundedOn("V1_Shaft")), Until(Still()),
-            Jump(), Until(YAtLeast(StepY(1) + .6f)), Hold(Left), Until(XAtMost(28.6f)), Release(), Until(GroundedOn("V2_Shaft")), Until(Still()),
-            Jump(), Until(YAtLeast(StepY(2) + .6f)), Hold(Right), Until(XAtLeast(30.6f)), Release(), Until(GroundedOn("V3_Shaft")), Until(Still()),
-            Jump(), Until(YAtLeast(StepY(3) + .6f)), Hold(Left), Until(XAtMost(28.6f)), Release(), Until(GroundedOn("V4_Shaft")), Until(Still()),
-            Jump(), Until(YAtLeast(StepY(4) + .6f)), Hold(Right), Until(XAtLeast(30.6f)), Release(), Until(GroundedOn("V5_Shaft")), Until(Still()),
-            Hold(Left).Timed(TimedMode.Shift), Jump(), Until(GroundedOn("UF_E")),
-        };
-
-        // Back: west, jumping Spikes_5e; hop Post_8; stop at the hole and let Arrow_8 pass over; jump the hole; west under
-        // the Door_Ledge to Post_W; up onto Spear_D's shaft, then onto the ledge and into the door.
+        // Back, swapped: west over the crumbling bridge 2; stop as Slam_2 comes down, hop onto it and over Kerb_2; wait short of
+        // Hinge_2 for a shot to pass over, then run and jump Spikes_2; under Spine_2 into well 2; up W1-W4 with the hands swapped.
         static RouteStep[] Back() => new[] {
-            Until(XAtMost(24.9f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(XAtMost(20.3f)), Jump(), Until(Airborne()), Until(Grounded()),
-            Until(XAtMost(13.7f)), Release(), Until(Still()), Until(Since("Arrow_8", 94)),
-            Hold(Left), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(XAtMost(1f)), Release(), Until(Still()),
-            Hold(Right), Jump(), Until(GroundedOn("Spear_D_Shaft")), Jump(), Until(RoomComplete()),
+            Hold(Right), Until(Fired("Slam_2")), Release(), Until(Still()), Until(Stopped("Slam_2")),
+            Hold(Right), Jump(), Until(XAtMost(18.6f)), Release(), Until(GroundedOn("Slam_2")),
+            Until(Still()), Hold(Right).Timed(TimedMode.Shift), Jump(), Until(Airborne()), Until(Grounded()),
+            Until(XAtMost(11.5f)), Release(), Until(Still()), Until(ShotPast("Arrow_2", 1)),
+            Hold(Right).Timed(TimedMode.Shift), Until(XAtMost(9.6f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
+            Until(XAtMost(3.7f)), Release(), Until(Still()), Until(Since("W1", 13)),
+            Jump().Timed(TimedMode.Shift), Hold(Right), Until(GroundedOn("W1_Shaft")), Release(), Until(Since("W2", 13)),
+            Jump().Timed(TimedMode.Shift), Hold(Left), Until(GroundedOn("W2_Shaft")), Release(), Until(Since("W3", 13)),
+            Jump().Timed(TimedMode.Shift), Hold(Right), Until(GroundedOn("W3_Shaft")), Release(), Until(Since("W4", 13)),
+            Jump().Timed(TimedMode.Shift), Hold(Left), Until(XAtLeast(3.55f)),
+        };
+
+        // Last: Inv_3 swaps the hands (hold left to go on east); jump Pit_3 and swap back as the swap ends in the air; stop as
+        // Slam_3 comes down, hop onto it ahead of Push_3; when Spear_D has stuck, onto its shaft and into the door.
+        static RouteStep[] Last() => new[] {
+            Hold(Right), Until(Fired("Inv_3")), Hold(Left), Until(XAtLeast(10.1f)), Jump().Timed(TimedMode.Shift), Until(Since("Inv_3", 36)), Hold(Right), Until(Grounded()),
+            Until(Fired("Slam_3")), Release(), Until(Still()), Until(Stopped("Slam_3")),
+            Hold(Right), Jump(), Until(XAtLeast(21.9f)), Release(), Until(GroundedOn("Slam_3")),
+            Hold(Right), Until(XAtLeast(23.2f)), Release(), Until(Since("Spear_D", 13)),
+            Hold(Right), Jump().Timed(TimedMode.Shift), Until(RoomComplete()),
         };
 
         static RouteStep[] Cat(params RouteStep[][] parts) => parts.SelectMany(p => p).ToArray();
@@ -61,42 +75,43 @@ namespace Parallax.Editor.Levels
 
         public static RoomRoutes Build()
         {
-            RouteStep[][] parts = { Out(), Far(), Back() };
-            const int OutPart = 0, FarPart = 1, BackPart = 2;
+            RouteStep[][] parts = { Out(), Back(), Last() };
+            const int OutPart = 0, BackPart = 1, LastPart = 2;
             var solution = new Route("L017 solution", Cat(parts));
             Route B(string name, int part, int index, params RouteStep[] then) => new(name, Branch(parts, part, index, then));
-            // A detour off part `part` at step `index`, rejoining the solution at the same part's step `rejoin`.
-            Route Detour(string name, int part, int index, int rejoin, params RouteStep[] then) =>
-                new(name, Branch(parts, part, index, then).Concat(parts[part].Skip(rejoin)).Concat(parts.Skip(part + 1).SelectMany(p => p)).ToArray());
 
             return new RoomRoutes(solution,
-                // PAX-101 (D-106): the floor past Post_8 sinks under a cat that stops on it; it rides it down and back up.
-                Betrayal.Recovers("T9 [NW]: a cat that stops where the hop over Post_8 lands sinks with the floor, rides it back up and goes on", "Sink_9",
-                    Detour("stop on the sinking floor", BackPart, 8, 8, Release(), Until(Still()), Until(Moving("Sink_9")), Until(Home("Sink_9")), Hold(Left))),
                 // Out.
-                new Betrayal("T1 [NJ]: a cat that hops Crack_1 is run through by Spear_1", "Spear_1", DeathCause.Hazard,
-                    B("hop the crack", OutPart, 1, Until(XAtLeast(5.9f)), Jump(), Until(Dead()))),
-                new Betrayal("Dead end D1 [LW]: a cat that climbs from Spear_1's shaft onto the Shelf over the start is spiked", "Spikes_D1", DeathCause.Hazard,
-                    B("the shelf", OutPart, 1, Until(XAtLeast(6f)), Hold(Left), Until(XAtMost(2.6f)), Jump(), Until(GroundedOn("Spear_1_Shaft")),
-                        Hold(Right), Jump(), Until(Dead()))),
-                new Betrayal("T2 [W]: a cat that walks on under Block_2 is crushed", "Block_2", DeathCause.Hazard,
-                    B("walk on", OutPart, 1, Until(Dead()))),
-                new Betrayal("T3 [NW]: a cat that stops on Collapse_3 falls into Pit_3", "Pit_3", DeathCause.Hazard,
-                    B("stop on it", OutPart, 9, Until(GroundedOn("Collapse_3")), Release(), Until(Dead())), revealedBy: "Collapse_3"),
-                new Betrayal("T4 [SS]: a cat that walks while Slide_4 carries it walks off into Pit_4", "Pit_4", DeathCause.Hazard,
-                    B("walk on it", OutPart, 13, Until(Moving("Slide_4")), Hold(Right), Until(Dead())), revealedBy: "Slide_4"),
-                Betrayal.Recovers("Dead end D2 [LW]: a cat that stays on Slide_4 rides it home, rides it out again and steps off", "Slide_4",
-                    Detour("ride home", OutPart, 15, 14, Until(Moving("Slide_4")), Until(Home("Slide_4")), Until(Moving("Slide_4")))),
-                // Far.
-                new Betrayal("T5 [BAIT]: a cat that stays on the far floor to watch the rearrangement meets Arrow_5a", "Arrow_5a", DeathCause.Hazard,
-                    B("stay", FarPart, 7, Until(Dead()))),
-                new Betrayal("T6 [NW]: a cat that stops where it steps off the stair is crushed by Block_6", "Block_6", DeathCause.Hazard,
-                    B("stop at the top", BackPart, 0, Until(XAtMost(26.2f)), Release(), Until(Dead()))),
+                new Betrayal("T1 [NW]: a cat that stops on the bridge falls with it into Pit_1", "Pit_1", DeathCause.Hazard,
+                    B("stop", OutPart, 1, Until(XAtLeast(6.5f)), Release(), Until(Dead())), revealedBy: "Br_2"),
+                new Betrayal("Dead end D1 [B]: a cat that turns back west over the falling bridge drops into Pit_1", "Pit_1", DeathCause.Hazard,
+                    B("back west", OutPart, 1, Until(XAtLeast(8f)), Hold(Left), Until(Dead())), revealedBy: "Br_2"),
+                new Betrayal("T2 [BAIT]: a cat that runs on off the bridge is crushed by Slam_1", "Slam_1", DeathCause.Hazard,
+                    B("run on", OutPart, 1, Until(Dead()))),
+                new Betrayal("T3 [W]: a cat that runs straight for Spikes_1 meets a shot from the Spine in its jump", "Arrow_1", DeathCause.Hazard,
+                    B("run on", OutPart, 15, Until(XAtLeast(22.4f)), Jump(), Until(Dead()))),
+                new Betrayal("T4 [NW]: a cat that stops short of Spikes_1 is caught by Hinge_1's spikes", "Hinge_1", DeathCause.Hazard,
+                    B("stop", OutPart, 20, Until(XAtLeast(22.8f)), Release(), Until(Dead()))),
+                new Betrayal("T5 [NJ]: a cat that jumps for the next step before V1 has stuck is run through", "V1", DeathCause.Hazard,
+                    B("jump at once", OutPart, 27, Until(Since("V1", 4)), Jump(), Hold(Right), Until(Dead()))),
                 // Back.
-                new Betrayal("T7 [J]: a cat that walks on into Spikes_5e is spiked", "Spikes_5e", DeathCause.Hazard,
-                    B("walk on", BackPart, 1, Until(Dead()))),
-                new Betrayal("T8 [W]: a cat that jumps the hole as Arrow_8 comes is struck", "Arrow_8", DeathCause.Hazard,
-                    B("jump as it comes", BackPart, 11, Until(Since("Arrow_8", 73)), Hold(Left), Jump(), Until(Dead()))));
+                new Betrayal("Dead end D2 [B]: a cat that keeps its old hand on bridge 2 walks back east and drops into Pit_2", "Pit_2", DeathCause.Hazard,
+                    B("old hand", BackPart, 1, Until(XAtMost(23f)), Hold(Left), Until(Dead())), revealedBy: "Br2_1"),
+                new Betrayal("T6 [SS]: a cat that runs on off bridge 2 is crushed by Slam_2", "Slam_2", DeathCause.Hazard,
+                    B("run on", BackPart, 1, Until(Dead()))),
+                new Betrayal("T7 [W]: a cat that runs straight for Spikes_2 meets a shot from Spine_2 in its jump", "Arrow_2", DeathCause.Hazard,
+                    B("run on", BackPart, 15, Until(XAtMost(9.6f)), Jump(), Until(Dead()))),
+                new Betrayal("T8 [NW]: a cat that stops short of Spikes_2 is caught by Hinge_2's spikes", "Hinge_2", DeathCause.Hazard,
+                    B("stop", BackPart, 20, Until(XAtMost(9.2f)), Release(), Until(Dead()))),
+                new Betrayal("T9 [NJ]: a cat that jumps for the next step before W1 has stuck is run through", "W1", DeathCause.Hazard,
+                    B("jump at once", BackPart, 27, Until(Since("W1", 4)), Jump(), Hold(Right), Until(Dead()))),
+                // Last.
+                new Betrayal("T10 [J]: a cat that keeps the swapped hand when Inv_3 ends in the air falls back into Pit_3", "Pit_3", DeathCause.Hazard,
+                    B("keep left", LastPart, 5, Until(Dead())), revealedBy: "Inv_3"),
+                new Betrayal("T11 [SS]: a cat that runs on is crushed by Slam_3", "Slam_3", DeathCause.Hazard,
+                    B("run on", LastPart, 8, Until(Dead()))),
+                new Betrayal("T12 [OL]: a cat that stays on the floor is caught by Push_3's spikes", "Push_3", DeathCause.Hazard,
+                    B("stay", LastPart, 12, Until(Dead()))));
         }
     }
 }

@@ -37,8 +37,17 @@ namespace Parallax.Editor.Setup
         // PAX-099 (D-106): degrees from horizontal, positive towards world up (ArrowMath.AllowedAngles). LaneY is the mouth's
         // height and LaneEndX the x where the tip stops; a spear stays at 0.
         public readonly float AngleDegrees;
-        public ArrowLane(ArrowDirection direction, float laneY, float laneEndX, float length = .8f, float thickness = .16f, float unitsPerTick = .3f, int tellTicks = 6, bool disguised = false, bool spear = false, float angleDegrees = 0f)
-        { IsConfigured = true; Direction = direction; LaneY = laneY; LaneEndX = laneEndX; Length = length; Thickness = thickness; UnitsPerTick = unitsPerTick; TellTicks = tellTicks; Disguised = disguised; Spear = spear; AngleDegrees = angleDegrees; }
+        // PAX-107 (D-123): a level arrow that follows the cat's gravity. Each shot flies on the lane the cat's gravity picks as it
+        // fires: LaneY with gravity down, its mirror about MirrorAxisY (room-local) with gravity up; the launcher moves with it.
+        public readonly bool MirrorWithGravity; public readonly float MirrorAxisY;
+        public ArrowLane(ArrowDirection direction, float laneY, float laneEndX, float length = .8f, float thickness = .16f, float unitsPerTick = .3f, int tellTicks = 6, bool disguised = false, bool spear = false, float angleDegrees = 0f, bool mirrorWithGravity = false, float mirrorAxisY = 0f)
+        { IsConfigured = true; Direction = direction; LaneY = laneY; LaneEndX = laneEndX; Length = length; Thickness = thickness; UnitsPerTick = unitsPerTick; TellTicks = tellTicks; Disguised = disguised; Spear = spear; AngleDegrees = angleDegrees; MirrorWithGravity = mirrorWithGravity; MirrorAxisY = mirrorAxisY; }
+
+        /// <summary>PAX-107 (D-123): how far the launcher moves up for a mirrored shot (0 for a lane that doesn't mirror).</summary>
+        public float MirrorShift => MirrorWithGravity ? 2f * (MirrorAxisY - LaneY) : 0f;
+
+        /// <summary>PAX-107 (D-123): the lane a mirrored shot flies on (itself not mirroring).</summary>
+        public ArrowLane Mirrored => new(Direction, LaneY + MirrorShift, LaneEndX, Length, Thickness, UnitsPerTick, TellTicks, Disguised, Spear, AngleDegrees);
 
         // PAX-084 (D-086) defaults: 1.4 long, 0.4 thick (PlatformSizeConfig.SpearMinThickness), 1.2 u/tick, tell 8.
         public static ArrowLane SpearLane(ArrowDirection direction, float laneY, float laneEndX, float length = 1.4f, float thickness = .4f, float unitsPerTick = 1.2f, int tellTicks = 8, bool disguised = false) =>
@@ -49,8 +58,11 @@ namespace Parallax.Editor.Setup
     public readonly struct InverterSettings
     {
         public readonly bool IsConfigured; public readonly int DurationTicks; public readonly bool Disguised;
-        public InverterSettings(int durationTicks = ControlInversion.DefaultDurationTicks, bool disguised = false)
-        { IsConfigured = true; DurationTicks = durationTicks; Disguised = disguised; }
+        // PAX-107 (L009): an optional end box (room-local centre and size): a cat that reaches it ends the window there.
+        public readonly Vector2 EndPosition, EndSize;
+        public InverterSettings(int durationTicks = ControlInversion.DefaultDurationTicks, bool disguised = false, Vector2 endPosition = default, Vector2 endSize = default)
+        { IsConfigured = true; DurationTicks = durationTicks; Disguised = disguised; EndPosition = endPosition; EndSize = endSize; }
+        public bool HasEnd => EndSize != Vector2.zero;
         public int Duration => IsConfigured ? DurationTicks : ControlInversion.DefaultDurationTicks;
     }
 
@@ -102,8 +114,14 @@ namespace Parallax.Editor.Setup
         public readonly bool IsConfigured; public readonly SurfaceMotion Motion; public readonly bool Pushes; public readonly string CrushPartner;
         // D-119: a hinge floor swings up 90 degrees about one end (its top corner) over HingeTicks before it moves (0: none).
         public readonly int HingeTicks; public readonly bool HingeAtRight;
-        public MovingFloorSettings(SurfaceMotion motion, bool pushes = false, string crushPartner = null, int hingeTicks = 0, bool hingeAtRight = false)
-        { IsConfigured = true; Motion = motion; Pushes = pushes; CrushPartner = crushPartner; HingeTicks = hingeTicks; HingeAtRight = hingeAtRight; }
+        // PAX-107 (D-124): a hinge floor's top face (toward the cat once it stands) is spiked: shown from the swing, a touch
+        // kills once it stands. A mover that rises first moves along an L (the vertical part of its offset, then the rest).
+        public readonly bool Spiked, RiseFirst;
+        // PAX-107 (D-140): a slam: coming down, it kills a cat it lands on (MovingTrap.SlamHits), even one physics would push aside.
+        public readonly bool Slams;
+        public MovingFloorSettings(SurfaceMotion motion, bool pushes = false, string crushPartner = null, int hingeTicks = 0, bool hingeAtRight = false,
+            bool spiked = false, bool riseFirst = false, bool slams = false)
+        { IsConfigured = true; Motion = motion; Pushes = pushes; CrushPartner = crushPartner; HingeTicks = hingeTicks; HingeAtRight = hingeAtRight; Spiked = spiked; RiseFirst = riseFirst; Slams = slams; }
         public bool Hinges => HingeTicks > 0;
         /// <summary>D-119: the wall a hinge floor of `flat` stands up into, room-local: as thick as the floor, as tall as it was
         /// long, beside its hinge (left of a right-end hinge, right of a left-end one), from the floor's top up.</summary>

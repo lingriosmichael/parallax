@@ -222,6 +222,9 @@ namespace Parallax.Editor.Art
                             Vector2 drawn = others[k].interpolation == RigidbodyInterpolation2D.Interpolate ? Vector2.Lerp(otherPrev[k], otherCur[k], a) : otherCur[k];
                             others[k].transform.position = new Vector3(drawn.x, drawn.y, others[k].transform.position.z);
                         }
+                    // PAX-107: the colliders where they're drawn, so a floor rising under the cat is measured where the paws see it
+                    // (the next tick puts every body back first).
+                    Physics2D.SyncTransforms();
                     rig.Presenter.Present(frameDt, a);
                     TrapShots.ApplyArt();
 

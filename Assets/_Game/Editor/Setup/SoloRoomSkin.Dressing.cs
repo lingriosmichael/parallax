@@ -142,8 +142,11 @@ namespace Parallax.Editor.Setup
             // PAX-106 (D-110 amendment 4 (2)): moss means grip. Each side face of a grip solid wears a moss carpet over at least
             // GripMossCover of its height, brighter than the stone: the kit's ENV_MossCarpet when it has one (R9), stacked
             // ENV_Moss tufts otherwise. A trap's carpet hangs on its skin (a grip falling block's moves and lands with it).
+            // PAX-107 (the developer: "For the wall on the right, add moss on the side"): a grip face's moss doesn't keep off arrow
+            // lanes. Launchers, spears and arrows draw in front of it, and L011's Shaft_Moss has a lane every 1.45 u.
+            List<Rect> gripKeepOut = KeepOut(room, false, skipHidden: true, lanes: false);
             foreach (Edge e in edges.Where(e => e.Owner.Grip && e.Side is Side.Left or Side.Right))
-                GripMoss(e, place, ClearOfVisible);
+                GripMoss(e, place, r => !gripKeepOut.Any(k => k.Overlaps(r)));
 
             // Banners and glyph panels: on the biggest faces, at most two of each per room, largest first (ties by name).
             List<Solid> faces = solids.Where(s => s.Shape == Shape.Block).OrderByDescending(s => s.Rect.width * s.Rect.height).ThenBy(s => s.Name, System.StringComparer.Ordinal).ToList();
@@ -247,12 +250,13 @@ namespace Parallax.Editor.Setup
             room.Elements.Where(x => x.Kind is SoloRoomElementKind.Door or SoloRoomElementKind.Checkpoint)
                 .Select(x => Grow(new Rect(room.Origin + x.Position - x.Size * 0.5f, x.Size), 0.6f)).ToList();
 
-        static List<Rect> KeepOut(SoloRoomDefinition room, bool triggers, bool skipHidden = false)
+        static List<Rect> KeepOut(SoloRoomDefinition room, bool triggers, bool skipHidden = false, bool lanes = true)
         {
             var list = new List<Rect>();
             foreach (SoloRoomElement e in room.Elements)
             {
                 if (skipHidden && e.Kind == SoloRoomElementKind.HiddenSpikes) continue;
+                if (!lanes && e.Kind == SoloRoomElementKind.Arrow) continue;
                 Vector2 p = room.Origin + e.Position;
                 switch (e.Kind)
                 {
@@ -268,6 +272,22 @@ namespace Parallax.Editor.Setup
                         list.Add(Grow(door, 1f));
                         foreach (SoloRoomElement retreat in room.Elements.Where(x => x.Kind == SoloRoomElementKind.DoorRetreat))
                             list.Add(Grow(new Rect(door.position + retreat.Settings.Offset, door.size), 1f));
+                        break;
+                    }
+                    case SoloRoomElementKind.Arrow when e.Settings.Arrow.IsConfigured && e.Settings.Arrow.AngleDegrees != 0f:
+                    {
+                        // PAX-107 (the developer: "In level 4 there is a patch of moss missing making the wall jump
+                        // impossible"): an angled lane keeps dressing off its slanted path, in short steps along it, not off a
+                        // level strip at the launcher's height (which hid L004's Left_Moss beside Arrow_O's launcher).
+                        Vector2[] c = LevelLayoutValidator.ArrowLaneCorners(e, room.Origin, 0f);
+                        Vector2 from = (c[0] + c[3]) * 0.5f, to = (c[1] + c[2]) * 0.5f;
+                        int steps = Mathf.Max(1, Mathf.CeilToInt(Vector2.Distance(from, to) / 0.25f));
+                        float half = e.Settings.Arrow.Thickness * 0.5f;
+                        for (int i = 0; i < steps; i++)
+                        {
+                            Vector2 a = Vector2.Lerp(from, to, i / (float)steps), b = Vector2.Lerp(from, to, (i + 1) / (float)steps);
+                            list.Add(Grow(Rect.MinMaxRect(Mathf.Min(a.x, b.x) - half, Mathf.Min(a.y, b.y) - half, Mathf.Max(a.x, b.x) + half, Mathf.Max(a.y, b.y) + half), 0.5f));
+                        }
                         break;
                     }
                     case SoloRoomElementKind.Arrow when e.Settings.Arrow.IsConfigured:

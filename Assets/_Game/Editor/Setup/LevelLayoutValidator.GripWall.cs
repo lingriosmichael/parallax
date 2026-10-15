@@ -14,9 +14,21 @@ namespace Parallax.Editor.Setup
     //   the cat sees is the face it grabs.
     // - Not over a hazard: no hazard (spikes, a moving hazard, hidden spikes) overlaps it or the column a clinging cat fills
     //   beside either face, from its top down to the first solid top under that column (where a sliding cat drops to).
+    //   D-123: a grip wall named in GripOverHazardExemptions is exempt from this one rule (a climb over spikes, on purpose).
     // No band restriction. Gravity-up checks don't apply (no cling with gravity up).
     public static partial class LevelLayoutValidator
     {
+        // D-123: grip walls built over hazards on purpose ("level/grip wall" -> reason), each from the developer's own sketch: the
+        // cat climbs over spikes, and one that slides off dies on them. Only the "not over a hazard" rule is waived.
+        public static readonly IReadOnlyDictionary<string, string> GripOverHazardExemptions = new Dictionary<string, string>
+        {
+            ["L006/Pillar_Moss"] = "D-122: the developer's sketch puts the left-side chimney over the ground's spikes",
+            ["L006/Hang_Moss"] = "D-122: the developer's sketch puts the left-side chimney over the ground's spikes",
+            ["L008/Shaft_Moss"] = "D-123: the developer's sketch puts the climb out of the shaft over the waterfall",
+            ["L008/Column_Moss"] = "D-123: the developer's sketch puts the climb out of the shaft over the waterfall",
+            ["L011/Column_WMoss"] = "D-127: the developer's sketch puts moss on the Column's west face over the spikes; Core_W's is the way down",
+        };
+
         public static List<string> ValidateGripWall(string levelId, SoloRoomDefinition room, CatMotorConfig motor)
         {
             var errors = new List<string>();
@@ -51,7 +63,7 @@ namespace Parallax.Editor.Setup
                     .Any(b => Mathf.Abs((side < 0 ? b.xMax : b.xMin) - line) <= eps && b.yMin <= r.yMin + eps && b.yMax >= r.yMax - eps);
                 if (Covered(r.xMin, -1)) columns[0] = Rect.zero;
                 if (Covered(r.xMax, 1)) columns[2] = Rect.zero;
-                foreach (Rect column in columns.Where(c => c != Rect.zero))
+                foreach (Rect column in columns.Where(c => c != Rect.zero && !GripOverHazardExemptions.ContainsKey($"{levelId}/{g.Name}")))
                 {
                     float landing = room.Elements.Where(o => o.Name != g.Name && IsSolidForGrip(o)).Select(o => Box(o, Vector2.zero))
                         .Where(b => b.xMax > column.xMin + eps && b.xMin < column.xMax - eps && b.yMax <= column.yMin + eps).Select(b => b.yMax).DefaultIfEmpty(-4f).Max();

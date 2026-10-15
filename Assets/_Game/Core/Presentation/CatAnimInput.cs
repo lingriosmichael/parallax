@@ -33,8 +33,9 @@ namespace Parallax.Core
             GravitySign = gravitySign;
         }
 
-        /// <summary>PAX-105 (D-110): the motor clings to a wall, on which side (+1 right, -1 left), and jumped off one on its
-        /// last step (held on every frame until the next tick, as JumpedThisStep).</summary>
+        /// <summary>PAX-105 (D-110): the motor clings to a wall, on which side (+1 right, -1 left, in the gravity frame, as Facing;
+        /// PAX-107: upside down a wall on the world's right is on the cat's left), and jumped off one on its last step (held on
+        /// every frame until the next tick, as JumpedThisStep).</summary>
         public bool Clinging { get; }
         public int ClingSide { get; }
         public bool WallJumped { get; }

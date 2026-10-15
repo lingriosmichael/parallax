@@ -12,7 +12,10 @@ namespace Parallax.Gameplay.Rooms
     /// PAX-084 (D-086): a spear is this trap with `spear` set and a shaft collider on the arrow child. It fires
     /// once, and from the tick after its stop its shaft is solid geometry the cat stands on and jumps from.
     /// PAX-099 (D-106): an arrow (never a spear) may fly at an angle from horizontal, positive towards world up; its pose
-    /// and kill box turn with it, and it is harmless and non-solid once stopped.</summary>
+    /// and kill box turn with it, and it is harmless and non-solid once stopped.
+    /// PAX-107 (D-123): with mirrorWithGravity, each shot takes the lane the cat's gravity picks as it fires: the authored one
+    /// with gravity down, the launcher moved up by mirrorShift (its mirror across the room) with gravity up. A shot in flight
+    /// keeps its lane.</summary>
     public sealed class ArrowTrap : RoomTrap
     {
         [SerializeField] ObserverSet observers;
@@ -32,9 +35,14 @@ namespace Parallax.Gameplay.Rooms
         [SerializeField] bool spear;
         [Tooltip("PAX-084: the spear's shaft (arrowLength x arrowThickness, non-trigger, off until it sticks). Null for an arrow.")]
         [SerializeField] BoxCollider2D shaft;
+        [Tooltip("PAX-107 (D-123): each shot flies on the mirrored lane while the cat's gravity is up.")]
+        [SerializeField] bool mirrorWithGravity;
+        [Tooltip("PAX-107 (D-123): how far up the launcher moves for a mirrored shot (local units).")]
+        [SerializeField] float mirrorShift;
 
         ContactFilter2D filter; readonly Collider2D[] results = new Collider2D[8];
         int flightTicks; Color unfiredColor;
+        Vector3 home; bool mirrored;
 
         protected override void Awake()
         {
@@ -46,6 +54,7 @@ namespace Parallax.Gameplay.Rooms
             flightTicks = ArrowMath.FlightTicks(travel, unitsPerTick);
             arrow.transform.localRotation = Quaternion.Euler(0f, 0f, KillAngle);
             unfiredColor = launcher.color;
+            home = transform.localPosition;
             ShowUnfired();
         }
 
@@ -55,7 +64,7 @@ namespace Parallax.Gameplay.Rooms
         protected override void OnLiveRoomStep()
         {
             if (!enabled) return;
-            StepTiming(trigger != null && IsLocalHumanOverlapping(trigger, observers, filter, results, out _));
+            if (StepTiming(trigger != null && IsLocalHumanOverlapping(trigger, observers, filter, results, out _)) && mirrorWithGravity) SetLane(CatGravityUp());
             if (!IsTimingEffectActive) return;
             int s = RoomLifeTick - LatestFireTick;
             arrow.transform.localPosition = LocalPose(s);
@@ -88,6 +97,19 @@ namespace Parallax.Gameplay.Rooms
             ? new(ArrowMath.CentreX(mouth.x, direction, arrowLength, ArrowMath.Offset(s, tellTicks, unitsPerTick, travel)), mouth.y)
             : ArrowMath.Centre(mouth, ArrowMath.Direction(direction, angleDegrees), arrowLength, ArrowMath.Offset(s, tellTicks, unitsPerTick, travel));
 
+        bool CatGravityUp()
+        {
+            ObserverContext observer = observers.Get(Reality.Id);
+            return observer != null && observer.Gravity != null && observer.Gravity.Direction.y > 0f;
+        }
+
+        // PAX-107 (D-123): the launcher (and with it the arrow and its kill box) on the authored or the mirrored lane.
+        void SetLane(bool up)
+        {
+            mirrored = up;
+            transform.localPosition = home + (up ? new Vector3(0f, mirrorShift, 0f) : Vector3.zero);
+        }
+
         void ShowUnfired()
         {
             if (arrow == null || launcher == null) return;
@@ -98,8 +120,11 @@ namespace Parallax.Gameplay.Rooms
         }
 
         // PAX-090 (D-091): the pose, the look and the shaft all follow from the timing (the live step's rules at roomTick).
+        protected override void CaptureExtra(ref TrapSnapshot snapshot) => snapshot.ExtraInt = mirrored ? 1 : 0;
+
         protected override void OnRestore(in TrapSnapshot snapshot, int roomTick)
         {
+            if (mirrorWithGravity) SetLane(snapshot.ExtraInt == 1);
             if (!enabled || !IsTimingEffectActive) { ShowUnfired(); return; }
             int s = roomTick - LatestFireTick;
             arrow.transform.localPosition = LocalPose(s);
@@ -108,7 +133,7 @@ namespace Parallax.Gameplay.Rooms
             if (shaft != null) shaft.enabled = spear && s >= ArrowMath.StuckCheckTick(tellTicks, flightTicks);
         }
 
-        protected override void OnReset() => ShowUnfired();
+        protected override void OnReset() { if (mirrorWithGravity) SetLane(false); ShowUnfired(); }
         protected override void OnTimingRearmed() => ShowUnfired();
     }
 }

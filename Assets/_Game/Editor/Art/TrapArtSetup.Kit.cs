@@ -34,17 +34,26 @@ namespace Parallax.Editor.Art
 
         // ---------- spikes: static, pit floors, hidden, periodic, sliding ----------
 
-        static string BuildSpikes(Transform artRoot, SoloRoomDefinition room, SoloRoomElement e, RoomTrap trap, SpriteRenderer greybox, bool rises, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
+        static string BuildSpikes(Transform artRoot, SoloRoomDefinition room, SoloRoomElement e, RoomTrap trap, SpriteRenderer greybox, bool rises, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes) =>
+            BuildSpikes(artRoot, e.Name, trap, greybox, rises, PointsDown(room, e), PointsSide(room, e), rooms, config, layer, changes);
+
+        /// <summary>PAX-107 (D-124): a spiked hinge floor's face, its own spikes art (pointing out of the floor's top face, turned
+        /// with it), beside the floor's solid art.</summary>
+        static string BuildSpikedFace(Transform artRoot, SoloRoomElement e, MovingTrap mover, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes) =>
+            ReadObject(mover, "spikes") is SpriteRenderer face && face != null
+                ? BuildSpikes(artRoot, e.Name + "_Spikes", mover, face, true, false, 0, rooms, config, layer, changes) : null;
+
+        static string BuildSpikes(Transform artRoot, string name, RoomTrap trap, SpriteRenderer greybox, bool rises, bool pointsDown, int pointsSide, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
         {
             if (greybox == null || config.SpikeStrip == null) return null;
-            Transform art = ArtObject(artRoot, e.Name, greybox.transform.position, layer, changes);
+            Transform art = ArtObject(artRoot, name, greybox.transform.position, layer, changes);
             SpikeArt presenter = SetupUtility.Ensure<SpikeArt>(art.gameObject, changes);
             SpriteRenderer body = Child(art, "Spikes", layer, changes);
             body.sprite = config.SpikeStrip; body.sharedMaterial = HazardMaterial(config); body.drawMode = SpriteDrawMode.Tiled;
             body.sortingOrder = greybox.sortingOrder; body.enabled = greybox.enabled;
             SpriteRenderer[] grit = rises ? Effects(art, "Grit", config.GritPuffs, config.Dust, config.TrapMaterial, greybox.sortingOrder + EffectOrder, layer, changes) : Effects(art, "Grit", 0, config.Dust, config.TrapMaterial, 0, layer, changes);
-            TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", e.Name), ("body", body), ("greyboxBody", greybox),
-                ("strip", config.SpikeStrip), ("trapMaterial", HazardMaterial(config)), ("pointsDown", PointsDown(room, e)), ("pointsSide", PointsSide(room, e)), ("rises", rises));
+            TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", name), ("body", body), ("greyboxBody", greybox),
+                ("strip", config.SpikeStrip), ("trapMaterial", HazardMaterial(config)), ("pointsDown", pointsDown), ("pointsSide", pointsSide), ("rises", rises));
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
             SetupUtility.SetArray(presenter, "grit", grit.Cast<Object>().ToArray(), changes);
             return art.name;
@@ -89,17 +98,6 @@ namespace Parallax.Editor.Art
             return west == east ? 0 : west ? 1 : -1;
         }
 
-        // PAX-102: a falling block inside the room's roof (the highest ceiling), in a room with no gravity flip.
-        public static bool IsRoofBlock(SoloRoomDefinition room, SoloRoomElement block)
-        {
-            if (block.Kind != SoloRoomElementKind.FallingBlock || room.Elements.Any(x => x.Kind == SoloRoomElementKind.GravityFlip)) return false;
-            var ceilings = room.Elements.Where(x => x.Kind == SoloRoomElementKind.Ceiling).Select(x => new Rect(x.Position - x.Size * 0.5f, x.Size)).ToList();
-            if (ceilings.Count == 0) return false;
-            float roof = ceilings.Max(c => c.yMax);
-            var box = new Rect(block.Position - block.Size * 0.5f, block.Size);
-            return ceilings.Any(c => c.yMax >= roof - 0.05f && c.Overlaps(box));
-        }
-
         // ---------- solids: falling blocks, moving floors, shrinking floors ----------
 
         static string BuildSolid(Transform artRoot, Transform roomRoot, SoloRoomDefinition room, SoloRoomElement e, RoomTrap trap, SpriteRenderer greybox, SolidArtKind kind, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
@@ -121,19 +119,11 @@ namespace Parallax.Editor.Art
                 crack.sortingOrder = greybox.sortingOrder + 1; crack.enabled = false;
             }
             else RemoveChild(art, "Crack", changes);
-            // PAX-102 (the developer: "falling blocks should leave a hole"): a block in the room's roof, in a room with no gravity
-            // flip (no cat stands on a roof's underside), gets its socket: hidden at its authored pose, shown once it has left.
+            // PAX-102 (the developer: "falling blocks should leave a hole"): a block in a ceiling left a dark socket once it had
+            // gone. PAX-107 ("leaving it black looks weird. It should show the background"): the host's fill leaves the
+            // block out instead (SoloRoomSkin.LeavesHole), so the air shows through; no socket.
             SpriteRenderer socket = null;
-            Sprite hole = kind == SolidArtKind.FallingBlock && IsRoofBlock(room, e) ? EnvironmentKit.Sprite("ENV_Socket") : null;
-            if (hole != null)
-            {
-                socket = Child(art, "Socket", layer, changes);
-                socket.sprite = hole; socket.sharedMaterial = config.TrapMaterial; socket.drawMode = SpriteDrawMode.Simple;
-                socket.transform.localPosition = Vector3.zero;
-                socket.transform.localScale = new Vector3(greybox.size.x / hole.bounds.size.x, greybox.size.y / hole.bounds.size.y, 1f);
-                socket.sortingOrder = greybox.sortingOrder + 1; socket.enabled = false;
-            }
-            else RemoveChild(art, "Socket", changes);
+            RemoveChild(art, "Socket", changes);
             SpriteRenderer[] dust = Effects(art, "Dust", config.SolidDust, config.Dust, config.TrapMaterial, greybox.sortingOrder + EffectOrder, layer, changes);
 
             Vector2 direction = Vector2.zero;

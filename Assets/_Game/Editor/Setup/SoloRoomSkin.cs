@@ -183,15 +183,99 @@ namespace Parallax.Editor.Setup
                 r.enabled = false;
                 // Slabs, slim posts and posts are covered edge to edge by their trims: no visible fill (one renderer less).
                 Transform old = t.Find(FillName);
-                if (s.Shape is Shape.Slab or Shape.SlimPost or Shape.Post) { if (old != null) Object.DestroyImmediate(old.gameObject); continue; }
-                Transform child = Child(t, FillName, t.gameObject.layer);
-                child.localPosition = new Vector3(0f, 0f, ZFill); child.localRotation = Quaternion.identity; child.localScale = Vector3.one;
-                SpriteRenderer visible = SetupUtility.Ensure<SpriteRenderer>(child.gameObject, changes);
-                visible.sprite = fill; visible.sharedMaterial = fillMaterial; visible.color = body;
+                if (s.Shape is Shape.Slab or Shape.SlimPost or Shape.Post) { if (old != null) Object.DestroyImmediate(old.gameObject); RemoveFillPieces(t, 1); continue; }
                 float inLeft = WhollyExposed(s, Side.Left, sides) ? ChipInset : 0f, inRight = WhollyExposed(s, Side.Right, sides) ? ChipInset : 0f;
-                child.localPosition = new Vector3((inLeft - inRight) * 0.5f, 0f, ZFill);
-                visible.drawMode = SpriteDrawMode.Sliced; visible.size = new Vector2(s.Rect.width - inLeft - inRight, s.Rect.height);
-                visible.sortingLayerName = layer; visible.sortingOrder = r.sortingOrder;
+                // PAX-107 (the developer: "Falling platforms or ceiling need to show that it actually fell, leaving it black
+                // looks weird. It should show the background"): the fill leaves out a falling block flush in a ceiling, whose own
+                // skin draws the same world-tiled pixels there; once it falls, the air behind shows through.
+                List<Rect> pieces = FillPieces(s, room);
+                for (int i = 0; i < pieces.Count; i++)
+                {
+                    Rect piece = pieces[i];
+                    float left = Mathf.Abs(piece.xMin - s.Rect.xMin) < Eps ? inLeft : 0f, right = Mathf.Abs(piece.xMax - s.Rect.xMax) < Eps ? inRight : 0f;
+                    Transform child = Child(t, i == 0 ? FillName : FillName + "_" + i, t.gameObject.layer);
+                    child.localRotation = Quaternion.identity; child.localScale = Vector3.one;
+                    SpriteRenderer visible = SetupUtility.Ensure<SpriteRenderer>(child.gameObject, changes);
+                    visible.sprite = fill; visible.sharedMaterial = fillMaterial; visible.color = body;
+                    Vector2 centre = piece.center + new Vector2((left - right) * 0.5f, 0f) - s.Rect.center;
+                    child.localPosition = new Vector3(centre.x, centre.y, ZFill);
+                    visible.drawMode = SpriteDrawMode.Sliced; visible.size = new Vector2(piece.width - left - right, piece.height);
+                    visible.sortingLayerName = layer; visible.sortingOrder = r.sortingOrder;
+                }
+                RemoveFillPieces(t, Mathf.Max(1, pieces.Count));
+            }
+        }
+
+        // PAX-107: a fixed solid's fill, less every falling block flush inside it (LeavesHole): strips left and right of each
+        // block at full height, and above and below it at its width.
+        static List<Rect> FillPieces(Solid s, SoloRoomDefinition room) => Cut(s.Rect, Holes(s, room));
+
+        // PAX-107: the falling blocks flush inside this fixed solid that leave a hole (LeavesHole).
+        static List<Rect> Holes(Solid s, SoloRoomDefinition room)
+        {
+            var holes = new List<Rect>();
+            if (s.Trap) return holes;
+            foreach (SoloRoomElement e in room.Elements)
+            {
+                var hole = new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size);
+                if (LeavesHole(room, e) && Contains(s.Rect, hole)) holes.Add(hole);
+            }
+            return holes;
+        }
+
+        // `r` less every hole: strips left and right of each at r's full height, and above and below it at its width.
+        static List<Rect> Cut(Rect r, List<Rect> holes)
+        {
+            var pieces = new List<Rect> { r };
+            foreach (Rect hole in holes)
+            {
+                var next = new List<Rect>();
+                foreach (Rect p in pieces)
+                {
+                    if (!p.Overlaps(hole)) { next.Add(p); continue; }
+                    float x0 = Mathf.Max(p.xMin, hole.xMin), x1 = Mathf.Min(p.xMax, hole.xMax);
+                    if (x0 - p.xMin > Eps) next.Add(Rect.MinMaxRect(p.xMin, p.yMin, x0, p.yMax));
+                    if (p.xMax - x1 > Eps) next.Add(Rect.MinMaxRect(x1, p.yMin, p.xMax, p.yMax));
+                    if (hole.yMin - p.yMin > Eps) next.Add(Rect.MinMaxRect(x0, p.yMin, x1, hole.yMin));
+                    if (p.yMax - hole.yMax > Eps) next.Add(Rect.MinMaxRect(x0, hole.yMax, x1, p.yMax));
+                }
+                pieces = next;
+            }
+            return pieces;
+        }
+
+        /// <summary>PAX-102/PAX-107 (the developer: "Falling platforms or ceiling need to show that it actually fell … It should
+        /// show the background"): a falling block inside a ceiling, or in a floor slab's underside (flush with its bottom, short
+        /// of its top), leaves a hole in that solid's art once it has gone, in a room with no gravity flip (no cat stands on an
+        /// underside there). Never one at a floor's top: the floor's collider stays, so a drawn hole there would lie; never one
+        /// in a thin slab (D-131: its stone is one strip): the slab is split around the block instead.</summary>
+        public static bool LeavesHole(SoloRoomDefinition room, SoloRoomElement block)
+        {
+            if (block.Kind != SoloRoomElementKind.FallingBlock || room.Elements.Any(x => x.Kind == SoloRoomElementKind.GravityFlip)) return false;
+            var box = new Rect(room.Origin + block.Position - block.Size * 0.5f, block.Size);
+            foreach (SoloRoomElement x in room.Elements)
+            {
+                if (x.Kind is not (SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall)) continue;
+                var host = new Rect(room.Origin + x.Position - x.Size * 0.5f, x.Size);
+                if (!Contains(host, box)) continue;
+                if (x.Kind == SoloRoomElementKind.Ceiling) return true;
+                // D-131: never in a thin slab (drawn as one stone strip, ENV_Slab, which isn't cut): split the slab instead.
+                if (host.height <= 0.55f && host.width > host.height) return false;
+                return Mathf.Abs(box.yMin - host.yMin) < Eps && host.yMax - box.yMax > Eps;
+            }
+            return false;
+        }
+
+        static bool Contains(Rect outer, Rect inner) =>
+            inner.xMin >= outer.xMin - Eps && inner.xMax <= outer.xMax + Eps && inner.yMin >= outer.yMin - Eps && inner.yMax <= outer.yMax + Eps;
+
+        static void RemoveFillPieces(Transform t, int keep)
+        {
+            for (int i = keep; ; i++)
+            {
+                Transform extra = t.Find(FillName + "_" + i);
+                if (extra == null) return;
+                Object.DestroyImmediate(extra.gameObject);
             }
         }
 
@@ -467,10 +551,18 @@ namespace Parallax.Editor.Setup
                 if (faceShade == null || shadeSolid == null || r.height <= start) return;
                 float ramp = s.Shape == Shape.PitBottom || start == 0f ? 0f : Mathf.Min(ShadeRamp, r.height - start), top = r.yMax - start;
                 Color shade = LevelShade;
-                if (ramp > 0f) Tint(Add(s, "Shade", "ENV_FaceShade", new Vector2(r.center.x, top - ramp * 0.5f), new Vector2(r.width, ramp), Vector2.zero, Vector4.zero, false, ZShade, false), shade);
+                // PAX-107: not over a falling block's hole (SkinFill leaves it out too), so the air behind it shows once it has gone.
+                List<Rect> holes = Holes(s, room);
+                if (ramp > 0f) Shade("Shade", "ENV_FaceShade", Rect.MinMaxRect(r.xMin, top - ramp, r.xMax, top));
                 float rest = r.height - start - ramp;
-                if (rest > 0.01f)
-                    Tint(Add(s, "ShadeSolid", "ENV_FaceShadeSolid", new Vector2(r.center.x, r.yMin + rest * 0.5f), new Vector2(r.width, rest + 0.02f), Vector2.zero, Vector4.zero, false, ZShade, false), shade);
+                if (rest > 0.01f) Shade("ShadeSolid", "ENV_FaceShadeSolid", Rect.MinMaxRect(r.xMin, r.yMin - 0.01f, r.xMax, r.yMin + rest + 0.01f));
+
+                void Shade(string name, string slot, Rect quad)
+                {
+                    List<Rect> pieces = Cut(quad, holes);
+                    for (int i = 0; i < pieces.Count; i++)
+                        Tint(Add(s, i == 0 ? name : name + "_" + i, slot, pieces[i].center, pieces[i].size, Vector2.zero, Vector4.zero, false, ZShade, false), shade);
+                }
             }
 
             void AddVertical(Solid s, string name, string slot, EnvironmentKit.Slot def, Rect r, float k, string kind)

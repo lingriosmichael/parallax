@@ -260,6 +260,10 @@ namespace Parallax.Editor.Setup
                 bool returns = e.Settings.RepeatMode == TrapRepeatMode.Periodic || e.Settings.ReturnTicks > 0;
                 foreach (Piece p in pieces.Where(p => !p.Up && !p.Vine && p.Mover == null && Mathf.Abs(p.Y - start.yMax) < Epsilon && p.XMin >= start.xMin - Epsilon && p.XMax <= start.xMax + Epsilon))
                 { p.Mover = e.Name; p.MoverSweep = sweep; p.MoverReturns = returns; }
+                // PAX-107 (D-131): a lift that rises into a fixed solid (D-123, its crush partner) carries no cat to its end
+                // pose alive: a cat's height on its end top runs into the solid, so that pose is no surface.
+                Rect rider = Rect.MinMaxRect(end.xMin, end.yMax, end.xMax, end.yMax + catHeight);
+                if (FixedSolids(room).Any(f => rider.xMin < f.xMax - Epsilon && rider.xMax > f.xMin + Epsilon && rider.yMin < f.yMax - Epsilon && rider.yMax > f.yMin + Epsilon)) continue;
                 int before = pieces.Count;
                 AddPiece(pieces, end.xMin, end.xMax, end.yMax, false, trigger, low, ceiling, catHeight, room.Width);
                 for (int i = before; i < pieces.Count; i++) { pieces[i].Mover = e.Name; pieces[i].MoverEnd = true; pieces[i].MoverSweep = sweep; pieces[i].MoverReturns = returns; }

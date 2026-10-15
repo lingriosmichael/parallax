@@ -69,6 +69,9 @@ namespace Parallax.Gameplay.Presentation
         [Tooltip("PAX-V07: a grounded cat whose paws are further than this (units) below the top of the collider it stands on (its rounded collider rolling off a ledge's corner) is shown off the ground (set by the setup menu).")]
         [SerializeField, Min(0f)] float groundSinkTolerance = 0.01f;
 
+        [Tooltip("PAX-107: a cat on a rising solid floor (not ground, D-115) is shown standing on it while it rises no more than this (u/s) faster than the floor.")]
+        [SerializeField, Min(0f)] float ridingSpeedTolerance = 0.5f;
+
         [Tooltip("PAX-V07: how far (u/s) the body's speed must lead the drawn speed to count as the player's doing: a release on landing, a move pressed during Land (set by the setup menu).")]
         [SerializeField, Min(0f)] float speedLeadTolerance = 0.5f;
 
@@ -121,6 +124,7 @@ namespace Parallax.Gameplay.Presentation
         public float HardLandDistance => hardLandDistance;
         public float AirGraceDrop => airGraceDrop;
         public float GroundSinkTolerance => groundSinkTolerance;
+        public float RidingSpeedTolerance => ridingSpeedTolerance;
         public float SpeedLeadTolerance => speedLeadTolerance;
         public float TurnHoldTime => turnHoldTime;
         public float FidgetDelay => fidgetDelay;

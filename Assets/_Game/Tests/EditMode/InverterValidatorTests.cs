@@ -43,7 +43,8 @@ namespace Parallax.Tests.EditMode
         static object InverterSettings(int duration, TrapRepeatMode repeat = TrapRepeatMode.Once, int period = 1, int cooldown = 0)
         {
             Type inverter = EditorType("InverterSettings");
-            object settings = inverter.GetConstructors().Single(c => c.GetParameters().Length == 2).Invoke(new object[] { duration, false });
+            // PAX-107: (duration, disguised, endPosition, endSize); no end box here.
+            object settings = inverter.GetConstructors().Single(c => c.GetParameters().Length == 4).Invoke(new object[] { duration, false, Vector2.zero, Vector2.zero });
             ConstructorInfo ctor = EditorType("SoloRoomTrapSettings").GetConstructors().Single(c => c.GetParameters().Length == 2 && c.GetParameters()[0].ParameterType == inverter);
             return ctor.Invoke(new[] { settings, Timing(repeat, period, cooldown) });
         }

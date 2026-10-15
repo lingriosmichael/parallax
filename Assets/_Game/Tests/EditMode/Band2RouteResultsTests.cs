@@ -33,46 +33,94 @@ namespace Parallax.Tests.EditMode
         // PAX-A16 (D-100): at the 1.2x camera, Spear_1 fires from under Core_W (the first jump's window is 37, was 32) and
         // Ledge_M sits a storey lower (its fall's lead is 85, was 93); L018's Spear_S fires from a post under SB_W (the jump
         // over it has a window of 30, was 31).
-        [TestCase("L011", 1614, new[] { 37, 27, 27, 30, 44, 16 },
-            new[] { "Spear_1=8", "Foot_C=21", "Spear_2=8", "Spear_L=8", "Ledge_M=85", "V1=8", "Spear_K=8", "Spear_Top=8", "Spear_Gap=12", "Lip=26", "Block_Door=7", "Spikes_D1=9", "Spikes_D2=8" }, new string[0])]
-        [TestCase("L012", 1323, new[] { 31, 23, 37, 17, 51, 15, 33, 30, 31 },
-            new[] { "Cat.Inverted=17", "Floor_1=14", "Floor_2=14", "Collapse_B=22", "Orb_A=55", "Spikes_D=28", "Block_E=7", "Collapse_F=19", "Cat.Inverted=912", "FakeFloor_D=25", "Cat.Inverted=1207", "Slot_Floor=8", "Spikes_D2=10" }, new string[0])]
-        [TestCase("L013", 1613, new[] { 31, 28, 28, 28, 28, 36, 32, 34 },
-            new[] { "Ledge_2=25", "Spikes_A=13", "Block_C=10", "Spikes_P2=37", "G_D=1265", "Ledge_5=12", "Spikes_G=13", "Spikes_C1=31", "Spikes_C2=60", "Spikes_D2=11" },
-            new[] { "Alcove visible t1172, complete t1913" })]
-        // PAX-060 (L014): built after PAX-093 and the vine-grab coverage fix (D-096); C1's trigger is its own column. Lip_1
-        // gives way at the Top's edge (T1, its escape declared, D-097); Pit_1 and Pit_3 are honest pits; Spear_V2 crosses
-        // V2's lane (T2c).
-        [TestCase("L014", 1175, new[] { 13, 51, 42, 26, 38, 51, 14, 21, 35, 35, 35, 26 },
-            new[] { "Lip_1=53", "V1=33", "Spikes_D2=29", "Spear_V2=22", "Block_T=13", "Arrow_V=6", "Spear_4=12", "Spear_L=16", "V5=35", "Shrink=86", "C2=9", "C1=19", "C3=30", "C4=30", "C5=30", "C6=30", "Spikes_8=153" },
-            new[] { "V_Up visible t389, complete t1234" })]
+        // PAX-107 round eight (D-127): L011 starts on the Riser, runs the falling slab, climbs the chimney and slides down Core_W
+        // (T0 Riser, T0b Slab_1; the Riser and the slab at half speed); Spear_L is gone; Spear_1 fires from a cut by the gap, 0.2 higher (window 34); the developer's
+        // play-test: Core_W's west face mossy (window 32), Spear_G an arrow, Spikes_D1 removed.
+        // PAX-107 round thirteen: the Cloud chases the cat along the gallery (T3d) and the bridge falls piece by piece behind
+        // it (T3e, Bridge_4); the jump over Spear_G has a window of 30 (was 29).
+        // PAX-107 round seventeen: T_Rise fills the dip between Post_D and Curb_T (one hop up from Spear_Gap, a drop down to
+        // T_West: 1813 ticks); Stop_Hi is gone (the high ledge's lead is 6, the Lip's 27).
+        [TestCase("L011", 1813, new[] { 34, 32, 30, 30, 44, 16 },
+            new[] { "Riser=88", "Slab_1=14", "Spear_1=8", "Foot_C=21", "Spear_2=8", "Ledge_M=133", "Cloud=72", "Bridge_4=55", "V1=8", "Spear_K=8", "Spear_Top=8", "Spear_Gap=12", "Lip=27", "Block_Door=7", "Spikes_D2=6" }, new string[0])]
+        // PAX-107 (the developer: "Level 12 to have some more traps"): Drop_3 (T11), Hinge_2 (T12) and Piston_1 (T13); the
+        // Handoff checkpoint moves to x 8.3 (gate 7.9), off Hinge_2.
+        // The developer's next notes: Block_E slides on into PB after it lands (T3, and T6 is now pushed); hall 4's run gains
+        // Hinge_4 (T12, into P4) and Drop_4 (T11), and the jump over P4 (window 20) replaces the switch of hands (51); the
+        // Shelf's west half, Shelf_W, rises (T13). Orb_A's flip is 105 ticks, Orb_B's 295.
+        // PAX-107 round thirteen: PB is 2.2 u wide and Block_E stops at its edge (a cat pushed while running forward falls in,
+        // T3); hall 2's run gains Slam_H2 (T14) and Lift_H2 (T13): the solution waits for each (1538 ticks, was 1456).
+        // Round eighteen: Spikes_D a unit east (x 14-15.3), up at Orb_A + 70 (T5 leads 70 and 19).
+        // Round nineteen: Orb_A's flip ends over Hinge_4's notch (30 ticks); Orb_P flips the hands again before P4 (T10); Hinge_4
+        // stands up and slides faster (1541 ticks).
+        // D-146: Hinge_2 stands up in 3 ticks and slides its 8 u in 40 (was 6 and 74): the hand switch over Pit_H has a window of
+        // 17 (was 15) and the solution is 1538 ticks.
+        [TestCase("L012", 1538, new[] { 31, 23, 37, 17, 44, 33, 20, 17, 33, 30, 30 },
+            new[] { "Cat.Inverted=17", "Floor_1=14", "Floor_2=14", "Collapse_B=20", "Block_E=29", "Block_E=29", "Orb_A=70", "Spikes_D=13", "Block_E=29", "Hinge_4=35", "Orb_P=37", "Drop_4=7", "Collapse_F=19", "Shelf_W=7", "Drop_3=7", "Hinge_2=55", "Cat.Inverted=969", "Slam_H2=6", "Lift_H2=6", "Piston_1=6", "FakeFloor_D=25", "Cat.Inverted=1422", "Slot_Floor=8", "Spikes_D2=9" }, new string[0])]
+        // PAX-107 (the developer's L013 notes, D-130/D-131): the corner trap removed; on the ground Collapse_1 (T12, Pit_1),
+        // Slam_1 (T11), Lift_1 (T1), Ferry_1 over Pit_M (T13); on S2 Slam_2 and Collapse_2 (T14), Lift_2 (T11), Spike_2 by
+        // G_B's vent (T3); on S3 Hinge_3 and Spikes_3 (T10); on S4 Lift_4 (T11); Block_C a section of S4 that drops (D-131). G_A erupts at 530
+        // (was 455). The developer's play (2026-10-12): Lift_1 on its own 100-tick beat (window 25), Spike_2 faces the vent.
+        // PAX-107 round fifteen: Hinge_1 behind the start and Hinge_S4 on S4 stand up and push a cat that stops (T10); the jump
+        // over Spikes_4 has a window of 14.
+        // D-140: Slam_1 and Slam_2 kill a cat they land on (a slam's own test), 2 ticks before physics pinned it (leads 6, were 8).
+        // D-146: every hinge floor stands up in 3 ticks (Spike_2 in 6) and slides at about 0.2 u a tick; Spike_2 still arrives
+        // over G_B's vent just after the launch (delay 59, was 30).
+        // D-141: the ground is played with left and right swapped (Invert at the start, until G_1's launch); the swap's first
+        // tick walks the cat a tick west, which moves the first windows and a few leads by a tick or two.
+        [TestCase("L013", 1613, new[] { 33, 25, 33, 29, 14, 28, 14, 29, 35, 32, 33 },
+            new[] { "Collapse_1=12", "Slam_1=6", "Lift_1=9", "Ferry_1=24", "Slam_2=6", "Collapse_2=28", "Lift_2=8", "Spike_2=7", "Spikes_A=12", "Hinge_1=36", "Hinge_S4=9", "Hinge_3=12", "Block_C=11", "Lift_4=7", "Spikes_P2=36", "G_D=1264", "Ledge_5=12", "Spikes_G=13", "Spikes_C1=29", "Spikes_C2=59", "Spikes_D2=11" },
+            new[] { "Alcove visible t1171, complete t1913" })]
+        // PAX-107 (D-143): L014 rebuilt as "Snapping Canopy": three trenches crossed vine to vine as the vines snap behind the
+        // cat, two launchers per lower trench (dodged by climbing), lifts, slams and hinge floors on the walks, a mossy chimney.
+        // D-144: the hinge floors are faster (a 3-tick swing; Hinge_0 0.24, Hinge_3 0.25, Hinge_5 0.14 u a tick) and Hinge_5's
+        // spikes face the cat it pushes.
+        [TestCase("L014", 1369, new[] { 25, 26, 26, 19, 40, 23, 26, 26, 39, 12, 14, 26, 26, 37 },
+            new[] { "Hinge_0=38", "V1=23", "V2=21", "V3=21", "V4=21", "Arrow_1Hi=10", "Arrow_1Lo=10", "Lift_1=9", "Collapse_1=11", "V5=23", "V6=21", "V7=21", "Arrow_2Hi=10", "Arrow_2Lo=10", "Lift_2=8", "Hinge_3=9", "V8=23", "V9=21", "V10=21", "V11=21", "Slam_10=33", "Slam_3=8", "Hinge_5=7", "Spikes_P=34", "V_Lure=24" },
+            new string[0])]
         // PAX-060 (L015): the storm cloud. The Run's dance waits out D3's return on bare platforms (locks at t874 and t974);
         // Arrow_9 fires once from a cut on P1; the finale's Spear_10 runs under Floor_F1.
         // 2026-09-29 (the developer's play, D-093 (4c)): every roof under a cloud is real, so L015's T4 (Fake_4) and
         // L018's T1 (Fake_1) are gone; L018's launch jump window is 31 (was 29).
         // D-119: the motor's seam tie-break moves L015 and L018 by a tick here and there. PAX-107: the clouds 20 % faster, zapping
         // 10 % faster (L015, L018, L020 re-pinned).
-        [TestCase("L015", 1283, new[] { 21, 51, 45, 51, 51, 29, 23, 31, 51, 51 },
-            new[] { "Cloud=74", "Cloud=164", "Collapse_2=62", "Arrow_3=12", "Mover_M=146", "Spear_P=86", "Cloud=614", "Block_1=24", "Block_3=24", "Cloud=974", "D3=284", "D3=193", "Arrow_9=50", "Spear_10=36" },
-            new[] { "Cloud visible t25, complete t1409", "Mover_M visible t2, complete t1409" })]
+        // PAX-107 (D-125): the clouds at the cat's run; L015's dance on the cloud's 90-tick clock (three hops), Roof_R over the Run
+        // checkpoint; L018's first strike 58 ticks after the wake.
+        [TestCase("L015", 1263, new[] { 21, 51, 34, 51, 51, 40, 22, 25, 39, 51, 51 },
+            new[] { "Cloud=74", "Cloud=164", "Collapse_2=62", "Arrow_3=12", "Mover_M=146", "Spear_P=86", "Cloud=524", "Block_1=24", "Block_3=24", "Cloud=884", "D3=181", "D3=113", "Arrow_9=50", "Spear_10=36" },
+            new[] { "Cloud visible t25, complete t1433", "Mover_M visible t2, complete t1433" })]
         // PAX-060 half B (L016-L020, as built and accepted pending play; D-093 (4b)).
-        [TestCase("L016", 1202, new[] { 26, 26, 26, 16, 44, 12 },
-            new[] { "Lip_2=42", "Arrow_3=8", "Arrow_U=6", "Spikes_X=108", "Tile_6=8", "Spikes_X=8", "Spikes_7=19", "Spikes_8=463", "Block_S3=23", "Spikes_S1=32", "Spikes_H=25", "Spikes_S5=145", "Spikes_C=75" },
+        // PAX-107 (D-142): L016 replaced by "Flipside" (three corridors, flips between floor and ceiling).
+        // D-145: the hinge floors are faster (Hinge_1 4 u in 20 ticks, Hinge_3 3 u in 36, both a 3-tick swing), Hinge_3's spikes
+        // face the cat, and the finale's Slam_3a comes down sooner (4 ticks after Hinge_3, over 8) so the hop still beats it.
+        [TestCase("L016", 1173, new[] { 26, 14, 14, 26, 25, 14, 30, 31 },
+            new[] { "Slam_1=7", "Spikes_CW=55", "CC_1=13", "Lift_1=8", "Lift_1b=8", "Hinge_1=20", "Piston_2=40", "Slam_2=15", "Arrow_M=10", "CC_2=11", "Push_3=18", "Spikes_D2=169", "Cat.Gravity=884", "Hinge_3=27", "Slam_3a=7", "Spikes_3=32", "Spikes_3b=85" },
             new string[0])]
         // D-119: L017's and L018's arrows fire non-stop (windows re-pinned; leads and recoveries unchanged).
-        [TestCase("L017", 1152, new[] { 45, 35, 29, 12, 15 },
-            new[] { "Spear_1=8", "Spikes_D1=10", "Block_2=19", "Collapse_3=58", "Slide_4=41", "Arrow_5a=16", "Block_6=21", "Spikes_5e=15", "Arrow_8=60" },
-            new[] { "Sink_9 visible t927, complete t1340", "Slide_4 visible t172, complete t1468" })]
-        [TestCase("L018", 1143, new[] { 26, 50, 25, 31, 29, 33 },
-            new[] { "Arrow_2=40", "Cloud=164", "Fake_A=79", "Spear_S=24", "SL_2=27", "SL_3=27", "Cloud=434", "Spikes_3=22", "Cloud=524", "Collapse_V=74", "Block_T=14", "G_D=762", "Arrow_B=10", "TL_3=21", "Block_7=24", "Spikes_7=18", "G_C=988" },
-            new[] { "Cloud visible t6, complete t1143" })]
-        [TestCase("L019", 1142, new[] { 43, 43, 43, 27, 49, 51, 51, 51, 9, 51 },
-            new[] { "Spear_4=8", "Sweeper_2=8", "Sweeper_3=8", "Sweeper_4=8", "Sweeper_H=8", "Cat.Inverted=21", "P2=32", "Cat.Inverted=188", "Mover_1=633", "Cat.Inverted=449", "Mover_2=1010", "Mover_2=1109", "Spear_9=12", "Floor_C=19" },
-            new[] { "Mover_1 visible t2, complete t1342" })]
-        // PAX-099 (D-106): the door drops onto Door_Ledge and the ride steers west onto it (window 30); dead end D3 steers back.
-        [TestCase("L020", 1164, new[] { 21, 51, 51, 33, 32, 38, 35, 34, 26, 30 },
-            new[] { "Arrow_1=8", "Push_3=153", "Collapse_2=29", "Spear_4a=8", "Spear_4b=8", "V_5=55", "Cat.Inverted=25", "Cloud=74", "Shrink_8=207", "Door=94" },
-            new[] { "Cloud visible t593, complete t1164", "G_9 visible t61, complete t1314", "Door visible t969, complete t1314" })]
+        // PAX-107 (D-131): L017's Block_2 hangs 0.25 deep in UF_E1's underside (it was the floor's whole 0.7), so it no longer
+        // touches Collapse_3 as it lands: Collapse_3 shows only on the cat's touch (lead 21, was 58). L018's Block_7 is a
+        // section of the split Summit (0.37 u a tick).
+        // PAX-107 (D-147): L017 rebuilt as three lanes 5 u apart: bridges that crumble behind the cat, slams, jump-height arrows,
+        // spiked hinge floors, a spear stair at each lane's end, lane 2 played with the hands swapped (Inv_2), Inv_3 ending in
+        // the jump over Pit_3, and Push_3 chasing the cat onto Slam_3.
+        [TestCase("L017", 1205, new[] { 51, 51, 13, 27, 27, 27, 33, 31, 51, 13, 27, 27, 27, 33, 21, 16 },
+            new[] { "Br_2=35", "Br_2=35", "Slam_1=7", "Arrow_1=10", "Hinge_1=7", "V1=8", "Br2_1=27", "Slam_2=7", "Arrow_2=10", "Hinge_2=7", "W1=8", "Inv_3=57", "Slam_3=7", "Push_3=29" },
+            new string[0])]
+        // PAX-107 (D-148): L018 rebuilt ("Eye of the Storm": three corridors, the cloud floor to floor, three inverters). V_6 hangs
+        // from Roof_A, so a cat resting at its top falls further (lead 37).
+        [TestCase("L018", 1139, new[] { 12, 39, 13, 16, 38, 17, 35, 16, 27 },
+            new[] { "Hinge_0=35", "Collapse_1=11", "Slam_1=6", "Cloud=164", "Lift_1=8", "Arrow_1=10", "Cloud=344", "Spikes_E=89", "Hinge_2=15", "Slam_2=6", "G_D=470", "Arrow_2=10", "V_6=37", "TL_2=11", "Piston_3=62", "Slam_3=6", "Hinge_3=26", "Cloud=1064", "Spikes_7=53", "V_6=11" },
+            new string[0])]
+        // PAX-107 (D-149): L019 rebuilt on L016's frame (three corridors), most of it played with the hands swapped: Invert from
+        // the start to its end box in the jump off Crumb_1, Orb_2 on its timer (it runs out in the jump onto the bridge), Orb_L on
+        // Lift_U to its end box in the last jump; the spear stair builds itself ahead of the climbing cat.
+        [TestCase("L019", 1158, new[] { 37, 51, 49, 37, 32, 32, 32, 29, 36, 14, 28, 18, 51 },
+            new[] { "Hinge_0=38", "Hinge_0=31", "Lift_1=42", "Slam_1=8", "Crumb_1=14", "Cat.Inverted=294", "Crumb_1=27", "Spear_3=8", "Cat.Inverted=513", "Slam_2=7", "Lift_2=8", "Cat.Inverted=704", "Bridge_3=14", "Arrow_3Hi=10", "Arrow_3Lo=10", "Collapse_3=18", "Arrow_3Lo=10", "Slam_3a=6", "Hinge_3=22", "Spikes_3=35", "Cat.Inverted=1141" },
+            new string[0])]
+        // PAX-107 (D-150): L020 rebuilt ("The Machine" on the L014/L016 model: four storeys 4.5 u apart, two inverters).
+        [TestCase("L020", 1224, new[] { 16, 39, 19, 35, 31, 51, 20, 50, 21 },
+            new[] { "Hinge_0=7", "Lift_1=8", "Bridge_1=17", "Arrow_Lo=10", "Spikes_A=7", "Cat.Inverted=28", "Spikes_N=16", "Slam_2=7", "CC_2=8", "Cat.Inverted=214",
+                "V_3=34", "Cat.Inverted=373", "Cloud=74", "Arrow_Hi=10", "Hinge_F=24", "Slam_Fa=6", "Spikes_F=26", "Spikes_D=25" },
+            new string[0])]
         // A level's whole route measurement runs inside its case, over NUnit's default 180 s for the larger levels (L014).
         [Timeout(600000)]
         public void RouteResults_AreAsBuilt(string id, int solutionTicks, int[] windows, string[] leads, string[] recoveries)

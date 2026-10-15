@@ -17,7 +17,10 @@ namespace Parallax.Editor.Levels
                 // D-116: Arrow_A's first shot comes as the cat sets off along S2: jump it. Then stop short of the corbel's new
                 // lane, let its shot land, and walk under the corbel before the drip.
                 Hold(Left), Until(XAtMost(26.6f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()), Until(XAtMost(20.6f)), Release(), Until(Still()),
-                Until(Home("Arrow_X")), For(2), Until(Moving("Arrow_X")), For(8), Until(Stopped("Arrow_X")), Hold(Left),
+                // D-126: Arrow_A's next shot comes as the corbel's lands: jump it where the cat waits, and set off once the corbel's
+                // shot is down (seen in flight first: an arrow's tell holds still), so the jump's timing doesn't move the rest of the route.
+                Until(Home("Arrow_X")), For(2), Until(Moving("Arrow_X")), For(4), Jump().Timed(TimedMode.Shift), Until(Airborne()),
+                Until(Moving("Arrow_X")), For(2), Until(Moving("Arrow_X")), Until(Stopped("Arrow_X")), Hold(Left),
                 // Off S2's end, down to the low ledge, back left, and down to S1 off its left end.
                 Until(XAtMost(5.6f)), Until(Airborne()), Until(GroundedOn("Ledge_Lo")), Release(), Until(Still()),
                 Hold(Left), Until(GroundedOn("S1_A")),

@@ -135,6 +135,10 @@ namespace Parallax.Editor.Setup
                 if (block.Settings.Grip.IsConfigured) continue;
                 // D-111 (the developer, 2026-10-04): L001's ledge is a floor that falls on the cat passing under it.
                 if (levelId == "L001" && block.Name == "Ledge") continue;
+                // D-127 (the developer's sketch, 2026-10-10): L011's slab, four blocks the cat runs across, falls as it lands on them.
+                if (levelId == "L011" && block.Name.StartsWith("Slab_")) continue;
+                // PAX-107 round thirteen (the developer, 2026-10-14): L011's bridge falls piece by piece behind the running cat.
+                if (levelId == "L011" && block.Name.StartsWith("Bridge_")) continue;
                 // D-085 amendment (PAX-102): a block that is a section of a split slab (a real hole once it falls) passes when the
                 // floor is drawn as one surface across it: a floor on each side, touching it, with the same top and bottom, and no
                 // exposed side edge where they meet (the skin draws side faces and end caps on exposed edges only: a seam).
@@ -160,10 +164,14 @@ namespace Parallax.Editor.Setup
         // a cat standing where it lands only if its second-to-last pose already overlaps the cat by more than the test's
         // shrink; otherwise it pins the cat without killing it. With N moving ticks and a last step r, that pose is r + one
         // step above the rest pose, and it must be below the cat's height less the shrink.
-        // D-085 amendment (PAX-102): a floor on each side of the block, touching it, with its top and bottom.
-        internal static bool IsSlabSection(SoloRoomDefinition room, Rect b, float eps)
+        // D-085 amendment (PAX-102): a floor on each side of the block, touching it, with its top and bottom. PAX-107 (D-131): or
+        // a ceiling on each side (a ceiling split around the block, so its fall leaves a real hole).
+        internal static bool IsSlabSection(SoloRoomDefinition room, Rect b, float eps) =>
+            IsSlabSection(room, b, eps, SoloRoomElementKind.Floor) || IsSlabSection(room, b, eps, SoloRoomElementKind.Ceiling);
+
+        static bool IsSlabSection(SoloRoomDefinition room, Rect b, float eps, SoloRoomElementKind kind)
         {
-            bool Side(bool left) => room.Elements.Where(e => e.Kind == SoloRoomElementKind.Floor).Select(e => Box(e, Vector2.zero))
+            bool Side(bool left) => room.Elements.Where(e => e.Kind == kind).Select(e => Box(e, Vector2.zero))
                 .Any(r => Mathf.Abs(r.yMin - b.yMin) < eps && Mathf.Abs(r.yMax - b.yMax) < eps && Mathf.Abs(left ? r.xMax - b.xMin : r.xMin - b.xMax) < eps);
             return Side(true) && Side(false);
         }

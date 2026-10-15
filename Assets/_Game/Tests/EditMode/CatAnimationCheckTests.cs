@@ -43,13 +43,16 @@ namespace Parallax.Tests.EditMode
         // PAX-A14: a cat standing still on a moving floor (Trap Lab room 12's Mover).
         static readonly string[] Carry = { "carry_stand_down" };
 
+        // PAX-107: a cat standing still on a rising floor (L011's Riser), which pushes it up rather than carrying it (D-115).
+        static readonly string[] Rise = { "carry_rise_down" };
+
         // The rooms the developer plays by hand (Trap Lab 0-3 and L001), both gravities where the capture has them.
         static readonly string[] Rooms = { "traplab0_walk_down", "traplab3_walk_up", "L001_solution_down", "traplab2_pit_down" };
 
         // Scenarios with a death hold: one per death kind (the pit, spikes, the crusher, an arrow, the storm cloud).
         static readonly string[] Deaths = { "traplab2_pit_down", "death_spiked_down", "death_crushed_down", "death_arrow_down", "death_zapped_down" };
 
-        static IEnumerable<string> All => Ground.Concat(Air).Concat(Climb).Concat(Flip).Concat(Carry).Concat(Rooms).Concat(Deaths.Skip(1));
+        static IEnumerable<string> All => Ground.Concat(Air).Concat(Climb).Concat(Flip).Concat(Carry).Concat(Rise).Concat(Rooms).Concat(Deaths.Skip(1));
         static IEnumerable<string> Moving => All.Where(n => n != "ground_idle_down" && n != "ground_idle_up");
 
         [Serializable] sealed class Paws { public int frames_checked; public int frames_over; public float max_depth_sprite_px; public int[] first_frames_over; }

@@ -11,22 +11,40 @@ namespace Parallax.Editor.Levels
     // fires itself, and the solution is a build order: which trigger to cross, where to be when that spear flies, when to
     // stand on it. A Z through the room: west along the ground, up the west shaft, east along the gallery, up the east
     // shaft, west along the top storey to the door.
-    //  - Foot (section 0): walking west past x 9 fires Spear_1 from G_East along the storey at jump height; at the gap it
-    //    runs a hopping cat through, and sticks as the first step. The floor at the gap's edge gives way 55 ticks after a
+    //  - Start (PAX-107 round eight, the developer's sketch): the cat starts on the Riser, the ground's east end, which shoots
+    //    up into the gallery at once and crushes a cat that stays on it. Jump onto the slab west of it, over a floor of spikes;
+    //    each of its four blocks falls 40 ticks after the cat lands on it, so keep running. At its west end, a mossy chimney
+    //    (the Column's east face, Hang's west face) climbs over the Column, whose foot stands clear of the spikes; down the other side, slide down Core_W's mossy
+    //    face onto the strip of floor at its foot (the Column's mossy west face slides you onto the spikes).
+    //  - Foot (section 0): walking west out from under Core_W fires Spear_1 from under Core_W along the storey at jump
+    //    height; at the gap it runs a hopping cat through, and sticks as the first step. The floor at the gap's edge gives way 55 ticks after a
     //    touch. Every later step (Spear_2-8) fires when the cat jumps into its lane: land, hop, wait for it to stick, climb.
     //    Steps rise 1.45 and alternate walls, so a hop reaches only the next lane and no jump grazes the step 2.9 above on its
-    //    own side. Spear_L sweeps step 4 if you linger there; Ledge_M, in the open middle of the shaft, is a fake. Spear_1 also fires Spear_Door, high by the door: you see it stick now and use it in the last act.
-    //  - Crossing (section 1): Spear_G sweeps the gallery from behind at shin height (jump it). Past the tunnel the cat drops
+    //    own side. Ledge_M, in the open middle of the shaft, is a fake; Core_W's
+    //    west face is mossy from Spear_4 up. Spear_1 also fires Spear_Door, high by the door: you see it stick now and use it in the last act.
+    //  - Crossing (section 1): stepping onto the gallery wakes the Cloud, which chases the cat to the gallery's east end; the
+    //    bridge (x 12-17.5) falls into the spikes piece by piece from the west behind a running cat (PAX-107 round thirteen).
+    //    Spear_G, an arrow, sweeps the gallery from behind at shin height (jump it). Past the tunnel the cat drops
     //    into the Dip; the cut on the floor beyond it fires V1-V5 12 ticks apart from both walls, V1 at shin height over the
     //    floor. The one spot no lane crosses is down in the Dip. Stuck, they are the stair (V2 11.25 ... V5 15.6). Jumping
     //    onto V5 fires Spear_Top along V5 at body height (and Spear_K sweeps V3 behind you): step straight back down, let it stick, and it's the step to Tower_E.
     //  - Summit (section 2): Spear_Gap, from Post_G, sweeps the top storey at shin height (jump it) and bridges the chasm.
     //    The Lip in front of the door ledge gives way; Spear_Door is the way. Stepping onto the door ledge drops Block_Door
     //    between the cat and the door: stop at the edge, let it land, hop it.
-    //  - Dead ends: the ledge east of the stairs (hidden spikes); Ledge_Hi, above the door ledge (hidden spikes). The chasm
+    //  - Dead end: Ledge_Hi, above the door ledge (hidden spikes; the ledge east of the stairs lost its spikes, the developer's
+    //    call, 2026-10-10). The chasm
     //    and the pit are declared bait gaps: out of reach without their spears.
     static class L011Layout
     {
+        // PAX-107 round eight: the Riser's wait from the cat's spawn, each slab block's from the cat's touch, and Spear_1's from
+        // the cat's walk under Core_W.
+        internal const int RiserDelay = 14, SlabDelay = 40, Spear1Delay = 6;
+        // PAX-107 round thirteen: the bridge's pieces, Bridge_1's wait from Spear_G's launch, and each next piece's after the last.
+        const int BridgeCount = 5, BridgeDelay = 24, BridgeStep = 15;
+        const float BridgeWidth = 1.1f;
+        // PAX-107 round sixteen: the west end of the cloud's range over the top storey.
+        const float CloudTopMinX = 5.3f;
+
         public static SoloRoomDefinition Build()
         {
             const float h = 2.9f;   // everything from the gallery up sits above the eight-step shaft
@@ -34,19 +52,54 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Wall,"Wall_L",(-.5f,11f),(1f,31f)),
                 E(SoloRoomElementKind.Wall,"Wall_R",(32.5f,11f),(1f,31f)),
                 E(SoloRoomElementKind.Ceiling,"Ceiling",(16f,23.5f+h),(32f,1f)),
-                E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(20f,0f),(0f,0f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(19.5f,0f),(0f,0f)),
                 // The ground storey and the foot of the west shaft (x 1-5): a ledge, the gap, a floor that gives way.
                 E(SoloRoomElementKind.Wall,"Core_WW",(.5f,2.65f+h*.5f),(1f,13.3f+h)),
                 E(SoloRoomElementKind.Floor,"Foot_L",(1.8f,-2f),(1.6f,4f)),
                 E(SoloRoomElementKind.PitBottom,"Foot_Pit",(3.8f,-3.25f),(2.4f,.5f)),
                 new SoloRoomElement(SoloRoomElementKind.Hazard,"Pit_Foot",new Vector2(3.8f,-2.85f),new Vector2(2.4f,.3f),hazardRole:SoloRoomHazardRole.OpeningBottom),
-                E(SoloRoomElementKind.Floor,"Ground",(12.75f,-2f),(15.5f,4f)),
+                // PAX-107 round eight: the ground ends at the Riser (x 17.5-20.5, below).
+                E(SoloRoomElementKind.Floor,"Ground",(11.25f,-2f),(12.5f,4f)),
                 E(SoloRoomElementKind.Wall,"G_East",(21f,1.925f+h*.5f),(1f,11.85f+h)),
-                E(SoloRoomElementKind.Wall,"Core_W",(5.5f,4.775f+h*.5f),(1f,7.15f+h)),
-                // PAX-A16 (D-100): Spear_1's mount, a low lintel under Core_W's east half (the walk passes under it, 0.7 high).
-                E(SoloRoomElementKind.Wall,"Mount_1",(5.76f,.95f),(.48f,.5f)),
-                // The gallery (x 6-21.5, top 11.25), the Curb at its east end, and the tunnel floor under Mast_W.
-                E(SoloRoomElementKind.Floor,"Gallery",(13.75f,8.1f+h),(15.5f,.5f)),
+                // Core_W (x 5-6, from y 1.5): PAX-107 round eight (the developer: "Move the very first lance higher") raises its
+                // foot 0.3 and Spear_1 0.2 (its top 1.3: the jump off it to Spear_2 then tops out 0.04 under Spear_3's lane). Its
+                // east face is mossy from y 2 to 6, the way down from the Column. Its top (from y 7.95, where the Crossing's
+                // checkpoint stands) is one piece: a cat standing across a seam replays a hair differently.
+                // Its west face is mossy from Spear_4's top to Core_W_Top (the developer: "For the wall on the right, add moss on
+                // the side because otherwise its not possible to get through").
+                E(SoloRoomElementKind.Wall,"Core_W",(5.5f,4.725f),(.5f,6.45f)),
+                E(SoloRoomElementKind.Wall,"Core_W_WLow",(5.125f,3.475f),(.25f,3.95f)),
+                E(SoloRoomElementKind.GripWall,"Shaft_Moss",(5.125f,6.7f),(.25f,2.5f)),
+                E(SoloRoomElementKind.Wall,"Core_W_Top",(5.5f,9.6f),(1f,3.3f)),
+                E(SoloRoomElementKind.Wall,"Core_W_ELow",(5.875f,1.75f),(.25f,.5f)),
+                E(SoloRoomElementKind.GripWall,"Core_Moss",(5.875f,4f),(.25f,4f)),
+                E(SoloRoomElementKind.Wall,"Core_W_EHigh",(5.875f,6.975f),(.25f,1.95f)),
+                // PAX-A16 (D-100): Spear_1's mount, a low lintel under Core_W's east half (the walk passes under it, 0.9 high).
+                E(SoloRoomElementKind.Wall,"Mount_1",(5.76f,1.2f),(.48f,.6f)),
+                // PAX-107 round eight: the start. Spikes on the ground from the strip at Core_W's foot (x 6-7.25) to the Riser; the
+                // Column (x 8-9, top 7), mossy on its east face from y 2 and its west face from y 2.5 to 5.5; Hang, from the gallery
+                // down to y 3.75 (x 11-12), mossy on its west face below y 9.5: a 2 u chimney over the slab's west end. No seam on a
+                // face where the climb touches it (a cat touching two colliders at once replays a hair differently).
+                // The Riser's base (x 17.5-20.5), far below: the Riser is a pillar deep enough that its foot never comes up out of
+                // the ground (the developer: "I don't like this as it's in the air when the platform goes up").
+                E(SoloRoomElementKind.Floor,"Riser_Base",(19f,-13.7f),(3f,.5f)),
+                E(SoloRoomElementKind.Hazard,"Spikes_W",(8f,.15f),(1.5f,.3f)),
+                E(SoloRoomElementKind.Hazard,"Spikes_E",(13.25f,.15f),(8.5f,.3f)),
+                // The Column's foot is off the ground (the developer: "remove this portion of the wall that covers the spikes"):
+                // it starts at y 2, and Spikes_W runs on under it.
+                E(SoloRoomElementKind.Wall,"Column",(8.5f,4.5f),(.5f,5f)),
+                E(SoloRoomElementKind.Wall,"Column_WLow",(8.125f,2.25f),(.25f,.5f)),
+                E(SoloRoomElementKind.GripWall,"Column_WMoss",(8.125f,4f),(.25f,3f)),
+                E(SoloRoomElementKind.Wall,"Column_WHigh",(8.125f,6.25f),(.25f,1.5f)),
+                E(SoloRoomElementKind.GripWall,"Column_EMoss",(8.875f,4.5f),(.25f,5f)),
+                E(SoloRoomElementKind.Wall,"Hang",(11.625f,7.25f),(.75f,7f)),
+                E(SoloRoomElementKind.GripWall,"Hang_Moss",(11.125f,6.625f),(.25f,5.75f)),
+                E(SoloRoomElementKind.Wall,"Hang_Top",(11.125f,10.125f),(.25f,1.25f)),
+                // The gallery (x 6-21.5, top 11.25), the Curb at its east end, and the tunnel floor under Mast_W. PAX-107 round
+                // thirteen: in three parts, Gallery_W (x 6-12, on Hang), the bridge (x 12-17.5, Bridge_1-5 below) and Gallery
+                // (x 17.5-21.5, on G_East: the Riser's crush partner).
+                E(SoloRoomElementKind.Floor,"Gallery_W",(9f,8.1f+h),(6f,.5f)),
+                E(SoloRoomElementKind.Floor,"Gallery",(19.5f,8.1f+h),(4f,.5f)),
                 E(SoloRoomElementKind.Floor,"Tunnel_Floor",(22.5f,2.175f+h*.5f),(2f,12.35f+h)),
                 E(SoloRoomElementKind.Wall,"Curb_M",(20.65f,8.65f+h),(.5f,.6f)),
                 // The east shaft (x 23.5-28, floor 9.8) with the Dip at its west end (0.7 deep), and the tower east of it.
@@ -54,13 +107,14 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Floor,"Dip",(24.6f,1.1f+h*.5f),(2.2f,10.2f+h)),
                 E(SoloRoomElementKind.Wall,"Mast_W",(23f,12.275f+h),(1f,5.75f)),
                 E(SoloRoomElementKind.Wall,"Tower_E",(30f,5.325f+h*.5f),(4f,18.65f+h)),
-                // The top storey (18.55): east of the chasm, west of it (the Curb at its end), the posts, the high ledge,
-                // the pit in front of the door ledge (19.55, level with Spear_Door once it has stuck).
+                // The top storey (18.55): east of the chasm, west of it, the high ledge, the pit in front of the door ledge (19.55,
+                // level with Spear_Door once it has stuck). PAX-107 round seventeen (the developer: "Fill in the empty space here with
+                // the floor"): west of the chasm, T_Rise (x 12-17.1, top 19.65) fills the dip between the old Post_D and Curb_T; it
+                // hosts Spear_Door's launcher on its west face, and Spear_Gap sticks in its east face.
                 E(SoloRoomElementKind.Floor,"T_East",(24.35f,15.4f+h),(3.7f,.5f)),
                 E(SoloRoomElementKind.Wall,"Post_G",(23.85f,16.2f+h),(.5f,1.1f)),
-                E(SoloRoomElementKind.Floor,"T_West",(12.8f,15.4f+h),(8.6f,.5f)),
-                E(SoloRoomElementKind.Wall,"Curb_T",(16.85f,15.95f+h),(.5f,.6f)),
-                E(SoloRoomElementKind.Wall,"Post_D",(12.25f,16.2f+h),(.5f,1.1f)),
+                E(SoloRoomElementKind.Floor,"T_West",(10.25f,15.4f+h),(3.5f,.5f)),
+                E(SoloRoomElementKind.Floor,"T_Rise",(14.55f,15.95f+h),(5.1f,1.6f)),
                 E(SoloRoomElementKind.Floor,"Ledge_Hi",(10f,17.75f+h),(2f,.5f)),
                 E(SoloRoomElementKind.Wall,"Pit_E",(8.75f,13.65f+h),(.5f,3f)),
                 E(SoloRoomElementKind.PitBottom,"Pit_T_Bottom",(6f,12.4f+h),(5f,.5f)),
@@ -70,9 +124,28 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Door,"Door",(.8f,17.4f+h),(.6f,1.5f)),
             };
 
-            // Foot. Walking west past x 9 fires Spear_1 from G_East, along the whole storey at jump height (and, chained,
-            // Spear_Door by the door). The floor at the gap's edge gives way 55 ticks after a touch.
-            elements.Add(Spear("Spear_1", 5.75f, .9f, ArrowDirection.Left, 1f, 1.4f, (9f, 5.375f), (.4f, 10.75f), new SoloRoomTrapSettings(delayTicks:41)));
+            // PAX-107 round eight (the developer's sketch: "as soon as the level starts the portion of the floor where the cat is
+            // standing on starts moving up very very fast. The cat needs to jump immediately to the blue platform"): the Riser, the
+            // ground's east end (a pillar 13.45 u deep, so its foot stays in the ground), rises 10.45 u over 88 ticks from 14 ticks after the cat stands on it, into the
+            // gallery's underside: a cat still on it is crushed. A jump at once, or a step off as it passes, lands on the slab
+            // (top 1.5).
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Riser",(19f,-6.725f),(3f,13.45f),(19f,.75f),(3f,1.5f),new SoloRoomTrapSettings(
+                new MovingFloorSettings(SurfaceMotion.Carry,crushPartner:"Gallery"),
+                new SoloRoomTrapSettings(delayTicks:RiserDelay,offset:new Vector2(0f,10.45f),moveTicks:88,holdTicks:600,movingKind:MovingTrapKind.Solid))));
+            // ("that platform is a trap to and starts falling as long as the cat lands on it"): the slab, four blocks from the
+            // Riser to the Column. Each falls 1.5 u (over 15 ticks) into the spikes 40 ticks after the cat comes onto it or over it
+            // (its trigger is the storey above it). Seen before it falls: exempt from D-085's no-tells rule by name (D-127).
+            float[] slab = { 17.5f, 15f, 13f, 11f, 9f };
+            for (int i = 0; i < 4; i++)
+            {
+                float cx = (slab[i] + slab[i + 1]) * .5f, w = slab[i] - slab[i + 1], top = i < 3 ? 23f + h : 10.75f;
+                elements.Add(E(SoloRoomElementKind.FallingBlock, "Slab_" + (i + 1), (cx, 1.25f), (w, .5f), (cx, top * .5f), (w, top),
+                    new SoloRoomTrapSettings(delayTicks:SlabDelay,unitsPerTick:.1f,travelDistance:1.5f)));
+            }
+
+            // Foot. Walking west out from under Core_W (x 4-4.5, the room's full height) fires Spear_1 from its mount, along the
+            // whole storey at jump height (and, chained, Spear_Door by the door). The floor at the gap's edge gives way 55 ticks after a touch.
+            elements.Add(Spear("Spear_1", 5.75f, 1.1f, ArrowDirection.Left, 1f, 1.4f, (4.25f, 12.95f), (.5f, 25.9f), new SoloRoomTrapSettings(delayTicks:Spear1Delay)));
             elements.Add(Spear("Spear_Door", 12.25f, 16.45f+h, ArrowDirection.Left, 3.5f, 2.8f, default, default, new SoloRoomTrapSettings(delayTicks:1,triggerSource:TrapTriggerSource.Chain,chainSource:"Spear_1")));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Foot_C",(4.2f,-1.5f),(1.6f,3f),settings:new SoloRoomTrapSettings(delayTicks:55)));
             // Each later step fires when the cat jumps into its lane (the lane box is the trigger): the climb onto Spear_1
@@ -88,15 +161,44 @@ namespace Parallax.Editor.Levels
                     : Spear("Spear_" + (i + 2), 5.25f, lane, ArrowDirection.Left, 1f, 1.4f, (3.125f, lane), (4.25f, .4f), new SoloRoomTrapSettings(delayTicks:32)));
             }
 
-            // §14 R2: two betrayals inside the stair. Spear_L, set off by the same hop that brings Spear_4, sweeps step 4 at
-            // body height about 145 ticks later: a cat still standing there is run through (keep building). Ledge_M, a
-            // ledge in the open middle of the shaft between Spear_7 and the next lane, is a fake: the next step is the one
-            // you fire, and the middle drops straight to the foot.
-            elements.Add(Spear("Spear_L", .75f, 5.75f, ArrowDirection.Right, 5f, 1.4f, (2.875f, 5.75f), (4.25f, .4f), new SoloRoomTrapSettings(delayTicks:135)));
+            // §14 R2: a betrayal inside the stair. Ledge_M, a ledge in the open middle of the shaft between Spear_7 and the next
+            // lane, is a fake: the next step is the one you fire, and the middle drops straight to the foot. (Spear_L, which swept
+            // step 4, is gone: PAX-107 round eight, "Remove the higher lance entirely".)
             elements.Add(E(SoloRoomElementKind.FakePlatform,"Ledge_M",(3f,7.45f),(1.2f,.5f)));
 
             // Crossing. Spear_G, from Core_WW behind the cat, sweeps the gallery at shin height and sticks against Curb_M.
-            elements.Add(Spear("Spear_G", .75f, 8.65f+h, ArrowDirection.Right, 20.4f, 1.4f, (11.2f, 11.75f+h), (.4f, 6.8f), new SoloRoomTrapSettings(delayTicks:4)));
+            // An arrow, not a spear (the developer: "The top launcher change it to an arrow launcher"): the spear's tell, at 1 u a tick
+            // (the cap for a 0.8 arrow; the spear flew at 1.2).
+            elements.Add(E(SoloRoomElementKind.Arrow, "Spear_G", (.75f, 8.65f+h), (.5f, .4f), (11.2f, 11.75f+h), (.4f, 6.8f),
+                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right, 8.65f+h, 20.4f, unitsPerTick: 1f, tellTicks: 8), new SoloRoomTrapSettings(delayTicks:4))));
+            // PAX-107 round thirteen (the developer: "I want the bridge to slowly fall piece by pieces from left to right"): the
+            // bridge between Hang and the Riser, five pieces, falls into Spikes_E from the west: Bridge_1 BridgeDelay ticks after
+            // Spear_G fires (its trigger, at x 11.2, is the cut every way onto the bridge crosses), each next one BridgeStep ticks
+            // after the one before, slower than a run. Each falls 0.2 u a tick onto the fallen slab, its top under the spikes'
+            // tips, so a cat that rides one down dies on them.
+            for (int i = 0; i < BridgeCount; i++)
+            {
+                float x0 = 12f + i * BridgeWidth, cx = x0 + BridgeWidth * .5f;
+                elements.Add(i == 0
+                    ? E(SoloRoomElementKind.FallingBlock, "Bridge_1", (cx, 8.1f+h), (BridgeWidth, .5f),
+                        settings:new SoloRoomTrapSettings(delayTicks:BridgeDelay,unitsPerTick:.2f,travelDistance:8.35f+h,triggerSource:TrapTriggerSource.Chain,chainSource:"Spear_G"))
+                    : E(SoloRoomElementKind.FallingBlock, "Bridge_" + (i + 1), (cx, 8.1f+h), (BridgeWidth, .5f),
+                        settings:new SoloRoomTrapSettings(delayTicks:BridgeStep,unitsPerTick:.2f,travelDistance:8.35f+h,triggerSource:TrapTriggerSource.Chain,chainSource:"Bridge_" + i)));
+            }
+            // PAX-107 round thirteen (the developer: "I want a cloud that starts chasing from here"): a storm cloud over the gallery
+            // wakes as the cat steps onto it from the Crossing's checkpoint and chases it at a run (0.12 u a tick, as every
+            // cloud since D-125) to the gallery's east end; it can't follow into the tunnel. 3.15 u over the gallery (under the
+            // pit floor above Gallery_W's west end); a cat that stops anywhere on the gallery is struck. PAX-107 round sixteen (the
+            // developer: "stop exactly where it is now, but then once the cat is in the very top floor, it continues to follow in
+            // the top floor from right to left"): it waits at the gallery's east end while the cat climbs the volley, and once
+            // the cat is up on the top storey (its centre at y 18.6 or above) it climbs over it (3.35 u over the storey, clear
+            // of Ledge_Hi and under the door's roof) on the chasm's west side (x 21: the wait for Spear_Gap, between Post_G and the
+            // chasm, has no room to step out of a strike) and follows it west to x 5.3, where its strikes stay clear of the door
+            // ledge.
+            elements.Add(E(SoloRoomElementKind.StormCloud, "Cloud", (6.5f, 11.5f+h), (2f, .8f), (6.95f, 9.725f+h), (.5f, 2.75f),
+                new SoloRoomTrapSettings(new StormCloudSettings(new[] {
+                    new StormFloor(-100f, 11.5f+h, 6.5f, 20.5f),
+                    new StormFloor(18.6f, 19f+h, CloudTopMinX, 21f) }, followSpeed:.12f, climbSpeed:.24f), new SoloRoomTrapSettings(delayTicks:0))));
             // The volley: the cut on the shaft floor fires V1 (shin height over the floor, over the Dip); V2-V5 follow 12 ticks apart. Spear_Top fires on entering its lane.
             elements.Add(Spear("V1", 28.25f, 7.2f+h, ArrowDirection.Left, 23.5f, 1f, (26f, 13.575f), (.4f, 8.95f), new SoloRoomTrapSettings(delayTicks:34)));
             elements.Add(Spear("V2", 23.25f, 8.15f+h, ArrowDirection.Right, 28f, 1f, default, default, Chain("V1")));
@@ -106,30 +208,27 @@ namespace Parallax.Editor.Levels
             // §14 R2: the volley's stair burns too. Spear_K, set off by the jump up to V3, sweeps V3 at body height soon after.
             elements.Add(Spear("Spear_K", 28.25f, 10.1f+h, ArrowDirection.Left, 23.5f, 1.4f, (25.75f, 10.1f+h), (4.5f, .4f), new SoloRoomTrapSettings(delayTicks:27)));
             elements.Add(Spear("Spear_Top", 23.25f, 13f+h, ArrowDirection.Right, 28f, 1.2f, (25.625f, 13f+h), (4.75f, .4f), new SoloRoomTrapSettings(delayTicks:50)));
-            // Dead end: the ledge east of the stairs.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D1",(31.8f,14.8f+h),(.4f,.3f),(30f,18.825f+h),(.4f,8.35f),new SoloRoomTrapSettings(revealDelayTicks:6)));
 
             // Summit. Spear_Gap sweeps the top storey at shin height and bridges the chasm; the Lip gives way; stepping onto
             // the door ledge drops Block_Door onto it, between the cat and the door.
             elements.Add(Spear("Spear_Gap", 23.85f, 15.95f+h, ArrowDirection.Left, 17.1f, 3f, (22.8f, 19.325f+h), (.4f, 7.35f), new SoloRoomTrapSettings(delayTicks:30), tell: 12));
             elements.Add(E(SoloRoomElementKind.FakePlatform,"Lip",(6f,14.15f+h),(5f,3f)));
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_Door",(2.15f,23f),(1.5f,1f),(3.3f,21.025f),(.4f,2.95f),new SoloRoomTrapSettings(delayTicks:3,unitsPerTick:.36f,travelDistance:2.95f)));
-            // Dead end: the high ledge, above the door ledge. PAX-091: its trigger holds Ledge_Hi's whole top strip; Stop_Hi, a post
-            // on its west face (top 21.4, a 1.85 rise from the stuck Spear_Door), keeps the ledge out of a jump's reach from the west.
+            // Dead end: the high ledge, above the door ledge. PAX-091: its trigger holds Ledge_Hi's whole top strip. PAX-107 round
+            // seventeen (the developer: "Remove this entirely"): Stop_Hi, the post on its west face, is gone.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D2",(9.7f,18.15f+h),(1.4f,.3f),(10f,20.5f+h),(2f,5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            elements.Add(E(SoloRoomElementKind.Wall,"Stop_Hi",(8.85f,18f+h),(.3f,1f)));
 
             var openings = new[] {
                 O(SoloRoomOpeningKind.Pit, 2.6f, 5f, "Foot_L", "Ground", "Foot_Pit", "Pit_Foot"),
                 O(SoloRoomOpeningKind.Pit, 3.5f, 8.5f, "Core_A", "Pit_E", "Pit_T_Bottom", "Pit_T"),
             };
             var sections = new[] {
-                CheckpointSection.Start("Foot", new Vector2(20f, 0f), new[] { "Spear_1", "Spear_Door", "Foot_C", "Spear_2", "Spear_3", "Spear_4", "Spear_5", "Spear_6", "Spear_7", "Spear_8", "Spear_L", "Ledge_M" }),
-                new CheckpointSection("Crossing", new Vector2(5.5f, 8.35f+h), new Rect(6.4f, 8.35f+h, .2f, 3.8f), new[] { "Spear_G", "V1", "V2", "V3", "V4", "V5", "Spear_K", "Spear_Top", "Spikes_D1" }),
+                CheckpointSection.Start("Foot", new Vector2(19.5f, 0f), new[] { "Riser", "Slab_1", "Slab_2", "Slab_3", "Slab_4", "Spear_1", "Spear_Door", "Foot_C", "Spear_2", "Spear_3", "Spear_4", "Spear_5", "Spear_6", "Spear_7", "Spear_8", "Ledge_M" }),
+                new CheckpointSection("Crossing", new Vector2(5.5f, 8.35f+h), new Rect(6.4f, 8.35f+h, .2f, 3.8f), new[] { "Spear_G", "Bridge_1", "Bridge_2", "Bridge_3", "Bridge_4", "Bridge_5", "Cloud", "V1", "V2", "V3", "V4", "V5", "Spear_K", "Spear_Top" }),
                 new CheckpointSection("Summit", new Vector2(25.7f, 15.65f+h), new Rect(24.9f, 15.65f+h, .2f, 7.35f), new[] { "Spear_Gap", "Lip", "Block_Door", "Spikes_D2" }),
             };
             // Without their spears, the chasm and the pit are out of reach.
-            var baits = new[] { new BaitGap("Chasm", 22.5f, 15.65f+h, 17.1f, 16.25f+h), new BaitGap("Pit", 8.5f, 15.65f+h, 3.5f, 16.65f+h) };
+            var baits = new[] { new BaitGap("Chasm", 22.5f, 15.65f+h, 17.1f, 16.75f+h), new BaitGap("Pit", 8.5f, 15.65f+h, 3.5f, 16.65f+h) };
             return new SoloRoomDefinition(0, 0f, 32f, elements.ToArray(), openings, System.Array.Empty<RequiredJump>(), null, null, baits, sections);
         }
 

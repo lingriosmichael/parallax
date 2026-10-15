@@ -358,7 +358,7 @@ namespace Parallax.Editor.Setup
                 case SoloRoomElementKind.DoorRetreat: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildDoorRetreatCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, parent.GetComponentInChildren<RoomDoor>(true)?.transform, e.Settings.Offset, e.Settings.MoveTicks, e.Settings.DelayTicks, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.FakePlatform: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildFakePlatformCore(parent, root, e.Name, position, e.Size, GeometryColor, room.Id, rooms, death, observers, TrapFloorSortingOrder, changes), TrapKitSetup.FakePlatformSettings, parent, changes); break;
                 case SoloRoomElementKind.Arrow: TrapKitSetup.ConfigureTiming(BuildArrow(parent, root, room, e, rooms, death, observers, changes), e.Settings, parent, changes); break;
-                case SoloRoomElementKind.Inverter: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildInverterCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;
+                case SoloRoomElementKind.Inverter: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildInverterCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes, e.Position), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.Geyser: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildGeyserCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings.Geyser, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.Vine: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildClimbVineCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.ShrinkingFloor: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildShrinkingFloorCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, TrapFloorSortingOrder, changes), e.Settings, parent, changes); break;
@@ -399,7 +399,7 @@ namespace Parallax.Editor.Setup
                 ("launcher", launcherVisual), ("arrow", arrowVisual), ("direction", (int)lane.Direction), ("angleDegrees", lane.AngleDegrees), ("mouth", mouth),
                 ("travel", LevelLayoutValidator.ArrowTravel(e)), ("arrowLength", lane.Length), ("arrowThickness", lane.Thickness),
                 ("unitsPerTick", lane.UnitsPerTick), ("tellTicks", lane.TellTicks), ("delayTicks", e.Settings.DelayTicks),
-                ("spear", lane.Spear), ("shaft", shaft));
+                ("spear", lane.Spear), ("shaft", shaft), ("mirrorWithGravity", lane.MirrorWithGravity), ("mirrorShift", lane.MirrorShift));
             WriteColor(trap, "honestColor", LauncherGrey, changes);
             return trap;
         }

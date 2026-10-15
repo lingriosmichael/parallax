@@ -10,6 +10,8 @@ namespace Parallax.Tests.EditMode
     // PAX-060 (L014): T1's reveal is Lip_1 giving way at the cat's feet. A reveal that leaves no way out would only satisfy
     // the validator, so a cat that stops on the lip and drops with it still escapes: some ticks after the lip goes it holds
     // Right and Down and catches V2 just below the lip, and finishes the level.
+    // D-143: the old L014 (Lip_1, V2, EscapeLip) is gone; the developer deletes this file in the Unity Editor (with its .meta).
+    [Ignore("D-143: the old L014 and its Lip_1 escape were replaced; delete this file in the Unity Editor.")]
     public sealed class L014EscapeTests
     {
         static readonly Type Routes = Type.GetType("Parallax.Editor.Levels.L014Routes, Parallax.Editor");

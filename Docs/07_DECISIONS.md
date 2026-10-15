@@ -3293,3 +3293,895 @@ sits between the lifts. Solution 870 ticks (windows 17, 14), 16 betrayals, the f
 **Supersedes:** D-110 amendment 2 (1)'s "L001–L020 get no grip walls" for L008's chimney (Sump_Wall, Sump_Moss), as
 D-118 did for L004; `ValidateWallJumpShortcuts` passes L008 with them.
 **Why:** the developer's play-test notes (2026-10-07): L008 lacked "umpf", L009 was too easy, moving platforms are harder than arrows.
+
+### D-122 · 2026-10-07 · In progress (PAX-107 third round: L006's left side)
+**Decision:** from the developer's notes and sketch ("Level 6, extend it another 3 units to the left"; "an extension to that
+left side making it harder, and remove the box in the bottom floor and add spikes. Until here it is unsolvable so just
+focus on building it, I will think of how to add a solution"). (1) The lid and Spikes_L reach x 17.5 (x 17.5–32, under
+S1's east end); Spikes_L's trigger widens to x 17–19.5 so the spikes show before a cat can reach the lid's new west end.
+(2) West of S1: a shelf off the left wall (x 0–1.75, top 7); a plinth (x 1.5–4.25, y 3.5–5) with a pillar on its east end
+(x 3.5–4.25, to y 8.25) whose east face is mossy above y 6 (Pillar_Moss); a pillar hanging from the ceiling (x 6.25–7, down
+to y 7.25) whose west face is mossy below y 9.5 (Hang_Moss): a 2 u chimney between the two grip faces. (3) The post and
+Sweep_3 are removed; static spikes (Spikes_G) cover the ground at x 2.5–6.5.
+**Open:** L006's solution and betrayals (the developer's). Until then L006 fails `Band1LevelTests` and
+`ShippedRouteResultsTests`. Both grip faces are over Spikes_G (a cat sliding down either lands on spikes): the sketch's
+design, exempted by name from rule (g) in D-123 (5), to confirm with the solution.
+**Supersedes:** D-110 amendment 2 (1)'s "L001–L020 get no grip walls" for L006's chimney (Pillar_Moss, Hang_Moss), as D-121
+did for L008.
+**Why:** the developer's play-test notes (2026-10-07): make L006's left side harder.
+
+### D-123 · 2026-10-07 · In progress (PAX-107 fourth round: L008's maze and crushers, L009's launchers)
+**Decision:** from the developer's play-test notes ("so much empty space here where we can extend the level … with a maze
+of sorts and traps, it should be an alternative route if you dont manage to get down through the waterfall"; "the top
+section should be covered in moss so it allows you to jump over to the right … add moving or falling platforms and spikes
+in that section. Nothing excesive just enough"; "Make this wall stand up and move faster"; "level 8 can use more falling
+ceilings and floors that move up to squish the cat"; L009: "arrow launchers going from left to right, non stop, and in
+intervals regardless of where the cat is … when the cat reaches this gravity inverter it also automatically inverts arrow
+directions as well"; the developer chose "Mirror to the roof").
+(1) **L008, the maze.** The waterfall shaft is 2 u wide under a mossy chimney (Shaft_Moss on its east wall, Column_Moss
+facing it): a cat that misses the drop climbs out east onto Maze_1, then down Maze_2 and Maze_3 to S1, past Press_1 (a
+ceiling dropping 1 u onto Maze_1), Spikes_M2 (hidden spikes on Maze_2) and Piston_3 (a floor rising into Maze_2). The climb
+out is a Recovers betrayal of Hinge_S2 (the room completes along it); M1–M4 are its dying betrayals.
+(2) **L008, the crushers.** Press_S1, a ceiling dropping 3 u onto the end of S1, and Piston_G, a floor rising 3.9 u out of
+the ground into S1's underside, both on 140-tick rhythms (P1, P2, T7). Hinge_S1 stands up in 7 ticks and moves in 55
+(it was slower).
+(3) **A mover crushes against its named partner.** `MovingTrap` kills a cat it pins against `crushPartner` (any mover, not
+only a push wall): physics lets a cat carried up by a rising floor sink into the static ceiling, never into the floor, so
+the floor's own crush test never fires. The route harness attributes the kill the same way.
+(4) **L009, the launchers.** Arrow_W1 (the cat's middle, y 5.25) and Arrow_W2 (its head, y 5.55) fire right along S1_A
+every 200 ticks (phases 20 and 55, during F1's up half), from a jamb that thickens the left wall by 0.5 u from S1's top to
+the roof, to a 0.7 u kerb at S1_A's east end (x 14.5). The start's ledge dead end (Ledge_D2, Spikes_D2) is 0.5 u narrower
+for the jamb. A standing cat is hit by either; the solution hops W1 on its way to F1 and jumps W2 as it lands (A1, A2).
+Both are jumped arrows (D-113's list), exempt from the periodic-slack rule. **Mirror with gravity:** an `ArrowLane` may set
+`MirrorWithGravity` and `MirrorAxisY`; each shot takes the lane the cat's gravity picks as it fires (with gravity up, the
+launcher moves up by twice the lane's distance to the axis, here onto the roof, still firing right; a shot in flight keeps
+its lane). The validator checks the mirrored lane as an arrow of its own (hosted in the jamb, ending at Kerb_R under the
+roof); only a level, non-spear arrow may mirror. The restore snapshot carries the lane.
+(5) **Grip over a hazard, by name.** `ValidateWallJumpShortcuts` rule (g) skips L006's Pillar_Moss and Hang_Moss (D-122)
+and L008's Shaft_Moss and Column_Moss (the waterfall under the chimney): each is a deliberate climb above a hazard.
+(6) **L004, the climb (the developer: "This is too hard to climb move it further up so its easier to reach").** The corbel
+ends 1 u higher (y 3.5) with its base, Arrow_O's launcher (its lane now from y 3.9), its moss (from y 4.2) and its foot
+(L_Foot, y 3.5–4): one wall jump off Left_Moss now carries an upside-down cat under the corbel onto the foot's underside,
+and on into Flip_A (T2's lead 60 → 68). Corbel_Moss stays, no longer needed.
+(7) **An upside-down cat on a wall faces it** (the developer: "When the cat is climbing the wall the cat is facing the opposite
+direction when the cats gravity is inverted"; D-118 let gravity up cling, the presenter wasn't told). The motor reports the
+wall's world side; the presenter now gives the animation the side in the cat's gravity frame (`GravityFrame.LocalSide`), as
+it does every other facing.
+**Supersedes:** D-110 amendment 2 (1)'s "L001–L020 get no grip walls" for L008's Shaft_Moss and Column_Moss, as D-121 did
+for Sump_Moss; D-110 rule (g) ("no grip wall over a hazard") for the four named grip walls in (5).
+**Open:** the developer to confirm the four rule (g) exemptions, and play the maze, the crushers, the launchers and L004's climb.
+**Why:** the developer's play-test notes (2026-10-07): L008's empty space and missing "umpf", L009's waits without jumps.
+
+### D-124 · 2026-10-07 · In progress (PAX-107 fifth round: L006's way down, L008's spiked wall, faster clouds)
+**Decision:** from the developer's play-test notes.
+(1) **L006, the gap** ("this built too long I wanted some space to trick the player into thinking they can go down that
+way … a little space at the length of a cat"): the lid and Spikes_L start at x 20.75, a 1.25 u gap past S1's end (the cat
+is 1 u long, so it really falls through) down onto Floor_5, which gives way: the step-off dead end dies in Pit_5 again.
+(2) **L006, the solution** ("the player has to wait a 2 seconds and the section without spikes automatically lifts up and
+carries the cat over the spikes"): the ground between the wall and Spikes_G (x 0–2.5) is Lift_G, a Carry mover that waits
+100 ticks after the cat comes onto it, rises 1 u, then carries it 4 u east over the spikes (60 ticks) and stays. The way
+from S1's west end: onto Pillar_Moss, wall-jump to Hang_Moss and back over the pillar onto the shelf, off its end onto the
+plinth, west under the shelf and down the slot onto the lift; off it over Floor_4 (T4: it gives way under a cat that
+stops) and on as before. T3 (the sweep) is gone with Sweep_3. L006 has a solution again (closes D-122's open point).
+(3) **A mover may rise first.** `MovingFloorSettings.RiseFirst`: the move follows an L, the vertical part of the offset
+first, then the horizontal; the return retraces it (`TrapMotion.RiseFirstOffset`, the same timing, so resets and rewinds
+stay exact). Validators keep using the start-to-end envelope, which holds the L.
+(4) **L008, the spiked wall** ("when floor stand up and starts moving right that its covered in spikes as well"):
+Hinge_S2 is spiked. `MovingFloorSettings.Spiked` puts a spike strip on a hinge floor's top face (its face toward the cat
+once it stands), shown from the swing; once it stands, a cat touching it dies (cause Hazard, the death drawn as spiked;
+`TrapMotion.Touches`, skin 0.03 u), before any push. T3 is now "the spiked wall reaches a cat that waits at the shaft",
+killer Hinge_S2. The route harness attributes the kill through the same test.
+(5) **The clouds 20 % faster again** ("I want the clouds to move 20% faster still"): follow speed ×1.2 (0.096 → 0.115 u/tick
+in L010, L020 and the Trap Lab; 0.06 → 0.072 in L005 and L007, whose climb between floors goes 0.2 → 0.24). Strike timing
+unchanged. **Not L015 and L018:** at 0.115 (96 % of the cat's run) the cloud catches their solutions (L015 dies at t819,
+L018 at t80); they keep 0.096 until the developer decides (rework those routes, or leave them).
+**Open:** L015's and L018's cloud speed (5).
+**Why:** the developer's play-test notes (2026-10-07).
+
+
+### D-125 · 2026-10-08 · In progress (PAX-107 sixth round: L004's moss, L006's floor, L007's ground, L008's hinges, all clouds, L009 inverted, L010)
+**Decision:** from the developer's play-test notes (2026-10-08).
+(1) **L004, the missing moss** ("there is a patch of moss missing making the wall jump impossible"): the dressing's
+keep-out for an angled arrow lane follows its slanted path (short steps along it, grown 0.5 u), not a level strip at the
+launcher's height. That strip had covered Left_Moss's lower half beside Arrow_O's launcher since the corbel went up (D-123
+(6)). Ivy and drapes near other angled lanes (L004's Arrow_7, L005's Arrow_X, L007's Arrow_S, the hard band's) move with it.
+(2) **L006, Floor_4 falls sooner** ("needs to fall faster"): it goes 12 ticks after the cat first touches it (was 20); a cat
+running on from Lift_G is off it in about 9.
+(3) **L007, the ground walk** ("a whole section in bottom floor with no floor or ceiling traps at all. Add a few here"): T15,
+spikes come up on the ground at x 17–18 as the cat comes onto the ground past the shafts (jump them); T16, Block_G drops from a
+lintel under S1_B (Lintel_G, x 12.5–15.5, down to y 3; the block flush in it at x 13.5–14.5) as the cat comes down from that
+jump (stop, let it land, hop it). Spikes_4 is narrowed to x 9–12.5, so it no longer lies under Block_G's landing. Ride_A and
+Ride_B are phased 27 ticks later (53 and 13), for the cat's later arrival on S2.
+(4) **L008, the hinge floors 20 % faster** ("all the floors that turn vertical and move sideways, need to move 20% faster"):
+Hinge_S2 stands in 8 ticks and crosses in 96 (were 10 and 115); Hinge_S1 in 6 and 46 (were 7 and 55).
+(5) **Every cloud at the cat's run speed** ("clouds still move too slow … It doesn't matter if it moves at same speed, because
+there is a stop and charge time for the lightning"): follow speed 0.12 u/tick (6 u/s) in L005, L007, L010, L015, L018, L020
+and the Trap Lab. Closes D-124's open point on L015 and L018. A cloud that keeps up is over the cat at every stop, so where a
+solution must stop, the strikes are placed off its waits:
+- **L007:** the first charge is 130 ticks after the cloud wakes (was 80). Over S1 and S2 the cloud goes only to x 24.5, so the
+  right tower's zigzag climb, whose stops are at the cloud's height, and the fall through S2_End are out of its reach. T7, the
+  cat that rides Tread_RC down and back up, recovers again (as before PAX-107's faster storm).
+- **L015:** the dance on D1 and D2 follows the cloud's 90-tick clock (its charges at wake + 50 + 90k; the route still assumed
+  100): three hops, at 770, 860 and 950. T11 and T12 branch at 860. A short roof (Roof_R, x 40.6–41.8, at the other covers'
+  height) shelters the Run section's checkpoint: the cloud is over the gate as the cat crosses it, and a cat respawned there
+  must outlast a strike (D-091).
+- **L018:** the first charge is 58 ticks after the cloud wakes (was 50). At 50 it strikes the cat as it jumps Arrow_2 by the
+  curb; at 70 or 80, a cat falling from SL_2 or SL_3 short of their spikes. Dead end D2 leaves Start_Roof 66 ticks after the
+  cloud wakes (was 82), before the first strike, so it reaches the launch with the solution; it is renamed "waits there".
+(6) **L009 starts inverted** ("the cat starts with arrow directions inverted until it reaches the gravity inverter in the
+bottom right of the map, then it goes back to normal"): the cat spawns in an inverter (Invert) whose window ends in Flip_4.
+`InverterSettings` gains an optional end box (`EndPosition`, `EndSize`; the builder's `EndTrigger` child): a cat that reaches
+it ends the window there. The window's length is snapshotted with its fire tick, so rewinds stay exact. L009/Invert joins
+L004/Invert as a whole-level inverter (exempt from the duration cap and the levels 11+ band). Route moves before Flip_4 are
+inverted stick input.
+(7) **L010** ("too easy it also starts with so much empty space where we can use platforms and floor traps"; "the cloud is
+always chasing the cat starting from the bottom floor"): Ride_A is gone. The hole by the start is crossed over two platforms in
+the start's empty space: Step_A (x 26.75–28.25, top 6.25), which gives way 30 ticks after a cat comes onto it, and Hop_B (x
+24.25–25.5, top 7.25), which gives way 8 ticks after. The cat hops up, hops on, and runs off Hop_B down onto S1. The cloud
+wakes at the start and follows the cat at its run floor to floor (D-116): over S1 (x 1–31), then over the ledges to the door (x
+18.25–29.5) once the cat is up there. It strikes every 145 ticks (was 90), the first charging 154 ticks in. At 90 it took every
+cat that stopped before the floor traps could. Drop_10 goes 36 ticks after a landing (was 40) and sinks over 40 (was 65). Ride_E
+is phased to leave just after a cat that comes straight down onto Ledge_E1 boards it (phase 31). Its old T8, the cat that runs
+on without waiting, becomes "a cat that waits on Ledge_E1 for the next ride is struck". T3 waits for Spikes_3 to come up again
+after they go down.
+(8) L007's spike visuals (the developer: "weird looking double spikes", and spikes over the hole S1_T6 leaves). Spikes_1, T1's
+trigger, were a second row 0.3 u over shaft 1's own spikes: they are now the shaft's spikes (its Pit opening names them as its
+hazard, no Pit1_Hazard; the pit shading also takes hidden spikes an opening names). Spikes_GapA is in two pieces, x 16–19.5 and
+21.5–22.5 (Spikes_GapA2, chained), not over the hole at x 19.5–21.5; a fall through it lands on the ground (on Spikes_6, up since
+T6, or just west of them; no soft-lock: the cat climbs again). Spikes_3 starts at x 22.5 (was 22), clear of Spikes_GapA2.
+(9) L008/L009 visuals and timing (the developer, 2026-10-08; L010 approved). L008: Hinge_S2 slides at the cat's run (6.5 u over
+54 ticks, was 96) and stands up 38 ticks after its trigger (was 8), so it reaches a cat waiting at the shaft about when it did (T3's
+lead 91 → 55); Maze_3 (Maze_3a, Piston_3, Maze_3b) is 1 u deep, its underside flush with Shaft_E's foot. L009: the chasm's floor
+is 1.5 u higher (its spikes 1.2 u under S1's top, was 3); Spikes_1 and Spikes_D1 are set off by a cat rising toward them (their
+triggers are the space under each slab from y 7.3, over a jump from S1), not by one walking under them. Trigger coverage gains the
+mirror of the flip-entry clause (TriggerCoverage.CoveredOverhead): a danger capped by a solid and out of every jump's and wall
+jump's reach from below is covered by a trigger holding the strip a cat's height deep under it, a tick's run wider either side.
+The flipped cat is fast: those leads are 6–8 (were 11–37).
+**Open:** the developer to play (1)–(9); "arrow directions" in (6) read as the controls (left and right), not the launchers.
+**Why:** the developer's play-test notes (2026-10-08).
+
+### D-126 · 2026-10-09 · In progress (PAX-107 seventh round: L005's right launcher, L006's shortcut; the last for levels 1–10)
+**Decision:** from the developer's play-test notes (2026-10-09). After these, levels 1–10 are done (the developer).
+(1) **L005, Arrow_A twice as often** ("the arrow launcher on the right … too slow. Half the current time"): Arrow_A, in
+Pillar_R along S2, rearms every 100 ticks (was 200). Its next shot reaches the cat waiting right of the corbel's 45-degree lane
+as Arrow_X's shot lands, so the solution jumps it there (a timed jump, 4 ticks into Arrow_X's tell; window 25) and sets off
+as before, once Arrow_X's shot is down. The route waits to see that shot in flight before it waits for it to stop: an arrow's
+tell holds still, so an early jump had read the tell as the stopped arrow, set off early and missed S1's riders. The rest of
+the route and every betrayal are unchanged.
+(2) **L006, the shortcut down off S1's west end** ("I am able to get down without going the official route … the piece of
+the floor that disappears. I need it to disappear much faster. … if you fall through we automatically invert your arrow
+direction, to force a death"). The cat dropped off S1's west end, landed on Floor_4 and ran onto Ground_2a before it went.
+- Floor_4 gives way 3 ticks after the cat first touches it (was 12). The solution's cat comes off Lift_G onto Ground_2a's edge.
+- **Invert_Drop**, a hidden inverter (default 150 ticks, disguised: only the cue on the cat shows) in the drop west of S1
+  (x 4.25–6.5, y 3.3–4.5). Every cat that drops off S1's west end, or out of the chimney, passes through it; a cat on S1 or
+  riding Lift_G never touches it (a jump off the lift tops out at y 3.16). Pressing right then carries the cat onto Spikes_G.
+  It is exempt from the levels-11+ band (D-087) by name (`L006/Invert_Drop`), not from the duration cap.
+- **S1_Lip**, a block under S1's west end (x 6.5–7.5, y 2.4–4). Measured: neither a 3- nor a 1-tick Floor_4 forced the death:
+  a cat that steers right anyway (holding left, inverted) landed on Floor_4 and its round collider rode up Ground_2a's corner
+  as the floor went. With the lip, a falling cat stays west of x 6.5 until it's nearly down and lands on Spikes_G's end either
+  way. Hidden spikes on Floor_4 set off by the drop were tried and rejected: the solution passes them unfired, which trigger
+  coverage reports as a learned bypass (not allowed in band 1).
+- `ValidateDoorUpright` counts gravity flips only. It counted inverters too (PAX-103), so L006's inverter, in a room with no
+  flip, made the lid's underside a way to the door for a gravity-up cat that can't exist there. L004, L009 and L010 have flips
+  (unchanged); L012, L019 and L020 have only inverters (their band-2 report loses those false positives).
+- Two new dead ends: "dropping off S1's west end inverts the cat; pressing right carries it onto Spikes_G" and
+  "an inverted cat that steers right in the drop still lands on Spikes_G".
+**Open:** the developer to play (1) and (2).
+**Why:** the developer's play-test notes (2026-10-09).
+
+### D-127 · 2026-10-10 · In progress (PAX-107 eighth round: L011's start)
+**Decision:** from the developer's play-test notes and sketch (2026-10-10: "so much empty space at the beginning is seems like a
+waste of an opportunity to have good traps"; "I want the cat to start more to the right … as soon as the level starts the portion
+of the floor where the cat is standing on starts moving up very very fast. The cat needs to jump immediately to the blue platform
+… that platform is a trap to and starts falling as long as the cat lands on it … some climbing walls and moss to climb around and
+over. In order to get down, you have to slowly slide down and jump on to the area where there are no longer spikes").
+(1) **The Riser.** The cat starts at x 19.5 on the ground's east end (x 17.5–20.5, 3 u deep), a solid mover that rises 10.45 u
+over 88 ticks from 14 ticks after the cat stands on it, crushing a cat still on it against the gallery (crush partner). It leaves a
+pit with spikes at the bottom (Riser_Pit, Pit_Riser, a declared opening).
+(2) **The slab.** Four falling blocks (Slab_1–4, top 1.5, x 9–17.5) over static spikes (Spikes_E): each falls 1.5 u into the
+spikes (0.1 u a tick) 40 ticks after the cat comes onto it or over it (its trigger is the storey above it). A jump at once from the Riser lands
+on it; so does a step off as the Riser passes. A visible platform that falls is exempt by name from D-085's no-tells rule
+(`ValidateBand1Tells`: L011's Slab_*), as L001's Ledge is (D-111).
+(3) **The climb.** The Column (x 8–9, top 7) and Hang (x 11–12, from the gallery down to y 3.75) make a 2 u chimney over the
+slab's west end, both faces mossy (grip). Four wall jumps; the last kick off Hang carries the cat over the Column onto Core_W's
+east face, mossy from y 2 to 6: slide down onto the strip at its foot (x 6–7.25, no spikes). The Column's west face is mossy
+too (y 2.5–5.5) over Spikes_W: a cat that slides down it lands on the spikes. Exempt by name from grip rule (g)
+(`L011/Column_WMoss`), as D-123's are. No seam on a face the climb touches, and Core_W's top is one piece: a cat touching two
+colliders at once replayed a hair differently (the determinism check failed).
+(4) **Spear_1** ("Move the very first lance higher"): 0.2 u higher (top 1.3; Mount_1 and Core_W's foot rise with it). Higher
+than that, the jump off it to Spear_2 reaches Spear_3's lane and fires it early. It fires 6 ticks after the cat walks west
+out from under Core_W (a cut at x 4–4.5, the room's full height), so T1 still meets a cat that hops the gap.
+(5) **Spear_L is removed** ("Remove the higher lance entirely"), with its betrayal T3b.
+(6) New betrayals: T0 [J] (stay on the Riser: crushed), T0b [NW] (stop on the slab: Spikes_E, revealed by Slab_1). Solution
+1822 ticks (was 1614); Foot 931 ticks (over the 750 target, under the 1000 cap); 13 distinct killers, 11 in sequence; answers
+B 1, BAIT 1, J 2, NJ 1, NW 3, OL 2, W 2. `Band2RouteResultsTests` re-pinned.
+**Not done:** "Add green moss on the right wall" (Core_W's west face in the west shaft, between steps 4 and 6). That face carries
+a spear socket every 1.45 u (Spear_4's and Spear_6's tips stick in it, Spear_5 launches from it), and dressing keeps 0.5 u off
+every lane, so no moss can be drawn there (`MossSignAndBrokenStoneTests`: 0 % of the face), and an undrawn grip face breaks
+D-114. Built and measured, it also made a wall jump reach Ledge_M's underside (D-110 (7)(d)) and the hop on step 4 cling to the
+wall and slide into Spear_5's lane. Removed pending the developer's call.
+(7) **Second play-test** ("The platform going up goes a bit fast … Slow it down 50% … slow down the disappearing platform as
+well"): the Riser rises in 88 ticks (was 44) and each slab block waits 40 ticks (was 20) and falls at 0.1 u a tick (was 0.2).
+(8) **Third play-test** ("I don't like this as it's in the air when the platform goes up"): the Riser, 3 u deep, ended floating
+over the pit. One deeper block can't do it: it would reach below the frame, and the camera frame is every element's union, so
+the camera would show the void under the ground. Instead three piston segments (Riser_2–4, 2.55 u, hidden inside the Riser
+at the start) rise with it on the same curve, 7.6, 5.1 and 2.6 u, each overlapping the one above at every tick: the column
+stays whole from the pit to the Riser's top. The pins are unchanged.
+(9) **Fourth play-test**, done as told for the developer to test first ("Just simply remove. Dont do anything else. Dont
+change the rules or exceptions"): the piston is gone; the Riser is one pillar 13.45 u deep on Riser_Base (a floor at
+y -13.95, which lowers the camera frame's bottom from -4.5 to -14.45), so its foot never leaves the ground, and the pit is gone.
+The Column's foot is off the ground (it starts at y 2) and Spikes_W runs under it. Core_W's west face is a grip face from
+Spear_4's top to Core_W_Top (Shaft_Moss, y 5.45-7.95); the solution steps back to x 4 before the hop on Spear_4. Grip moss no
+longer keeps off arrow lanes (`SoloRoomSkin.Dressing`: launchers, spears and arrows draw in front of it). Spear_G is an arrow
+(1 u a tick, the cap for a 0.8 arrow; tell 8). Spikes_D1 and its dead end are removed. A falling block in any ceiling, not
+only the roof, gets its socket once it has left (`TrapArtSetup.IsRoofBlock`): new on L007 Block_G, L011 Block_Door, L014
+Block_T, L018 Block_T, L020 Block_7a and 7b.
+**Failing, left for the developer's ruling after the play-test:** band 2's two dead ends (L011 has one, D-093); a wall jump
+off Shaft_Moss reaches Ledge_M's underside (D-110 (7)(d)).
+(10) **Fifth play-test** ("It still looks like it is in the air. It should actually just be still or idle"): a cat riding a
+rising solid floor isn't grounded (D-115, unchanged), so the table showed it in the air. Presentation only: the motor reports
+what its ground cast touched (`CatMotor2D.GroundContact`, never read by motion), and `CatVisualPresenter` shows a cat on a
+solid floor that rose this tick, rising no faster than it (`CatVisualConfig.RidingSpeedTolerance`, 0.5 u/s), as standing,
+with its motion measured against the floor's; a rising floor's collider (a tick ahead of its drawn pose) no longer reads as
+the paws rolling off. The capture harness measures each frame against the colliders where they're drawn; its new scenario
+`carry_rise_down` (L011's Riser) shows Idle throughout, paws on the floor. Gameplay unchanged: routes replay identically.
+**Open:** the developer to play the start and the shaft, then rule on the two failures.
+**Why:** the developer's play-test notes (2026-10-10).
+
+### D-128 · 2026-10-11 · In progress (PAX-107 ninth round: holes that show the air; L012's new traps)
+**Decision:** (1) **Holes** (the developer: "Falling platforms or ceiling need to show that it actually fell, leaving it black
+looks weird. It should show the background"): a falling block inside a ceiling, or in a floor slab's underside (flush with
+its bottom, short of its top), leaves its host's art out where it sits (`SoloRoomSkin.LeavesHole`; the fill and the face
+shade are drawn in pieces around it, `Cut`); the block's own skin draws the same world-tiled stone there until it falls,
+then the air behind shows. The dark socket (PAX-102) is gone. Never a block at a floor's top (the floor's collider stays,
+so a drawn hole would lie): L013 Block_C, L017 Block_2 and L018 Block_7 keep their stone; they'd need a split floor for a
+real hole (D-085 amendment). Holes now: L006 Block_2, L007 Block_G, L008 Block_1, L011 Block_Door, L012 Block_E and Drop_3,
+L014 Block_T and Block_7, L015 Block_1-3, L017 Block_6, L018 Block_T, L020 Block_7a and 7b. The colliders are unchanged.
+(2) **L012** (the developer: "Level 12 to have some more traps, floors that go up and squish you, ceilings that fall, and
+also portions of the floor that go vertical and push to a trap especially when directions are inverted"):
+- Drop_3 [B], a block in hall 4's slab underside over hall 3 (x 23.5-25), drops 3 u as a cat running west comes up to it
+  (trigger x 26.6-27, 14 ticks): stop, let it land, hop it.
+- Hinge_2 [NW], hall 2's floor at x 8.5-10 (in a 0.5 notch), stands up behind the cat as Orb_G flips its hands (trigger
+  x 11.6-12) and slides 8 u east to Pit_H's edge over 74 ticks: a cat that stops is pushed into Pit_H. The Handoff
+  checkpoint moves to x 8.3 (gate 7.9), off it.
+- Piston_1 [W], hall 1's ground at x 23.5-25 (3.5 deep, its foot stays in the ground), shoots up 2.9 u into hall 2's slab
+  27 ticks after a cat running west passes x 27.5, holds 40, goes back down: wait for it.
+Solution 1424 ticks (was 1323); sections 265 / 593 / 566; 14 distinct killers, 12 in sequence; answers B 2, J 3, NW 3,
+SS 3, W 1. `Band2RouteResultsTests` re-pinned.
+**Open:** the developer to play L012 and look at the holes after Rebuild All Levels.
+**Why:** the developer's play-test notes (2026-10-11).
+
+### D-129 · 2026-10-11 · In progress (PAX-107 tenth round: L012's Block_E slides, hall 4's run, the Shelf lift)
+**Decision:** the developer's L012 notes (2026-10-11):
+- **Block_E** ("when this wall falls, make it move right to push the cat towards the spikes"): now a MovingTrap Solid that
+  moves along an L (D-124 `riseFirst`, the vertical leg first): it drops 3 u out of hall 5's slab, then slides 2.6 u east to
+  just past PB's edge (16 ticks in all, 4 after Orb_A). It moved to x 6.7-7.7, the drop hole's east side (a 0.4 u slab piece
+  west of it would be under the minimum width), under a fixed cap, F5_Cap. A cat that stops at Orb_A is pushed into PB
+  (T3 [J]); a cat that backs off meets it as it lands and is pushed into PB too (T6 [SS], killer PB, was Block_E).
+- **Hall 4's run east** ("Add 2 traps in this section"), played mirrored: Hinge_4, hall 4's floor at x 17-18.5 (in a 0.5
+  notch, hinged at its west end), stands up behind a cat past x 19.8 and slides 4 u east to the edge of a new pit, P4
+  (x 21.5-23), over 36 ticks: a cat that stops is pushed in (T12 [NW], with Hinge_2). Drop_4, a block in hall 5's slab over
+  x 27-28.5 (a hole, D-128), drops 3 u onto a cat that runs on past P4 (trigger x 24.8-25.2, 18 ticks; T11 [B], with Drop_3).
+  Orb_A's flip is 105 ticks (was 140), so it ends as Drop_4 lands: switch hands, hop it, down the hole.
+- **The Shelf** ("Make the left half of the platform move up and attempt squishing the cat"): its west half (x 14-17) is
+  Shelf_W, a Carry lift that rises 1.4 u into hall 4's slab (crush partner F4_B) 40 ticks after a cat jumps onto the Shelf,
+  holds 20 and goes back down over 15: wait on the Shelf's east half (T13 [W], with Piston_1). Orb_B's flip is 295 ticks
+  (was 230), so it still lasts until Orb_G.
+- **Validator:** a push wall that moves along an L pushes on its crossing, so its push path starts where the vertical leg
+  ends (`CheckPushPath`).
+Solution 1456 ticks; sections 265 / 625 / 566; 16 distinct killers, 14 in sequence; answers B 2, J 3, NW 3, SS 3, W 1
+(each new betrayal joins the trap of the same pattern). `Band2RouteResultsTests` re-pinned.
+**Failing, for the developer to rule on** (no rule or exemption changed): (a) Arrow_C's lane (x 3.7-16, y 15.82-15.98)
+crosses Block_E's swept path ("a pushed cat breaks the speed cap"); any block dropping into hall 4 west of Stub_C crosses
+it. (b) Surface coverage: Block_E's top strip (y 19-19.56) lies before Orb_A's trigger; it is under F5_Cap, where no cat
+can stand, but the check doesn't look for cover. Options: refine (a) to the legs a cat can be pushed or carried on and (b)
+to skip a strip inside fixed geometry, add "L012/Block_E" to `SurfaceCoverageExemptions` by name, or move Arrow_C.
+**Open:** the developer to play L012 after Rebuild All Levels, then rule on (a) and (b).
+**Why:** the developer's play-test notes (2026-10-11).
+
+### D-130 · 2026-10-11 · In progress (PAX-107 eleventh round: L013's moving floors; the corner trap removed)
+**Decision:** the developer's L013 notes (2026-10-11):
+- **The corner** ("This trap with the spikes makes absolutely no sense here in the corner, remove it"): Ledge_2 and Spikes_1
+  are gone, with T1. A G_1 launch steered right falls back to the ground by G_1.
+- **The ground** ("Bottom floor and middle floor lacks traps moving floors"): Lift_1, the ground at x 17-18.5 (0.5 thick,
+  over Notch_1), where a cat would wait for Spikes_S, rises 3.4 u into S2 (crush partner) 25 ticks after a cat steps onto
+  it; a cat walking over on the count is past it. The solution now waits at x 15.4, short of it (T1 [B]: wait further back).
+- **S3** (the middle storey, read as the middle of the five): Hinge_3, S3 at x 10.5-12 (over Notch_3, hinged at its west
+  end), stands up behind a cat past x 13.1 and slides 3 u east to Spikes_3 (x 14-15.2, honest spikes on S3) over 30 ticks: a
+  cat that stops is pushed onto them (T10 [NW]); the solution jumps them (window 15).
+Solution 1613 ticks (unchanged: every wait is on the room's beats); sections 653 / 682 / 278; 11 distinct killers, 9 in
+sequence; answers B 1, LW 1, NW 2, OL 1, SS 2, W 3. `Band2RouteResultsTests` re-pinned.
+**Amendment (same day; the developer: "I asked for moving floors platforms squishing you traps with spikes none of that got
+add in the first and 2nd floor ... I want more moving traps that are unexpected"):** Lift_1 and Hinge_3 only act on a cat
+that stops in the wrong place, so a normal run never saw them. Three traps that act on the path itself:
+- Slam_1, a slab hung under S2 at x 12.5-14.5, slams 3 u onto the ground as the cat walks in (trigger from x 11.9; 6 ticks,
+  8 to fall), holds 15 and goes back up over 15 (T11 [SS]: stop short, go once it's up). Its crush partner is S2_Cap, the
+  piece of S2 over it, so a cat riding it back up is crushed there and can't reach S2.
+- Slam_2, the same under S3 at x 21-22.6 (S3_Cap), onto S2 a few steps past where G_1's launch lands (trigger from x 25.6;
+  26 ticks; holds 5, back over 10) (T11 [SS]).
+- Spike_2, S2 at x 7.6-9 (over Notch_2), hinged at its east end with its face spiked, stands up 40 ticks after a cat passes
+  x 6.8 and creeps 1.95 u west to G_B's vent edge: the vent is the one safe place to wait (T3 [SS], as Block_C by G_C).
+G_A erupts at 505 (was 455) so the wait for Slam_2 still meets G_A erupting and reaches G_B in time. Solution 1613 ticks
+(unchanged); sections 653 / 682 / 278; 14 distinct killers, 12 in sequence; answers B 1, LW 1, NW 2, OL 1, SS 3, W 3.
+**Open:** the developer to play L013 after Rebuild All Levels.
+**Why:** the developer's play-test notes (2026-10-11).
+
+### D-131 · 2026-10-11 · In progress (PAX-107 twelfth round: clean falls everywhere; L013 rebuilt around moving floors)
+**Decision:** (1) **Clean falls, a general rule** (the developer: "some falling pieces still shows the piece is there ...
+This needs to be a general rule and always display clean visuals"): `LevelLayoutValidator.ValidateCleanFalls` (in
+`ValidateKit`, `CleanFallsTests`): a falling block that overlaps a fixed solid must leave a hole where it was
+(`SoloRoomSkin.LeavesHole`: a ceiling, or a thick slab's underside; never a thin slab, drawn as one ENV_Slab strip that
+isn't cut). Otherwise the floor is split around it, so the hole is real. Fixed: L013 Block_C (now a dropping Solid, the
+section of S4 between S4_W and G_C's shaft), L016 Block_S3 (the ceiling split around it; the cat walks there only before it
+falls), L017 Block_2 (hung 0.25 deep in UF_E1's underside; Collapse_3 now shows only on the cat's touch, lead 21, was 58),
+L018 Block_7 (a section of the split Summit; the way to the door already jumps it; 0.37 u a tick so its last step kills).
+Every slam, lift and falling floor in L013 is its own section of its floor. The split-slab rule (D-085 amendment) accepts a
+ceiling on each side too. The trigger-coverage search no longer takes a lift that rises into a fixed solid (a crusher,
+D-123) as a ride to its end pose (no cat arrives there alive).
+(2) **L013** (the developer: "I can easily run through the bottom floor ... more falling floors that kills you with spikes.
+Floors that move up suddenly squishing you. I want at least 4 of these in level as you go up ... platforms / floors that move
+sideways"), every trap on the path a run takes:
+- Ground: Collapse_1 (x 5-7) gives way into Pit_1's spikes (T12 [J]); Slam_1 (S2 at x 13-15) slams onto the walkway and
+  stays, leaving its hole in S2 to jump later (T11 [SS]); Lift_1 (T1 [B]); Ferry_1, the only way over Pit_M (5 u of spikes,
+  x 21.5-26.5), a sideways platform every 290 ticks (T13 [NJ]).
+- S2: Slam_2 (S3 at x 24.6-26.2) slams onto where G_1's launch lands (T14 [NW]); Collapse_2 (x 21.6-23), where a cat would
+  wait for Lift_2, crumbles into Pit_M (T14 [NW]); Lift_2 (x 20.1-21.6) rises into S3 (T11 [SS]); Spike_2 (T3).
+- S3: Hinge_3 and Spikes_3 (T10); S4: Lift_4 (x 7-8.5) rises into Pad_2 (T11 [SS]); the solution then waits out G_S1's
+  eruption before walking past its vent.
+G_A erupts at 530 (was 455). Solution 1613 ticks (unchanged); sections 653 / 681 / 279; 18 distinct killers; answers B 1,
+J 1, LW 1, NJ 1, NW 3, OL 1, SS 3, W 3. `Band2RouteResultsTests` re-pinned (L013, L017).
+**Amendment (2026-10-12, the developer's play of the D-130 build, before this round's rebuild):** the "double" floors
+were D-130's slabs hung under an intact floor (gone in D-131: every slam is cut out of its floor). Still true, and fixed:
+no filler block hangs under a hinge floor in a thin slab (Notch_2, Notch_3: "if this is supposed to be trap it doesnt do
+anything"); Lift_1 rises on its own beat, every 100 ticks from 130 (up over 8, held 20, down over 10), so a cat waiting on it
+is crushed at once ("appears too slow"), and the solution crosses after it's down with Spikes_S (window 25); Spike_2 is
+hinged at its west end so its spikes face G_B's vent ("the spikes are on the other side"), stands up 30 ticks after the cat
+passes x 6.7 and slides 2.6 u west over the vent just after G_B's launch. Solution still 1613 ticks. East of G_C's shaft, the unused space
+between S3 and the corridor ("So much dead space, just cover it wall") is solid: S4_E is one block, x 21.5-32, y 8-17.
+**Open:** the developer to play L013 after Rebuild All Levels. L016's chaos-moment failure is older (it fails on the
+committed layout too).
+**Why:** the developer's play-test notes (2026-10-11).
+
+### D-132 · 2026-10-14 · In progress (PAX-107 thirteenth round: L011's gallery chase)
+**Decision:** from the developer's note on a screenshot of L011's gallery (2026-10-14: "In level 11, I want a cloud that starts
+chasing from here. And I want the bridge to slowly fall piece by pieces from left to right").
+(1) **The bridge.** The gallery is in three parts: Gallery_W (x 6-12, on Hang), the bridge (x 12-17.5, the open span over the
+start's spikes) and Gallery (x 17.5-21.5, on G_East; still the Riser's crush partner). The bridge is five falling blocks,
+Bridge_1-5 (1.1 u each): Bridge_1 falls 24 ticks after Spear_G fires (chained from it: Spear_G's trigger at x 11.2 is the
+floor-to-ceiling cut every way onto the bridge crosses, so trigger coverage holds), each next one 15 ticks after the one before
+(the front moves at about 0.07 u a tick, slower than a run). Each falls 11.25 u at 0.2 u a tick onto the fallen slab, its top
+under Spikes_E's tips, so a cat riding one dies on the spikes. A visible platform that falls: exempt by name from D-085's
+no-tells rule (`ValidateBand1Tells`: L011's Bridge_*), as the slab is (D-127 (2)).
+(2) **The cloud.** A storm cloud (2 x 0.8, centre y 14.4, 3.15 u over the gallery, under the pit floor above Gallery_W's west
+end) wakes as the cat steps onto the gallery from the Crossing's checkpoint (trigger x 6.7-7.2, after the gate), and chases it
+at a run (0.12 u a tick, as every cloud since D-125) over x 6.5-20.5: it can't follow into the tunnel. Default cycle (first
+strike 75 ticks after the wake, every 100). Both are in the Crossing section's snapshot list.
+(3) **Slab triggers.** With the gallery gone over x 12-17.5, Slab_1-3's storey reaches the roof, so their triggers do too (no
+route is over them before the slab has fallen). Slab_4's, under Gallery_W, is unchanged.
+(4) New betrayals: T3d [NW] (wait on the gallery: the Cloud, lead 72), T3e [NW] (stop on the bridge: Spikes_E, revealed by
+Bridge_4, lead 55). Solution 1822 ticks (unchanged); the jump over Spear_G has a window of 30 (was 29). `Band2RouteResultsTests`
+re-pinned.
+**Failing, left for the developer's ruling:** P7 (D-093): NW now answers 5 traps (T0b, T2, T3d, T3e, T4b), at most 3. Both new
+traps are honestly "don't stop", so no tag fits them better; no rule or tag was changed. Still failing as before (unchanged by
+this round): band 2's two dead ends, Ledge_M's underside within a wall jump, and wall jumps reaching the door past Spear_4 and
+Spear_5 (`WallJumpShortcutTests`; the same three findings on the layout without this round).
+**Open:** the developer to run Rebuild All Levels, save, and play the gallery (art of the split gallery and the falling pieces,
+and the lightning, which strikes through the bridge to the ground: falling blocks don't stop it, D-090 (4)).
+**Why:** the developer's note (2026-10-14).
+
+### D-133 · 2026-10-14 · In progress (PAX-107 fourteenth round: L012's PB and hall 2's run)
+**Decision:** from the developer's L012 notes (2026-10-14):
+(1) **Block_E and PB** ("The pieces of the floor pushes slightly too far, and if you continue pressing forward you can get
+across without falling. The trick should be to jump back on the box"): Block_E slides 2.4 u (was 2.6) and stops flush with
+PB's edge (it ended 0.2 u over the pit). PB is 2.2 u wide (was 1.5; Collapse_B with it, F4_B from x 12.3): a 1-u cat walking
+off a 1.5-u pit's lip had 0.5 u of air to cross and its capsule rode up the far corner (CornerAllowance 0.28), so a cat that
+kept pressing forward got across. Now it drops in. Measured: a cat that jumps as Block_E comes lands on it and hops PB from its
+top (a probe, not a declared route). New betrayal T3 [J] (pushed, running forward: PB, revealed by Block_E, lead 29); T6's lead
+is 29 (was 46), Collapse_B's 20 (was 22).
+(2) **Hall 2's run east** ("Only 1 trap in this section, add more traps here"), traps that act on a cat running from Pit_H to
+the drop hole:
+- Slam_H2, a block in hall 3's slab underside (x 23-24.5; F3_C is cut there, under F3_Cap, its crush partner), slams 3 u
+  onto hall 2's floor 15 ticks after a cat passes x 21.5, holds 20 and goes back up over 15: stop short, wait for it to go back
+  up (T14 [W], lead 6). Its trigger is clear of where the jump over Pit_H lands, so the hand switch keeps its window of 15.
+- Lift_H2, hall 2's floor at x 26-27.5 (the slab's top unit, on a fixed seat, F2_Seat), shoots 2.9 u up into hall 3's slab
+  (crush partner F3_C2) 11 ticks after a cat passes x 25.2, and stays: stop short, let it rise, walk under it through the 1-u
+  socket it leaves and hop out (T13 [W], with Piston_1 and Shelf_W, lead 6).
+Solution 1538 ticks (was 1456); sections 265 / 625 / 648; 18 distinct killers, 16 in sequence; answers B 2, J 3, NW 3, SS 3,
+W 2. `Band2RouteResultsTests` re-pinned.
+**Still failing, unchanged:** D-129's two Block_E items (Arrow_C's lane crosses its swept path; its top strip under F5_Cap
+before Orb_A's trigger).
+**Open:** the developer to run Rebuild All Levels, save, and play halls 4 and 2.
+**Why:** the developer's play-test notes (2026-10-14).
+
+### D-134 · 2026-10-14 · In progress (PAX-107 fifteenth round: L013's double floors; floors that stand up and push)
+**Decision:** from the developer's L013 notes (2026-10-14):
+(1) **Double floors** ("this double floor looks off ... Remove the extra piece of the platform and make the floor itself come
+down"): the screenshots are of the saved Level_013 scene from D-130 (a slab hung under each intact floor, S2_Cap/S3_Cap and
+the hinge notches). D-131 already made every slam, lift and falling floor its own section of the floor it moves out of, so
+the floor itself comes down: no layout change. A capture of the saved scene shows the hung slabs; one rebuilt from the layout
+(batch, on a clone) shows none. The developer's scene needs Rebuild All Levels.
+(2) **Floors that stand up and push** ("add traps in level where the floor stands up and pushes the cat towards a trap"), on
+the path a run takes, both the pattern of Hinge_3 (T10 [NW]):
+- Hinge_1, the ground at x 0-1.5 behind the start (on Notch_0; Ground_A is x 1.5-5), stands up behind a cat walking east past
+  x 3.2 and slides 4.5 u east to Pit_1's edge: a cat that stops short of the jump is pushed onto Collapse_1 and into Pit_1
+  (lead 51).
+- Hinge_S4, S4 at x 14.75-16.25 (S4_W is x 8.5-14.75, S4_W2 x 16.25-17.25, where G_C's launch lands), stands up behind a cat
+  walking west past x 14.55 and slides 2.35 u west to Spikes_4 (x 12.2-13.4, honest, on S4_W): a cat that stops is pushed
+  onto them; the solution jumps them (window 14), short of Lift_4 (lead 19).
+Block_C's trigger runs up to Sill_F (with Hinge_S4 cut out of S4 over it, the storey no longer closes at S4); it has fired
+long before a cat is on S4. Solution 1613 ticks (unchanged); answers unchanged (NW 3: the new betrayals join T10).
+`Band2RouteResultsTests` re-pinned.
+**Correction (D-137):** the L013 drape failures in `EnvironmentReadabilityTests` reported here came from scenes not yet rebuilt
+(the test reads the built scenes); on a clone rebuilt with this layout the test passes.
+**Open:** the developer to run Rebuild All Levels, save, and play L013.
+**Why:** the developer's play-test notes (2026-10-14).
+
+### D-135 · 2026-10-14 · In progress (PAX-107 sixteenth round: L011's cloud follows onto the top storey)
+**Decision:** the developer, on a screenshot of the cloud waiting at the gallery's east end while the cat climbs the volley
+(2026-10-14: "cloud ... stop exactly where it is now, but then once the cat is in the very top floor, it continues to follow
+in the top floor from right to left"): the Cloud (D-132) follows the cat floor to floor (D-116 `StormFloor`s). Floor 1 is the
+gallery as before (y 14.4, x 6.5-20.5): it waits at x 20.5 while the cat is in the tunnel, the Dip and the volley. Once the
+cat's centre is at y 18.6 or above (the top storey, T_East and T_West, top 18.55), it climbs (0.24 u a tick) to y 21.9,
+3.35 u over the storey (clear of Stop_Hi, under Door_Roof), and follows the cat west over x 5.3-21. Its east end is x 21,
+the chasm's west side: the wait for Spear_Gap is in a 1.1 u pocket between Post_G and the chasm, with no room to step out of a
+strike (with x 26 a strike killed the solution there, t1610). Its west end keeps every strike clear of the door ledge where
+the cat waits for Block_Door. Solution 1822 ticks and every pinned result unchanged; the Summit rewind is exact.
+**Still failing, unchanged:** P7 (NW 5), band 2's two dead ends, Ledge_M under a wall jump, and the wall-jump door findings
+past Spear_4/Spear_5 (D-132).
+**Open:** the developer to run Rebuild All Levels, save, and play the Summit.
+**Why:** the developer's note (2026-10-14).
+
+### D-136 · 2026-10-14 · In progress (PAX-107 seventeenth round: L011's top storey)
+**Decision:** the developer's L011 notes on the top storey (2026-10-14: "Fill in the empty space here with the floor"; asked
+which space, they chose the dip on T_West; "Remove this entirely", of Stop_Hi):
+(1) **T_Rise.** The dip between Post_D (x 12-12.5, top 19.65) and Curb_T (x 16.6-17.1, top 19.15) is filled: one Floor, T_Rise,
+x 12-17.1, y 18.05-19.65 (Post_D's height), replaces Post_D, Curb_T and T_West's east part (T_West is x 8.5-12). Spear_Door
+launches from its west face; Spear_Gap sticks in its east face. The solution hops up onto it from the stuck Spear_Gap (0.6 u)
+and drops off its west end onto T_West; the Lip's betrayal walks off it, the high ledge's jumps from its west end. The chasm's
+bait gap now ends at 19.65.
+(2) **Stop_Hi** (the post on Ledge_Hi's west end, PAX-091) is removed. The high ledge stays a dead end (Spikes_D2's trigger
+holds its whole top strip); its lead is 6 (was 8).
+Solution 1813 ticks (was 1822); windows unchanged; Lip 27 (was 26). `Band2RouteResultsTests` re-pinned. A capture of a
+clone rebuild shows the top storey as one floor.
+**Still failing, unchanged:** P7 (NW 5), band 2's two dead ends, Ledge_M under a wall jump, the wall-jump door findings past
+Spear_4/Spear_5.
+**Open:** the developer to run Rebuild All Levels, save, and play the Summit.
+**Why:** the developer's notes (2026-10-14).
+
+### D-137 · 2026-10-14 · In progress (PAX-107 eighteenth round: L012's Spikes_D)
+**Decision:** the developer (2026-10-14: "move these spikes 1 unit to the right. So there is space for the cat to land and
+jumpover"; asked how the cat gets past them, they chose "run past before they rise"): Spikes_D is at x 14-15.3 (was 13-14.3),
+1.7 u past PB's edge (PB has been 2.2 u wide since D-133, which left 0.7 u of landing). They rise 70 ticks after Orb_A (was 55):
+up at 55 they rose under a cat running on from the hop (the solution died at t338), and once up they can't be jumped, since
+Stub_C hangs 0.7 u over the floor 0.7 u past them. A cat that stops where the hop lands is still caught (T5, lead 70); the
+turn-back betrayal turns at x 16.8 (was 16; lead 19).
+**Rule exemption (approved by the developer by choosing this option):** with Spikes_D's onset past Orb_A + 59, the chaos
+moment counts 4 elements in 60 ticks (band 2 needs 5): `LevelLayoutValidator.ChaosExemptions` names L012.
+Solution 1538 ticks (unchanged); windows unchanged. `Band2RouteResultsTests` re-pinned.
+**Still failing, unchanged:** D-129's two Block_E items.
+**Open:** the developer to run Rebuild All Levels, save, and play hall 4.
+**Why:** the developer's note (2026-10-14).
+
+### D-138 · 2026-10-14 · In progress (PAX-107 nineteenth round: L012's Hinge_4 and Orb_P)
+**Decision:** the developer, on a screenshot of Hinge_4 standing at P4's edge (2026-10-14: "Make this wall stand up and move
+faster. And add another direction inverter before the spikes"):
+(1) **Hinge_4** stands up in 3 ticks (was 6), 4 ticks after the cat passes x 19.8 (was 6), and slides its 4 u in 20 ticks
+(was 36): 0.2 u a tick, faster than a run.
+(2) **Orb_P**, an honest orb pillar at x 20.3-20.9 just before P4, flips the hands for 60 ticks (until Drop_4 lands). Inverters
+never toggle each other (D-087), so Orb_A's flip now ends earlier: 30 ticks (was 105; it re-fires as the hop over PB lands,
+t337), as the cat crosses Hinge_4's notch. Hall 4's run is mirrored to x ~18.8, played straight to Orb_P, then mirrored over
+P4 and through the wait for Drop_4. New betrayal T10 [SS] (with Inv_H): a cat that keeps holding the same way at Orb_P runs
+back into Hinge_4, which shoves it into P4 (lead 37). The turn-back after the hop turns at x 16.5 (it must reach Spikes_D before
+Orb_A's flip ends; lead 13).
+Solution 1541 ticks (was 1538); two new timed switches of hands (windows 44, 33). Answers unchanged (B 2, J 3, NW 3, SS 3, W 2).
+`Band2RouteResultsTests` re-pinned.
+**Still failing, unchanged:** D-129's two Block_E items.
+**Open:** the developer to run Rebuild All Levels, save, and play hall 4.
+**Why:** the developer's note (2026-10-14).
+
+### D-139 · 2026-10-14 · In progress (PAX-107 twentieth round: L012's Stub_C)
+**Decision:** the developer, on a screenshot of the risen Spikes_D in front of Stub_C (2026-10-14: "Move the arrow and hanging
+wall more to the right. There is no way to land safely and jump across"): Stub_C and Arrow_C's launcher are at x 16.4-16.9
+(were 16-16.5), as far east as hall 5's slab over them reaches (at 16.5-17 its top poked into P2's column and the trap-floor
+headroom check read it as a surface under Floor_2). Between Spikes_D (x 14-15.3) and the stub there is now 1.1 u (was 0.7, less
+than the cat). Measured (a probe route, not declared): a cat that backs off before the spikes rise, waits, and jumps them meets
+the stub's face and drops onto the floor at x 15.98, clear of them, and lives. Hinge_4's notch starts at x 17, so the stub can't
+go further east without moving it. Solution and every pinned result unchanged.
+**Still failing, unchanged:** D-129's two Block_E items (Arrow_C's lane now ends at 16.4).
+**Open:** the developer to run Rebuild All Levels, save, and play hall 4.
+**Why:** the developer's note (2026-10-14).
+
+### D-140 · 2026-10-14 · In progress (PAX-107 twenty-first round: slams that land on the cat)
+**Decision:** the developer, on L013's Slam_1 and Slam_2 (2026-10-14: "When it comes down sometimes it doesnt kill you, feels
+buggy"). Cause, measured with probe routes: a Solid mover kills only a cat sunk into its pose by the crush depth; a slab
+coming down at 0.44 u a tick onto a cat at its edge (the cat walking in as it lands, its box 0.008 u under the corner) was
+pushed aside by physics instead (flung west at 25 u/s, alive 5 u away), so the crush test never saw it.
+(1) **Slams.** `MovingFloorSettings.Slams` (MovingTrap `slams`, set by the builder): a slam whose move this step is down kills
+a cat whose box overlaps the region it sweeps (any overlap at its sides; at its top more than `MovingTrap.SlamSkin`, 0.04, so
+a rider is clear): `TrapMotion.SlamsOnto`, through `MovingTrap.SlamHits`, which the route harness uses to name the killer.
+Slam_1 and Slam_2 are slams. Opt-in: applied to every descending Solid it killed cats riding or standing flush beside lifts and
+crushers (L001 Ledge, L008 Press_S1, L009 Lift_A, L012 Piston_1 broke), from physics' contact slop.
+(2) L013: both slams kill 2 ticks earlier than physics pinned the cat (leads 6, were 8). Solution and windows unchanged.
+`Band2RouteResultsTests` re-pinned. `MovingFloorMathTests` cover SlamsOnto.
+**Open:** the developer to run Rebuild All Levels (the new serialized field), save, and play L013's slams. L012's Slam_H2
+(D-133) could be a slam too; not changed.
+**Why:** the developer's note (2026-10-14).
+
+### D-141 · 2026-10-15 · In progress (PAX-107 twenty-second round: L013 starts inverted)
+**Decision:** the developer, on a screenshot of L013's start (2026-10-15: "arrow inverter at the begining of this level 13";
+asked how long, they chose "the ground floor"): the cat spawns in an honest inverter, `Invert` (x 2.2-2.8, y 0-3), so left and
+right are swapped from the first tick and again after every respawn at the start. The window ends in its end box over G_1's
+vent (x 27-29, y 3-3.6, above any jump from the ground; D-125 (6)'s `EndPosition`/`EndSize`), so the launch to S2 ends it:
+Hinge_1, Collapse_1, Slam_1, Lift_1, Spikes_S and Ferry_1 are played mirrored, S2 onwards straight. It joins L004's and L009's
+as a whole-level inverter by name (`WholeLevelInverters`: exempt from D-087's 25-500-tick cap; levels 11+ allow inverters).
+Route moves before the launch are mirrored stick input (D-087 (7)). The swap's first tick walks the cat one tick west (as on
+L004), which moved the first windows (31 → 33, 28 → 33) and four leads by a tick; T3 (wait beside G_B) now stops at x 7.1 (it
+releases at 7.35, was 7.2: at 6.98 G_B's launch took the cat, and past 7.19 it never crosses Spike_2's trigger). Solution 1613
+ticks (unchanged). `Band2RouteResultsTests` re-pinned; `Band2LevelTests` L013, `CameraTellTests`, the L013 rewinds and
+`InverterValidatorTests` pass.
+**Open:** the developer to run Rebuild All Levels, save, and play L013's ground floor.
+**Why:** the developer's note (2026-10-15).
+
+### D-142 · 2026-10-15 · In progress (PAX-107: L016 replaced, "Flipside")
+**Decision:** the developer rejected the old L016 ("Upside-Down Garden") outright (2026-10-15: "Both levels are poorly
+designed ... traps are poorly placed, not challenging, its not even fun to complete. Camera view is totally off, too many
+things off screen") and picked the concept "Flipside corridors". L016 is rebuilt from scratch, 32 × 21.5:
+- **Three corridors stacked on 2 u slabs**, each 4.5 u floor to ceiling, so the floor and the ceiling are both in the 1.8×
+  view wherever the cat is: corridor 1 (floor 0) walked east, corridor 2 (floor 6.5) walked west, corridor 3 (floor 13)
+  walked east to the door (x 31.4, on corridor 3's floor). Honest flip orbs (ForceUp from the floor, ForceDown hanging from
+  the ceiling) move the cat between the two faces, and both faces carry traps.
+- **Every mover is a unit of its slab:** a ceiling trap is the slab's bottom unit under a fixed cap, a floor trap its top
+  unit on a fixed seat. A flip room never gets drawn holes (`SoloRoomSkin.LeavesHole`), so every recess a trap leaves is
+  real stone around real air.
+- **Corridor 1 (section Floor):** Slam_1 comes down as the cat sets off and stays [BAIT]; Flip_U1 over Spikes_F1; on the
+  ceiling CC_1 gives way into a spiked recess [J], Lift_1 rises out of the floor into the ceiling [W] and Lift_1b after it
+  [SS]; Flip_D1 drops the cat to the floor, where Hinge_1 stands up behind it and pushes it onto Spikes_F2 [NW]; a mossy
+  chimney (Moss_W1 / Moss_E1, 1.75 u apart) climbs to corridor 2.
+- **Corridor 2 (section Arrows):** Piston_2 rises into the ceiling every 110 ticks [W]; Slam_2 comes down out of the ceiling
+  [SS]; Arrow_M, in the west jamb, fires along the floor every 70 ticks from Slam_2's fire, non-stop, and mirrors with the
+  cat's gravity (D-123): Flip_U2 throws the cat onto the ceiling and the next shot flies along the ceiling [J]; CC_2, where
+  the flip lands the cat, gives way under a cat that stops [NW]; the shaft (x 1.5-3.5) lets the cat fall up into corridor 3.
+- **Corridor 3 (section Top, gravity up at the gate):** Push_3 comes down behind the cat on the ceiling and shoves it onto
+  Spikes_C3 [NW]; Flip_D3 drops it to the floor. Spikes_R come and go every 120 ticks; the level's one troll, the hidden
+  Flip_H, sits at the top of a jump over them and throws a jumper onto Spikes_CT [NJ]. The finale (the chaos moment): Hinge_3
+  (spiked) stands up behind [OL], Slam_3a comes down ahead [SS], Spikes_3 and Spikes_3b come up over the floor to the door,
+  and Slam_3b comes down onto them as the one step to the door [W]; jumping straight for the door from Slam_3a lands on
+  Spikes_3b [LW].
+- **Dead ends:** back west on corridor 1's ceiling (hidden Spikes_CW) and back west along corridor 3's floor (hidden
+  Spikes_D2).
+Measured: solution 1173 ticks; sections 439 / 347 / 387; windows 26, 14, 15, 26, 25, 14, 30, 31; 17 distinct killers,
+15 in sequence; answers BAIT 1, J 2, LW 1, NJ 1, NW 3, OL 1, SS 3, W 3; the flip in 3 betrayals; chaos t1026-t1085, 5 in view
+of 7; every killer on screen by the hold's end at 4:3, 16:9 and 20:9; both rewinds exact; deterministic. `Band2LevelTests`,
+`ValidateRoutesTests`, `CameraTellTests`, `WallJumpShortcutTests`, `CleanFallsTests`, `DoorStandsTests`, door upright,
+`HazardContrastTests`, `EnvironmentReadabilityTests`, `TrapArtParityTests` and `MossSignAndBrokenStoneTests` pass for L016
+on a clone rebuilt with this layout. `Band2RouteResultsTests` re-pinned; `DoorStandsTests`' L016 case is now SB_4 (the door
+stands on corridor 3's floor); the trap contact sheet's hidden-flip row is now Flip_H (T11).
+No rule or exemption changed.
+**Open:** the developer to run Rebuild All Levels, save, and play L016.
+**Why:** the developer's ruling (2026-10-15).
+
+### D-143 · 2026-10-15 · In progress (PAX-107: L014 rebuilt as "Snapping Canopy")
+**Decision:** the developer (2026-10-15: "Remove level 14 and 16 entirely. Both levels are poorly designed. I want a fresh new
+idea for them"; "traps are poorly placed, not challenging"; "Camera view is totally off, too many things off screen"; they picked
+the concept "Snapping Canopy"). L014 is replaced from nothing. The verb is HANG ON, MOVE ON. It is 32 × 22, three storeys
+5.5 u apart (walk lines 0, 5.5 and 11), climbed bottom to top, walked east, west, east. Each storey's neighbour shares the 1.8×
+view, and no fall is longer than a trench.
+(1) **The trenches.** Each storey crosses a spike trench (bed 1.5 u under the walk) vine to vine.
+- The vines snap in a wave, each a fixed time after the one before, starting from the first grab: V1-V4 (50 after the grab,
+  then 50 apart), V5-V7 (60, 60) and V8-V11 (40, 60).
+- In trenches 1 and 2, two launchers fire non-stop (Continuous) across the vines:
+  - A high lane (Arrow_1Hi at y 2.6 from Lintel_W1, Arrow_2Hi at 8.1 from Cap_E2) kills a leap from high on a vine, so the cat
+    climbs down before each leap.
+  - A low lane just under the walk line (Arrow_1Lo from Walk_1a, Arrow_2Lo from Pier_1) crosses the only way out. A lintel over
+    the trench's far end (Pier_1 from y 1.6, Pier_3 from 7.5) means the leap out starts low on the last vine, through that lane.
+  - The cat waits for a shot to pass, then drops and leaps.
+- Trench 3 has no launcher. Slam_10, the roof over V10, slams down V10's column as the cat leaps for V9 and goes back up: wait
+  on V9 for it.
+(2) **The walks** (traps on the path a run takes):
+- **S1:** Lift_1 shoots up into trench 2's bed every 120 ticks (wait). Collapse_1 drops into Pit_1, a declared opening (jump it).
+- **S2:** Lift_2 shoots up under a running cat 24 ticks after it comes to x 15.6 (stop short). Hinge_3 stands up behind the cat
+  and pushes it onto Spikes_2 (jump them).
+- **S3:** Slam_3, a slam (D-140), comes down on the walk and stays (set it off, stop short, hop it). Hinge_5, spiked, stands up
+  behind the cat at Spikes_5 (jump them at once).
+- **The start:** Hinge_0 stands up behind the spawn 30 ticks in and pushes the cat into trench 1. Leap onto V1 at once.
+(3) **The way up and the door.**
+- V_Up1 (east shaft) climbs to S2 and V_Up2 (west shaft) to S3.
+- The chimney is entered under Hang_C (x 27-28, y 13.3-15.5, its east face mossy). Climb Wall_C's moss (x 30, y 11-14.5) and
+  Hang_C's, then kick over Wall_C's top to the door, which stands on Wall_C under Roof_E.
+- The roof over S3 is solid stone up to the ceiling (no dead volume).
+(4) **Dead ends.**
+- D1 [OL]: the Perch, a stub from trench 3's bed, has hidden spikes on its top.
+- D2 [LW]: V_Lure hangs over Spikes_5 and snaps 12 ticks after a cat comes under it. Its trigger runs down to the walk, so no
+  wall jump reaches the door past it unfired (`ValidateWallJumpShortcuts` (a)).
+(5) **Measured** (clone):
+- Solution 1369 ticks; sections 520 / 409 / 440; both rewinds exact.
+- 17 distinct killers, 14 in sequence. Answers: BAIT 1, J 3, LW 2, NW 2, SS 2, W 3 (every snap betrayal is one trap, "Canopy").
+- The vine is in 14 betrayals.
+- Chaos t173-t232: 5 of 5 in view (V3, Arrow_1Hi, Arrow_1Lo, Lift_1, V4).
+- Windows 12-40.
+- Every killer is on screen by the hold's end at 4:3, 16:9 and 20:9.
+- `Band2RouteResultsTests` re-pinned.
+(6) **Tests:**
+- L014's old-layout tests go: `CameraTellTests.L014_T1_…` is removed; `L014EscapeTests` (Lip_1's escape, D-097) is marked `[Ignore]` for the developer to delete in the Unity Editor (its .meta goes with it).
+- `TrapContactSheet`'s shrinking-floor row now shows L003's Shrink_1.
+- No rule, exemption or tag was changed.
+**Open:** the developer to run Rebuild All Levels, save, and play L014.
+**Why:** the developer's ruling (2026-10-15).
+
+### D-144 · 2026-10-15 · In progress (PAX-107 twenty-third round: L014's hinge floors)
+**Decision:** the developer, after playing D-143's L014 ("Only a minor fix in lvl 14 otherwise its perfect"), on a screenshot
+of Hinge_5 standing at Spikes_5: "The spikes here should be on the opposite side, and all these traps need to always be faster."
+(1) **Hinge_5 faces the cat.** A spiked hinge floor's spikes are on its top face, which faces the side it hinges toward
+(D-124 (4)): hinged at its west end, Hinge_5 stood with its spikes looking back west, away from the cat it chases east. It is
+hinged at its east end now, so they look east. It stands up at x 24-24.5 and slides 1 u east (was 2 u from x 23), stopping 0.5 u
+short of Spikes_5: at 0.25 u short, a cat hanging on V_Lure touched its face and the dead end's killer was ambiguous.
+(2) **Faster hinge floors** (L014's three): each swings up in 3 ticks (was 6). Hinge_0 slides its 3.9 u in 16 ticks (was 24),
+Hinge_3 its 2.5 u in 10 (was 24) and Hinge_5 its 1 u in 7 (0.14 u a tick; was 0.1). Hinge_5 can't go faster: at 6 ticks for its
+slide the kill came 5 ticks after the swing started, under D-057's 6-tick reveal lead (it is 7 now).
+Solution 1369 ticks and every window unchanged; leads Hinge_0 38 (was 49), Hinge_3 9 (was 22), Hinge_5 7 (was 21).
+`Band2RouteResultsTests` re-pinned; `Band2LevelTests`, `ValidateRoutes`, wall-jump shortcuts, the camera tell, clean falls and
+L014's art fixtures pass on a rebuilt clone.
+**Kept:** V_Lure (dead end D2), on the argument given to the developer; it goes if they say so (band 2 then needs another dead end).
+**Why:** the developer's note (2026-10-15).
+
+### D-145 · 2026-10-15 · In progress (PAX-107 twenty-fourth round: L016's chimney moss and hinge floors)
+**Decision:** the developer, after playing D-142's L016 ("great level very fun"):
+(1) **Moss on a wall** ("moss just in the air is weird. It needs to be connected to a wall"): Moss_W1, the chimney's west grip
+face (x 29.75-30), hung 2.1 u under slab A's east end with nothing behind it. Hang_W1, a stone pillar (x 29.25-29.75) hung
+under slab A down to the moss's foot (y 2.4), now carries it, as L014's Hang_C carries Hang_Moss.
+(2) **Hinge_3 faces the cat, faster** ("The spikes should also be on the other side. and move faster"): hinged at its east end
+(its spikes looked back west, D-144 (1)); a 3-tick swing (was 6); 3 u in 36 ticks (0.083 u a tick; was 3.5 u in 60, 0.058).
+Slam_3a comes down 4 ticks after it over 8 (was 16 and 10), and the route hops onto it 16 ticks after Hinge_3 fires (was 30),
+so the hop still beats the wall. Faster still and the wall reaches the cat at the cut before Slam_3a is down.
+(3) **Hinge_1** (D-144's "always faster"): a 3-tick swing and 4 u in 20 ticks (was 6 and 24); at 16 it caught the solution's cat
+taking off over Spikes_F2.
+Solution 1173 ticks; the jump over Spikes_F2 has a window of 14 (was 15); leads Hinge_1 20, Hinge_3 27, Slam_3a 7, Spikes_3 32
+(were 26, 48, 8, 46). `Band2RouteResultsTests` re-pinned; `Band2LevelTests`, `ValidateRoutes`, wall-jump shortcuts, the camera
+tell, clean falls, door stands, the rewinds and L016's art fixtures (moss sign included) pass on a rebuilt clone.
+**Why:** the developer's notes (2026-10-15).
+
+### D-146 · 2026-10-15 · In progress (PAX-107 twenty-fifth round: every hinge floor faster)
+**Decision:** the developer, asked whether D-144's "all these traps need to always be faster" applies to the hinge floors of
+the levels they've played (L001-L013): "Yes". Every hinge floor (a floor that stands up and pushes, D-119 (4)) swings up in
+3 ticks and slides at about 0.2 u a tick, faster than a run, unless a rule or the solution stops it:
+- **L006** Flip_8: 3 ticks (was 10), 2 u in 10 (was 28). **L009** Hinge_9: the same.
+- **L008** Hinge_S1: 3 ticks (was 6), 5.5 u in 28 (was 46); it stands up 18 ticks after its trigger (was 8): faster than a run,
+  with 8 it caught the solution's cat before the jump over Spikes_5. Hinge_S2 (spiked): 3 ticks (was 8), 6.5 u in 33 (was 54);
+  it stands up 64 ticks after its trigger (was 38), so it still reaches a cat waiting at the shaft about when it did (D-125
+  (9)): at 38 it reached the solution's cat before the second wave.
+- **L012** Hinge_2: 3 ticks (was 6), 8 u in 40 (was 74). Hinge_4 was already fast (D-138).
+- **L013** Hinge_1: 3 ticks, 4.5 u in 22 (was 6 and 36); Hinge_3: 3, 3 u in 15 (was 6 and 30); Hinge_S4: 3, 2.35 u in 12 (was
+  6 and 24). Spike_2 (spiked, timed to G_B's launch): 6 ticks (was 8) and 2.6 u in 13 (was 40), standing up 59 ticks after its
+  trigger (was 30), so it arrives over the vent at the same tick; with a 3-tick swing it killed the cat beside the vent 4 ticks
+  after it moved (D-057's lead is 6).
+- L014 and L016 (D-144, D-145) were done first; L017-L020 aren't played yet and are unchanged.
+Solutions: L012 1538 ticks (was 1541; the hand switch over Pit_H has a window of 17, was 15); the rest unchanged. Leads
+re-pinned in `ShippedRouteResultsTests` (L006 Flip_8 33, L008 Hinge_S2 32 and Hinge_S1 28, L009 Spikes_R3 78) and
+`Band2RouteResultsTests` (L012 Hinge_2 55; L013 Spike_2 7, Hinge_1 36, Hinge_S4 9, Hinge_3 12); L008's maze recovery shows
+Hinge_S2 at t233 (was t207) and still completes at t1417. Still failing, unchanged and older than this round: L001's route (its
+solution is the developer's), L011's wall-jump shortcuts and L012's Block_E lane (D-129 (a)).
+**Why:** the developer's ruling (2026-10-15).
+
+### D-147 · 2026-10-15 · In progress (PAX-107: L017 rebuilt, "Deja Vu")
+**Decision:** the developer asked for L017–L020 to be judged against what they like (approved models L014 "Snapping Canopy"
+and L016 "Flipside", D-142/D-143) and improved, with more use of the direction inverters. The old L017 failed that test:
+- its storeys were 8 u apart, so the lower one was out of view from the upper;
+- the open sky between them was dead space;
+- the Door_Ledge floated in the air;
+- the volley stair was a passive wait;
+- Collapse_3 and Slide_4 only punished a stop;
+- it had no inverter and no chaser.
+
+L017 keeps its theme (spears and chains; the way out builds the way back) and is rebuilt at 32 × 18.5:
+- **Three lanes 5 u apart** (floors 0, 5, 10; 3.5 u clear; 1.5 u stone slabs), walked east, west, east. Stone fills
+  everything that isn't played. Every mover is a unit of its slab (a slam is the slab's bottom unit under a cap, a hinge
+  floor its top unit on a seat).
+- **A spear stair at each lane's end** (well 1, x 28–31.6; well 2, x 0.4–4): the cut inside the well fires V1/W1, and each
+  next spear follows 48 ticks later, alternating walls. Each shaft (1.25 u rises; the fourth flush with the next lane) is
+  the next step. A cat that jumps before the shaft has stuck is run through.
+- **Lane 1 (section Out):**
+  - the first step onto the bridge bares Pit_1's spikes, and the bridge (Br_1–Br_4) crumbles behind the cat [NW];
+  - Slam_1 comes down on the walkway and stays: stop, hop onto it and over Kerb_1 [BAIT];
+  - Arrow_1 shoots from the Spine along the lane at jump height, non-stop (every 110 ticks): walk under it, and let a shot
+    pass before the jump [W];
+  - Hinge_1 (spiked, facing the cat, a 3-tick swing, 0.15 u a tick) catches a cat that stops short of Spikes_1 [NW];
+  - V1–V4 [NJ].
+- **Lane 2 (section Back):** Inv_2 (honest, 500 ticks) at the stair top swaps left and right until the cat walks onto
+  lane 3. Its end box covers lane 3's checkpoint, and the orb covers lane 2's checkpoint, so a respawn is swapped exactly as
+  a first pass. Lane 2 is lane 1 turned around (x → 32 − x from the slam to the well), so with the hands swapped the same
+  thumbs make the same moves: deja vu.
+  - Pit_2 and bridge 2 (Br2_1–Br2_3);
+  - Slam_2 [SS];
+  - Arrow_2, from Spine_2, its trigger holding its lane [W];
+  - Hinge_2 [NW];
+  - W1–W4, climbed with swapped hands [NJ].
+- **Lane 3 (section Last):**
+  - Inv_3 (honest, 36 ticks) swaps the hands again; the swap ends in the air over Pit_3, so a cat that keeps the swapped
+    hand falls back into it [J];
+  - the finale (from the cut at x 19.2): Slam_3 comes down ahead [SS] while Push_3 (spiked) stands up behind and chases the
+    cat to the slam [OL];
+  - Spear_D sticks a 2.5 u shaft across Pit_4 (6 u, too wide to jump even from the slam) as the last step to the door
+    (x 31, on SB_4).
+- **Dead ends:** back west over the crumbling bridge (Pit_1); the old hand on bridge 2, back east (Pit_2).
+- **The bridges are collapsing floors** chained from their pit's hidden spikes, not falling blocks: a falling block must sit
+  flush in a solid (D-085), and L011's falling bridge has its own named exemption. No exemption was added.
+
+Measured:
+- solution 1205 ticks; sections 480 / 457 / 268;
+- windows 51, 51, 13, 27, 27, 27, 33, 31, 51, 13, 27, 27, 27, 33, 21, 16;
+- 13 distinct killers, 11 in sequence; leads 7 to 57;
+- answers BAIT 1, J 1, NJ 2, NW 3, OL 1, SS 2, W 2; the level's element (spear or chained trap) in 7 betrayals;
+- chaos t520–t579, 6 in view of 6 (Pit_2, Arrow_1, Br2_1, Br2_2, Slam_2, Br2_3);
+- every killer on screen by the hold's end at 4:3, 16:9 and 20:9; both rewinds exact; standing at each checkpoint survives
+  50 ticks; deterministic.
+
+Fixtures for L017 pass on a clone rebuilt with this layout:
+- `Band2LevelTests`, `ValidateRoutesTests`, `Band2RouteResultsTests` (re-pinned);
+- `CameraTellTests`, `WallJumpShortcutTests`, `LevelKitRulesTests`;
+- `HazardContrastTests`, `MossSignAndBrokenStoneTests`, `TrapArtBuildTests`, `TrapArtParityTests`, `TrapArtRevealFrameTests`;
+- all of `CleanFallsTests`, `DoorStandsTests`, `DoorUprightTests`, `CheckpointSectionRewindTests`,
+  `EnvironmentReadabilityTests` and `LevelLookConfigTests`.
+
+No rule or exemption changed.
+**Open:** the developer to run Rebuild All Levels, save, and play L017.
+**Why:** the developer's request (2026-10-15): "analyse Level 17-20 … Would I like to play them? If not, make improvements.
+Make more use of the direction inverters."
+
+### D-148 · 2026-10-15 · In progress (PAX-107: L018 rebuilt, "Eye of the Storm")
+**Decision:** the developer (2026-10-15: "analyse Level 17-20 … Would I like to play them? If not, make improvements. Make more
+use of the direction inverters"). The old L018 was a scatter of small floating sky platforms (SL_1-SL_3, Sky B, Step_B, the
+Crown), with about 5 u of empty sky over the Summit, an empty west half, passive "wait under the roof through a strike" covers
+and no inverter. It is rebuilt to the L014/L016 model (level-design-taste), keeping its theme (the storm cloud, geysers and a
+vine) and its verb, GET ABOVE: lightning only strikes down from the cloud's bottom. It is 32 × 17.5: three corridors 3.5 u tall
+on 1.5 u stone slabs (walk lines 0, 5 and 10, roof underside 13.5), walked east, west, east. Every slab runs wall to wall
+except its holes, so there are no floating islands and no dead volume; no fall is longer than a storey.
+(1) **The cloud is the spine.** It wakes on the first step and follows the cat at its run (0.12 u a tick) floor to floor (D-116):
+over S1 to x 27, over S2 from x 22 to the shaft, over S3 from x 5.5 to x 25 (clear of the door). It charges 50 ticks after it
+wakes and every 90 after that. The climbs put the cat above it until it climbs after it (0.24 u a tick). Every stop the
+solution makes is a dance with it: step out from under its charge while waiting for Lift_1, step off G_1's vent and back on
+after the strike, step to Slam_2's west end, step aside on Slam_3.
+(2) **Three inverters** (the developer: "Make more use of the direction inverters"):
+- **Inv_1** (S1, x 22, honest): the last stretch is played mirrored (Arrow_1's shot, the hop onto the Plinth, the vent dance).
+  Its window ends in an end box in the hole over the vent, mid-launch, so the steer west onto S2 switches hands in the air.
+- **Inv_E, the eye** (S2, x 16.5, honest, 200 ticks): Slam_2, G_D's downdraft over Spikes_G, Kerb_2, Arrow_2 and the leap
+  for V_6 are all played mirrored.
+- **Inv_3** (S3, x 12.5, honest): the finale is played mirrored to the dais (its end box).
+(3) **The storeys** (traps on the path a run takes):
+- **S1 (Ground):** Hinge_0 stands up behind the start 30 ticks in and pushes a cat that waits onto Collapse_1 over Pit_1 (a
+  declared opening). Slam_1 (D-140) comes down out of slab A ahead and stays (stop short, hop it). Lift_1 shoots up into slab
+  A 26 ticks after the cat's hop crosses x 12.2 (a cat that runs on is carried up; stop short, cross once it's down). Arrow_1
+  fires non-stop at shin height from the Plinth to Kerb_1 (jump it). G_1 (every 120 ticks) launches the cat through the hole.
+- **S2 (Storm):** Hinge_2 stands up behind the landing and pushes a cat that stops onto Spikes_2 (jump them). Slam_2 comes down
+  ahead and stays (hop onto it). G_D, a down vent in Lintel_D, blows a cat that jumps Spikes_G mid-eruption down onto them.
+  Arrow_2 (disguised, in Jamb_2) fires every 70 ticks along the floor from the moment Slam_2 lands: hop Kerb_2 and leap straight
+  on for V_6 over Spikes_V. V_6 snaps 90 ticks after the grab: climb above the cloud and off.
+- **S3 (Crown):** TL_1-TL_3 give way behind the cat over the Briar (its floor is a pit bottom, so there's no ledge to jump into
+  them from). Piston_3 rises into the roof 10 ticks after the cat crosses x 16.5 (stop short). The finale: Hinge_3, spiked
+  (hinged at its east end, so its spikes face the cat), stands up behind and slides 5 u; Slam_3 comes down ahead (hop onto it);
+  Spikes_7 come up to the dais; the cloud charges over the slam (step aside); Slam_3b comes down onto the spikes 130 ticks after
+  the hinge: the step onto the dais and the door.
+(4) **Dead ends.** D1 [OL]: a cat that still steers mirrored as Inv_1's swap ends drifts east onto Ledge_E, where Spikes_E come
+up (their cut starts at x 28.85 on the Plinth). D2 [B]: back west off S3's landing, down the shaft onto Spikes_V.
+(5) **Measured** (clone):
+- Solution 1139 ticks; sections 405 / 302 / 432; both rewinds exact; standing still at each checkpoint survives 50 ticks.
+- 16 distinct killers, 15 in sequence (Pit_1 > Slam_1 > Lift_1 > Cloud > Arrow_1 > Spikes_2 > Slam_2 > Spikes_G > Arrow_2 >
+  Spikes_V > Briar > Piston_3 > Slam_3 > Hinge_3 > Spikes_7). Answers: B 1, J 3, NJ 2, NW 3, OL 1, SS 2, W 3 (the three
+  cloud strikes are one answer, "T4"; the two floors that stand up behind the cat are one, "T1").
+- The element (cloud, geyser or vine) is in 6 betrayals.
+- Chaos t712-t771: 7 of 10 in view.
+- Windows 12-39. Every killer is on screen by the hold's end at 4:3, 16:9 and 20:9.
+- `Band2RouteResultsTests` re-pinned.
+(6) **Tests and art:** `TrapContactSheet`'s drop-and-return row (L018's Drop_3, gone) now shows L018's Piston_3 rising and
+returning. Its Arrow_2, G_1, G_D and Briar rows keep their names. No rule, exemption or tag was changed.
+**Open:** the developer to run Rebuild All Levels, save, and play L018.
+**Why:** the developer's request (2026-10-15).
+
+**Amendment (same day):** V_6 hangs from Roof_A (its top 0.05 under the roof's underside, 13.45), not in open air; the leap onto S3 and the 90-tick snap are unchanged. T10's lead V_6 29 -> 37 (the fall is longer).
+
+### D-149 · 2026-10-15 · In progress (PAX-107: L019 rebuilt, "Muscle Memory" on three corridors)
+**Decision:** the developer asked for L017-L020 to be judged against what they like (D-141-D-146, `level-design-taste`) and
+improved where they fall short, "Make more use of the direction inverters". The old L019 was 64 × 16 (the 2026-09-28 ruling),
+with 1 u platforms over a 22 u pit and a volley stair that was a wait on a 13 u cliff. L019 keeps its theme (precision, the
+inverter and spears; the verb EXECUTE a memorised input map: every trap is set off by the cat itself) and is rebuilt on
+L016's approved frame, 32 × 21.5:
+- **Three corridors 4.5 u floor to ceiling on 2 u slabs**, walked east (floor 0), west (6.5), east (13) to the door, which
+  stands on Door_Step against the east wall. Every mover is a unit of its slab (seat or cap), so every recess is real stone.
+- **The inverters, four ways** (all honest; no disguised one):
+  - Invert: the cat spawns inside it; corridor 1 is played with the hands swapped until its end box, in the air over the
+    jump off Crumb_1, where the hands switch back mid-jump (over Fake_1).
+  - Orb_2, on a timer (187 ticks): touched in the jump over Thorns_2, it runs out in the jump onto the bridge.
+  - Orb_L, on a lift: Lift_U carries the cat up through it into corridor 3 (and stays up as that corridor's floor).
+  - Orb_L's end box is in the last jump, over Spikes_3b, to the door's step.
+- **Corridor 1 (section Mirror):** Hinge_0 stands up behind the start and pushes toward Pit_1 [NW]; a cat that presses the
+  old way walks back onto it and drops onto Thorns_0 in its notch [B] (no cat can be shut in behind it); Lift_1 shoots up into
+  slab A as the cat lands [W]; Slam_1 comes down ahead and stays [BAIT]; Ferry_1 over the spike bed; Crumb_1 gives way
+  [NW, "Crumble"]; the switch over Fake_1 [SS, "Switch"]. The spear stair (Spear_1-4, chained 34 ticks apart from a cut,
+  alternating Jamb_E and Face_R): each shaft sticks just ahead of a climbing cat [NJ].
+- **Corridor 2 (section Orb):** Orb_2 [B]; Slam_2 [SS]; Lift_2 rises into slab B 20 ticks after the hop over Slam_2 [SS];
+  Spikes_B come up in the trench as the cat nears it and set the bridge (Bridge_1-5) falling 13 ticks a piece behind the
+  cat [NW, "Crumble"]; Orb_2 runs out in the jump onto it [SS, "Switch"].
+- **Corridor 3 (section Run):** the alley: Arrow_3Hi (jump height, from Post_A behind) and Arrow_3Lo (shin height, from Kerb_3
+  ahead) never stop, and their first shots meet a cat that walks on: stop, let the high one pass, jump the low one [W, NJ];
+  Collapse_3 [NW, "Crumble"]; jump the kerb with the next low shot [J]. The finale (the chaos moment): Hinge_3 (spiked,
+  facing the cat, 3-tick swing) stands up behind [J], Slam_3a comes down ahead [W], Spikes_3 and Spikes_3b come up, Slam_3b
+  comes down onto them as the step; the last jump crosses Orb_L's end box [SS, "Switch"].
+- **Dead ends:** D1 [OL] hopping short off Crumb_1 onto the near ledge (Fake_1); D2 [W] stepping down off Slam_3a (Spikes_3).
+Measured (clone, rebuilt): solution 1158 ticks; sections 452 / 346 / 360, both rewinds exact, both checkpoints survive 50
+ticks; windows 37, 51, 49, 37, 32, 32, 32, 29, 36, 14, 28, 18, 51; 17 distinct killers, 14 in sequence; answers B 2, BAIT 1,
+J 2, NJ 2, NW 2, SS 3, W 3 (the three swap-runs-out-in-the-air betrayals are one trap, "Switch", and the three crumbling floors
+one, "Crumble", as L014's "Canopy"); the inverter or a spear in all 20 betrayals; chaos t1005-t1064, 5 in view of 7;
+every killer on screen by the hold's end at 4:3, 16:9 and 20:9; deterministic. No precision section.
+`Band2LevelTests`, `ValidateRoutesTests`, `CameraTellTests`, `WallJumpShortcutTests`, `LevelKitRulesTests`,
+`HazardContrastTests`, `MossSignAndBrokenStoneTests`, `TrapArtBuildTests`, `TrapArtParityTests`, `TrapArtRevealFrameTests`,
+`CleanFallsTests`, `DoorStandsTests`, `DoorUprightTests`, `CheckpointSectionRewindTests`, `EnvironmentReadabilityTests`,
+`InverterValidatorTests`, `LevelLayoutTests` and `LevelLookConfigTests` pass. `Band2RouteResultsTests` re-pinned.
+`EnvironmentStackSetup.Compose`'s UnderRowTop comment updated (L019 has L016's frame; the value 8 stays).
+**Supersedes:** the 2026-09-28 ruling that L019 is 64 u wide.
+No rule, exemption or tag was changed (the inverters stay within 25-500 ticks; L019 is not a whole-level inverter).
+**Open:** the developer to run Rebuild All Levels, save, and play L019.
+**Why:** the developer's request (2026-10-15).
+
+### D-150 · 2026-10-15 · In progress (PAX-107: L020 rebuilt on the L014/L016 model, "The Machine")
+**Decision:** the developer (2026-10-15: analyse L017-L020 "based on what you know of what I like … Would I like to play them?
+If not, make improvements. Make more use of the direction inverters"). The old L020 failed the taste rules in
+`LEVEL_DESIGN_GUIDE.md` §4c: about 8 u of empty void under its mid storey, storeys 8 u apart (8, 16, 22.5), a spear volley that
+was a wait, and a Loft hanging in open sky. L020 keeps its theme (the exam: every earlier lesson once, in a new order; RIDE THE
+CHAIN REACTION) and is rebuilt. It is 32 × 22 (y -2.5 to 19.5): four storeys 4.5 u apart (walk lines 0, 4.5, 9 and 13.5) on 1 u
+stone slabs, the roof 2 u. It is climbed bottom to top in a spiral, walked east, west, east, west. No fall is longer than a
+storey, and stone fills everything that isn't played.
+(1) **Works (S1, walked east).**
+- **Hinge_0** (spiked, hinged at its east end, so its spikes face the cat) stands up behind the start 30 ticks in and slides 4 u
+  in 16 ticks to Spikes_0's edge. Jump Spikes_0 at once.
+- **Lift_1** shoots 3.35 u up into S2_L 30 ticks after the cat crosses x 8 in that jump. A cat that runs on is on it; stop short,
+  let it go up and down, cross.
+- **The bridge** (x 13.5-21.5): four collapsing pieces over Pit_B. Bridge_1 gives way 8 ticks after Arrow_Lo's first shot, and
+  each next one 18 ticks after the last (just slower than a run).
+- **Arrow_Lo**, in Kerb_E, fires west along the bridge at shin height, non-stop, from the moment a cat is on the bridge. Run the
+  bridge and jump the shot.
+- **G_1**, on the Plinth (top 0.5, so a launch clears S2), launches the cat up the shaft (x 24.5-28) every 150 ticks.
+(2) **Mirror (S2, walked west; still section 0).**
+- **Inv_2**, honest, its orb in the shaft, is a whole-storey inverter (`WholeLevelInverters` gains "L020/Inv_2", as L013's
+  Invert, D-141). Its cut across the shaft just over S2's line swaps left and right mid-launch, so the cat has to switch its
+  steering in the air to land west on S2 rather than east in the nook. The swap holds until the end box at the turn, where
+  Flip_D2 drops the cat.
+- **Slam_2** (S3's bottom unit under Cap_S2) slams onto S2 four ticks after the cat comes to x 21.2, and stays: stop, hop it.
+- **Flip_U2** throws the cat onto the ceiling over Spikes_F2. There **CC_2** (under Cap_C2) gives way into a spiked recess:
+  jump it.
+- **Flip_D2** drops the cat at the turn, and the controls come back there.
+(3) **Storm (S3, walked east; section 1, its gate at V_3's top as the cat leaps onto S3).**
+- **V_3** climbs from over Thorns_V up through the gap in S3's slab, and snaps 80 ticks after the cat takes it.
+- The snap is the machine's second half:
+  - **Inv_3** swaps the controls for 150 ticks (the second inverter moment: hold left to go on east).
+  - The **Cloud** wakes behind the cat and chases it at a run along S3, then (D-116 floors) along S4's east end once the cat is
+    up the chimney.
+  - **Arrow_Hi** starts firing from Hang_C at jump height along S3, non-stop. Walk under its shot, then jump Spikes_3.
+- The **mossy chimney** (Moss_C on Hang_C, Moss_R on Wall_R; Jamb_R above it so the moss has no top to stand on) climbs to S4.
+(4) **Finale (S4, walked west; section 2, its gate across the chimney's top).**
+- **Hinge_F** (spiked, hinged at its west end, so its spikes face the cat) stands up behind the cat and slides 3.5 u to Slam_Fa.
+- **Slam_Fa** slams down ahead and stays: stop, then hop onto it before the hinge arrives.
+- **Spikes_F** come up over the floor beyond it, and **Slam_Fb** slams down onto them: the one step.
+- As the cat comes off the slams, **Retreat_F** moves the door 6.5 u west, off Door_Step onto Door_Ledge, which is joined to the
+  west wall.
+- **Spikes_D** come up 25 ticks after the same cut, under a cat that drops off the step to chase it. Jump from the step to the
+  ledge. (Sharing the retreat's cut means no wall jump reaches the door's authored pose without setting them off,
+  `ValidateWallJumpShortcuts` (a).)
+(5) **Dead ends.**
+- D1 [OL]: the Alcove past G_1's vent (Spikes_A).
+- D2 [LW]: steering east off the launch into the nook (Spikes_N).
+(6) **Measured** (clone):
+- Solution 1224 ticks; sections 618 / 277 / 329; both rewinds exact; each checkpoint survives 50 ticks standing.
+- 16 distinct killers, 14 in sequence. Answers: B 3, BAIT 1, J 3, NJ 1, NW 3, OL 1, SS 2, W 2.
+- The exam elements (inverter, vine, cloud, geyser) are in 9 betrayals.
+- Chaos t183-t242: 6 of 6 in view (the four bridge pieces, Arrow_Lo, G_1).
+- Windows 16-51.
+- Every killer is on screen by the hold's end at 4:3, 16:9 and 20:9.
+- `Band2RouteResultsTests` re-pinned.
+(7) **Tests and art:**
+- `TrapContactSheet`'s push-wall row now shows L016's Push_3.
+- Its door-retreat row shows L020's Retreat_F.
+- `DoorStandsTests`' L020 case (Door_Ledge, the retreated pose) is unchanged.
+- No rule, exemption or tag was changed, beyond the `WholeLevelInverters` entry for Inv_2.
+**Open:** the developer to run Rebuild All Levels, save, and play L020.
+**Why:** the developer's request (2026-10-15) and the taste rules in §4c.
+
+**Amendment (same day):** V_3 hangs from Bracket_V (stone, x 1-2.2, y 11.8-12.5, under Door_Ledge), its top 0.05 under it, not in open air; running the vine up to the slab let a jump off its top reach S4. T9's lead V_3 30 -> 34.

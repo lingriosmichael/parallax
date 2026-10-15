@@ -73,7 +73,8 @@ namespace Parallax.Editor.Setup
                     continue;
                 }
 
-                string[] uncovered = dangers.Where(d => !CoveredByFlipEntry(room, trigger, d.volume, checkpointX, motor, gravityStrength)).Select(d => d.owner).Distinct().ToArray();
+                string[] uncovered = dangers.Where(d => !CoveredByFlipEntry(room, trigger, d.volume, checkpointX, motor, gravityStrength)
+                    && !CoveredOverhead(room, trigger, d.volume, motor, gravityStrength)).Select(d => d.owner).Distinct().ToArray();
                 if (uncovered.Length == 0) continue;
                 errors.Add($"{levelId}: trigger coverage: {trap.Name}'s trigger {Describe(trigger)} does not cut the cat's band y [{low:F2}, {ceiling:F2}]: {UncoveredBands(trigger, low, ceiling)}; dangers reachable without it: {string.Join(", ", uncovered)}.");
             }
@@ -487,6 +488,27 @@ namespace Parallax.Editor.Setup
                 if (entersStretch && !Contains(trigger, f)) return false;
             }
             return true;
+        }
+
+        /// <summary>PAX-107 (the developer, L009: "spikes should only come out once the cat lands on this [the flip]. Not before"):
+        /// the mirror of the flip-entry clause. A danger hanging flush under a solid, out of a standing or jumping cat's reach from
+        /// every top under it and out of any wall jump's, is met only by a cat that rises into it (flipped up); it is covered when
+        /// the trigger holds the strip a cat's height deep right under it, a tick's run wider either side, which a cat rising or
+        /// drifting into it crosses first.</summary>
+        static bool CoveredOverhead(SoloRoomDefinition room, Rect trigger, Rect danger, CatMotorConfig motor, float gravityStrength)
+        {
+            if (motor == null || gravityStrength <= 0f) return false;
+            float margin = 2f * motor.MaxSpeed * TickTime.SecondsPerTick;
+            Rect[] solids = room.Elements.Where(IsSolid).Select(Box).ToArray();
+            // Capped: a solid sits flush on the danger across its width, so nothing reaches it from above.
+            if (!solids.Any(r => Mathf.Abs(r.yMin - danger.yMax) < Epsilon && r.xMin <= danger.xMin + Epsilon && r.xMax >= danger.xMax - Epsilon)) return false;
+            // Out of reach from below: every top under it (a tick's run either side) is more than a jump and a cat under it.
+            float reach = motor.ColliderSize.y + motor.JumpHeight;
+            if (solids.Any(r => r.xMax > danger.xMin - margin && r.xMin < danger.xMax + margin && r.yMax <= danger.yMin + Epsilon && r.yMax + reach > danger.yMin - Epsilon)) return false;
+            var arc = new WallJumpReach(motor, gravityStrength);
+            if (ClingSolids(room).Any(c => c.box.xMax > danger.xMin - arc.CrossingReach && c.box.xMin < danger.xMax + arc.CrossingReach && c.box.yMax > danger.yMin - reach)) return false;
+            var strip = Rect.MinMaxRect(danger.xMin - margin, danger.yMin - motor.ColliderSize.y, danger.xMax + margin, danger.yMin);
+            return Contains(trigger, strip);
         }
 
         static bool IsSolid(SoloRoomElement e) =>

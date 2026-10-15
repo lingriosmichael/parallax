@@ -36,6 +36,7 @@ namespace Parallax.Editor.Art
             int layer = root.gameObject.layer;
             Transform artRoot = ArtChild(roomRoot, ArtRootName, layer, changes);
             var built = new HashSet<string>();
+            var faces = new HashSet<string>();   // PAX-107 (D-124): spiked hinge faces
             foreach (SoloRoomElement e in room.Elements)
             {
                 Transform t = roomRoot.Find(e.Name);
@@ -44,6 +45,7 @@ namespace Parallax.Editor.Art
                 else if (t.TryGetComponent(out ArrowTrap arrow) && config.HasArrow) built.Add(BuildArrow(artRoot, roomRoot, room, e, arrow, rooms, config, layer, changes));
                 else if (t.TryGetComponent(out GeyserTrap geyser) && config.HasGeyser) built.Add(BuildGeyser(artRoot, e, geyser, rooms, config, layer, changes));
                 else if (BuildKitElement(artRoot, roomRoot, room, e, t, rooms, config, layer, changes) is string name) built.Add(name);
+                if (t.TryGetComponent(out MovingTrap spiked) && BuildSpikedFace(artRoot, e, spiked, rooms, config, layer, changes) is string face) { built.Add(face); faces.Add(face); }   // PAX-107 (D-124)
             }
             built.Add(BuildDeath(artRoot, room, roomRoot, rooms, config, layer, changes));
             // D-101: trap bodies draw BodyScale bigger. Disguises (collapsing floors, falling blocks, moving and shrinking floors)
@@ -51,8 +53,10 @@ namespace Parallax.Editor.Art
             // the host skin: 10% more would poke out past it before the reveal).
             foreach (TrapArt art in artRoot.GetComponentsInChildren<TrapArt>(true))
             {
-                TrapKitSetup.Write(art, changes, ("bodyScale", art is CollapsingFloorArt or SolidArt || art is ArrowArt { Disguised: true } ? 1f : config.BodyScale));
-                if (art is SpikeArt) TrapKitSetup.Write(art, changes, ("heightScale", config.SpikeHeightScale), ("stripTeeth", config.SpikeStripTeeth));
+                // PAX-107 (D-124): a spiked hinge face turns with its wall, so it draws exactly its grey-box (no growth to turn wrong).
+                bool face = faces.Contains(art.name);
+                TrapKitSetup.Write(art, changes, ("bodyScale", art is CollapsingFloorArt or SolidArt || art is ArrowArt { Disguised: true } || face ? 1f : config.BodyScale));
+                if (art is SpikeArt) TrapKitSetup.Write(art, changes, ("heightScale", face ? 1f : config.SpikeHeightScale), ("stripTeeth", config.SpikeStripTeeth));
             }
             foreach (Transform stale in artRoot.Cast<Transform>().Where(c => !built.Contains(c.name)).ToList())
             {

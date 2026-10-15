@@ -186,10 +186,18 @@ namespace Parallax.Editor.Setup
         static bool Better(ChaosResult a, ChaosResult b) =>
             a.Passes != b.Passes ? a.Passes : a.InViewCount != b.InViewCount ? a.InViewCount > b.InViewCount : a.Onsets.Count > b.Onsets.Count;
 
+        // The chaos moment's named exemptions (level -> reason), each approved by the developer by name.
+        public static readonly IReadOnlyDictionary<string, string> ChaosExemptions = new Dictionary<string, string>
+        {
+            // D-137 (approved by the developer, 2026-10-14): L012's Spikes_D moved a unit east so the hop has room to land, and
+            // rise at Orb_A + 70 so a cat that runs on is past them; their onset left the 60-tick window (4 of 5).
+            ["L012"] = "D-137: Spikes_D rise after the run past them, outside the window",
+        };
+
         public static List<string> ValidateBand2Chaos(string levelId, int level, ChaosResult chaos)
         {
             var errors = new List<string>();
-            if (IsBand2(level) && !chaos.Passes)
+            if (IsBand2(level) && !chaos.Passes && !ChaosExemptions.ContainsKey(levelId))
                 errors.Add($"{levelId}: the chaos moment has {chaos.Onsets.Count} elements changing within {ChaosWindowTicks} ticks, {chaos.InViewCount} of them in view ({chaos}); band 2 needs at least {ChaosMinElements}, at least {ChaosMinInView} in view (D-093).");
             return errors;
         }

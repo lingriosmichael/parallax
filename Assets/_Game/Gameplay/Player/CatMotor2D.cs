@@ -37,6 +37,10 @@ namespace Parallax.Gameplay.Player
         public Collider2D GroundCollider { get; private set; }
         /// <summary>PAX-093 (D-095): true on the step a grounded cat jumped (not a leap off a vine).</summary>
         public bool JumpedThisStep { get; private set; }
+        /// <summary>PAX-107 (presentation only, read by CatVisualPresenter): what the ground cast found under the cat this step,
+        /// ground or not: a rising floor carrying the cat isn't ground (D-115), but the cat stands on it. Null when nothing,
+        /// or when a vine, a wall or a launch owns the step. Never read by motion.</summary>
+        public Collider2D GroundContact { get; private set; }
         /// <summary>PAX-A14 (presentation only, read by CatVisualPresenter): this step's Carry floor velocity (zero when no
         /// floor carried the cat), the position ApplyCarry wrote (zero when none: a position write drops Rigidbody2D
         /// interpolation for the step), and the body's position when the step began. Written only; never read by motion.</summary>
@@ -107,6 +111,7 @@ namespace Parallax.Gameplay.Player
             body.linearVelocity = GeyserMath.Launch(body.linearVelocity, direction, speed);
             coyoteTimer = 0f;
             IsGrounded = false;
+            GroundContact = null;
         }
 
         /// <summary>PAX-093 (D-095): a Carry floor's move, called in the room step (after this tick's Step, before physics),
@@ -220,6 +225,7 @@ namespace Parallax.Gameplay.Player
             {
                 wallCling?.Release();   // PAX-105 (D-110): climbing a vine wins over clinging
                 IsGrounded = false;
+                GroundContact = null;
                 coyoteTimer = 0f;
                 jumpBufferTimer = 0f;
                 body.rotation = Vector2.SignedAngle(Vector2.down, down);
@@ -231,6 +237,7 @@ namespace Parallax.Gameplay.Player
             if (wallCling != null && wallCling.Step(command, down, IsGrounded, jumpBufferTimer > 0f, JumpMath.SpeedForHeight(config.JumpHeight, gravity.Strength), gravity.Strength, dt))
             {
                 IsGrounded = false;
+                GroundContact = null;
                 coyoteTimer = 0f;
                 jumpBufferTimer = 0f;
                 body.rotation = Vector2.SignedAngle(Vector2.down, down);
@@ -324,6 +331,7 @@ namespace Parallax.Gameplay.Player
 
             IsGrounded = touchingGround && fall >= -0.01f;
             GroundCollider = IsGrounded ? ground : null;
+            GroundContact = ground;
         }
     }
 }

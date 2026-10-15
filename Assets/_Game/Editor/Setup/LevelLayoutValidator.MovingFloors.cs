@@ -51,7 +51,10 @@ namespace Parallax.Editor.Setup
                 // D-119: a hinge floor stands up beside its hinge, then moves: its path is the flat floor, the wall and the wall moved.
                 if (s.Floor.Hinges) { start = s.Floor.Upright(Box(e, Vector2.zero)); end = start; }
                 end.position += s.Offset;
-                Rect swept = Envelope(start, end);
+                // PAX-107 (D-124): a mover that rises first sweeps an L, its rise and then its crossing, each checked on its own.
+                Rect corner = start; corner.position += new Vector2(0f, s.Offset.y);
+                Rect[] legs = s.Floor.RiseFirst ? new[] { Envelope(start, corner), Envelope(corner, end) } : new[] { Envelope(start, end) };
+                foreach (Rect swept in legs)
                 foreach (SoloRoomElement f in fixedSolids)
                     if (Overlap(swept, Box(f, Vector2.zero)) > eps || (s.Floor.Hinges && Overlap(Box(e, Vector2.zero), Box(f, Vector2.zero)) > eps))
                         errors.Add($"{levelId}: {e.Name}'s swept path {Describe(swept)} runs into {f.Name}; a moving Solid's path overlaps no fixed geometry (D-056 (3)).");
@@ -106,6 +109,7 @@ namespace Parallax.Editor.Setup
             float width = Config() != null ? Config().ColliderSize.x : 1f;
             Rect box = Box(wall, Vector2.zero);
             if (wall.Settings.Floor.Hinges) box = wall.Settings.Floor.Upright(box);   // D-119: a hinge floor pushes once it stands
+            if (wall.Settings.Floor.RiseFirst) box.y += wall.Settings.Offset.y;     // D-124: one moving along an L pushes on its crossing
             float lead0 = dx > 0f ? box.xMax : box.xMin, lead1 = lead0 + dx;
             Rect path = dx > 0f ? Rect.MinMaxRect(lead0, box.yMin, lead1 + width, box.yMax) : Rect.MinMaxRect(lead1 - width, box.yMin, lead0, box.yMax);
             Rect end = dx > 0f ? Rect.MinMaxRect(lead1, box.yMin, lead1 + width, box.yMax) : Rect.MinMaxRect(lead1 - width, box.yMin, lead1, box.yMax);

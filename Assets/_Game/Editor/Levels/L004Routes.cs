@@ -32,12 +32,12 @@ namespace Parallax.Editor.Levels
             // PAX-107: the start is closed in by Left_Post, so the way is the climb (D-118): flip up at Flip_L, turn back as it
             // rises and land under the slab past Spikes_L, walk over Left_Post into the gap, climb down it upside down (Left_Moss,
             // then the corbel's moss), come up under the corbel's foot, walk right into Flip_A, land right side up past Spikes_1,
-            // and go on. Route moves are inverted stick input: Hold(Left) moves the cat right.
+            // and go on. Route moves are inverted stick input: Hold(Left) moves the cat right. PAX-107 (the corbel 1 u higher):
+            // one wall jump off Left_Moss carries the cat under the corbel onto its foot; the corbel's moss is no longer needed.
             var solution = new Route("L004 solution", new RouteStep[] {
                 Hold(Right), Until(GravityUp()), Hold(Left), Until(Grounded()), Until(XAtLeast(13.3f)), Release(), Until(Still()),
                 Hold(Right), Jump(), Until(Clinging()), Release(),
-                Jump(), For(2), Hold(Left), Until(Clinging()), Release(),
-                Jump(), For(10), Hold(Left), Until(GravityDown()), Until(GroundedOn("Ground")) }
+                Jump(), For(2), Hold(Left), Until(GravityDown()), Until(GroundedOn("Ground")) }
                 .Concat(PastSpikes()).ToArray());
 
             return Routes(solution);

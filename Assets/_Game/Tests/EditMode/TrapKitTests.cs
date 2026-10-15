@@ -63,6 +63,28 @@ namespace Parallax.Tests.EditMode
             Assert.IsFalse(TrapMotion.Crushes(new Bounds(new Vector3(1.25f, 0), new Vector3(.7f, .5f)), solid, .15f));
             Assert.IsTrue(TrapMotion.Crushes(new Bounds(new Vector3(1.15f, 0), new Vector3(.7f, .5f)), solid, .15f));
         }
+        // PAX-107 (D-124): a lift that rises first: up (1 of 5 u) over the first fifth of its move, then across; back the same way.
+        [Test]
+        public void RiseFirstOffset_RisesThenCrosses_AndRetracesItsPath()
+        {
+            Vector2 offset = new(4f, 1f);
+            Assert.AreEqual(Vector2.zero, TrapMotion.RiseFirstOffset(offset, 0, 10, 2, 10));
+            Assert.That(Vector2.Distance(new Vector2(0f, 1f), TrapMotion.RiseFirstOffset(offset, 2, 10, 2, 10)), Is.LessThan(1e-5f), "up first");
+            Assert.That(Vector2.Distance(new Vector2(1.5f, 1f), TrapMotion.RiseFirstOffset(offset, 5, 10, 2, 10)), Is.LessThan(1e-5f), "then across");
+            Assert.That(Vector2.Distance(offset, TrapMotion.RiseFirstOffset(offset, 12, 10, 2, 10)), Is.LessThan(1e-5f), "there, holding");
+            Assert.That(Vector2.Distance(new Vector2(1.5f, 1f), TrapMotion.RiseFirstOffset(offset, 17, 10, 2, 10)), Is.LessThan(1e-5f), "back across first");
+            Assert.That(Vector2.Distance(new Vector2(0f, .5f), TrapMotion.RiseFirstOffset(offset, 21, 10, 2, 10)), Is.LessThan(1e-5f), "then down");
+        }
+
+        // PAX-107 (D-124): a spiked face kills on touch: a cat resting against it (within the skin) touches it, one clear of it doesn't.
+        [Test]
+        public void Touches_CountsACatAgainstTheFace_NotOneClearOfIt()
+        {
+            var solid = new Bounds(Vector3.zero, new Vector3(1f, 2f));
+            Assert.IsTrue(TrapMotion.Touches(new Bounds(new Vector3(1.01f, 0f), new Vector3(1f, .56f)), solid, .03f), "resting against it");
+            Assert.IsFalse(TrapMotion.Touches(new Bounds(new Vector3(1.1f, 0f), new Vector3(1f, .56f)), solid, .03f), "clear of it");
+        }
+
         [Test] public void GravityRule_ResolvesAllModes() { Assert.AreEqual(Vector2.up, GravityFlipRule.Resolve(GravityFlipMode.Flip, Vector2.down)); Assert.AreEqual(Vector2.down, GravityFlipRule.Resolve(GravityFlipMode.Flip, Vector2.up)); Assert.AreEqual(Vector2.up, GravityFlipRule.Resolve(GravityFlipMode.ForceUp, Vector2.down)); Assert.AreEqual(Vector2.up, GravityFlipRule.Resolve(GravityFlipMode.ForceUp, Vector2.up)); Assert.AreEqual(Vector2.down, GravityFlipRule.Resolve(GravityFlipMode.ForceDown, Vector2.up)); Assert.AreEqual(Vector2.down, GravityFlipRule.Resolve(GravityFlipMode.ForceDown, Vector2.down)); }
     }
 }

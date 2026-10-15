@@ -142,12 +142,12 @@ namespace Parallax.Editor.Art
             rows.Add(Timed("SPIKES, SLIDING - L006 SWEEP_3", "L006", "Sweep_3", null, "REST", spikes, 0, 8, 16, 40));
             rows.Add(Timed("FALLING BLOCK - L001 BLOCK_1", "L001", "Block_1", null, "BEFORE: HOST SKIN", c => new[] { c.BlockCrack }, 0, 4, 12, 30));
             rows.Add(Timed("MOVING FLOOR, CARRIES - L015 MOVER_M", "L015", "Mover_M", null, "REST: HOST SKIN", null, 0, 10, 30, 60));
-            rows.Add(Timed("DROP-AND-RETURN - L018 DROP_3", "L018", "Drop_3", null, "REST: HOST SKIN", null, 0, 4, 12, 40));
+            rows.Add(Timed("RISE-AND-RETURN - L018 PISTON_3", "L018", "Piston_3", null, "REST: HOST SKIN", null, 0, 4, 12, 40));
             rows.Add(Timed("LIFT INTO THE ROOF - L008 LIFT_3 (BETRAYAL T3)", "L008", "Lift_3", "T3:", "REST: HOST SKIN", null, 0, 3, 6, 9));
-            rows.Add(Timed("PUSH WALL - L020 PUSH_3", "L020", "Push_3", null, "REST: HOST SKIN", null, 0, 6, 16, 40));
-            rows.Add(Timed("SHRINKING FLOOR - L014 SHRINK", "L014", "Shrink", null, "FULL", null, 5, 20, 35, 50));
+            rows.Add(Timed("PUSH WALL - L016 PUSH_3", "L016", "Push_3", null, "REST: HOST SKIN", null, 0, 6, 16, 40));
+            rows.Add(Timed("SHRINKING FLOOR - L003 SHRINK_1", "L003", "Shrink_1", null, "FULL", null, 5, 20, 35, 50));
             rows.Add(Timed("GRAVITY FLIP, VISIBLE - L004 FLIP_A (BETRAYAL T2)", "L004", "Flip_A", "T2:", "IDLE: GLYPH + MOTES", c => new[] { c.GlyphRing }, 0, 2, 5, 8));
-            rows.Add(Timed("GRAVITY FLIP, HIDDEN - L016 FLIP_H7 (BETRAYAL T7)", "L016", "Flip_H7", "T7", "BEFORE: NOTHING", null, 0, 2, 8, 20));
+            rows.Add(Timed("GRAVITY FLIP, HIDDEN - L016 FLIP_H (BETRAYAL T11)", "L016", "Flip_H", "T11 ", "BEFORE: NOTHING", null, 0, 2, 8, 20));
             rows.Add(Timed("INVERTER - L012 ORB_A", "L012", "Orb_A", null, "IDLE: THE ORB", c => new[] { c.InverterOrb, c.CueRing, c.CueMark }, 0, 3, 40, 120));
 
             var cloud = new Row { Title = "STORM CLOUD - L015 CLOUD", Level = "L015", Trap = "Cloud", Strip = true, Bodies = c => new[] { c.StormCloud, c.Scorch } };
@@ -159,7 +159,7 @@ namespace Parallax.Editor.Art
                 && InCycle(t) == (int)Field(t, "tellTicks") + (int)Field(t, "strikeTicks") - 1));
             rows.Add(cloud);
             rows.Add(Timed("SNAP VINE - L014 V1", "L014", "V1", null, "WHOLE", c => c.Leaves, 0, 2, 8, 20));
-            rows.Add(Timed("DOOR RETREAT - L020 RETREAT_10", "L020", "Retreat_10", null, "AT REST", null, 0, 4, 10, 20));
+            rows.Add(Timed("DOOR RETREAT - L020 RETREAT_F", "L020", "Retreat_F", null, "AT REST", null, 0, 4, 10, 20));
 
             foreach ((string title, string level, string route) in new[]
             {

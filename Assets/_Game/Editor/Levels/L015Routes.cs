@@ -39,14 +39,15 @@ namespace Parallax.Editor.Levels
             Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(35.3f)), Jump(), Until(GroundedOn("Spear_B_Shaft")), Until(XAtLeast(38.6f)), Jump(), Until(XAtLeast(41f)),
         };
 
-        // The cloud's charges (its locks) come at its wake + 50 + 100 k.
-        static RouteCondition Lock(int k) => Since("Cloud", 50 + 100 * k);
+        // The cloud's charges (its locks) come at its wake + 50 + 90 k (PAX-107: it strikes every 90).
+        static RouteCondition Lock(int k) => Since("Cloud", 50 + 90 * k);
 
-        // The solution's dance: the lock at 850 comes over D1 (hop on to D2), the one at 950 over D2 with D3 still gone (hop
-        // back to D1); D3 is back before the next.
-        static readonly int[] DanceLocks = { 8, 9 };
-        // The dead ends reach the dance about 150 ticks later, so D3 comes back later too: a third hop, at the lock at 1050.
-        static readonly int[] LateDanceLocks = { 8, 9, 10 };
+        // The solution's dance (PAX-107, D-125: the cloud at the cat's run catches up at every lock): the lock at 770 comes
+        // over D1 (hop on to D2), the one at 860 over D2 with D3 still gone (hop back to D1), the one at 950 over D1 (hop on to
+        // D2 again); D3 is back before the next.
+        static readonly int[] DanceLocks = { 8, 9, 10 };
+        // The dead ends reach the dance about 150 ticks later, so D3 comes back later too: from the lock at 950 to the one at 1130.
+        static readonly int[] LateDanceLocks = { 10, 11, 12 };
 
         // Run: through the cave-in (Block_3 knocks out D3) and onto D1. The dance: at each of `locks`, the cloud has caught up
         // and locks over the cat's platform; hop out from under it to the other one (D1 down to D2, or D2 back up to D1). When
@@ -118,9 +119,9 @@ namespace Parallax.Editor.Levels
                 new Betrayal("T7 [NW]: a cat that stops at the cave-in's end is crushed by Block_3", "Block_3", DeathCause.Hazard,
                     FromRun("stop late", Until(XAtLeast(45.3f)), Release(), Until(Dead()))),
                 new Betrayal("T11 [NW]: a cat that stays on D2 through the lock is struck", "Cloud", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Cloud +950)", "stay on D2", Until(Dead())), revealedBy: "Cloud"),
+                    Route.PrefixOf(solution, "Until(Cloud +860)", "stay on D2", Until(Dead())), revealedBy: "Cloud"),
                 new Betrayal("T12 [B]: a cat that dodges the lock forward, where D3 was, falls into Pit_9", "Pit_9", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Cloud +950)", "dodge forward", Hold(Right), Jump(), Until(Dead())), revealedBy: "D3"),
+                    Route.PrefixOf(solution, "Until(Cloud +860)", "dodge forward", Hold(Right), Jump(), Until(Dead())), revealedBy: "D3"),
                 new Betrayal("T13 [NJ]: a cat that jumps for P1 from D2 while D3 is gone falls into Pit_9", "Pit_9", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(D2))", "jump for P1", Hold(Right), Jump(), Until(Dead())), revealedBy: "D3"),
                 new Betrayal("T9 [W]: a cat that goes on from P1 without waiting meets Arrow_9", "Arrow_9", DeathCause.Hazard,
