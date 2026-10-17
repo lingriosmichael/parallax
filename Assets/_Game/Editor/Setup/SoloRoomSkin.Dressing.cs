@@ -73,14 +73,19 @@ namespace Parallax.Editor.Setup
                         // under it).
                         float u = Hash(e.Owner.Name, 410 + i);
                         float h = Mathf.Min(e.Owner.Rect.height - 0.3f, 0.35f + 3.2f * u * u * u + 0.4f * Hash(e.Owner.Name, 415 + i));
-                        h = Mathf.Min(h, TopBand(e.Owner.Rect.height) - IvyDrop);
+                        // 2026-10-17 visual review ("one identical stamp, repeated at the same height and brighter yellow"): most
+                        // lengths met the top band's cap and ended on one line; under the cap each keeps its own share of it.
+                        float cap = TopBand(e.Owner.Rect.height) - IvyDrop;
+                        if (h > cap) h = cap * (0.55f + 0.45f * Hash(e.Owner.Name, 440 + i));
                         if (h < MinDressing) { x += 0.4f; continue; }
                         float w = def.width * h / def.height * (0.75f + 0.5f * Hash(e.Owner.Name, 425 + i));
                         var centre = new Vector2(x + w * 0.5f, e.Line - IvyDrop - h * 0.5f);
-                        x += w * (0.6f + 1.1f * Hash(e.Owner.Name, 420 + i)) + (pick < 0.4f ? 1.0f + 2.2f * Hash(e.Owner.Name, 430 + i) : 0f);
-                        if (pick < 0.22f) continue;   // a gap
+                        // 2026-10-17 visual review ("still one continuous evenly spaced comb"): clusters with real gaps between.
+                        x += w * (0.6f + 1.1f * Hash(e.Owner.Name, 420 + i)) + (pick < 0.55f ? 1.0f + 2.6f * Hash(e.Owner.Name, 430 + i) : 0f);
+                        if (pick < 0.35f) continue;   // a gap
                         if (centre.x - w * 0.5f < e.From - 0.05f || centre.x + w * 0.5f > e.To + 0.05f) continue;
-                        if (ClearOfVisible(Box(centre, new Vector2(w, h)))) place(e.Owner, $"Ivy_{Idx(e)}_{i}", slot, centre, new Vector2(Hash(e.Owner.Name, 435 + i) < 0.5f ? -w : w, h), ZDrape + AtlasNudge(slot));
+                        if (ClearOfVisible(Box(centre, new Vector2(w, h))) && place(e.Owner, $"Ivy_{Idx(e)}_{i}", slot, centre, new Vector2(Hash(e.Owner.Name, 435 + i) < 0.5f ? -w : w, h), ZDrape + AtlasNudge(slot)) is SpriteRenderer ivy)
+                            ivy.color = Color.Lerp(IvyShade, Color.white, Hash(e.Owner.Name, 445 + i));   // each its own light
                     }
                 }
                 // Gauntlet (the developer: front ferns fixed in the world, never over a trap, not blurry): sharp fern clumps at
@@ -173,7 +178,9 @@ namespace Parallax.Editor.Setup
                     EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
                     Vector2 size = new(def.width * 0.85f, def.height * 0.85f);
                     var centre = new Vector2(s.Rect.center.x + (Hash(s.Name, 171) - 0.5f) * (s.Rect.width - size.x - 1f), s.Rect.center.y - 0.2f);
-                    if (Clear(Box(centre, size))) { place(s, "Glyph", slot, centre, size, ZPanel); n++; }
+                    // 2026-10-17 visual review ("the carved square plaques are cool pinkish-grey and clean, about 1.6x brighter
+                    // than the wall next to them ... pasted on"): carved into the wall's own stone, a little lighter (relief).
+                    if (Clear(Box(centre, size))) { if (place(s, "Glyph", slot, centre, size, ZPanel) is SpriteRenderer g) g.color = GlyphTint; n++; }
                 }
             }
         }
@@ -186,10 +193,15 @@ namespace Parallax.Editor.Setup
         public const float IvyDrop = 0.18f, MinDressing = 0.12f;
         /// <summary>D-110 amendment 4 (2): a grip face's moss covers at least this share of its height.</summary>
         public const float GripMossCover = 0.8f;
+        static readonly Color GlyphTint = new(0.74f, 0.68f, 0.58f, 1f);
+        /// <summary>The darkest an ivy curtain on a lip is tinted (in the face's shade, less yellow); each is somewhere up to white.</summary>
+        static readonly Color IvyShade = new(0.7f, 0.68f, 0.6f, 1f);
         /// <summary>D-118: the stacked grip-moss tufts are drawn turned upright: their footprint is (width across the face,
         /// height down it); the sprite lies along the height.</summary>
         static bool UprightMoss(string name) => name.StartsWith("GripMoss_") && !name.Contains("Carpet") && name.Split('_').Length >= 3;
-        static readonly Color GripMossTint = new(0.8f, 1f, 0.52f, 1f);
+        // 2026-10-17 visual review (L004: "the climbing-vine strips are a saturated chartreuse ... next to the olive/gold ivy
+        // everywhere else"): a mild green lift; grip moss reads by covering the face, not by a neon hue (was 0.8, 1, 0.52).
+        static readonly Color GripMossTint = new(0.94f, 1f, 0.85f, 1f);
 
         static void GripMoss(Edge e, Placer place, System.Func<Rect, bool> clear)
         {

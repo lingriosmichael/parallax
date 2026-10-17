@@ -232,6 +232,10 @@ namespace Parallax.Editor.Setup
         /// strength, 0..1, and its reach in world units). (Its faint darkening toward the bottom went for the draw budget.)</summary>
         const float SideShade = 0.3f, SideReach = 0.4f;
 
+        /// <summary>The recessed stone's tint. 2026-10-17 visual review: the shadow is in the recess texture itself (env_kit.py
+        /// RECESS_MEAN: the stone's hue and texture, just under a lit face); a tint here (0.44) flattened it to felt.</summary>
+        static readonly Color VoidTint = Color.white;
+
         // The developer (2026-10-16): "you shouldnt be able to see the sky if the floor caves in". Behind every pit (an opening
         // whose hazard lines its bottom) the inside of the ruin: an opaque back wall of the room's own stone, recessed (its
         // fill's _Recess twin: softer, lighter, warmer), shaded under the lip and down both walls. Unlit, so
@@ -268,6 +272,10 @@ namespace Parallax.Editor.Setup
                 }
                 float height = top - bottom;
                 if (height <= 0.01f) continue;
+                // 2026-10-17 visual review (L003's spike corridor: "an opaque band runs the whole corridor length ... a regular
+                // wavy cardboard-mountain line"): a shallow trench along a floating slab is a spike bed under the sky, not a hole
+                // into the ruin; no back wall there (the bed's spikes read against the sky like any other row).
+                if (height < ShallowTrench && r.width > 3f * height) continue;
                 // PAX-A18 W3: as wide as the walls' broken outline reaches into them (DeepReach each side; the stone draws over it),
                 // so a notch in a pit's wall shows the pit's back wall, not the sky behind the level.
                 float width = r.width + 0.1f + 2f * SoloRoomSkin.DeepReach;
@@ -284,16 +292,18 @@ namespace Parallax.Editor.Setup
                     return sr;
                 }
                 SpriteRenderer back = Quad($"PitVoid_{n}", wall, centre, 0f, stone);
-                back.drawMode = SpriteDrawMode.Tiled; back.tileMode = SpriteTileMode.Continuous; back.size = new Vector2(width, height); back.color = Color.white;
+                back.drawMode = SpriteDrawMode.Tiled; back.tileMode = SpriteTileMode.Continuous; back.size = new Vector2(width, height); back.color = VoidTint;
                 // The far edge of the hole (the developer: "All edges need to be a bit bumpy"): the wall's own recessed stone,
                 // broken around the lip's height (ENV_RecessLip_*), over the wall's top. No grass and no lit lip, so it never
                 // reads as a walkway across the pit.
                 if (farLip != null && farLipSlot != null)
                 {
-                    SpriteRenderer far = Quad($"PitVoid_{n}_FarLip", farLip, new Vector2(centre.x, top + farLipSlot.above - farLipSlot.height * 0.5f), -0.0005f, stone);
+                    // 2026-10-17 visual review ("its wavy outline sticks up above the floor line into the sky"): the broken edge
+                    // stays below the lip's line (LipBelow), where the floors' own lit caps frame it.
+                    SpriteRenderer far = Quad($"PitVoid_{n}_FarLip", farLip, new Vector2(centre.x, top - LipBelow - farLipSlot.height * 0.5f), -0.0005f, stone);
                     far.drawMode = SpriteDrawMode.Tiled; far.tileMode = SpriteTileMode.Continuous;
-                    far.size = new Vector2(width, farLipSlot.height); far.color = Color.white;
-                    back.size = new Vector2(width, height - (farLipSlot.above + 0.05f));
+                    far.size = new Vector2(width, farLipSlot.height); far.color = VoidTint;
+                    back.size = new Vector2(width, height - LipBelow - farLipSlot.height * 0.5f);
                     back.transform.position = new Vector3(centre.x, bottom + back.size.y * 0.5f, back.transform.position.z);
                 }
                 // The shading: the ramp (clear at its top, opaque at its bottom) turned so its dark end meets the lip or a wall.
@@ -312,7 +322,81 @@ namespace Parallax.Editor.Setup
                 Ramp($"PitVoid_{n}_Right", new Vector2(centre.x + width * 0.5f - side * 0.5f, centre.y), 90f, height, side, SideShade);
                 n++;
             }
+
+            // 2026-10-17 visual review (L004 Roof_4: "once it collapses, two dark posts float over open sky"): a trap that fills a
+            // notch in fixed stone (fixed stone at both its sides and over or under it) leaves a recess, not a window to the
+            // sky: the same recessed back wall behind it (the trap's skin covers it until it goes), unless a pit's already does.
+            var voids = new List<Rect>();
+            foreach (Transform v in c.EnvRoot) if (v.name.StartsWith("PitVoid_") && v.GetComponent<SpriteRenderer>() is SpriteRenderer pv && v.name.Split('_').Length == 2) voids.Add(new Rect((Vector2)pv.bounds.min, pv.bounds.size));
+            bool Flush(SoloRoomSkin.Solid s, Rect r, System.Func<Rect, Rect, bool> touches) => !s.Trap && touches(s.Rect, r);
+            int k = 0;
+            foreach (SoloRoomSkin.Solid t in solids.Where(o => o.Trap && o.Kind is SoloRoomElementKind.CollapsingFloor or SoloRoomElementKind.FallingBlock or SoloRoomElementKind.ShrinkingFloor && !o.Grip))
+            {
+                Rect r = t.Rect;
+                // A side wall counts where it stands along at least half the trap's height; the recess is where both do.
+                float Along(Rect a) => Mathf.Min(a.yMax, r.yMax) - Mathf.Max(a.yMin, r.yMin);
+                List<Rect> lefts = solids.Where(o => Flush(o, r, (a, b) => Mathf.Abs(a.xMax - b.xMin) < 0.05f && Along(a) >= 0.5f * b.height)).Select(o => o.Rect).ToList();
+                List<Rect> rights = solids.Where(o => Flush(o, r, (a, b) => Mathf.Abs(a.xMin - b.xMax) < 0.05f && Along(a) >= 0.5f * b.height)).Select(o => o.Rect).ToList();
+                bool over = solids.Any(o => Flush(o, r, (a, b) => Mathf.Abs(a.yMin - b.yMax) < 0.05f && a.xMin <= b.xMin + 0.05f && a.xMax >= b.xMax - 0.05f));
+                bool under = solids.Any(o => Flush(o, r, (a, b) => Mathf.Abs(a.yMax - b.yMin) < 0.05f && a.xMin <= b.xMin + 0.05f && a.xMax >= b.xMax - 0.05f));
+                if (lefts.Count == 0 || rights.Count == 0 || !(over || under) || voids.Any(v => v.Overlaps(r))) continue;
+                // The recess runs as far as stone stands flush at both sides (every solid there, joined end to end, from the
+                // closed end), so it never stops short of the stone framing it.
+                float Reach(bool atLeft, bool down)
+                {
+                    float edge = atLeft ? r.xMin : r.xMax, y = down ? r.yMax : r.yMin;
+                    for (bool grew = true; grew;)
+                    {
+                        grew = false;
+                        foreach (SoloRoomSkin.Solid o in solids.Where(o => !o.Trap && Mathf.Abs((atLeft ? o.Rect.xMax : o.Rect.xMin) - edge) < 0.05f))
+                            if (down ? o.Rect.yMax >= y - 0.05f && o.Rect.yMin < y - 0.05f : o.Rect.yMin <= y + 0.05f && o.Rect.yMax > y + 0.05f)
+                            { y = down ? o.Rect.yMin : o.Rect.yMax; grew = true; }
+                    }
+                    return down ? Mathf.Max(y, r.yMin) : Mathf.Min(y, r.yMax);
+                }
+                float y0 = over ? Mathf.Max(Reach(true, true), Reach(false, true)) : r.yMin;
+                float y1 = over ? r.yMax : Mathf.Min(Reach(true, false), Reach(false, false));
+                if (y1 - y0 < 0.3f) continue;
+                SpriteRenderer back = Quad(Rect.MinMaxRect(r.xMin, y0, r.xMax, y1), $"TrapVoid_{k++}");
+                // Its open end: the recess's broken edge (the pits' far lip, turned to face the opening), not a ruler line.
+                if (farLip != null && farLipSlot != null)
+                {
+                    var lip = new GameObject($"TrapVoid_{k - 1}_Lip");
+                    lip.transform.SetParent(c.EnvRoot, false);
+                    lip.layer = c.LayerIndex;
+                    float open = over ? y0 : y1, inward = over ? 1f : -1f;
+                    lip.transform.position = new Vector3(r.center.x, open + inward * (LipBelow + farLipSlot.height * 0.5f), c.EnvRoot.position.z - 0.0005f);
+                    var lr = lip.AddComponent<SpriteRenderer>();
+                    lr.sprite = farLip; lr.sharedMaterial = stone; lr.sortingLayerName = gameplay; lr.sortingOrder = -4;
+                    lr.drawMode = SpriteDrawMode.Tiled; lr.tileMode = SpriteTileMode.Continuous;
+                    lr.size = new Vector2(back.size.x, farLipSlot.height); lr.color = VoidTint; lr.flipY = over;
+                    // The panel stops where the lip's solid part begins.
+                    float cut = LipBelow + farLipSlot.height * 0.5f;
+                    back.size = new Vector2(back.size.x, Mathf.Max(0.1f, back.size.y - cut));
+                    back.transform.position += new Vector3(0f, inward * cut * 0.5f, 0f);
+                }
+                SpriteRenderer Quad(Rect at, string name)
+                {
+                    var go = new GameObject(name);
+                    go.transform.SetParent(c.EnvRoot, false);
+                    go.layer = c.LayerIndex;
+                    go.transform.position = new Vector3(at.center.x, at.center.y, c.EnvRoot.position.z);
+                    var sr = go.AddComponent<SpriteRenderer>();
+                    sr.sprite = wall; sr.sharedMaterial = stone;
+                    sr.sortingLayerName = gameplay; sr.sortingOrder = -4;
+                    sr.drawMode = SpriteDrawMode.Tiled; sr.tileMode = SpriteTileMode.Continuous;
+                    sr.size = new Vector2(at.width + 2f * SoloRoomSkin.DeepReach, at.height + (over ? SoloRoomSkin.DeepReach : 0f) + (under ? SoloRoomSkin.DeepReach : 0f));
+                    go.transform.position += new Vector3(0f, ((over ? SoloRoomSkin.DeepReach : 0f) - (under ? SoloRoomSkin.DeepReach : 0f)) * 0.5f, 0f);
+                    sr.color = VoidTint;
+                    return sr;
+                }
+            }
         }
+
+        /// <summary>How far below the pit's lip line its back wall's broken top edge stays (world units).</summary>
+        const float LipBelow = 0.04f;
+        /// <summary>A pit shallower than this (lip to floor, world units) and over three times as wide is a trench: no back wall.</summary>
+        const float ShallowTrench = 1.2f;
 
         /// <summary>A soft vertical gradient of `colour` between two heights over a layer's whole visible range: one quad, no
         /// texture to repeat. `up`: opaque at the bottom, clear at the top.</summary>

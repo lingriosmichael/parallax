@@ -505,6 +505,17 @@ namespace Parallax.Editor.Setup
             Bounds content = SoloRoomBuilder.ComputeRoomBounds(room, 0f);
             List<Edge> allEdges = ExposedEdges(solids);
             List<Edge> edges = allEdges.Where(e => !FacesOut(e, content, room)).ToList();
+            // 2026-10-17 visual review (L001: "each top is a ruler-straight, flat, dark, featureless band ... no lit cap"): a block
+            // that falls from inside the stone over it has a top no one sees until it falls; it gets its lit course anyway,
+            // shown once it has left (ShownAtRest, whenMoved).
+            var fallenTops = new HashSet<string>();
+            foreach (Solid s in solids.Where(o => o.Trap && o.Kind == SoloRoomElementKind.FallingBlock))
+                if (!edges.Any(e => e.Owner.Name == s.Name && e.Side == Side.Top)
+                    && solids.Any(o => !o.Trap && Mathf.Abs(o.Rect.yMin - s.Rect.yMax) < Eps && o.Rect.xMin <= s.Rect.xMin + Eps && o.Rect.xMax >= s.Rect.xMax - Eps))
+                {
+                    edges.Add(new Edge(s, Side.Top, s.Rect.xMin, s.Rect.xMax, s.Rect.yMax));
+                    fallenTops.Add(s.Name);
+                }
             // PAX-A18 W3: where a cat can be (band strips there; deep strips elsewhere).
             List<Rect> zones = ReachZones(room, solids), hazards = HazardZones(room);
             EnvironmentKit.Slot cap = EnvironmentKit.Get("ENV_Cap"), capWash = EnvironmentKit.Get("ENV_CapWash"), lipVines = EnvironmentKit.Get("ENV_LipVines"), faceShade = EnvironmentKit.Get("ENV_FaceShade"), shadeSolid = EnvironmentKit.Get("ENV_FaceShadeSolid"), thickUnder = ThickUnderSlot(), under = UnderSlot(flips), side = EnvironmentKit.Get("ENV_Side");
@@ -932,8 +943,20 @@ namespace Parallax.Editor.Setup
                 }
                 // 2026-10-17: the stone it lends its neighbours stays with them (ShownAtRest), never riding out with it.
                 List<SpriteRenderer> lent = pair.Value.Where(r => r.name.StartsWith("Reach")).ToList();
-                SetupUtility.SetArray(follow, "renderers", pair.Value.Except(lent).Cast<Object>().ToArray(), changes);
+                // A fallen block's top course (fallenTops) shows once it has left the stone it hung in.
+                Solid trap = solids.First(o => o.Name == pair.Key);
+                List<SpriteRenderer> topCourse = fallenTops.Contains(pair.Key)
+                    ? pair.Value.Except(lent).Where(r => r.name.StartsWith("Cap") && r.bounds.min.y < trap.Rect.yMax - Eps && r.bounds.max.y > trap.Rect.yMax - Eps).ToList()
+                    : new List<SpriteRenderer>();
+                SetupUtility.SetArray(follow, "renderers", pair.Value.Except(lent).Except(topCourse).Cast<Object>().ToArray(), changes);
                 follow.Apply();
+                if (topCourse.Count > 0)
+                {
+                    ShownAtRest moved = parent.gameObject.AddComponent<ShownAtRest>();
+                    TrapKitSetup.Write(moved, changes, ("owner", owner), ("rest", (Vector2)owner.transform.position), ("whenMoved", true));
+                    SetupUtility.SetArray(moved, "renderers", topCourse.Cast<Object>().ToArray(), changes);
+                    moved.Apply();
+                }
                 if (lent.Count > 0)
                 {
                     ShownAtRest rest = parent.gameObject.AddComponent<ShownAtRest>();
@@ -943,8 +966,42 @@ namespace Parallax.Editor.Setup
                 }
             }
             VinesToTheirStone();
+            UnderRestingTraps();
             BakeShade();
             changes.Add($"built {roomRoot.name} environment trims ({edges.Count} exposed edges)");
+
+            // 2026-10-17 visual review (L003: "lit-cap strips show through the lower ground wall, exactly where the floor later
+            // collapses"; L001: "a lit top course buried inside the floor wall"): a fixed top a trap rests on keeps its trims for
+            // when the trap has gone (ExposedEdges), but its lit course is painted down into the stone below the trap's skin, a
+            // stripe through the wall and a tell. Those trims (and an underside's over a trap below it) show once the trap has
+            // gone (ShownAtRest, whenGone).
+            void UnderRestingTraps()
+            {
+                foreach (Solid t in solids.Where(o => o.Trap))
+                {
+                    SpriteRenderer owner = Host(t).owner;
+                    if (owner == null) continue;
+                    var covered = new List<SpriteRenderer>();
+                    foreach (Solid f in solids.Where(o => !o.Trap))
+                    {
+                        float line = Mathf.Abs(f.Rect.yMax - t.Rect.yMin) < Eps ? t.Rect.yMin : Mathf.Abs(f.Rect.yMin - t.Rect.yMax) < Eps ? t.Rect.yMax : float.NaN;
+                        Transform host = float.IsNaN(line) ? null : env.Find(f.Name);
+                        if (host == null) continue;
+                        foreach (SpriteRenderer r in host.GetComponentsInChildren<SpriteRenderer>(true))
+                        {
+                            Bounds b = r.bounds;
+                            float over = Mathf.Min(b.max.x, t.Rect.xMax) - Mathf.Max(b.min.x, t.Rect.xMin);
+                            if (b.min.y < line - Eps && b.max.y > line + Eps && over >= 0.6f * b.size.x) covered.Add(r);
+                        }
+                    }
+                    if (covered.Count == 0) continue;
+                    ShownAtRest gone = Child(env, "UnderTrap_" + t.Name, layer).gameObject.AddComponent<ShownAtRest>();
+                    TrapKitSetup.Write(gone, changes, ("owner", owner), ("rest", (Vector2)owner.transform.position), ("whenGone", true));
+                    SetupUtility.SetArray(gone, "renderers", covered.Cast<Object>().ToArray(), changes);
+                    gone.Apply();
+                    changes.Add($"{covered.Count} trims under {t.Name} show once it has gone");
+                }
+            }
 
             // 2026-10-17 (the developer: "make of these vines attached to the ceiling and not just hanging mid air ... for ever
             // vine"): a vine reaches up from its grab box to the stone over it (VineReachUp at most) and a little into it. The vine

@@ -256,3 +256,32 @@ pile of rubble".
       1238 ticks, Spear_10 gone) and L016 (window 14 -> 15). They pass at b33.
     - The four remaining failures are pre-existing and wait on the developer's rulings: L001's solution under Ledge, L011's
       dead ends / Ledge_M / NW, L011's wall-jump findings, and L012's Block_E rules.
+
+## 6e. Visual QA and clean-up of L001–L005, 2026-10-17 (builds b39–b41, D-153 amendment 3)
+
+- **Review:** five reviewers (one per level, run one at a time) went over captures and a grid of tour shots, at rest and with
+  traps fired, at phone zoom. Report: `~/Parallax_batch_tools/PAX-A18/review1/REPORT.md`. A re-check compared old and new.
+- **Fixed:**
+  - pale pit walls (then, at b40, a too-dark felt look that hid the cat);
+  - the pit lip above the floor line;
+  - the bottom-of-screen band;
+  - L001's buried lit course;
+  - L003's lit strips under the collapsing floors (a trap tell);
+  - L003's corridor backing band;
+  - L004 Roof_4's floating posts;
+  - L004/L005 sky slots in the outer walls;
+  - dark rubble heaps;
+  - chartreuse grip moss;
+  - pink plaques;
+  - pale launcher frames;
+  - straight underside seams;
+  - stamped ivy;
+  - flat-topped landed grip pillars (L001).
+- **Left:**
+  - L004's ceiling spikes touch the door's keystone (the door art draws at its sprite's size);
+  - L005's side-wall top against the masonry, and its slab ledges in the slab texture (both by design);
+  - L003's shadow columns under the launcher towers (the column shade rule; changing it affects every level);
+  - L004's mist columns over the background pillars;
+  - the spikes' sticker look (D-108's readability style);
+  - saturated blue banners.
+- **Tests:** the 13 art fixtures pass 315/315 at b41. No layout, route or gameplay code changed.

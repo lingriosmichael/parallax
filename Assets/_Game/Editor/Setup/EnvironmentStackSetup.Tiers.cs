@@ -459,7 +459,10 @@ namespace Parallax.Editor.Setup
         /// masonry (unreachable, so free to paint), so no void shows at the frame's edge.</summary>
         /// <summary>How far short of the room the side-wall columns stop: past the deepest notch (SoloRoomSkin.DeepReach), inside
         /// the side strips' soft inner end (they reach DeepReach + 0.10 into the stone, fading over their last 0.07).</summary>
-        public const float OutsideInset = 0.33f;
+        /// <summary>2026-10-17 visual review (L005: "a ruler-straight, flat pink vertical slot about 15 px wide runs inside the
+        /// outer side walls"): the masonry stops as far short of its face as the broken strips reach into it (DeepReach), not
+        /// further (0.33 left a slot of sky between the masonry and a strip after the bumps shrank).</summary>
+        public const float OutsideInset = SoloRoomSkin.DeepReach;
 
         static void Outside(TierContext c)
         {
@@ -583,16 +586,35 @@ namespace Parallax.Editor.Setup
             // open at the bottom), ends in the lumpy cap, not a ruler-straight edge.
             Sprite capTop = EnvironmentKit.Sprite("ENV_Cap");
             EnvironmentKit.Slot cd = EnvironmentKit.Get("ENV_Cap");
+            // 2026-10-17 visual review ("a hard horizontal dark band across the full screen width near the bottom"; L001: "a lit
+            // top course buried inside the solid floor wall"): only where the room's bottom is open (no solid standing on the
+            // masonry); under a floor that runs down to the room's bottom the cap was a buried lit course and a band.
             if (capTop != null && cd != null && content.min.y > frame.min.y + 0.01f)
             {
-                var go = new GameObject("Outside_Top");
-                go.transform.SetParent(t, false);
-                go.layer = c.LayerIndex;
-                go.transform.position = new Vector3((x0 + x1) * 0.5f, content.min.y + cd.above - cd.height * 0.5f, c.EnvRoot.position.z - 0.02f);
-                var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = capTop; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = c.Config.OutsideTint * 1.15f;
-                sr.drawMode = SpriteDrawMode.Tiled; sr.size = new Vector2(x1 - x0, cd.height);
-                sr.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); sr.sortingOrder = -3;
+                float yb = content.min.y;
+                bool Open(float x) => !all.Any(s => s.Rect.xMin <= x && s.Rect.xMax >= x && s.Rect.yMin <= yb + 0.05f && s.Rect.yMax > yb + 0.05f);
+                var open = new List<(float a, float b)>();
+                float? start = null;
+                for (float x = x0; x <= x1 + 1e-4f; x += 0.05f)
+                {
+                    bool o = x < x1 && Open(Mathf.Min(x + 0.025f, x1));
+                    if (o && start == null) start = x;
+                    if (!o && start != null) { open.Add((start.Value, Mathf.Min(x, x1))); start = null; }
+                }
+                if (start != null) open.Add((start.Value, x1));
+                int i = 0;
+                foreach ((float a, float b) in open.Where(o => o.b - o.a > 0.1f))
+                {
+                    var go = new GameObject(i == 0 ? "Outside_Top" : "Outside_Top_" + i);
+                    i++;
+                    go.transform.SetParent(t, false);
+                    go.layer = c.LayerIndex;
+                    go.transform.position = new Vector3((a + b) * 0.5f, yb + cd.above - cd.height * 0.5f, c.EnvRoot.position.z - 0.02f);
+                    var sr = go.AddComponent<SpriteRenderer>();
+                    sr.sprite = capTop; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = c.Config.OutsideTint * 1.15f;
+                    sr.drawMode = SpriteDrawMode.Tiled; sr.size = new Vector2(b - a, cd.height);
+                    sr.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); sr.sortingOrder = -3;
+                }
             }
             // Gauntlet: the masonry over the room ends in a broken course with roots hanging, not a ruler-straight edge.
             Sprite under = EnvironmentKit.Sprite("ENV_Under");

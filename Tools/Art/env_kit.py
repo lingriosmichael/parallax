@@ -153,8 +153,13 @@ def vertical_fade(width, height):
     return out
 
 
-RECESS_MEAN = np.array([0.56, 0.45, 0.34], np.float32)   # the back wall's average colour (sRGB): a light warm brown
-RECESS_CONTRAST = 0.5
+# 2026-10-17 visual review (the pits were "pale washed-out beige ... brighter than the walls"; then, tinted dark in Unity, "flat
+# untextured fills that read as felt ... redder than the stone ... the cat disappears against them"): the room's own stone
+# in shadow, its hue (about 36 degrees) and most of its texture, just under a lit face's brightness, still under the dark
+# iron's dead zone (D-108: the spikes' bright edges read against it).
+RECESS_MEAN = np.array([0.31, 0.245, 0.165], np.float32)   # the back wall's average colour (sRGB)
+RECESS_CONTRAST = 0.75
+RECESS_BLUR = 2   # px: a little softer than the stone in front (depth), not smeared
 
 
 RECESS_LIP_ABOVE = 0.15   # the strip's top to its nominal line (the lip's height)
@@ -180,7 +185,7 @@ def recess_lip(wall, ppu):
     return a
 
 
-def recess(a, radius=4):
+def recess(a, radius=RECESS_BLUR):
     """A fill's recessed twin: blurred with wrap-around (still seamless), its contrast halved, re-centred on RECESS_MEAN."""
     pad = radius * 3
     rgb = np.pad(a[..., :3], ((pad, pad), (pad, pad), (0, 0)), mode="wrap")

@@ -183,6 +183,17 @@ def cut_mask(h, reach_px, inner_px, blend_px, depth, rng, ledges=True):
     return a
 
 
+def ragged_top_fade(a, W, rng):
+    """An underside strip's top fades into the stone it hangs from along a ragged line (2026-10-17 visual review, L004:
+    "every floating deck has a bottom band ... its top edge is a hard straight line"; a straight 0.12 u ramp still read as a
+    seam): each column starts fading in at its own depth (0-0.14 u, fractal), over 0.16 u."""
+    h, w = a.shape[:2]
+    start = fractal(w, rng, max(1, int(w / W / 0.8)), max(2, int(w / W / 0.1)), 0.9)
+    start = (start - start.min()) / max(1e-4, start.max() - start.min()) * 0.14 * W
+    rows = np.arange(h, dtype=np.float32)[:, None]
+    a[..., 3] *= np.clip((rows - start[None, :]) / (0.16 * W), 0.0, 1.0)
+
+
 def lump_profile(n, px, rng, flat=TOP_FLAT):
     """Top lumps: LUMP_FLOOR..1 of px rows beyond the line, periodic over n (at the play PPU, px / TOP_LUMP). 2026-10-16
     ("All edges need to be a bit bumpy"): periodic fractal noise over wavelengths of 0.12-0.6 u, never level for long (the old
@@ -318,6 +329,9 @@ TRAP_PROUD = 0.03    # a trap solid's sides stand proud of its face by at most t
 RUBBLE_SHAPES = {"Sq": (1.0, 1.0), "Wide": (2.0, 1.0), "Slab": (2.0, 0.5)}
 
 
+RUBBLE_LIFT = 1.5   # the heap's brightness over its chunks' own shading (1.3 still read as a dark box)
+
+
 def rubble_heap(ppu, w_u, h_u, rng):
     """A fallen block's heap filling a w_u x h_u footprint: canvas w_u x (h_u + TOP_LUMP) units, the footprint's bottom on its
     bottom row. Never outside the footprint's sides or under its top line."""
@@ -348,7 +362,7 @@ def rubble_heap(ppu, w_u, h_u, rng):
             m &= ~((inside < r) & (ys - ya < r) & (np.hypot(r - inside, r - (ys - ya)) > r))
         d_edge = np.minimum(np.minimum(xs - left[:, None], right[:, None] - xs), np.minimum(ys - topline[None, :], bottom[None, :] - ys))
         sh = rng.uniform(0.88, 1.1) * (1 - 0.45 * np.clip(1 - d_edge / 4.0, 0, 1))
-        sh *= 1 + 0.3 * np.clip(1 - (ys - topline[None, :]) / (0.07 * ppu), 0, 1)
+        sh *= 1 + 0.75 * np.clip(1 - (ys - topline[None, :]) / (0.14 * ppu), 0, 1)   # each chunk's top catches the sun
         sh *= 1 - 0.18 * np.clip((ys - ya) / max(1.0, yb - ya), 0, 1)
         alpha[m] = 1.0
         shade[m] = sh[m]
@@ -379,7 +393,9 @@ def rubble_heap(ppu, w_u, h_u, rng):
                 shade[qy, qx] *= 0.45
     a = np.zeros((H, W, 4), np.float32)
     a[..., 3] = alpha
-    a[..., :3] = np.clip(shade * 0.5, 0, 1)[..., None]
+    # 2026-10-17 visual review ("the landed blocks are near-black boxes ... the darkest objects in a sunny scene"): lifted so
+    # the heap is the stone it fell from, about as bright as the face it lies against (the shader doubles the mask).
+    a[..., :3] = np.clip(shade * 0.5 * RUBBLE_LIFT, 0, 1)[..., None]
     return a
 
 
@@ -428,11 +444,11 @@ def build(ek, play, slots, put, fills):
     canvas = np.zeros((under_line + int(np.ceil(lump_px)) + 2, walk.shape[1], 4), np.float32)
     canvas[:under_line] = walk
     canvas = lower_bottom(canvas, under_line, walk_lumps)
+    ragged_top_fade(canvas, W, np.random.default_rng(1824))
     put(play, "ENV_UnderWalk", canvas, W, kind="strip", normal=True, below=round((canvas.shape[0] - under_line) / W, 4), lump=TOP_LUMP)
     hung = hang_bottom(walk, under_line, HANG * W, np.random.default_rng(1821), 0.6 * W, stone=play[fills[0][0]])
     # Its top fades into whatever it hangs from (2026-10-16: the strip's top edge drew a straight seam across the stone).
-    fade_rows = int(round(0.12 * W))
-    hung[:fade_rows, :, 3] *= np.linspace(0, 1, fade_rows, dtype=np.float32)[:, None]
+    ragged_top_fade(hung, W, np.random.default_rng(1823))
     put(play, "ENV_Under", hung, W, kind="strip", normal=True, below=round((hung.shape[0] - under_line) / W, 4))
 
     # Thin slabs: lumps on top; a hanging underside (free) and the flip rooms' flat one; broken, thick and plain ends.

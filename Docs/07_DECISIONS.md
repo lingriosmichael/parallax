@@ -4387,3 +4387,28 @@ square, but this goes only for the ones that fall and never go back up."
 - "the spikes can move just slightly to left so there is space to jump over and land."
 - "Remove this pointless trap at the end Level 015 with the lance."
 - "On level 16 make the left ledge slightly longer."
+
+**D-153 amendment 3 · 2026-10-17 · Accepted (the developer: "Do a clean up of the visuals ... fix levels 1-5", after a
+visual QA review of L001–L005)**
+- **Pit back walls are the room's stone in shadow.** The `_Recess` texture is centred just under a lit face's brightness, in
+  the stone's own hue (about 36°), keeping most of its texture (it was pale beige, brighter than the walls). Its broken top
+  stays 0.04 u below the floor line.
+  - No back wall behind a shallow, wide spike trench on a floating slab (under 1.2 u deep, over 3 times as wide; L003's
+    corridor). Its spikes stand against the sky.
+  - A trap that fills a notch in fixed stone (L004 Roof_4) leaves a recess with the same back wall, running as far as the
+    stone at its sides, with a broken open end.
+- **Trims under a resting trap** (a fixed top's lit course under a trap floor, an underside over a trap) show only once the
+  trap has gone (ShownAtRest `whenGone`). This removes a stripe through the wall that gave the trap away (L003, L001).
+- **A falling block's top course**, hidden in the stone it hangs from, shows once it falls (ShownAtRest `whenMoved`).
+- **The masonry under the room** ends in its cap only where the room's bottom is open. Under a floor that reaches the bottom,
+  it was a buried lit course and a dark band across the screen.
+- **Outside masonry stops DeepReach short of its face** (was 0.33 u), so no sky slot shows between it and its broken strip.
+- **Colours:**
+  - Rubble heaps are lifted to the stone they fell from, with sunlit chunk tops.
+  - Grip moss is tinted (0.94, 1, 0.85), a mild green lift (was a chartreuse 0.8, 1, 0.52). Grip still reads by its
+    coverage.
+  - Carved plaques are tinted to the wall's stone.
+  - Arrow-launcher frames are toned to the wall's lit stone; the mouth keeps its outline (D-108).
+- **Underside strips fade into their block along a ragged line**, not a straight one.
+- **Ivy curtains on lips:** clusters with real gaps between them, each its own length under the top band, each its own
+  light.

@@ -892,7 +892,7 @@
     "Bodies/TRAP-01_arrow_launcher": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher_n.png",
       "palette": {
-        "black": 0.0055,
+        "black": 0.0104,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher.png",

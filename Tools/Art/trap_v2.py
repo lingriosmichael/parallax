@@ -16,6 +16,7 @@ import hazard_readable as hr
 HI_PPU = 256
 
 # The drawn sizes (world units), one per kind, everywhere.
+LAUNCHER_FRAME_TONE = np.array([0.66, 0.62, 0.56], np.float32)   # the carved frame against the walls' stone
 LAUNCHER_U = 0.7          # the launcher's carved frame (square); its niche adds about 0.1 u a side
 ARROW_U = (0.8, 0.16)     # the arrow, pointing right
 SPEAR_HEAD_U = 0.6        # the spear's blade and collar, along its length
@@ -202,6 +203,9 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         num = _arr(_img(np.concatenate([frame[..., :3] * keep, keep], -1)).filter(ImageFilter.GaussianBlur(14)))
         fill = num[..., :3] / np.maximum(num[..., 3:4], 1e-3)
         frame[..., :3] = np.where(mouth_mask[..., None], np.clip(fill, 0, 1), frame[..., :3])
+        # 2026-10-17 visual review ("the arrow launchers are pale cream boxes that look unlit and flat ... about twice as bright
+        # as the stone around them"): the carving toned to the walls' lit stone (it isn't lethal; the mouth reads on its own).
+        frame[..., :3] = frame[..., :3] * LAUNCHER_FRAME_TONE
         put("Bodies/TRAP-01_arrow_launcher", hr.pad(frame, 5), source=s)
 
     # ---- the arrow (2C): painted, the head's cutting edges and the fletching's edge crimson ----
