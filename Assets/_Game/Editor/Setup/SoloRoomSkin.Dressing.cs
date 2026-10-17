@@ -227,7 +227,7 @@ namespace Parallax.Editor.Setup
         {
             List<Solid> solids = Solids(room);
             Bounds content = SoloRoomBuilder.ComputeRoomBounds(room, 0f);
-            List<Edge> edges = ExposedEdges(solids).Where(e => !FacesOut(e, content)).ToList();
+            List<Edge> edges = ExposedEdges(solids).Where(e => !FacesOut(e, content, room)).ToList();
             var list = new List<(string, string, string, Rect)>();
             Dress(room, solids, edges, (s, name, slot, centre, size, z) =>
             {

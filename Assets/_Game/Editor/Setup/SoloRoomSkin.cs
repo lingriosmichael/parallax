@@ -27,7 +27,15 @@ namespace Parallax.Editor.Setup
         // The fill sits just in front of anything else at the geometry's order (the template's frozen sandbox objects share it).
         // Gauntlet: tufts sit behind the stone and the traps (positive is farther from the camera).
         const float ZTuft = 0.012f;
-        const float ZFill = -0.005f, ZSide = -0.010f, ZShade = -0.0105f, ZUnder = -0.011f, ZCap = -0.012f, ZDrape = -0.015f, ZPanel = -0.02f, ZMoss = -0.025f;
+        /// <summary>2026-10-17: a hole's broken rim sits behind the falling block's skin (z 0 at the same order) until it falls.</summary>
+        const float HoleRimZ = 0.004f;
+        /// <summary>2026-10-17: how far a trap's lent stone runs past DeepReach into its neighbour (env_bumpy STRIP_OVERLAP +
+        /// STRIP_BLEND, so it covers the neighbour's whole side strip), and how far its lent cap runs (past a broken top corner,
+        /// ENV_CapEnd's 0.45 u).</summary>
+        const float ReachPastStrip = 0.18f, CapReach = 0.5f;
+        /// <summary>2026-10-17: how far a vine's drawn top may reach up to the stone over its grab box, and how far into it.</summary>
+        const float VineReachUp = 4f, VineIntoStone = 0.08f;
+        const float ZFill = -0.005f, ZSide = -0.010f, ZUnder = -0.011f, ZCap = -0.012f, ZDrape = -0.015f, ZPanel = -0.02f, ZMoss = -0.025f;
         const int MaxDrapes = 4, MaxRubble = 2;
         const float TrapTrimZ = -0.05f;
 
@@ -47,8 +55,8 @@ namespace Parallax.Editor.Setup
                 // D-111 (the developer, 2026-10-04: "give the walls that are falling a similar look and art as the floor"): a
                 // falling block is never a column; it wears the floor's stone, fill and edges.
                 : Kind == SoloRoomElementKind.FallingBlock ? Shape.Block
-                : Rect.width <= 0.55f && Rect.height > Rect.width ? Shape.SlimPost
-                : Rect.width <= 1.05f && Rect.height >= 2.5f && Name is not ("Wall_Left" or "Wall_Right") ? Shape.Post   // gauntlet: the room's walls are stone, not a column
+                // The developer (2026-10-16): "All edges need to be a bit bumpy". A narrow upright is stone with broken sides
+                // like any block (the painted columns, ENV_Post and ENV_SlimPost, had ruler-straight sides).
                 : Shape.Block;
         }
 
@@ -128,8 +136,11 @@ namespace Parallax.Editor.Setup
                 float lo = horizontal ? q.yMin : q.xMin, hi = horizontal ? q.yMax : q.xMax;
                 float a = Mathf.Max(from, qa), b = Mathf.Min(to, qb);
                 if (b - a <= Eps) continue;
-                // Another solid continues past the edge.
-                bool beyond = outward > 0 ? lo <= line + Eps && hi > line + Eps : hi >= line - Eps && lo < line - Eps;
+                // Another solid continues past the edge. 2026-10-16: a trap doesn't cover a fixed solid's face (it may fall, slide or
+                // shrink away and leave that face bare): the face keeps its broken trims under the trap's skin.
+                // And a trap's underside resting on fixed stone stays exposed: its hanging stones draw over the floor's lip (a flat
+                // trap bottom on a lit lip was a straight line) and leave with it.
+                bool beyond = (s.Trap ? !(side == Side.Bottom && !o.Trap) : !o.Trap) && (outward > 0 ? lo <= line + Eps && hi > line + Eps : hi >= line - Eps && lo < line - Eps);
                 // A trap reaching this fixed edge from inside owns the stretch.
                 bool trapOwns = !s.Trap && o.Trap && (outward > 0 ? lo < line - Eps && hi >= line - Eps : hi > line + Eps && lo <= line + Eps);
                 if (beyond || trapOwns) covered.Add((a, b));
@@ -167,12 +178,17 @@ namespace Parallax.Editor.Setup
             string layer = RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay);
             Color body = Body;
             HostSkin skin = HostSkin.WorldTiledFor("fill", fill, worldTile, body, layer);
-            // PAX-106 (D-114 (2)): with the broken-stone strips, the fill stops ChipInset inside each wholly exposed side, so the
-            // chipped edge's notches show the air behind it.
+            // PAX-106 (D-114 (2)), PAX-A18 W3: with the broken-stone strips, the fill stops inside each wholly exposed side (BandReach
+            // along band strips, DeepReach along deep ones), so the chipped edge's notches show the air behind it.
             List<Solid> all = Solids(room);
             bool chips = ChipsReady(room);
             Bounds content = SoloRoomBuilder.ComputeRoomBounds(room, 0f);
-            List<Edge> sides = chips ? ExposedEdges(all).Where(e => e.Side is Side.Left or Side.Right && !FacesOut(e, content)).ToList() : new List<Edge>();
+            List<Edge> allEdges = ExposedEdges(all);
+            List<Edge> sides = chips ? allEdges.Where(e => e.Side is Side.Left or Side.Right && !FacesOut(e, content, room)).ToList() : new List<Edge>();
+            // PAX-A18 W3: the inset follows each side's strips (BandReach along band strips, DeepReach along deep ones).
+            List<Rect> zones = chips ? ReachZones(room, all) : new List<Rect>();
+            bool flips = room.Elements.Any(x => x.Kind == SoloRoomElementKind.GravityFlip);
+            List<Rect> hazards = HazardZones(room);
             foreach (Solid s in all.Where(s => !s.Trap))
             {
                 Transform t = roomRoot.Find(s.Name);
@@ -184,15 +200,13 @@ namespace Parallax.Editor.Setup
                 // Slabs, slim posts and posts are covered edge to edge by their trims: no visible fill (one renderer less).
                 Transform old = t.Find(FillName);
                 if (s.Shape is Shape.Slab or Shape.SlimPost or Shape.Post) { if (old != null) Object.DestroyImmediate(old.gameObject); RemoveFillPieces(t, 1); continue; }
-                float inLeft = WhollyExposed(s, Side.Left, sides) ? ChipInset : 0f, inRight = WhollyExposed(s, Side.Right, sides) ? ChipInset : 0f;
                 // PAX-107 (the developer: "Falling platforms or ceiling need to show that it actually fell, leaving it black
                 // looks weird. It should show the background"): the fill leaves out a falling block flush in a ceiling, whose own
                 // skin draws the same world-tiled pixels there; once it falls, the air behind shows through.
-                List<Rect> pieces = FillPieces(s, room);
+                List<(Rect piece, float left, float right)> pieces = HoleInsets(InsetPieces(s, FillPieces(s, room), sides, zones, allEdges, flips, hazards), Holes(s, room));
                 for (int i = 0; i < pieces.Count; i++)
                 {
-                    Rect piece = pieces[i];
-                    float left = Mathf.Abs(piece.xMin - s.Rect.xMin) < Eps ? inLeft : 0f, right = Mathf.Abs(piece.xMax - s.Rect.xMax) < Eps ? inRight : 0f;
+                    (Rect piece, float left, float right) = pieces[i];
                     Transform child = Child(t, i == 0 ? FillName : FillName + "_" + i, t.gameObject.layer);
                     child.localRotation = Quaternion.identity; child.localScale = Vector3.one;
                     SpriteRenderer visible = SetupUtility.Ensure<SpriteRenderer>(child.gameObject, changes);
@@ -209,6 +223,21 @@ namespace Parallax.Editor.Setup
         // PAX-107: a fixed solid's fill, less every falling block flush inside it (LeavesHole): strips left and right of each
         // block at full height, and above and below it at its width.
         static List<Rect> FillPieces(Solid s, SoloRoomDefinition room) => Cut(s.Rect, Holes(s, room));
+
+        // 2026-10-17 (the developer: "when things fall from the ceiling everything is straight"): a fill piece beside a hole stops
+        // DeepReach short of it, behind the hole's broken rim (HoleRims); the falling block lends its stone over that while it's
+        // there (TrapReach).
+        static List<(Rect piece, float left, float right)> HoleInsets(List<(Rect piece, float left, float right)> pieces, List<Rect> holes)
+        {
+            if (holes.Count == 0) return pieces;
+            return pieces.Select(p =>
+            {
+                bool Beside(Rect h, float x) => Mathf.Abs(x) < Eps && p.piece.yMin < h.yMax - Eps && p.piece.yMax > h.yMin + Eps;
+                float left = holes.Any(h => Beside(h, p.piece.xMin - h.xMax)) ? Mathf.Max(p.left, DeepReach) : p.left;
+                float right = holes.Any(h => Beside(h, p.piece.xMax - h.xMin)) ? Mathf.Max(p.right, DeepReach) : p.right;
+                return (p.piece, left, right);
+            }).ToList();
+        }
 
         // PAX-107: the falling blocks flush inside this fixed solid that leave a hole (LeavesHole).
         static List<Rect> Holes(Solid s, SoloRoomDefinition room)
@@ -295,16 +324,57 @@ namespace Parallax.Editor.Setup
         /// same warm shadow below its lit lip: clear for this far under its top, then darkening over the ramp to the solid
         /// shade. One rule for every block, so no floor looks different from its neighbour.</summary>
         public const float ShadeStart = 1.1f, ShadeRamp = 4.5f;
+        /// <summary>env_bumpy.THICK_END_FADE: the thick underside's end fades into the strip over this.</summary>
+        const float ThickEndFade = 0.15f;
+        /// <summary>2026-10-17: the room's StoneShade map: texels per unit; how far it reaches past the room's box; how far the face
+        /// shadow carries out over the air beside a face (its broken strip's stones); how far it's softened across a change of
+        /// column; and the width over which the outside's shade fades in across the room's box.</summary>
+        const int ShadePpu = 4;
+        const float ShadeMargin = 6f, ShadeDilate = 0.5f, ShadeSoften = 0.5f, OutsideFade = 1.2f;
 
-        /// <summary>The face shadow's tint: white, at LevelLookConfig.FaceShadeAlpha (the sprites carry the colour).</summary>
+        /// <summary>A horizontal box blur of radius r texels on a w × h map (edges clamped).</summary>
+        static float[] BoxBlurRows(float[] src, int w, int h, int r)
+        {
+            if (r <= 0) return src;
+            var dst = new float[src.Length];
+            for (int j = 0; j < h; j++)
+                for (int i = 0; i < w; i++)
+                {
+                    float sum = 0f;
+                    for (int d = -r; d <= r; d++) sum += src[j * w + Mathf.Clamp(i + d, 0, w - 1)];
+                    dst[j * w + i] = sum / (2 * r + 1);
+                }
+            return dst;
+        }
+        /// <summary>How far a thick underside's ragged end reaches into a solid it runs into (past that solid's deepest notch).</summary>
+        const float ThickEndInto = 0.32f;
+
+        /// <summary>The face shadow's colour at LevelLookConfig.FaceShadeAlpha.
+        /// 2026-10-17: drawn by the stone's shaders from the room's StoneShade map, no longer by quads.</summary>
         static Color LevelShade
         {
             get
             {
                 var config = AssetDatabase.LoadAssetAtPath<LevelLookConfig>(LevelLookConfig.AssetPath);
-                return new Color(1f, 1f, 1f, config != null ? config.FaceShadeAlpha : 0.8f);
+                // 2026-10-17: the outside's neutral dark, no longer the sprite's navy (round 5, critics: "a navy/purple translucent
+                // overlay on the walls"; with the shadow now on every strip too, the navy turned whole undersides blue).
+                return new Color(ShadeNavy.r * 0.9f, ShadeNavy.g * 0.66f, ShadeNavy.b * 0.37f, config != null ? config.FaceShadeAlpha : 0.8f);
             }
         }
+
+        /// <summary>The outside masonry's shade: the navy turned a neutral dark (round 5, critics: "a navy/purple translucent
+        /// overlay on the walls"), a quarter stronger than a face's.</summary>
+        static Color OutsideShade
+        {
+            get
+            {
+                var config = AssetDatabase.LoadAssetAtPath<LevelLookConfig>(LevelLookConfig.AssetPath);
+                return new Color(ShadeNavy.r * 0.9f, ShadeNavy.g * 0.66f, ShadeNavy.b * 0.37f, Mathf.Min(1f, (config != null ? config.FaceShadeAlpha : 0.8f) * 1.25f));
+            }
+        }
+
+        /// <summary>ENV_FaceShadeSolid's colour.</summary>
+        static readonly Color ShadeNavy = new(0.102f, 0.122f, 0.22f, 1f);
 
         static Material WorldTileMaterial()
         {
@@ -369,7 +439,11 @@ namespace Parallax.Editor.Setup
                 Transform t = Child(parent, name, layer);
                 // PAX-A16: a trap's trims sit a step nearer than the fixed ones at the same order, so the renderer sorts all the
                 // fixed trims (one shader) before the traps' (SetPass); they still draw over their own skin.
-                t.position = new Vector3(centre.x, centre.y, parent.position.z + z + (owner != null ? TrapTrimZ : 0f));
+                // 2026-10-16 (budget): trims of one slot share a depth a hair apart from other slots' (under 0.0004, well inside
+                // the gaps between trim layers), so the renderer sorts same-sprite trims together and batches them; at one
+                // shared depth hundreds of trims sorted arbitrarily and broke batches.
+                float slotZ = -0.00005f * (int)(Hash(slot, 77) * 8f);
+                t.position = new Vector3(centre.x, centre.y, parent.position.z + z + slotZ + (owner != null ? TrapTrimZ : 0f));
                 t.localRotation = Quaternion.identity;
                 var r = t.gameObject.AddComponent<SpriteRenderer>();
                 r.sprite = sprite;
@@ -390,7 +464,7 @@ namespace Parallax.Editor.Setup
                     // tiled down the face in its own UV, so its pixels travel with it. The rest-pose shader's u comes from the
                     // vertex, which batching puts in world space: on a texture that clamps across (ENV_Side, ENV_Post), every row
                     // smeared its edge pixel.
-                    else if (kind is "Side" or "SideChip" or "Post" or "SlimPost" && EnvironmentKit.TileMaterial("Sprite") is Material plainSprite)
+                    else if (kind is "Side" or "SideChip" or "SideIn" or "SideDeep" or "Post" or "SlimPost" && EnvironmentKit.TileMaterial("Sprite") is Material plainSprite)
                     {
                         r.sharedMaterial = plainSprite;
                         r.drawMode = SpriteDrawMode.Tiled;
@@ -429,8 +503,11 @@ namespace Parallax.Editor.Setup
             // Faces looking out of the room (the side walls' outer faces, the ground's underside, the top ceiling's top) border
             // no play space: no trims there (each would be a draw call at the frame's edge).
             Bounds content = SoloRoomBuilder.ComputeRoomBounds(room, 0f);
-            List<Edge> edges = ExposedEdges(solids).Where(e => !FacesOut(e, content)).ToList();
-            EnvironmentKit.Slot cap = EnvironmentKit.Get("ENV_Cap"), capWash = EnvironmentKit.Get("ENV_CapWash"), lipVines = EnvironmentKit.Get("ENV_LipVines"), faceShade = EnvironmentKit.Get("ENV_FaceShade"), shadeSolid = EnvironmentKit.Get("ENV_FaceShadeSolid"), thickUnder = ThickUnderSlot(), under = EnvironmentKit.Get("ENV_Under"), side = EnvironmentKit.Get("ENV_Side");
+            List<Edge> allEdges = ExposedEdges(solids);
+            List<Edge> edges = allEdges.Where(e => !FacesOut(e, content, room)).ToList();
+            // PAX-A18 W3: where a cat can be (band strips there; deep strips elsewhere).
+            List<Rect> zones = ReachZones(room, solids), hazards = HazardZones(room);
+            EnvironmentKit.Slot cap = EnvironmentKit.Get("ENV_Cap"), capWash = EnvironmentKit.Get("ENV_CapWash"), lipVines = EnvironmentKit.Get("ENV_LipVines"), faceShade = EnvironmentKit.Get("ENV_FaceShade"), shadeSolid = EnvironmentKit.Get("ENV_FaceShadeSolid"), thickUnder = ThickUnderSlot(), under = UnderSlot(flips), side = EnvironmentKit.Get("ENV_Side");
             EnvironmentKit.Slot slab = EnvironmentKit.Get("ENV_Slab"), slabEnd = EnvironmentKit.Get("ENV_SlabEnd"), water = EnvironmentKit.Get("ENV_Water");
             EnvironmentKit.Slot post = EnvironmentKit.Get("ENV_Post"), slim = EnvironmentKit.Get("ENV_SlimPost"), postCap = EnvironmentKit.Get("ENV_PostCap"), postBase = EnvironmentKit.Get("ENV_PostBase");
 
@@ -438,10 +515,10 @@ namespace Parallax.Editor.Setup
             {
                 Rect r = s.Rect;
                 List<Edge> mine = edges.Where(e => e.Owner.Name == s.Name).ToList();
+                if (s.Trap) TrapReach(s);
                 switch (s.Shape)
                 {
                     case Shape.PitBottom:
-                        FaceShade(s);
                         // Phase 2 round 2 (the developer: "water only goes where nothing walkable sits on it"): a pit's floor is
                         // trimmed like any block, no water (the spikes and walls in pits read as standing in it).
                         foreach (Edge e in mine) BlockEdge(s, e);
@@ -450,16 +527,31 @@ namespace Parallax.Editor.Setup
                     {
                         float k = r.height / 0.5f, h = slab.height * k, above = slab.above * k;
                         float cy = r.yMax + above - h * 0.5f;
-                        Add(s, "Slab", "ENV_Slab", new Vector2(r.center.x, cy), new Vector2(r.width, h), new Vector2(slab.width * k, h),
-                            new Vector4(r.center.x, h * 0.5f, 1f, 1f), false, ZCap, true, "Slab");
+                        // PAX-A18 W3: a hanging, broken underside where no cat stands on it; the flat one in a flip room.
+                        string slabSlot = flips && EnvironmentKit.Get("ENV_SlabFlip") != null ? "ENV_SlabFlip" : "ENV_Slab";
+                        // PAX-A18 W3: broken ends within BandReach of the face (their `outside`); the right one is the thick end
+                        // (a chunk hanging under it) where no cat stands under the slab. 2026-10-16: on every slab from 0.5 u (shorter
+                        // ones were hard-cut rectangles), and the slab's strip stops where each end's stone begins, so the end's notches
+                        // show the air, not the strip's straight end behind them.
+                        // On a trap the ends stand BandReach further out: its skin is a whole rectangle under them, which inward notches
+                        // would show.
+                        float endW = Mathf.Min(slabEnd.width * k, r.width * 0.5f), endOut = slabEnd.outside * k + (s.Trap ? BandReach : 0f);
+                        bool broken = r.width >= 0.5f;
+                        bool leftEnd = broken && mine.Any(e => e.Side == Side.Left && e.Length >= r.height - Eps);
+                        bool rightEnd = broken && mine.Any(e => e.Side == Side.Right && e.Length >= r.height - Eps);
+                        float sx0 = r.xMin + (leftEnd ? endW - endOut - 0.02f : 0f), sx1 = r.xMax - (rightEnd ? endW - endOut - 0.02f : 0f);
+                        if (sx1 > sx0 + 0.01f)
+                            Add(s, "Slab", slabSlot, new Vector2((sx0 + sx1) * 0.5f, cy), new Vector2(sx1 - sx0, h), new Vector2(slab.width * k, h),
+                                new Vector4((sx0 + sx1) * 0.5f, h * 0.5f, 1f, 1f), false, ZCap, true, "Slab");
                         foreach (Edge bottom in mine.Where(t => t.Side == Side.Bottom)) Thick(s, bottom);
-                        float endW = Mathf.Min(slabEnd.width * k, r.width * 0.5f);
-                        if (r.width < 1f) break;   // gauntlet: broken ends from 1 u (short slabs read as hard-cut rectangles)
-                        if (mine.Any(e => e.Side == Side.Left && e.Length >= r.height - Eps))
-                            Tint(Add(s, "SlabEnd_L", "ENV_SlabEnd", new Vector2(r.xMin + endW * 0.5f - 0.03f, cy), new Vector2(endW, h), Vector2.zero, Vector4.zero, false, ZCap - 0.001f, false), slabTint);
-                        if (mine.Any(e => e.Side == Side.Right && e.Length >= r.height - Eps))
+                        if (leftEnd)
+                            Tint(Add(s, "SlabEnd_L", "ENV_SlabEnd", new Vector2(r.xMin + endW * 0.5f - endOut, cy), new Vector2(endW, h), Vector2.zero, Vector4.zero, false, ZCap - 0.001f, false), slabTint);
+                        if (rightEnd)
                         {
-                            SpriteRenderer end = Add(s, "SlabEnd_R", "ENV_SlabEnd", new Vector2(r.xMax - endW * 0.5f + 0.03f, cy), new Vector2(endW, h), Vector2.zero, Vector4.zero, true, ZCap - 0.001f, false);
+                            EnvironmentKit.Slot thickEnd = flips ? null : EnvironmentKit.Get("ENV_SlabEndThick");
+                            EnvironmentKit.Slot rightSlot = thickEnd ?? slabEnd;
+                            float hr = rightSlot.height * k, cyr = r.yMax + rightSlot.above * k - hr * 0.5f;
+                            SpriteRenderer end = Add(s, "SlabEnd_R", rightSlot.name, new Vector2(r.xMax - endW * 0.5f + endOut, cyr), new Vector2(endW, hr), Vector2.zero, Vector4.zero, true, ZCap - 0.001f, false);
                             if (end != null) { end.flipX = true; end.color = slabTint; }
                         }
                         break;
@@ -473,9 +565,42 @@ namespace Parallax.Editor.Setup
                         if (!mine.Any(e => e.Side == Side.Bottom)) AddObject(s, "Base", "ENV_PostBase", postBase, new Vector2(r.center.x, r.yMin), r.width * 1.15f, top: false);
                         break;
                     default:
-                        FaceShade(s);
                         foreach (Edge e in mine) BlockEdge(s, e);
                         break;
+                }
+                if (!s.Trap) HoleRims(s);
+            }
+
+            // 2026-10-17 (the developer: "when things fall from the ceiling everything is straight"): the hole a falling block
+            // leaves (LeavesHole) has broken sides and a ragged top: deep strips stand out from the host's stone at each of the
+            // hole's sides and hanging stones from its top, all inside the hole and behind the block (a hair farther than its
+            // skin, at the same order), so they show only once it has fallen.
+            void HoleRims(Solid s)
+            {
+                Sprite fill = FillSprite(room);
+                if (fill == null || !fill.name.StartsWith("ENV_Fill_") || !ChipsReady(room)) return;
+                string suffix = fill.name.Substring("ENV_Fill_".Length);
+                int k = 0;
+                foreach (Rect hole in Holes(s, room))
+                {
+                    foreach (bool atLeft in new[] { true, false })
+                    {
+                        // The host's stone beside the hole (its face looks into it).
+                        float line = atLeft ? hole.xMin : hole.xMax;
+                        if (atLeft ? line <= s.Rect.xMin + Eps : line >= s.Rect.xMax - Eps) continue;
+                        string slot = $"ENV_SideDeep_{suffix}_{(int)(Hash(s.Name + k, 640) * 4f)}";
+                        EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
+                        if (def == null) continue;
+                        var holeSide = new Edge(s, atLeft ? Side.Right : Side.Left, hole.yMin, hole.yMax, line);
+                        Rect strip = SideStrip(holeSide, def);
+                        Tint(Add(s, (atLeft ? "HoleL_" : "HoleR_") + k, slot, strip.center, strip.size, new Vector2(def.width, def.height),
+                            new Vector4(def.width * 0.5f, hole.center.y, 1f, 1f), atLeft, HoleRimZ, true, EdgeKindOf(room, "SideDeep")), body);
+                    }
+                    // Its top: stones hanging from the stone over it.
+                    if (under != null)
+                        Tint(Add(s, "HoleTop_" + k, under.name, new Vector2(hole.center.x, hole.yMax - under.below + under.height * 0.5f), new Vector2(hole.width, under.height),
+                            new Vector2(under.width, under.height), new Vector4(hole.center.x, under.height * 0.5f, 1f, 1f), false, HoleRimZ, true, "Under"), face);
+                    k++;
                 }
             }
 
@@ -490,24 +615,74 @@ namespace Parallax.Editor.Setup
                         // Gauntlet: the plain cap everywhere (the wash read as a flat sepia overlay); the 2D lights light the lip.
                         EnvironmentKit.Slot top = cap;
                         string kind = top == capWash ? "CapWash" : "Cap";
-                        Add(s, "Cap_" + Idx(e), top.name, new Vector2(mid, e.Line + top.above - top.height * 0.5f), new Vector2(e.Length, top.height),
-                            new Vector2(top.width, top.height), new Vector4(mid, top.height * 0.5f, 1f, 1f), false, ZCap, true, kind);
+                        // PAX-A18 W3: a broken corner end at each exposed corner (within BandReach of the face); the cap stops
+                        // where the end's stone begins.
+                        float from = e.From, to = e.To;
+                        foreach (bool atLeft in new[] { true, false })
+                        {
+                            string endSlot = CornerExposed(e, atLeft, allEdges) ? CapEndSlot(e, atLeft) : null;
+                            EnvironmentKit.Slot end = endSlot != null ? EnvironmentKit.Get(endSlot) : null;
+                            if (end == null || e.Length < 2f * (end.width - end.outside) + 0.1f) continue;
+                            // (on a trap, BandReach further out: its whole skin under the corner would show through inward notches)
+                            float outside = end.outside + (s.Trap ? BandReach : 0f);
+                            float inner = end.width - outside, x = atLeft ? e.From - outside + end.width * 0.5f : e.To + outside - end.width * 0.5f;
+                            Add(s, (atLeft ? "CapEndL_" : "CapEndR_") + Idx(e), endSlot, new Vector2(x, e.Line + end.above - end.height * 0.5f), new Vector2(end.width, end.height),
+                                Vector2.zero, Vector4.zero, !atLeft, ZCap, false);
+                            if (atLeft) from += inner - 0.02f; else to -= inner - 0.02f;
+                        }
+                        // PAX-A18 W3: flat (ENV_CapFlat) only over a hazard's own width (its spikes need plain air behind them, D-108);
+                        // bumpy everywhere else.
+                        foreach ((float a, float b, bool flat) in CapRuns(from, to, e.Line, top == cap && EnvironmentKit.Get("ENV_CapFlat") != null ? hazards : null))
+                        {
+                            float capMid = (a + b) * 0.5f;
+                            Add(s, "Cap_" + Idx(e) + (a > from + Eps ? "_" + Mathf.RoundToInt(a * 100f) : ""), flat ? "ENV_CapFlat" : top.name, new Vector2(capMid, e.Line + top.above - top.height * 0.5f), new Vector2(b - a, top.height),
+                                new Vector2(top.width, top.height), new Vector4(capMid, top.height * 0.5f, 1f, 1f), false, ZCap, true, kind);
+                        }
                         break;
                     }
                     case Side.Bottom:
                         if (Thick(s, e)) break;
-                        Tint(Add(s, "Under_" + Idx(e), "ENV_Under", new Vector2(mid, e.Line - under.below + under.height * 0.5f), new Vector2(e.Length, under.height),
-                            new Vector2(under.width, under.height), new Vector4(mid, under.height * 0.5f, 1f, 1f), false, ZUnder, true, "Under"), face);
+                        Tint(Add(s, "Under_" + Idx(e), under.name, new Vector2(mid, e.Line - under.below + under.height * 0.5f), new Vector2(e.Length, under.height),
+                            new Vector2(under.width, under.height), new Vector4(mid, under.height * 0.5f, 1f, 1f), false, ZUnder, true, under.name == "ENV_UnderWalk" ? "UnderWalk" : "Under"), face);
                         break;
                     default:
                     {
                         // PAX-106 (D-114): broken stone, a chipped strip cut from the level's fill (ENV_Side before the kit had them).
                         bool left = e.Side == Side.Left;
-                        string chip = ChipSlot(room, e);
-                        EnvironmentKit.Slot def = chip != null ? EnvironmentKit.Get(chip) : side;
-                        Rect strip = SideStrip(e, def);
-                        Tint(Add(s, (left ? "SideL_" : "SideR_") + Idx(e), chip ?? "ENV_Side", strip.center, strip.size,
-                            new Vector2(def.width, def.height), new Vector4(def.width * 0.5f, mid, 1f, 1f), !left, ZSide, true, chip != null ? "SideChip" : "Side"), chip != null ? body : face);
+                        // PAX-A18 W3: band strips where a cat can be, deep strips where nothing reaches (FaceSpans).
+                        List<FaceSpan> spans = ChipSlot(room, e) != null ? FaceSpans(e, zones, allEdges, flips, hazards) : new List<FaceSpan> { new(e.From, e.To, false) };
+                        // PAX-A18 W3: under a broken corner end the end draws the face's top itself.
+                        float stripTop = StripTop(e, allEdges);
+                        spans = spans.Where(p => p.From < stripTop - Eps).Select(p => new FaceSpan(p.From, Mathf.Min(p.To, stripTop), p.Free, p.Inward)).ToList();
+                        for (int i = 0; i < spans.Count; i++)
+                        {
+                            string chip = SpanSlot(room, e, spans[i]);
+                            // A moving trap's trims are plain tiled sprites (their pixels travel with it), so they can't be masks on
+                            // the world's fill: D-114's own strip there.
+                            // 2026-10-16: every trap solid (its body is a whole rectangle, so an inward notch would show its straight edge).
+                            if (chip != null && e.Owner.Trap
+                                && EnvironmentKit.Get(chip.Replace("ENV_SideChip_", "ENV_SideIn_").Replace("ENV_SideDeep_", "ENV_SideIn_")) != null)
+                                chip = chip.Replace("ENV_SideChip_", "ENV_SideIn_").Replace("ENV_SideDeep_", "ENV_SideIn_");
+                            EnvironmentKit.Slot def = chip != null ? EnvironmentKit.Get(chip) : side;
+                            string stripKind = chip == null ? "Side" : chip.StartsWith("ENV_SideDeep_") ? EdgeKindOf(room, "SideDeep") : chip.StartsWith("ENV_SideIn_") ? "SideIn" : EdgeKindOf(room, "SideChip");
+                            // 2026-10-17: the face's shadow comes from the room's StoneShade map, in the stone's shaders, so the strip
+                            // is one piece (it was cut and tinted down the shadow's ramp, never quite the colour of the stone beside it).
+                            var chunks = new List<(float a, float b)> { (spans[i].From, spans[i].To) };
+                            for (int j = 0; j < chunks.Count; j++)
+                            {
+                                var part = new Edge(e.Owner, e.Side, chunks[j].a, chunks[j].b, e.Line);
+                                Rect strip = SideStrip(part, def);
+                                // 2026-10-16: never past the solid's other face (on a thin wall the strip's soft inner end stood out
+                                // over the air as a straight edge); the mask squeezes a little instead.
+                                // (on a thin one, at its middle: past it the strips' soft ends would cross over air in the other's notches)
+                                float limit = s.Rect.width < ThinWidth ? s.Rect.center.x + (left ? 0.04f : -0.04f) : (left ? s.Rect.xMax : s.Rect.xMin);
+                                if (left && strip.xMax > limit) strip.xMax = Mathf.Max(limit, strip.xMin + 0.05f);
+                                if (!left && strip.xMin < limit) strip.xMin = Mathf.Min(limit, strip.xMax - 0.05f);
+                                Tint(Add(s, (left ? "SideL_" : "SideR_") + Idx(e) + (i == 0 ? "" : "_" + i) + (j == 0 ? "" : "c" + j), chip ?? "ENV_Side", strip.center, strip.size,
+                                    new Vector2(def.width, def.height), new Vector4(def.width * 0.5f, (part.From + part.To) * 0.5f, 1f, 1f), !left, ZSide, true, stripKind),
+                                    chip != null ? body : face);
+                            }
+                        }
                         break;
                     }
                 }
@@ -517,9 +692,32 @@ namespace Parallax.Editor.Setup
             bool Thick(Solid s, Edge e)
             {
                 if (thickUnder == null || !ThickUnderFits(e, solids, flips, visualKeepOut)) return false;
-                float mid = (e.From + e.To) * 0.5f, h = thickUnder.height;
+                float h = thickUnder.height, from = e.From, to = e.To, cy = e.Line + 0.04f - h * 0.5f;
                 bool shortened = thickUnder.name == "ENV_ThickUnderShort";
-                Tint(Add(s, "Thick_" + Idx(e), thickUnder.name, new Vector2(mid, e.Line + 0.04f - h * 0.5f), new Vector2(e.Length, h),
+                // 2026-10-16 ("All edges need to be a bit bumpy"): a broken end where the solid's side is open at its foot (the
+                // strip stopped in a straight cut through its stone and ivy); the strip runs on under the end's soft inner side.
+                EnvironmentKit.Slot end = EnvironmentKit.Get(thickUnder.name + "End");
+                foreach (bool atLeft in new[] { true, false })
+                {
+                    if (end == null || e.Length < 2f * (end.width - end.outside) + 0.1f) continue;
+                    // A ragged end where the underside stops: nothing beside it, or a solid going on down past its line (a wall it
+                    // runs into: the end reaches ThickEndInto into it, over its broken face's notches). Where the neighbour's own
+                    // underside carries on along the same line, the two strips join seamlessly (world-tiled): no end there (two
+                    // ragged ends left a sliver of sky between them).
+                    float beyond = atLeft ? e.From - 0.05f : e.To + 0.05f;
+                    bool below = solids.Any(o => o.Name != s.Name && o.Rect.Contains(new Vector2(beyond, e.Line - 0.2f)));
+                    bool carriesOn = !below && allEdges.Any(o => o.Owner.Name != s.Name && o.Side == Side.Bottom && Mathf.Abs(o.Line - e.Line) < Eps
+                        && o.From <= beyond && o.To >= beyond && ThickUnderFits(o, solids, flips, visualKeepOut));
+                    if (carriesOn) continue;
+                    float into = below ? ThickEndInto : 0f;
+                    float x = atLeft ? e.From - into - end.outside + end.width * 0.5f : e.To + into + end.outside - end.width * 0.5f;
+                    SpriteRenderer piece = Add(s, (atLeft ? "ThickEndL_" : "ThickEndR_") + Idx(e), end.name, new Vector2(x, cy), new Vector2(end.width, h), Vector2.zero, Vector4.zero, false, ZUnder - 0.0005f, false);
+                    if (piece != null) { piece.flipX = !atLeft; piece.color = body; }
+                    float inner = end.width - end.outside - ThickEndFade - into;
+                    if (atLeft) from += inner; else to -= inner;
+                }
+                float mid = (from + to) * 0.5f;
+                Tint(Add(s, "Thick_" + Idx(e), thickUnder.name, new Vector2(mid, cy), new Vector2(to - from, h),
                     new Vector2(thickUnder.width, h), new Vector4(mid, h * 0.5f, 1f, 1f), false, ZUnder, true, shortened ? "ThickUnderShort" : "ThickUnder"), body);
                 return true;
             }
@@ -528,41 +726,169 @@ namespace Parallax.Editor.Setup
             void LipVines(Solid s, Edge e)
             {
                 if (lipVines == null || e.Length < 2f) return;
-                float mid = (e.From + e.To) * 0.5f, h = lipVines.height;
-                Add(s, "Vines_" + Idx(e), "ENV_LipVines", new Vector2(mid, e.Line - 0.12f - h * 0.5f), new Vector2(e.Length - 0.1f, h),
+                float h = lipVines.height, cy = e.Line - 0.12f - h * 0.5f, from = e.From + 0.05f, to = e.To - 0.05f;
+                // 2026-10-16 ("All edges need to be a bit bumpy"): the ivy ends raggedly (ENV_LipVinesEnd), not in a straight cut.
+                EnvironmentKit.Slot end = EnvironmentKit.Get("ENV_LipVinesEnd");
+                if (end != null && to - from >= 2f * (end.width - end.outside) + 0.1f)
+                    foreach (bool atLeft in new[] { true, false })
+                    {
+                        float x = atLeft ? from - end.outside + end.width * 0.5f : to + end.outside - end.width * 0.5f;
+                        SpriteRenderer piece = Add(s, (atLeft ? "VinesEndL_" : "VinesEndR_") + Idx(e), end.name, new Vector2(x, cy), new Vector2(end.width, h), Vector2.zero, Vector4.zero, false, ZMoss + 0.0005f, false);
+                        if (piece != null) piece.flipX = !atLeft;
+                        float inner = end.width - end.outside - ThickEndFade;
+                        if (atLeft) from += inner; else to -= inner;
+                    }
+                float mid = (from + to) * 0.5f;
+                Add(s, "Vines_" + Idx(e), "ENV_LipVines", new Vector2(mid, cy), new Vector2(to - from, h),
                     new Vector2(lipVines.width, h), new Vector4(mid, h * 0.5f, 1f, 1f), false, ZMoss, true, "LipVines");
             }
 
-            // Round 3: the face's shadow, over the fill and the side faces, under the lip's trims (FaceShade).
-            // A pit's floor lies down in that shadow already: it's shaded whole, from its top.
-            void FaceShade(Solid s)
+            // Round 3: the face's shadow, clear for ShadeStart under a block's lit lip, then darkening over ShadeRamp. A pit's floor
+            // lies down in that shadow already: it's shaded whole, from its top. (Baked into the room's StoneShade map, BakeShade.)
+            // 2026-10-17 (the developer: "sometimes it doesn't match the color of the tile it is attached to"): the shadow follows
+            // the stone column at x (every solid stacked on, under or over s there), not s's own rectangle, so a trap floor flush
+            // in the ground, a pit's floor under it and a wall drawn over another wall all shade exactly like the stone beside
+            // them (each solid's own ramp drew its outline as a darker box).
+            (float top, float bottom) Column(Solid s, float x)
             {
-                Rect r = s.Rect;
-                // Only over stone that's drawn: a fixed solid without a renderer (the room's side walls) shows the sky.
-                if (!s.Trap && roomRoot.Find(s.Name)?.GetComponent<SpriteRenderer>() == null) return;
-                float start = s.Shape == Shape.PitBottom ? 0f : ShadeStart;
-                // A block rising from the ground (a step, a pillar) shades from the ground's line, so it joins the ground's
-                // shadow without a seam; a floating block shades from its own top.
-                if (s.Shape != Shape.PitBottom && r.yMin <= groundLine + Eps && r.yMax > groundLine) start = ShadeStart + (r.yMax - groundLine);
-                // Phase 2 round 2: a small block buried in a bigger solid's shaded depth (its top under that solid's top less
-                // ShadeStart) takes the full shade, not a bright patch in a dark wall.
-                if (s.Shape != Shape.PitBottom && solids.Any(o => o.Name != s.Name && o.Rect.Overlaps(r) && o.Rect.width * o.Rect.height > r.width * r.height && r.yMax <= o.Rect.yMax - ShadeStart + Eps))
-                    start = 0f;
-                if (faceShade == null || shadeSolid == null || r.height <= start) return;
-                float ramp = s.Shape == Shape.PitBottom || start == 0f ? 0f : Mathf.Min(ShadeRamp, r.height - start), top = r.yMax - start;
-                Color shade = LevelShade;
-                // PAX-107: not over a falling block's hole (SkinFill leaves it out too), so the air behind it shows once it has gone.
-                List<Rect> holes = Holes(s, room);
-                if (ramp > 0f) Shade("Shade", "ENV_FaceShade", Rect.MinMaxRect(r.xMin, top - ramp, r.xMax, top));
-                float rest = r.height - start - ramp;
-                if (rest > 0.01f) Shade("ShadeSolid", "ENV_FaceShadeSolid", Rect.MinMaxRect(r.xMin, r.yMin - 0.01f, r.xMax, r.yMin + rest + 0.01f));
-
-                void Shade(string name, string slot, Rect quad)
+                float top = s.Rect.yMax, bottom = s.Rect.yMin;
+                for (bool grew = true; grew;)
                 {
-                    List<Rect> pieces = Cut(quad, holes);
-                    for (int i = 0; i < pieces.Count; i++)
-                        Tint(Add(s, i == 0 ? name : name + "_" + i, slot, pieces[i].center, pieces[i].size, Vector2.zero, Vector4.zero, false, ZShade, false), shade);
+                    grew = false;
+                    foreach (Solid o in solids)
+                    {
+                        if (o.Shape is not (Shape.Block or Shape.PitBottom or Shape.Slab) || o.Rect.xMin >= x || o.Rect.xMax <= x) continue;
+                        if (o.Rect.yMin <= top + Eps && o.Rect.yMax > top + Eps) { top = o.Rect.yMax; grew = true; }
+                        if (o.Rect.yMax >= bottom - Eps && o.Rect.yMin < bottom - Eps) { bottom = o.Rect.yMin; grew = true; }
+                    }
                 }
+                return (top, bottom);
+            }
+
+            (float top, float ramp, bool any) ShadeOf(Solid s, float x)
+            {
+                if (s.Shape is not (Shape.Block or Shape.PitBottom) || faceShade == null || shadeSolid == null) return (0f, 0f, false);
+                if (!s.Trap && roomRoot.Find(s.Name)?.GetComponent<SpriteRenderer>() == null) return (0f, 0f, false);
+                (float top, float bottom) = Column(s, x);
+                // A pit's floor with nothing on it lies down in the shadow already: shaded whole, from its top.
+                if (s.Shape == Shape.PitBottom && top <= s.Rect.yMax + Eps) return (s.Rect.yMax, 0f, true);
+                float start = ShadeStart;
+                if (bottom <= groundLine + Eps && top > groundLine) start = ShadeStart + (top - groundLine);
+                if (top - bottom <= start) return (0f, 0f, false);
+                return (top - start, Mathf.Min(ShadeRamp, top - bottom - start), true);
+            }
+
+            // 2026-10-16: a fixed block's face against a trap keeps its broken strip (ExposedEdges), whose notches cut into the
+            // block. While the trap is there its own stone fills them: the trap's skin reaches DeepReach into the neighbour (the
+            // same world-tiled stone, so nothing changes) and leaves with it, baring the broken face.
+            void TrapReach(Solid s)
+            {
+                Sprite fillSprite = FillSprite(room);
+                if (fillSprite == null || !ChipsReady(room)) return;
+                foreach (Solid f in solids.Where(o => !o.Trap && o.Shape is Shape.Block or Shape.PitBottom or Shape.Slab))
+                    foreach (bool right in new[] { true, false })
+                    {
+                        float face = right ? s.Rect.xMax : s.Rect.xMin;
+                        // 2026-10-17: or the host it leaves a hole in, where the host's stone goes on beside it (HoleInsets).
+                        bool host = Holes(f, room).Any(h => Mathf.Abs(h.xMin - s.Rect.xMin) < Eps && Mathf.Abs(h.yMin - s.Rect.yMin) < Eps)
+                            && (right ? f.Rect.xMax > face + Eps : f.Rect.xMin < face - Eps);
+                        if (!host && Mathf.Abs((right ? f.Rect.xMin : f.Rect.xMax) - face) > Eps) continue;
+                        float y0 = Mathf.Max(s.Rect.yMin, f.Rect.yMin), y1 = Mathf.Min(s.Rect.yMax, f.Rect.yMax);
+                        if (y1 - y0 <= Eps) continue;
+                        // 2026-10-17: over the neighbour's whole strip (its notches and the shade it paints toward its broken edge,
+                        // fading into the fill over STRIP_OVERLAP + STRIP_BLEND): stopping at DeepReach left a darker band beside it.
+                        float lend = DeepReach + ReachPastStrip;
+                        Rect q = right ? Rect.MinMaxRect(face, y0, face + lend, y1) : Rect.MinMaxRect(face - lend, y0, face, y1);
+                        // And over its broken top corner, where the two tops are one line: the neighbour's cap runs on under the
+                        // trap's (a broken corner beside the trap's whole top was a step in the lit lip).
+                        if (!host && cap != null && f.Shape != Shape.Slab && Mathf.Abs(f.Rect.yMax - s.Rect.yMax) < Eps)
+                        {
+                            float cx = right ? face + CapReach * 0.5f : face - CapReach * 0.5f, cy = f.Rect.yMax + cap.above - cap.height * 0.5f;
+                            Add(s, (right ? "ReachCapR_" : "ReachCapL_") + f.Name, cap.name, new Vector2(cx, cy), new Vector2(CapReach, cap.height),
+                                new Vector2(cap.width, cap.height), new Vector4(cx, cap.height * 0.5f, 1f, 1f), false, ZCap - 0.0005f, true, "Cap");
+                        }
+                        if (f.Shape == Shape.Slab)
+                        {
+                            // A slab's stone is its own strip: the same strip, sampled as the slab samples it.
+                            string slabName = flips && EnvironmentKit.Get("ENV_SlabFlip") != null ? "ENV_SlabFlip" : "ENV_Slab";
+                            float k = f.Rect.height / 0.5f, h = slab.height * k, cy = f.Rect.yMax + slab.above * k - h * 0.5f;
+                            q = Rect.MinMaxRect(q.xMin, cy - h * 0.5f, q.xMax, cy + h * 0.5f);
+                            Add(s, (right ? "ReachR_" : "ReachL_") + f.Name, slabName, q.center, q.size, new Vector2(slab.width * k, h), new Vector4(q.center.x, h * 0.5f, 1f, 1f),
+                                false, ZCap - 0.0005f, true, "Slab");
+                            continue;
+                        }
+                        // (Shaded where it stands by the room's StoneShade map, like the neighbour's own stone.)
+                        Tint(Add(s, (right ? "ReachR_" : "ReachL_") + f.Name, fillSprite.name, q.center, q.size, fillSprite.bounds.size, new Vector4(q.center.x, q.center.y, 1f, 1f),
+                            false, ZSide - 0.001f, true, "Fill"), body);
+                    }
+            }
+
+            // 2026-10-17 (the developer: "sometimes it doesn't match the color of the tile it is attached to"): the room's stone
+            // shadow as a world-space map (StoneShade) the stone's shaders read, so the fill, its broken strips, a trap's skin and
+            // the reach it lends its neighbour all take the same shadow at the same place (quads over the fill and multiply tints
+            // on the strips never matched: the navy lifted the stone's blue past what a multiply can). Red: the face shadow;
+            // green: the outside masonry's, fading in over OutsideFade across the room's box, so where the room's stone meets
+            // the outside's there's no straight line.
+            void BakeShade()
+            {
+                const int Ppu = ShadePpu;
+                Bounds box = SoloRoomBuilder.ComputeRoomBounds(room, 0f);
+                float bx0 = room.Origin.x, bx1 = room.Origin.x + room.Width, by0 = box.min.y, by1 = box.max.y;
+                Rect area = Rect.MinMaxRect(Mathf.Floor(bx0 - ShadeMargin), Mathf.Floor(by0 - ShadeMargin), Mathf.Ceil(bx1 + ShadeMargin), Mathf.Ceil(by1 + ShadeMargin));
+                int w = Mathf.RoundToInt(area.width * Ppu), h = Mathf.RoundToInt(area.height * Ppu);
+                var face = new float[w * h];
+                var stone = new bool[w * h];
+                for (int i = 0; i < w; i++)
+                {
+                    float x = area.xMin + (i + 0.5f) / Ppu;
+                    // Each solid's column at this x, once.
+                    var here = solids.Where(o => o.Rect.xMin < x && o.Rect.xMax > x).Select(o => (o, shade: ShadeOf(o, x))).ToList();
+                    for (int j = 0; j < h; j++)
+                    {
+                        float y = area.yMin + (j + 0.5f) / Ppu;
+                        foreach ((Solid o, (float top, float ramp, bool any) sh) in here)
+                        {
+                            if (y < o.Rect.yMin || y > o.Rect.yMax) continue;
+                            stone[j * w + i] = true;
+                            if (!sh.any || y >= sh.top) continue;
+                            float t = sh.ramp <= 0f ? 1f : Mathf.Clamp01((sh.top - y) / sh.ramp);
+                            face[j * w + i] = Mathf.Max(face[j * w + i], t * t * (3f - 2f * t));   // ENV_FaceShade's profile
+                        }
+                    }
+                }
+                // Out over the air beside a face (its broken strip's stones stand there), from the nearest stone on the row.
+                int reach = Mathf.CeilToInt(ShadeDilate * Ppu);
+                var spread = (float[])face.Clone();
+                for (int j = 0; j < h; j++)
+                    for (int i = 0; i < w; i++)
+                    {
+                        if (stone[j * w + i]) continue;
+                        for (int d = 1; d <= reach; d++)
+                        {
+                            bool l = i - d >= 0 && stone[j * w + i - d], r = i + d < w && stone[j * w + i + d];
+                            if (!l && !r) continue;
+                            spread[j * w + i] = Mathf.Max(l ? face[j * w + i - d] : 0f, r ? face[j * w + i + d] : 0f);
+                            break;
+                        }
+                    }
+                // Softened across a change of column (a step in the stone's top), so it's never a straight line down the stone.
+                face = BoxBlurRows(spread, w, h, Mathf.RoundToInt(ShadeSoften * Ppu));
+                var outside = new float[w * h];
+                for (int j = 0; j < h; j++)
+                    for (int i = 0; i < w; i++)
+                    {
+                        float x = area.xMin + (i + 0.5f) / Ppu, y = area.yMin + (j + 0.5f) / Ppu;
+                        float d = Mathf.Max(Mathf.Max(bx0 - x, x - bx1), Mathf.Max(by0 - y, y - by1));   // > 0 outside the room's box
+                        outside[j * w + i] = Mathf.Clamp01(0.5f + d / OutsideFade);
+                    }
+                var texels = new byte[w * h * 2];
+                for (int k = 0; k < w * h; k++)
+                {
+                    texels[2 * k] = (byte)Mathf.RoundToInt(Mathf.Clamp01(face[k]) * 255f);
+                    texels[2 * k + 1] = (byte)Mathf.RoundToInt(outside[k] * 255f);
+                }
+                Transform holder = Child(env, "StoneShade", layer);
+                SetupUtility.Ensure<StoneShade>(holder.gameObject, changes).Configure(area, w, h, texels, LevelShade, OutsideShade);
             }
 
             void AddVertical(Solid s, string name, string slot, EnvironmentKit.Slot def, Rect r, float k, string kind)
@@ -604,19 +930,85 @@ namespace Parallax.Editor.Setup
                     Vector2 home = (Vector2)crumble.transform.position + (homes != null && homes.arraySize > 0 ? homes.GetArrayElementAtIndex(0).vector2Value : Vector2.zero);
                     TrapKitSetup.Write(follow, changes, ("holdWith", shard), ("holdAt", home));
                 }
-                SetupUtility.SetArray(follow, "renderers", pair.Value.Cast<Object>().ToArray(), changes);
+                // 2026-10-17: the stone it lends its neighbours stays with them (ShownAtRest), never riding out with it.
+                List<SpriteRenderer> lent = pair.Value.Where(r => r.name.StartsWith("Reach")).ToList();
+                SetupUtility.SetArray(follow, "renderers", pair.Value.Except(lent).Cast<Object>().ToArray(), changes);
                 follow.Apply();
+                if (lent.Count > 0)
+                {
+                    ShownAtRest rest = parent.gameObject.AddComponent<ShownAtRest>();
+                    TrapKitSetup.Write(rest, changes, ("owner", owner), ("rest", (Vector2)owner.transform.position));
+                    SetupUtility.SetArray(rest, "renderers", lent.Cast<Object>().ToArray(), changes);
+                    rest.Apply();
+                }
             }
+            VinesToTheirStone();
+            BakeShade();
             changes.Add($"built {roomRoot.name} environment trims ({edges.Count} exposed edges)");
+
+            // 2026-10-17 (the developer: "make of these vines attached to the ceiling and not just hanging mid air ... for ever
+            // vine"): a vine reaches up from its grab box to the stone over it (VineReachUp at most) and a little into it. The vine
+            // itself is untouched (its renderers are the route harness's, TrapArtBuildTests): the reach is environment art, its
+            // middle tiled up from the vine's anchor and, past one anchor's height, a second anchor tied into the stone. It shows
+            // while the vine hangs where it was built (ShownAtRest), so a snapping vine doesn't leave it behind.
+            void VinesToTheirStone()
+            {
+                foreach (SoloRoomElement v in room.Elements.Where(x => x.Kind == SoloRoomElementKind.Vine))
+                {
+                    Transform vt = roomRoot.Find(v.Name);
+                    SpriteRenderer midArt = vt != null ? vt.Find("Segment_1")?.GetComponent<SpriteRenderer>() : null;
+                    SpriteRenderer anchorArt = vt != null ? vt.Find("Segment_2")?.GetComponent<SpriteRenderer>() : null;
+                    if (anchorArt == null || midArt == null || midArt.drawMode != SpriteDrawMode.Tiled) continue;
+                    Bounds knot = anchorArt.bounds;
+                    float x = knot.center.x, top = knot.max.y;
+                    float above = solids.Where(o => !o.Trap && o.Rect.xMin < x && o.Rect.xMax > x && o.Rect.yMin >= top - Eps)
+                        .Select(o => o.Rect.yMin).DefaultIfEmpty(float.MaxValue).Min();
+                    if (above - top > VineReachUp || above - top < Eps) continue;
+                    float reachTop = above + VineIntoStone;
+                    Transform holder = Child(env, "VineReach_" + v.Name, layer);
+                    var shown = new List<SpriteRenderer>();
+                    SpriteRenderer Piece(string name, SpriteRenderer like, Vector2 centre)
+                    {
+                        Transform t = Child(holder, name, layer);
+                        t.position = new Vector3(centre.x, centre.y, like.transform.position.z);
+                        t.localScale = like.transform.lossyScale;
+                        SpriteRenderer r = SetupUtility.Ensure<SpriteRenderer>(t.gameObject, changes);
+                        r.sprite = like.sprite; r.sharedMaterial = like.sharedMaterial; r.color = like.color;
+                        r.sortingLayerID = like.sortingLayerID; r.sortingOrder = like.sortingOrder;
+                        shown.Add(r);
+                        return r;
+                    }
+                    // A second anchor when the gap holds one; the middle runs from the vine's anchor up to it (or to the stone).
+                    float midTop = reachTop;
+                    if (reachTop - top >= knot.size.y)
+                    {
+                        Piece("Anchor", anchorArt, new Vector2(x, reachTop - knot.extents.y));
+                        midTop = reachTop - knot.extents.y;
+                    }
+                    SpriteRenderer reach = Piece("Middle", midArt, new Vector2(x, (knot.center.y + midTop) * 0.5f));
+                    reach.drawMode = SpriteDrawMode.Tiled;
+                    reach.size = new Vector2(midArt.size.x, midTop - knot.center.y);
+                    reach.transform.position += new Vector3(0f, 0f, 0.001f);   // behind both knots, at the vine's own order
+                    ShownAtRest rest = holder.gameObject.AddComponent<ShownAtRest>();
+                    TrapKitSetup.Write(rest, changes, ("owner", anchorArt), ("rest", (Vector2)anchorArt.transform.position));
+                    SetupUtility.SetArray(rest, "renderers", shown.Cast<Object>().ToArray(), changes);
+                    rest.Apply();
+                    changes.Add($"reached {v.Name} up {reachTop - top:F2} u to its stone");
+                }
+            }
         }
 
         // ---------- PAX-106 (D-114): broken-stone sides ----------
 
-        /// <summary>D-114 (2): how far the stone fill stops inside a wholly exposed side, for the chipped edge's notches.</summary>
-        public const float ChipInset = 0.06f;
-
         /// <summary>The broken-stone strips are in the kit, cut from this room's fill, with their material.</summary>
-        static bool ChipsReady(SoloRoomDefinition room) => ChipSlotName(room, 0) is string slot && EnvironmentKit.Get(slot) != null && EnvironmentKit.TileMaterial("SideChip") != null;
+        static bool ChipsReady(SoloRoomDefinition room) => ChipSlotName(room, 0) is string slot && EnvironmentKit.Get(slot) != null && EnvironmentKit.TileMaterial(EdgeKindOf(room, "SideChip")) != null;
+
+        /// <summary>PAX-A18 W3: the edge-mask material kind for this room's fill (ENV_SideChip_A, …).</summary>
+        static string EdgeKindOf(SoloRoomDefinition room, string kind)
+        {
+            Sprite fill = FillSprite(room);
+            return fill == null || !fill.name.StartsWith("ENV_Fill_") ? kind : EnvironmentKit.EdgeKind(kind, fill.name.Substring("ENV_Fill_".Length));
+        }
 
         static string ChipSlotName(SoloRoomDefinition room, int variant)
         {
@@ -636,6 +1028,17 @@ namespace Parallax.Editor.Setup
 
         /// <summary>Where a side face's strip is drawn: its air side `outside` beyond the face line, the rest inside, along the
         /// face's exposed stretch.</summary>
+        /// <summary>2026-10-16: a deep strip (slot and its edge-mask material) for an edge no solid owns: the outside masonry
+        /// meeting the room's air (EnvironmentStackSetup.Outside). (null, null) when the kit lacks them.</summary>
+        public static (string slot, Material material) OutsideStrip(SoloRoomDefinition room, int variant)
+        {
+            string chip = ChipsReady(room) ? ChipSlotName(room, Mathf.Clamp(variant, 0, 3)) : null;
+            if (chip == null) return (null, null);
+            string deep = chip.Replace("ENV_SideChip_", "ENV_SideDeep_");
+            Material m = EnvironmentKit.TileMaterial(EdgeKindOf(room, "SideDeep"));
+            return EnvironmentKit.Get(deep) != null && m != null ? (deep, m) : (null, null);
+        }
+
         public static Rect SideStrip(Edge e, EnvironmentKit.Slot def)
         {
             float xMin = e.Side == Side.Left ? e.Line - def.outside : e.Line + def.outside - def.width;
@@ -649,6 +1052,25 @@ namespace Parallax.Editor.Setup
         /// material); the original otherwise.</summary>
         static EnvironmentKit.Slot ThickUnderSlot() =>
             EnvironmentKit.Get("ENV_ThickUnderShort") is EnvironmentKit.Slot cut && EnvironmentKit.TileMaterial("ThickUnderShort") != null ? cut : EnvironmentKit.Get("ENV_ThickUnder");
+
+        /// <summary>PAX-A18 W3: an underside a gravity-up cat may stand on (a flip room) keeps a whole line with lumps beyond it
+        /// (ENV_UnderWalk); every other one hangs broken stones (ENV_Under).</summary>
+        static EnvironmentKit.Slot UnderSlot(bool flips) =>
+            flips && EnvironmentKit.Get("ENV_UnderWalk") is EnvironmentKit.Slot walk && EnvironmentKit.TileMaterial("UnderWalk") != null ? walk : EnvironmentKit.Get("ENV_Under");
+
+        /// <summary>2026-10-16: also a face on the room's own side line looking out (a jamb flush with the room's edge): the
+        /// outside masonry's columns stand against it, so it isn't broken (its notches would show the air between them).</summary>
+        static bool FacesOut(Edge e, Bounds content, SoloRoomDefinition room)
+        {
+            if (FacesOut(e, content)) return true;
+            bool right = e.Side == Side.Right && e.Line >= room.Origin.x + room.Width - Eps, left = e.Side == Side.Left && e.Line <= room.Origin.x + Eps;
+            if (!right && !left) return false;
+            // Only up to the outside's column there (EnvironmentStackSetup.Outside): the wall's top, or the frame where the room's
+            // roof runs into that side; above it the face looks into air.
+            bool roofed = Solids(room).Any(s => s.Kind == SoloRoomElementKind.Ceiling && s.Rect.yMax >= content.max.y - 0.05f
+                && (left ? s.Rect.xMin <= room.Origin.x + 0.05f : s.Rect.xMax >= room.Origin.x + room.Width - 0.05f));
+            return roofed || e.To <= room.Origin.y + 8f + Eps;
+        }
 
         static bool FacesOut(Edge e, Bounds content) => e.Side switch
         {

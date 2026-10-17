@@ -27,9 +27,14 @@ namespace Parallax.Presentation
         [Tooltip("A spear's repeating shaft (the head is arrowArt); null for an arrow.")]
         [SerializeField] SpriteRenderer shaftArt;
         [SerializeField] SpriteRenderer slot;
+        [Tooltip("PAX-A18 (D-108 amendment): an honest launcher's mouth, its lethal part, drawn over its frame (same canvas); null without the kit's mouth.")]
+        [SerializeField] SpriteRenderer mouthArt;
+        [SerializeField] Sprite mouthSprite;
         [SerializeField] bool disguised, spear;
         [SerializeField] HostSkin hostSkin;
         [SerializeField] Sprite launcherSprite, arrowSprite, spearHeadSprite, spearShaftSprite;
+        [Tooltip("2026-10-17: the whole painted spear at its one size (TRAP-05_spear); null draws the old head and repeating shaft.")]
+        [SerializeField] Sprite spearWholeSprite;
         [SerializeField] Material trapMaterial;
         [SerializeField] Vector2 launcherSize, arrowSize;
         [SerializeField] ArrowDirection direction;
@@ -42,6 +47,9 @@ namespace Parallax.Presentation
         public bool Spear => spear;
         public HostSkin HostSkin => hostSkin;
         public SpriteRenderer LauncherArt => launcherArt;
+        /// <summary>The launcher's lethal part, the one HazardContrastTests measures: an honest launcher's mouth (its frame when
+        /// the kit has no mouth), a disguised one's reveal.</summary>
+        public SpriteRenderer LauncherDanger => disguised ? slot : mouthArt != null ? mouthArt : launcherArt;
         public int TellTicks => tellTicks;
         bool FacesLeft => direction == ArrowDirection.Left;
 
@@ -53,11 +61,32 @@ namespace Parallax.Presentation
             launcherArt.flipX = false;
         }
 
+        /// <summary>PAX-A18 (D-151): the launcher's carved frame draws at its one fixed size (the kit sprite's own size, the same in
+        /// every level), not fitted to its grey-box; with no kit sprite, as before (the box, D-101).</summary>
+        Vector2 LauncherDrawSize => launcherSprite != null ? (Vector2)launcherSprite.bounds.size : launcherSize * bodyScale;
+
+        /// <summary>An honest launcher's frame isn't lethal and draws at its fixed size: its allowance is what that size needs.</summary>
+        public override Vector2 GrowthOf(Body b)
+        {
+            Vector2 g = BodyGrowth;
+            // 2026-10-17 (ruled: "Fixed art, keep hitboxes, and fixed length"): a spear draws its one size, its tip at the
+            // shaft's leading end; on a shorter shaft its tail runs past the grey-box's tail end.
+            if (spear && spearWholeSprite != null && b.Art == arrowArt && arrowSize.x > 0f && arrowSize.y > 0f)
+            {
+                Vector2 whole = spearWholeSprite.bounds.size;
+                return new Vector2(Mathf.Max(g.x, (whole.x - arrowSize.x) / arrowSize.x + 1e-3f), Mathf.Max(g.y, (whole.y / arrowSize.y - 1f) * 0.5f + 1e-3f));
+            }
+            if (disguised || (b.Art != launcherArt && b.Art != mouthArt) || launcherSize.x <= 0f || launcherSize.y <= 0f) return g;
+            Vector2 drawn = LauncherDrawSize;
+            return new Vector2(Mathf.Max(g.x, (drawn.x / launcherSize.x - 1f) * 0.5f + 1e-3f), Mathf.Max(g.y, (drawn.y / launcherSize.y - 1f) * 0.5f + 1e-3f));
+        }
+
         protected override void CollectBodies(List<Body> into)
         {
             into.Add(new Body(launcherArt, greyboxLauncher));
+            if (mouthArt != null) into.Add(new Body(mouthArt, greyboxLauncher));
             into.Add(new Body(arrowArt, greyboxArrow));
-            if (shaftArt != null) into.Add(new Body(shaftArt, greyboxArrow));
+            if (shaftArt != null && spearWholeSprite == null) into.Add(new Body(shaftArt, greyboxArrow));
         }
 
         protected override void CollectEffects(List<Effect> into)
@@ -74,6 +103,7 @@ namespace Parallax.Presentation
             bool telling = fired && TrapArtMath.ArrowGlint(s, tellTicks);
             float pulse = telling ? 0.6f + 0.4f * Mathf.Cos(s * 0.9f) : 0f;
 
+            if (mouthArt != null) mouthArt.enabled = false;   // shown below, exactly with the frame
             if (Mirror(launcherArt, greyboxLauncher))
             {
                 if (disguised)
@@ -82,8 +112,19 @@ namespace Parallax.Presentation
                 }
                 else
                 {
-                    DrawFitted(launcherArt, launcherSprite, launcherSize * bodyScale);
-                    launcherArt.color = Color.Lerp(Color.white, HazardPalette.TellTint, pulse);   // PAX-V08: the tell glows crimson
+                    DrawFitted(launcherArt, launcherSprite, LauncherDrawSize);
+                    if (mouthArt != null)
+                    {
+                        // The mouth on the frame's canvas: the same pose, size and facing; the tell glows on the mouth, the frame stays stone.
+                        mouthArt.enabled = true;
+                        if (mouthArt.sprite != mouthSprite) mouthArt.sprite = mouthSprite;
+                        mouthArt.drawMode = SpriteDrawMode.Simple;
+                        mouthArt.transform.SetPositionAndRotation(launcherArt.transform.position + new Vector3(0f, 0f, -0.001f), launcherArt.transform.rotation);
+                        mouthArt.transform.localScale = launcherArt.transform.localScale;
+                        mouthArt.flipX = launcherArt.flipX;
+                        mouthArt.color = Color.Lerp(Color.white, HazardPalette.TellTint, pulse);   // PAX-V08: the tell glows crimson
+                    }
+                    else launcherArt.color = Color.Lerp(Color.white, HazardPalette.TellTint, pulse);   // PAX-V08: the tell glows crimson
                 }
             }
             if (slot != null)
@@ -93,7 +134,8 @@ namespace Parallax.Presentation
                 if (show)
                 {
                     slot.transform.position = new Vector3(greyboxLauncher.transform.position.x, greyboxLauncher.transform.position.y, slot.transform.position.z);
-                    DrawFitted(slot, launcherSprite, launcherSize * bodyScale);
+                    // PAX-A18: the mouth alone opens in the disguised launcher's own wall (the frame would be a second stone).
+                    DrawFitted(slot, mouthSprite != null ? mouthSprite : launcherSprite, LauncherDrawSize);
                     slot.color = Color.Lerp(Color.white, HazardPalette.TellTint, pulse);
                 }
             }
@@ -154,6 +196,16 @@ namespace Parallax.Presentation
             bool shown = Mirror(arrowArt, greyboxArrow);
             if (shaftArt != null) Mirror(shaftArt, greyboxArrow);
             if (!shown) return;
+            if (spearWholeSprite != null)
+            {
+                // 2026-10-17: the whole painted spear at its one size, its tip at the grey-box's leading end.
+                if (shaftArt != null) shaftArt.enabled = false;
+                float dir = FacesLeft ? -1f : 1f;
+                Vector2 whole = spearWholeSprite.bounds.size;
+                DrawFitted(arrowArt, spearWholeSprite, whole);
+                arrowArt.transform.position = greyboxArrow.transform.position + new Vector3(dir * (arrowSize.x * 0.5f - whole.x * 0.5f), shiver, 0f);
+                return;
+            }
             Vector2 size = arrowSize * bodyScale;   // D-101
             float sign = FacesLeft ? -1f : 1f, thick = size.y * 0.85f;
             float headLen = Mathf.Min(size.x * 0.45f, thick * 2.2f), shaftLen = size.x * 0.98f - headLen;

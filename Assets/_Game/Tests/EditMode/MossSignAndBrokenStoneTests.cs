@@ -31,6 +31,11 @@ namespace Parallax.Tests.EditMode
         public void EverySideFace_IsBrokenStone_WithinItsOutline(string id, object room) =>
             CollectionAssert.IsEmpty(Check("CheckSideStrips", id, room));
 
+        // PAX-A18 W3: bumpy tops, and a flip room's undersides keep a whole walkable line.
+        [TestCaseSource(nameof(Rooms))]
+        public void EveryWalkableTop_KeepsItsLine(string id, object room) =>
+            CollectionAssert.IsEmpty(Check("CheckTops", id, room));
+
         // The sign's positive half has to be exercised somewhere: L001's falling grip walls and room 14's grip walls.
         [Test]
         public void TheGripRooms_HaveGripMoss()

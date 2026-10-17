@@ -23,6 +23,20 @@ namespace Parallax.Presentation
 
         public override RoomTrap Trap => trap;
 
+        /// <summary>2026-10-17 (the developer: "Inverters make them slightly bigger"): the orb draws at its sprite's own size
+        /// (TRAP-06, 0.78 u, was 0.6) even past a narrow zone (0.6 u wide), except in one under 0.5 u (L012's disguised Inv_H).</summary>
+        float OrbSide(float zoneSide) => orbSprite == null ? zoneSide * bodyScale
+            : zoneSide < 0.5f ? Mathf.Min(orbSprite.bounds.size.x, zoneSide * bodyScale) : orbSprite.bounds.size.x;
+
+        public override Vector2 GrowthOf(Body b)
+        {
+            Vector2 g = BodyGrowth;
+            if (b.Art != orb || orb == null || greyboxOrb == null) return g;
+            Vector2 box = greyboxOrb.bounds.size;
+            float drawn = OrbSide(Mathf.Min(zoneSize.x, zoneSize.y)) * 1.0f;   // the breathing only shrinks it
+            return new Vector2(Mathf.Max(g.x, (drawn / Mathf.Max(1e-3f, box.x) - 1f) * 0.5f + 1e-3f), Mathf.Max(g.y, (drawn / Mathf.Max(1e-3f, box.y) - 1f) * 0.5f + 1e-3f));
+        }
+
         protected override void CollectBodies(List<Body> into)
         {
             if (orb != null) into.Add(new Body(orb, greyboxOrb));
@@ -37,7 +51,9 @@ namespace Parallax.Presentation
             float side = Mathf.Min(zoneSize.x, zoneSize.y);
             if (orb != null && Mirror(orb, greyboxOrb))
             {
-                Fit(orb, orbSprite, new Vector2(side, side) * bodyScale);
+                // PAX-A18 (D-151): one orb size everywhere (the sprite's own), smaller only in a zone too narrow for it.
+                float orbSide = OrbSide(side);
+                Fit(orb, orbSprite, new Vector2(orbSide, orbSide));
                 float breathe = 0.92f + 0.08f * Mathf.Sin(RoomTick * 0.08f);
                 orb.transform.localScale *= breathe;
             }

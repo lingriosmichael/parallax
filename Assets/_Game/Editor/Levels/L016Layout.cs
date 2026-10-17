@@ -64,8 +64,9 @@ namespace Parallax.Editor.Levels
             // The chimney: Moss_W1 hangs from slab A's east end, Moss_E1 is the east wall's face; 1.75 u apart.
             // D-145 (the developer: "moss just in the air is weird. It needs to be connected to a wall"): Moss_W1 is the face of
             // Hang_W1, a stone pillar hung under slab A's east end down to the moss's foot.
-            Block(elements, SoloRoomElementKind.Wall, "Hang_W1", 29.25f, 29.75f, 2.4f, C1);
-            Block(elements, SoloRoomElementKind.GripWall, "Moss_W1", 29.75f, 30f, 2.4f, F2);
+            // D-154 (the developer, 2026-10-17: "make the left ledge slightly longer"): down to 2.0 u (was 2.4).
+            Block(elements, SoloRoomElementKind.Wall, "Hang_W1", 29.25f, 29.75f, 2f, C1);
+            Block(elements, SoloRoomElementKind.GripWall, "Moss_W1", 29.75f, 30f, 2f, F2);
             Block(elements, SoloRoomElementKind.GripWall, "Moss_E1", 31.75f, 32f, .6f, F2);
             // Slab B (corridor 2's ceiling, corridor 3's floor): the shaft (x 1.5-3.5) near its west end; CC_2 and Slam_2 are
             // its bottom unit under caps; Hinge_3 is its top unit on a seat.

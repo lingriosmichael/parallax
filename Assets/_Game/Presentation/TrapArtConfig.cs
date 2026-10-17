@@ -24,7 +24,18 @@ namespace Parallax.Presentation
         public Sprite[] Spray = new Sprite[0];
         [Header("Bodies, TRAP-04 onward (painted in ChatGPT; code-drawn placeholders until saved)")]
         public Sprite SpikeStrip;
+        [Tooltip("PAX-A18 (D-108 amendment): the launcher's mouth (its lethal part), drawn over its frame on the same canvas.")]
+        public Sprite LauncherMouth;
+        [Tooltip("PAX-A18 (D-151): the painted spike blades (SPIKE_blade_*), laid out one by one at one fixed size (SpikeLayout); empty = the tiled strip.")]
+        public Sprite[] SpikeBlades = new Sprite[0];
+        [Tooltip("PAX-A18: a slam's iron striking plate, repeated along its bottom edge; and a hinge floor's knuckle at its pivot.")]
+        public Sprite SlamPlate, HingeKnuckle;
+        [Tooltip("PAX-A18: cracks growing on a crumbling floor (small to shattering) and its broken edge.")]
+        public Sprite[] Cracks = new Sprite[0];
+        public Sprite CrumbleEdge;
         public Sprite SpearHead, SpearShaft;
+        [Tooltip("2026-10-17: the whole painted spear at its one size (TRAP-05_spear).")]
+        public Sprite SpearWhole;
         public Sprite InverterOrb, CueRing, CueMark;
         public Sprite GlyphRing;
         public Sprite StormCloud;

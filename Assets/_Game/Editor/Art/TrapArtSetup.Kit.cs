@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Parallax.Core;
+using Parallax.Core.Presentation;
 using Parallax.Editor.Setup;
 using Parallax.Gameplay.Rooms;
 using Parallax.Presentation;
@@ -34,8 +35,41 @@ namespace Parallax.Editor.Art
 
         // ---------- spikes: static, pit floors, hidden, periodic, sliding ----------
 
-        static string BuildSpikes(Transform artRoot, SoloRoomDefinition room, SoloRoomElement e, RoomTrap trap, SpriteRenderer greybox, bool rises, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes) =>
-            BuildSpikes(artRoot, e.Name, trap, greybox, rises, PointsDown(room, e), PointsSide(room, e), rooms, config, layer, changes);
+        static string BuildSpikes(Transform artRoot, SoloRoomDefinition room, SoloRoomElement e, RoomTrap trap, SpriteRenderer greybox, bool rises, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
+        {
+            bool down = PointsDown(room, e);
+            int side = PointsSide(room, e);
+            return BuildSpikes(artRoot, e.Name, trap, greybox, rises, down, side, rooms, config, layer, changes, (a0, a1) => BladeReach(room, e, down, side, a0, a1));
+        }
+
+        /// <summary>The developer (2026-10-16): no blade may show past the solid that hides it, or pierce one in front of it.
+        /// How far a strip's blades may reach from its base (world units) before they'd leave a solid covering the strip (a
+        /// floor or a collapsing floor laid over hidden spikes) or enter one standing in front of it, less a small margin;
+        /// 0 when nothing limits them. Solids at their authored poses (a level's start). `alongMin`..`alongMax`: the part of the
+        /// strip asked about (one blade's span, from the strip's centre along its row); the whole strip by default.</summary>
+        internal static float BladeReach(SoloRoomDefinition room, SoloRoomElement e, bool pointsDown, int pointsSide,
+            float alongMin = float.NegativeInfinity, float alongMax = float.PositiveInfinity)
+        {
+            const float Margin = 0.03f, Touch = 0.01f;
+            var strip = new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size);
+            Vector2 outward = pointsSide != 0 ? new Vector2(pointsSide, 0f) : new Vector2(0f, pointsDown ? -1f : 1f);
+            bool sideways = pointsSide != 0;
+            float Out(Vector2 p) => Vector2.Dot(p, outward);
+            float baseU = Mathf.Min(Out(strip.min), Out(strip.max));
+            float c = sideways ? strip.center.y : strip.center.x;
+            float a0 = Mathf.Max(sideways ? strip.yMin : strip.xMin, c + alongMin), a1 = Mathf.Min(sideways ? strip.yMax : strip.xMax, c + alongMax);
+            float reach = float.PositiveInfinity;
+            foreach (SoloRoomSkin.Solid s in SoloRoomSkin.Solids(room))
+            {
+                if (s.Name == e.Name) continue;
+                float b0 = sideways ? s.Rect.yMin : s.Rect.xMin, b1 = sideways ? s.Rect.yMax : s.Rect.xMax;
+                if (b1 <= a0 + Touch || b0 >= a1 - Touch) continue;   // beside the strip, not over it
+                float u0 = Mathf.Min(Out(s.Rect.min), Out(s.Rect.max)) - baseU, u1 = Mathf.Max(Out(s.Rect.min), Out(s.Rect.max)) - baseU;
+                if (u1 <= Touch) continue;                            // behind the base: the strip's host
+                reach = Mathf.Min(reach, u0 <= Touch ? u1 : u0);      // a cover: stay inside it; in front: stop at its face
+            }
+            return float.IsPositiveInfinity(reach) ? 0f : Mathf.Max(0.05f, reach - Margin);
+        }
 
         /// <summary>PAX-107 (D-124): a spiked hinge floor's face, its own spikes art (pointing out of the floor's top face, turned
         /// with it), beside the floor's solid art.</summary>
@@ -43,7 +77,7 @@ namespace Parallax.Editor.Art
             ReadObject(mover, "spikes") is SpriteRenderer face && face != null
                 ? BuildSpikes(artRoot, e.Name + "_Spikes", mover, face, true, false, 0, rooms, config, layer, changes) : null;
 
-        static string BuildSpikes(Transform artRoot, string name, RoomTrap trap, SpriteRenderer greybox, bool rises, bool pointsDown, int pointsSide, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
+        static string BuildSpikes(Transform artRoot, string name, RoomTrap trap, SpriteRenderer greybox, bool rises, bool pointsDown, int pointsSide, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes, System.Func<float, float, float> reachOver = null)
         {
             if (greybox == null || config.SpikeStrip == null) return null;
             Transform art = ArtObject(artRoot, name, greybox.transform.position, layer, changes);
@@ -56,7 +90,69 @@ namespace Parallax.Editor.Art
                 ("strip", config.SpikeStrip), ("trapMaterial", HazardMaterial(config)), ("pointsDown", pointsDown), ("pointsSide", pointsSide), ("rises", rises));
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
             SetupUtility.SetArray(presenter, "grit", grit.Cast<Object>().ToArray(), changes);
+            BuildBlades(art, presenter, name, greybox, pointsSide, config, layer, changes, reachOver);
             return art.name;
+        }
+
+        /// <summary>PAX-A18 (D-151): the strip's blades, one renderer each, laid out once (SpikeLayout, seeded by the element's
+        /// name) at the kit's one blade size; SpikeArt poses them every frame. Without painted blades: none (the tiled strip).</summary>
+        static void BuildBlades(Transform art, SpikeArt presenter, string name, SpriteRenderer greybox, int pointsSide, TrapArtConfig config, int layer, List<string> changes, System.Func<float, float, float> reachOver)
+        {
+            Sprite[] sprites = config.SpikeBlades.Where(s => s != null).ToArray();
+            Vector2 box = pointsSide != 0 ? new Vector2(greybox.size.y, greybox.size.x) : greybox.size;
+            float tallest = sprites.Length > 0 ? sprites.Max(s => s.bounds.size.y) : 0f;
+            var blades = new List<SpriteRenderer>();
+            var variants = new List<int>();
+            var along = new List<float>();
+            var reaches = new List<float>();
+            var back = new List<bool>();
+            if (sprites.Length > 0 && tallest > 0f)
+            {
+                (float k, _) = SpikeArt.BladeScale(box.y, config.BodyScale * (box.y > SpikeArt.MaxStripHeight ? 1f : config.SpikeHeightScale), tallest);
+                float[] widths = sprites.Select(s => s.bounds.size.x * k).ToArray();
+                List<SpikeLayout.Blade> layout = SpikeLayout.Lay(box.x, widths, TrapArtMath.Seed(name, 0));
+                for (int i = 0; i < layout.Count; i++)
+                {
+                    SpriteRenderer b = Child(art, "Blade_" + i, layer, changes);
+                    b.sprite = sprites[layout[i].Variant]; b.sharedMaterial = HazardMaterial(config); b.drawMode = SpriteDrawMode.Simple;
+                    b.sortingOrder = greybox.sortingOrder; b.enabled = greybox.enabled;
+                    blades.Add(b); variants.Add(layout[i].Variant); along.Add(layout[i].Along);
+                    // Each blade's own reach, over its own span: only the blades under a low solid draw smaller.
+                    reaches.Add(reachOver != null ? reachOver(layout[i].Along - layout[i].Width * 0.5f, layout[i].Along + layout[i].Width * 0.5f) : 0f);
+                    back.Add(false);
+                }
+                // The developer (2026-10-16, "Can we overlap them somehow?"): a back row, one blade between each two front ones,
+                // smaller and a little dimmer, drawn just behind them, so the strip reads as one dense bed of iron.
+                for (int i = 0; i + 1 < layout.Count; i++)
+                {
+                    int vb = (int)(TrapArtMath.Hash01(TrapArtMath.Seed(name, 0), 2000 + i) * sprites.Length) % sprites.Length;
+                    if (vb == layout[i].Variant || vb == layout[i + 1].Variant) vb = (vb + 1) % sprites.Length;
+                    float at = (layout[i].Along + layout[i].Width * 0.5f + layout[i + 1].Along - layout[i + 1].Width * 0.5f) * 0.5f;
+                    float w = sprites[vb].bounds.size.x * k * SpikeArt.BackScale;
+                    SpriteRenderer b = Child(art, "Blade_" + blades.Count, layer, changes);
+                    b.sprite = sprites[vb]; b.sharedMaterial = HazardMaterial(config); b.drawMode = SpriteDrawMode.Simple;
+                    // Same order as the front row, a hair further back (an order lower, it sorted among the outside masonry and
+                    // broke its batches).
+                    b.sortingOrder = greybox.sortingOrder; b.enabled = greybox.enabled;
+                    b.transform.localPosition = new Vector3(b.transform.localPosition.x, b.transform.localPosition.y, 0.001f);
+                    blades.Add(b); variants.Add(vb); along.Add(at); back.Add(true);
+                    reaches.Add(reachOver != null ? reachOver(at - w * 0.5f, at + w * 0.5f) : 0f);
+                }
+            }
+            for (int i = blades.Count; art.Find("Blade_" + i) != null; i++) RemoveChild(art, "Blade_" + i, changes);
+            SetupUtility.SetArray(presenter, "blades", blades.Cast<Object>().ToArray(), changes);
+            SetupUtility.SetArray(presenter, "bladeSprites", sprites.Cast<Object>().ToArray(), changes);
+            var so = new SerializedObject(presenter);
+            SerializedProperty v = so.FindProperty("bladeVariant"), a = so.FindProperty("bladeAlong"), rr = so.FindProperty("bladeReach"), bk = so.FindProperty("bladeBack");
+            v.arraySize = variants.Count; a.arraySize = along.Count; rr.arraySize = reaches.Count; bk.arraySize = back.Count;
+            for (int i = 0; i < variants.Count; i++)
+            {
+                v.GetArrayElementAtIndex(i).intValue = variants[i]; a.GetArrayElementAtIndex(i).floatValue = along[i];
+                rr.GetArrayElementAtIndex(i).floatValue = reaches[i]; bk.GetArrayElementAtIndex(i).boolValue = back[i];
+            }
+            so.FindProperty("bladeHeight").floatValue = tallest;
+            so.FindProperty("bladeGrowth").floatValue = config.BodyScale * config.SpikeHeightScale;
+            if (so.ApplyModifiedPropertiesWithoutUndo()) changes.Add("laid out " + name + "'s " + blades.Count + " blades");
         }
 
         /// <summary>Spikes hang from a ceiling (point down) when a fixed element's underside meets their top and none meets
@@ -125,6 +221,30 @@ namespace Parallax.Editor.Art
             SpriteRenderer socket = null;
             RemoveChild(art, "Socket", changes);
             SpriteRenderer[] dust = Effects(art, "Dust", config.SolidDust, config.Dust, config.TrapMaterial, greybox.sortingOrder + EffectOrder, layer, changes);
+            // 2026-10-17 (the developer: "Whatever falls needs to crash and look like a pile of rubble and not like a perfect
+            // square, but this goes only for the ones that fall and never go back up"): a falling block that has landed shows
+            // a heap of broken stone over its footprint instead of its skin (every falling block stays down until its room
+            // resets). Not a grip wall's (D-114: its moss is its grip).
+            SpriteRenderer rubble = null;
+            Vector2 rubbleScale = Vector2.one;
+            // (Only one that falls: a block that rises, TrapLab's Block_F, is climbed. And a slam that comes straight down and
+            // stays, L016's Slam_1, Slam_3a and Slam_3b: the developer, "I think this will look different once we make it look
+            // like rubble".)
+            Vector2 drop = kind == SolidArtKind.Mover ? ReadVector(trap, "offset") : Vector2.zero;
+            bool staysDown = kind == SolidArtKind.Mover && Mathf.Abs(drop.x) < 1e-4f && drop.y < 0f && ReadInt(trap, "returnTicks") == 0
+                && ReadInt(trap, "repeatMode") == (int)TrapRepeatMode.Once && ReadInt(trap, "hingeTicks") == 0 && !(Prop(trap, "riseFirst")?.boolValue ?? false);
+            bool falls = (kind == SolidArtKind.FallingBlock && (FallingBlockDirection)ReadInt(trap, "direction") == FallingBlockDirection.Down) || staysDown;
+            var rubbleSlot = falls && !e.Settings.Grip.IsConfigured ? RubbleSlot(room, greybox.size, e.Name) : null;
+            if (rubbleSlot.HasValue)
+            {
+                (Sprite heapSprite, Material heapMask, Vector2 footprint) = rubbleSlot.Value;
+                rubble = Child(art, "Rubble", layer, changes);
+                rubble.sprite = heapSprite; rubble.sharedMaterial = heapMask; rubble.drawMode = SpriteDrawMode.Simple;
+                rubble.color = SoloRoomSkin.Body;
+                rubble.sortingOrder = greybox.sortingOrder; rubble.enabled = false;
+                rubbleScale = new Vector2(greybox.size.x / footprint.x, greybox.size.y / footprint.y);
+            }
+            else RemoveChild(art, "Rubble", changes);
 
             Vector2 direction = Vector2.zero;
             int landTick = 0, moveTicks = 0, holdTicks = 0, returnTicks = 0, shrinkTicks = 0;
@@ -138,18 +258,58 @@ namespace Parallax.Editor.Art
                     Vector2 offset = ReadVector(trap, "offset");
                     direction = offset.sqrMagnitude > 0f ? offset.normalized : Vector2.right;
                     moveTicks = ReadInt(trap, "moveTicks"); holdTicks = ReadInt(trap, "holdTicks"); returnTicks = ReadInt(trap, "returnTicks");
+                    if (rubble != null) landTick = moveTicks;   // a slam that stays: rubble once it's down
                     break;
                 case SolidArtKind.Shrinker:
                     shrinkTicks = ReadInt(trap, "shrinkTicks");
                     break;
             }
+            // PAX-A18 (D-151): a slam's iron striking plate and a hinge floor's knuckle, children of the skin (they move with it).
+            SpriteRenderer plate = null, knuckle = null;
+            float knuckleAlong = 0f;
+            bool slams = kind == SolidArtKind.Mover && (Prop(trap, "slams")?.boolValue ?? false);
+            bool hinges = kind == SolidArtKind.Mover && ReadInt(trap, "hingeTicks") > 0;
+            if (slams && config.SlamPlate != null)
+            {
+                plate = Child(skin.transform, "Plate", layer, changes);
+                // One order above the skin and its trims (drawn after them), in the skin's own plane (inside its grey-box's bounds).
+                plate.sprite = config.SlamPlate; plate.sharedMaterial = config.TrapMaterial; plate.sortingOrder = greybox.sortingOrder + 1;
+                plate.transform.localPosition = Vector3.zero;
+            }
+            else RemoveChild(skin.transform, "Plate", changes);
+            if (hinges && config.HingeKnuckle != null)
+            {
+                knuckle = Child(skin.transform, "Knuckle", layer, changes);
+                knuckle.sprite = config.HingeKnuckle; knuckle.sharedMaterial = config.TrapMaterial; knuckle.drawMode = SpriteDrawMode.Simple;
+                knuckle.sortingOrder = greybox.sortingOrder + 1;
+                knuckle.transform.localPosition = Vector3.zero;
+                Vector2 pivot = ReadVector(trap, "hingePivot");
+                knuckleAlong = Mathf.Sign(pivot.x == 0f ? -1f : pivot.x) * greybox.size.x * 0.5f;
+            }
+            else RemoveChild(skin.transform, "Knuckle", changes);
+            TrapKitSetup.Write(presenter, changes, ("plate", plate), ("knuckle", knuckle), ("knuckleAlong", knuckleAlong));
             TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", e.Name), ("kind", (int)kind), ("skin", skin), ("greyboxBody", greybox),
                 ("restPivot", (Vector2)trap.transform.position), ("moveDirection", direction), ("landTick", landTick), ("moveTicks", moveTicks),
-                ("holdTicks", holdTicks), ("returnTicks", returnTicks), ("shrinkTicks", shrinkTicks), ("crack", crack), ("socket", socket));
+                ("holdTicks", holdTicks), ("returnTicks", returnTicks), ("shrinkTicks", shrinkTicks), ("crack", crack), ("socket", socket),
+                ("rubble", rubble), ("rubbleScale", rubbleScale));
             WriteSkin(presenter, "hostSkin", skinLook, changes);
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
             SetupUtility.SetArray(presenter, "dust", dust.Cast<Object>().ToArray(), changes);
             return art.name;
+        }
+
+        // A fallen block's heap for a footprint: the shape nearest its proportions (a square block, a wide one, a slab), a
+        // variant by its name, on the room's stone; and the footprint the heap was drawn for (env_bumpy.RUBBLE_SHAPES).
+        static (Sprite heap, Material mask, Vector2 footprint)? RubbleSlot(SoloRoomDefinition room, Vector2 size, string name)
+        {
+            float aspect = size.x / Mathf.Max(0.01f, size.y);
+            (string shape, Vector2 footprint) = aspect >= 3f ? ("Slab", new Vector2(2f, 0.5f)) : aspect >= 1.45f ? ("Wide", new Vector2(2f, 1f)) : ("Sq", Vector2.one);
+            Sprite heap = EnvironmentKit.Sprite($"ENV_RubbleHeap_{shape}_{(int)(SoloRoomSkin.Hash(name, 930) * 2f)}");
+            Sprite fill = SoloRoomSkin.FillSprite(room);
+            Material mask = fill != null && fill.name.StartsWith("ENV_Fill_")
+                ? EnvironmentKit.TileMaterial(EnvironmentKit.EdgeKind(EnvironmentKit.RubbleKind, fill.name.Substring("ENV_Fill_".Length))) : null;
+            if (heap == null || mask == null) return null;
+            return (heap, mask, footprint);
         }
 
         // ---------- gravity flips ----------

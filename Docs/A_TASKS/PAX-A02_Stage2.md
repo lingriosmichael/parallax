@@ -24,7 +24,7 @@ Stage 3 (wiring verification, Editor screenshots, review, commit) follows the ti
    Attach the matching reference to **every** ChatGPT prompt below.
 2. **AutoSprite key** only in your local Claude Code config. Never in the repo. Before each commit:
    `git diff --cached | grep -n "vspk_" || echo "no keys"`.
-3. **Raw files** go to `Art_Source/Environment/A/` and `Art_Source/Environment/B/` (outside `Assets/`,
+3. **Raw files** go to `Art_Source/Environment/GoldenRuins/` and `Art_Source/Environment/ObsidianVoid/` (outside `Assets/`,
    so Unity never imports them; `*.png` is LFS-tracked). Naming: `<SlotFile>__raw_v<N>.png`,
    e.g. `A_BG_00_Sky__raw_v1.png`. Keep rejected versions; they cost nothing and document the choice.
 

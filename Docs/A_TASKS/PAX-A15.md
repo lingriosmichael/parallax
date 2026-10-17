@@ -4,7 +4,7 @@
 **Folder:** `Docs/A_TASKS/` · **Phase:** E, look and feel · **Implementer:** Claude Code
 **Phase 1 size:** Lite. The builder change is presentation only: no collider, trigger or timing change.
 **Depends on:**
-- The environment stills in `Art_Source/Environment/A/`: ENV-01…30 (committed in 5fd7ebd), plus the seven in §10.
+- The environment stills in `Art_Source/Environment/GoldenRuins/`: ENV-01…30 (committed in 5fd7ebd), plus the seven in §10.
 - PAX-A13: the host-skin seam (`HostSkin`, `SolidArt`, `Sprite-Lit-WorldTile`), so disguised traps copy their host's
   new skin automatically.
 - `EnvironmentSpriteImporter` (the fixed environment PPU, PAX-A08 §4.4).
@@ -72,7 +72,7 @@ plus the whole-frame shots). The capture script `ScratchPlayCapture.cs` is kept 
 ### 2.1 Kit processing (offline, Python)
 
 `Tools/Art/env_kit.py`, a new tool on the pattern of `trap_process.py`. It is deterministic and reads
-`Art_Source/Environment/A/` without changing it.
+`Art_Source/Environment/GoldenRuins/` without changing it.
 - **Crops** the multi-piece sheets into one file per piece:
   - 10c (2), 10d (4), 14b (2), 18 (3), 20 (3), 21 (3), 22 (2), 23 (4), 24 (2), 25 (2), 07a (2), 07b (2), 04 (4), 05 (4)
   - 07d (2) and 26 (3), once they're in.

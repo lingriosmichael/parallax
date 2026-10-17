@@ -133,6 +133,15 @@ namespace Parallax.Editor.Art
             launcher.sortingOrder = greyLauncher.sortingOrder;
             if (lane.Disguised) { hostLook.ApplyTo(launcher, e.Size); launcher.transform.localScale = Vector3.one; launcher.flipX = false; }   // scale after the draw mode (Sliced rewrites it)
             else { launcher.sprite = config.ArrowLauncher; launcher.sharedMaterial = HazardMaterial(config); launcher.drawMode = SpriteDrawMode.Simple; launcher.flipX = lane.Direction == ArrowDirection.Left; }
+            // PAX-A18 (D-108 amendment): an honest launcher's mouth over its frame.
+            SpriteRenderer mouth = null;
+            if (!lane.Disguised && config.LauncherMouth != null)
+            {
+                mouth = Child(art, "Mouth", layer, changes);
+                mouth.sprite = config.LauncherMouth; mouth.sharedMaterial = HazardMaterial(config); mouth.drawMode = SpriteDrawMode.Simple;
+                mouth.sortingOrder = launcher.sortingOrder + 1; mouth.flipX = launcher.flipX;
+            }
+            else RemoveChild(art, "Mouth", changes);
 
             SpriteRenderer arrow = Child(art, "Arrow", layer, changes);   // a spear's head
             arrow.sprite = spear ? config.SpearHead : config.Arrow; arrow.sharedMaterial = HazardMaterial(config); arrow.drawMode = SpriteDrawMode.Simple;
@@ -168,7 +177,8 @@ namespace Parallax.Editor.Art
                 ("arrowArt", arrow), ("greyboxArrow", greyArrow), ("disguised", lane.Disguised), ("launcherSprite", config.ArrowLauncher), ("arrowSprite", config.Arrow),
                 ("trapMaterial", HazardMaterial(config)), ("launcherSize", e.Size), ("arrowSize", new Vector2(lane.Length, lane.Thickness)),
                 ("direction", (int)lane.Direction), ("tellTicks", lane.TellTicks), ("flightTicks", flight), ("glint", glint), ("slot", slot),
-                ("spear", spear), ("shaftArt", shaft), ("spearHeadSprite", config.SpearHead), ("spearShaftSprite", config.SpearShaft));
+                ("spear", spear), ("shaftArt", shaft), ("spearHeadSprite", config.SpearHead), ("spearShaftSprite", config.SpearShaft), ("spearWholeSprite", spear ? config.SpearWhole : null),
+                ("mouthArt", mouth), ("mouthSprite", config.LauncherMouth));
             WriteSkin(presenter, "hostSkin", hostLook, changes);
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greyLauncher, greyArrow }, changes);
             SetupUtility.SetArray(presenter, "impact", impact.Cast<Object>().ToArray(), changes);

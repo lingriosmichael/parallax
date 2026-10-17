@@ -49,6 +49,10 @@ namespace Parallax.Presentation
         /// spike's height grows further, D-105).</summary>
         public virtual Vector2 BodyGrowth => new(bodyScale - 1f, bodyScale - 1f);
 
+        /// <summary>PAX-A18 (D-151): one body's allowance, when it draws at its kind's one fixed size rather than fitted to its
+        /// grey-box (an honest launcher's carved frame: not lethal itself); every other body takes BodyGrowth.</summary>
+        public virtual Vector2 GrowthOf(Body body) => BodyGrowth;
+
         /// <summary>Ticks since the trap's latest fire, or -1 if it hasn't fired (or was reset).</summary>
         protected int TicksSinceFire => Trap == null || Trap.LatestFireTick < 0 ? -1 : RoomTick - Trap.LatestFireTick;
 

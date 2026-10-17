@@ -52,7 +52,7 @@ namespace Parallax.Editor.Levels
         // Run: through the cave-in (Block_3 knocks out D3) and onto D1. The dance: at each of `locks`, the cloud has caught up
         // and locks over the cat's platform; hop out from under it to the other one (D1 down to D2, or D2 back up to D1). When
         // D3 is back, on over D2 and D3 onto P1 under Roof_9; when Arrow_9 has stopped, over Stop_9 to P2 and up onto Floor_F1;
-        // stop dead there while Spear_10 tells and sticks below it; then down over the shaft, over Curb_F, to the door.
+        // stop there (D-154: no Spear_10 any more); then down over the shaft, over Curb_F, to the door.
         static RouteStep[] Run(int[] locks)
         {
             var steps = new List<RouteStep> { Until(XAtLeast(45.8f)), Jump(), Until(XAtLeast(47.3f)), Release(), Until(GroundedOn("D1")), Until(Still()) };
@@ -74,7 +74,7 @@ namespace Parallax.Editor.Levels
                 Hold(Right), Jump(), Until(XAtLeast(54.2f)), Release(), Until(GroundedOn("P1")), Until(Still()),
                 Until(Since("Arrow_9", 62)), Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(54.4f)), Jump(), Until(XAtLeast(55.8f)), Release(), Until(GroundedOn("P2")),
                 Hold(Right), Until(XAtLeast(56.8f)), Jump(), Until(XAtLeast(58.7f)), Release(), Until(GroundedOn("Floor_F1")),
-                Until(Still()), Until(Since("Spear_10", 42)),
+                Until(Still()),
                 Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(61.6f)), Jump(), Until(RoomComplete()) });
             return steps.ToArray();
         }
@@ -125,9 +125,7 @@ namespace Parallax.Editor.Levels
                 new Betrayal("T13 [NJ]: a cat that jumps for P1 from D2 while D3 is gone falls into Pit_9", "Pit_9", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(D2))", "jump for P1", Hold(Right), Jump(), Until(Dead())), revealedBy: "D3"),
                 new Betrayal("T9 [W]: a cat that goes on from P1 without waiting meets Arrow_9", "Arrow_9", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(P1))", "go on", Hold(Right), Until(XAtLeast(54.4f)), Jump(), Until(XAtLeast(55.8f)), Release(), Until(Dead()))),
-                new Betrayal("T10 [SS]: a cat that runs on past the cloud's range, off Floor_F1, meets Spear_10", "Spear_10", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=58.7)", "run on", Until(Dead()))));
+                    Route.PrefixOf(solution, "Until(GroundedOn(P1))", "go on", Hold(Right), Until(XAtLeast(54.4f)), Jump(), Until(XAtLeast(55.8f)), Release(), Until(Dead()))));
         }
     }
 }

@@ -28,11 +28,16 @@ namespace Parallax.Presentation
 
         protected override void CollectEffects(List<Effect> into) => into.Add(new Effect("pulse", pulse));
 
+        /// <summary>PAX-A18 (D-151): the glyph ring's one drawn size (world units), in every level.</summary>
+        public const float RingSide = 0.99f;
+
         protected override void Render()
         {
             Vector2 centre = greyboxZone != null ? (Vector2)greyboxZone.transform.position : (Vector2)transform.position;
             float side = Mathf.Min(zoneSize.x, zoneSize.y) * 0.9f;
-            if (ring != null && Mirror(ring, greyboxZone)) Fit(ring, glyphRing, new Vector2(side, side) * bodyScale);
+            // PAX-A18 (D-151): one ring size everywhere (RingSide), smaller only in a zone too small for it.
+            float ringSide = Mathf.Min(RingSide, side * bodyScale);
+            if (ring != null && Mirror(ring, greyboxZone)) Fit(ring, glyphRing, new Vector2(ringSide, ringSide));
             // Motes: slow drift inside the zone, on render ticks (ambient, D-094 allows); a pure function of the room clock.
             for (int i = 0; i < motes.Length; i++)
             {

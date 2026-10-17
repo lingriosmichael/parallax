@@ -150,12 +150,12 @@ def build():
 
     # Every sprite carries a normal map (effects a flat one), so the whole kit packs into one atlas with the same secondary
     # textures and batches together (Unity splits sprites whose secondary textures differ).
-    def emit(name, a, pivot=(0.5, 0.5), normal=True, tiled=False, sources=(), placeholder=None):
+    def emit(name, a, pivot=(0.5, 0.5), normal=True, tiled=False, sources=(), placeholder=None, ppu=None):
         path = OUT / f"{name}.png"
         save(a, path)
         entry = {"path": str(path.relative_to(REPO)), "size_px": [a.shape[1], a.shape[0]], "pivot": list(pivot),
                  "tiled": tiled, "palette": palette(a), "sources": [str(Path(s).relative_to(REPO)) for s in sources],
-                 "placeholder": placeholder or ""}
+                 "placeholder": placeholder or "", "ppu": ppu or PPU}
         npath = OUT / f"{name}_n.png"
         save(normal_map(a) if normal else normal_map(a, strength=0.0, bevel_px=0.0), npath)
         entry["normal"] = str(npath.relative_to(REPO))
@@ -163,25 +163,35 @@ def build():
         if entry["palette"]["black"] > 0.02: manifest["flags"].append(f"{name}: black shading {entry['palette']['black']:.1%}")
         manifest["sprites"][name] = entry
 
+    # PAX-A18 (D-151): a source the developer removed (the v1 TRAP-0x images, replaced by the pilot set) keeps the kit's
+    # existing sprite as it is; trap_v2 below replaces it from the pilot image.
+    def keep(name, **kw):
+        existing = OUT / f"{name}.png"
+        if existing.exists(): emit(name, load_rgba(existing), **kw)
+
     # TRAP-01, the launcher: its mouth faces right (flipped in code for a left-facing lane). 0.5 u square.
     src = CHATGPT / "TRAP-01_arrow_launcher_v1.png"
     # PAX-V08: its mouth crimson (the danger colour).
-    emit("Bodies/TRAP-01_arrow_launcher", hazard_readable.launcher_mouth(fit(clean_alpha(trim(load_rgba(src))), 0.5, 0.5)), sources=[src])
+    if src.exists(): emit("Bodies/TRAP-01_arrow_launcher", hazard_readable.launcher_mouth(fit(clean_alpha(trim(load_rgba(src))), 0.5, 0.5)), sources=[src])
+    else: keep("Bodies/TRAP-01_arrow_launcher")
 
     # TRAP-02, the arrow, pointing right: 0.8 u long, the kit's default arrow length (fits inside any lane's box).
     src = CHATGPT / "TRAP-02_arrow_v1.png"
+    if not src.exists(): keep("Bodies/TRAP-02_arrow")
     # PAX-V08: twice as thick, a bone shaft, a crimson head and fletching, and the double outline.
-    emit("Bodies/TRAP-02_arrow", hazard_readable.arrow(fit(clean_alpha(trim(load_rgba(src))), 0.8, 0.16)), sources=[src])
+    else: emit("Bodies/TRAP-02_arrow", hazard_readable.arrow(fit(clean_alpha(trim(load_rgba(src))), 0.8, 0.16)), sources=[src])
 
     # TRAP-03, the vent: cropped around its mouth to the vent's 1 x 0.3 box, 128 x 38 px.
     src = CHATGPT / "TRAP-03_geyser_vent_v1.png"
-    vent = clean_alpha(trim(load_rgba(src)))
-    h, w = vent.shape[:2]
-    mouth = vent_mouth(vent)
-    half = int(round(h * (1.0 / 0.3) / 2))
-    x0 = int(np.clip(mouth - half, 0, max(0, w - 2 * half)))
-    vent = vent[:, x0:x0 + 2 * half]
-    emit("Bodies/TRAP-03_geyser_vent", fit(vent, 1.0, 0.3), sources=[src])
+    if not src.exists(): keep("Bodies/TRAP-03_geyser_vent")
+    else:
+        vent = clean_alpha(trim(load_rgba(src)))
+        h, w = vent.shape[:2]
+        mouth = vent_mouth(vent)
+        half = int(round(h * (1.0 / 0.3) / 2))
+        x0 = int(np.clip(mouth - half, 0, max(0, w - 2 * half)))
+        vent = vent[:, x0:x0 + 2 * half]
+        emit("Bodies/TRAP-03_geyser_vent", fit(vent, 1.0, 0.3), sources=[src])
 
     # T04, the water column (black background -> brightness alpha): 1 u wide, a 2 u seamless tile, 8 scroll frames.
     src = AUTOSPRITE / "T04_geyser_column" / "raw_v1.png"
@@ -223,7 +233,11 @@ def build():
 
     # TRAP-04 onward (§12 R10): the developer's painted bodies, or code-drawn placeholders until they're saved.
     import trap_bodies
-    trap_bodies.bodies(emit, load_rgba, luminance_alpha, clean_alpha, trim, fit, resize, grid, CHATGPT)
+    trap_bodies.bodies(emit, load_rgba, luminance_alpha, clean_alpha, trim, fit, resize, grid, CHATGPT, keep)
+
+    # PAX-A18 (D-151): the developer's painted pilot set replaces its namesakes (trap_v2.py).
+    import trap_v2
+    trap_v2.build(emit, load_rgba, clean_alpha, trim, CHATGPT)
 
     return manifest
 
@@ -237,7 +251,7 @@ def main():
     MANIFEST.parent.mkdir(parents=True, exist_ok=True)
     # A flat list for Unity's JsonUtility (PARALLAX/Art/Import Trap Kit), beside the readable dictionary.
     manifest["entries"] = [{"path": e["path"], "pivotX": e["pivot"][0], "pivotY": e["pivot"][1], "tiled": e["tiled"], "normal": e.get("normal", ""),
-                            "placeholder": e.get("placeholder", "")}
+                            "placeholder": e.get("placeholder", ""), "ppu": e.get("ppu", PPU)}
                            for _, e in sorted(manifest["sprites"].items())]
     MANIFEST.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     for flag in manifest["flags"]:

@@ -86,7 +86,9 @@ namespace Parallax.Editor.Art
             ("Side", "ENV_Side", 2), ("Post", "ENV_Post", 2), ("SlimPost", "ENV_SlimPost", 2),
             // PAX-106 (D-114): the broken-stone side strips (every variant shares ENV_SideChip_A_0's size) and the cut thick
             // underside. Optional: without their materials the builder keeps ENV_Side and ENV_ThickUnder.
-            ("SideChip", "ENV_SideChip_A_0", 2), ("ThickUnderShort", "ENV_ThickUnderShort", 1),
+            ("ThickUnderShort", "ENV_ThickUnderShort", 1),
+            // PAX-A18 W3: the walkable underside of flip rooms, and D-114's own strips (beside hazards, and on moving traps).
+            ("UnderWalk", "ENV_UnderWalk", 1), ("SideIn", "ENV_SideIn_A_0", 2),
             // PAX-A16: plain sprites (dressing, ends, capitals, chains, fringes) on the same shader, sprite UV.
             ("Sprite", "ENV_Moss_0", 3),
         };
@@ -99,12 +101,22 @@ namespace Parallax.Editor.Art
             "ENV_Glow", "ENV_Halo", "ENV_SlabEnd", "ENV_PostCap", "ENV_PostBase", "ENV_VineAnchor", "ENV_VineTip", "ENV_VineMid",
             "ENV_Drape_3", "ENV_Drape_4", "ENV_Drape_5",   // gauntlet round 9: more ivy shapes (same atlas, so they batch)
             "ENV_Fern_0", "ENV_Fern_1", "ENV_Fern_2",      // gauntlet: foot ferns, fixed in the world
+            "ENV_CapEnd_0", "ENV_CapEnd_1", "ENV_CapEnd_2", "ENV_CapEnd_3", "ENV_SlabEndThick",   // PAX-A18 W3: broken corner and thick ends
+            "ENV_ThickUnderEnd", "ENV_ThickUnderShortEnd", "ENV_LipVinesEnd",   // 2026-10-16: broken and ragged ends
         };
 
         public static string MaterialPath(string kind) => $"{MaterialFolder}/ENV_{kind}.mat";
         public static Material TileMaterial(string kind) => AssetDatabase.LoadAssetAtPath<Material>(MaterialPath(kind));
         /// <summary>PAX-106: tile kinds the builder falls back from when their material is missing (made by Environment Stack).</summary>
-        static readonly string[] OptionalKinds = { "SideChip", "ThickUnderShort" };
+        static readonly string[] OptionalKinds = { "ThickUnderShort", "UnderWalk", "SideIn" };
+
+        /// <summary>PAX-A18 W3: the broken-stone edge strips (band and deep) are masks on Env-Sprite-Lit-EdgeMask: their colour is
+        /// the room's fill at the same world position, so the edge is cut from the stone it borders. One material per strip kind
+        /// and fill stone (ENV_SideChip_A, ENV_SideDeep_A2, …).</summary>
+        public const string EdgeMaskShader = "Parallax/2D/Env-Sprite-Lit-EdgeMask";
+        public static readonly string[] EdgeFills = { "A", "A2", "A3" };
+        public static readonly (string kind, string prefix)[] EdgeKinds = { ("SideChip", "ENV_SideChip_"), ("SideDeep", "ENV_SideDeep_") };
+        public static string EdgeKind(string kind, string fill) => kind + "_" + fill;
         public static bool MaterialsReady => materialsCache ??= TileKinds.Where(k => System.Array.IndexOf(OptionalKinds, k.kind) < 0).All(k => TileMaterial(k.kind) != null);
 
         public static void EnsureMaterials(List<string> changes)
@@ -127,7 +139,40 @@ namespace Parallax.Editor.Art
                     changes.Add((created ? "created " : "configured ") + MaterialPath(kind));
                 }
             }
+            EnsureEdgeMaterials(changes);
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>2026-10-17: a fallen block's heap (ENV_RubbleHeap_*): a mask on the same shader in its sprite's own UV (_Axis
+        /// 3), so the heap is cut from the room's stone. One material per fill stone (ENV_Rubble_A, …).</summary>
+        public const string RubbleKind = "Rubble";
+        public static readonly string[] RubbleShapes = { "Sq", "Wide", "Slab" };
+
+        static void EnsureEdgeMaterials(List<string> changes)
+        {
+            Shader shader = Shader.Find(EdgeMaskShader);
+            if (shader == null) { Debug.LogError("EnvironmentKit: shader " + EdgeMaskShader + " not found."); return; }
+            foreach ((string kind, string prefix) in EdgeKinds.Append((RubbleKind, "ENV_RubbleHeap_")))
+                foreach (string fill in EdgeFills)
+                {
+                    bool rubble = kind == RubbleKind;
+                    Sprite strip = Sprite(rubble ? prefix + "Sq_0" : prefix + fill + "_0"), stone = Sprite("ENV_Fill_" + fill);
+                    Slot fillSlot = Get("ENV_Fill_" + fill);
+                    if (strip == null || stone == null || fillSlot == null) continue;
+                    var normal = AssetDatabase.LoadAssetAtPath<Texture2D>(NormalPathOf(fillSlot));
+                    string name = EdgeKind(kind, fill);
+                    Material m = TileMaterial(name);
+                    bool created = m == null;
+                    if (created) { m = new Material(shader) { name = "ENV_" + name }; AssetDatabase.CreateAsset(m, MaterialPath(name)); materialsCache = null; }
+                    Vector4 tile = new(strip.bounds.size.x, strip.bounds.size.y, 0f, 0f), fillTile = new(stone.bounds.size.x, stone.bounds.size.y, 0f, 0f);
+                    if (created || m.shader != shader || m.GetVector("_Tile") != tile || m.GetFloat("_Axis") != (rubble ? 3f : 2f) || m.GetVector("_FillTile") != fillTile || m.GetTexture("_FillTex") != stone.texture || m.GetTexture("_FillNormal") != normal)
+                    {
+                        m.shader = shader; m.SetVector("_Tile", tile); m.SetFloat("_Axis", rubble ? 3f : 2f);
+                        m.SetTexture("_FillTex", stone.texture); m.SetVector("_FillTile", fillTile); m.SetTexture("_FillNormal", normal);
+                        EditorUtility.SetDirty(m);
+                        changes.Add((created ? "created " : "configured ") + MaterialPath(name));
+                    }
+                }
         }
 
         /// <summary>Gauntlet: the face shade's sprites, added after the first atlas was made, in a second atlas so they batch

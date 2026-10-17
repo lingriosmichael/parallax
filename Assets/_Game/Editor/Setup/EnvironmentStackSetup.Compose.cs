@@ -228,16 +228,26 @@ namespace Parallax.Editor.Setup
             Lights(k);
         }
 
-        /// <summary>Round 9 (readability): every pit reads as a drop. From its floor's line down, the opening fades into the
-        /// face shade's cool dark over 1.4 u (the backdrop behind it sinks into a void), then stays dark to the frame's bottom.
-        /// Drawn behind the play layer (the pit's floor, spikes and walls draw over it), on the face shade's sprites.</summary>
+        /// <summary>The developer (2026-10-16): the back wall's shading: the shadow down each side wall (its
+        /// strength, 0..1, and its reach in world units). (Its faint darkening toward the bottom went for the draw budget.)</summary>
+        const float SideShade = 0.3f, SideReach = 0.4f;
+
+        // The developer (2026-10-16): "you shouldnt be able to see the sky if the floor caves in". Behind every pit (an opening
+        // whose hazard lines its bottom) the inside of the ruin: an opaque back wall of the room's own stone, recessed (its
+        // fill's _Recess twin: softer, lighter, warmer), shaded under the lip and down both walls. Unlit, so
+        // every pit is the same mid brown whatever the light there: dark iron spikes read against it at 3:1 (D-108); lit, it
+        // fell between what the iron and its bright edges can read against (luminance 0.09-0.13, t22).
         static void PitVoids(TierContext c)
         {
             SoloRoomDefinition room = c.Room.Value;
-            Sprite ramp = EnvironmentKit.Sprite("ENV_FaceShade"), solid = EnvironmentKit.Sprite("ENV_FaceShadeSolid");
-            if (ramp == null || solid == null) return;
-            Material m = EnvironmentKit.TileMaterial("Sprite") ?? EnvironmentKit.UnlitMaterial;
+            Sprite fill = SoloRoomSkin.FillSprite(room);
+            Sprite wall = fill != null ? EnvironmentKit.Sprite(fill.name + "_Recess") : null, ramp = EnvironmentKit.Sprite("ENV_FaceShade");
+            Material stone = EnvironmentKit.UnlitMaterial, m = EnvironmentKit.TileMaterial("Sprite") ?? EnvironmentKit.UnlitMaterial;
+            if (wall == null || ramp == null || stone == null) { Debug.LogWarning("EnvironmentStack: no recessed stone (ENV_Fill_*_Recess) in the kit; pits keep the sky behind them. Run Tools/Art/env_kit.py and let Unity import the kit, then rebuild."); return; }
             string gameplay = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay);
+            string lipSlot = fill != null && fill.name.StartsWith("ENV_Fill_") ? "ENV_RecessLip_" + fill.name.Substring("ENV_Fill_".Length) : null;
+            Sprite farLip = lipSlot != null ? EnvironmentKit.Sprite(lipSlot) : null;
+            EnvironmentKit.Slot farLipSlot = lipSlot != null ? EnvironmentKit.Get(lipSlot) : null;
             List<SoloRoomSkin.Solid> solids = SoloRoomSkin.Solids(room);
             int n = 0;
             // PAX-107: or the hidden spikes a pit opening names as its hazard (L007's shaft 1: its spikes are T1's trigger).
@@ -245,26 +255,61 @@ namespace Parallax.Editor.Setup
                 || (x.Kind == SoloRoomElementKind.HiddenSpikes && (room.Openings ?? System.Array.Empty<SoloRoomOpening>()).Any(o => o.Kind == SoloRoomOpeningKind.Pit && o.HazardName == x.Name))))
             {
                 var r = new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size);
-                // The pit's lip: the lower of the floors at its two sides (a tall neighbour must not pull the void up the sky).
+                // The pit's lip: the lower of the floors at its two sides (a tall neighbour must not pull the wall up the sky).
                 float top = solids.Where(s => s.Rect.yMax > r.yMax && s.Rect.yMin < r.yMax + 0.5f && (Mathf.Abs(s.Rect.xMax - r.xMin) < 0.3f || Mathf.Abs(s.Rect.xMin - r.xMax) < 0.3f)).Select(s => s.Rect.yMax).DefaultIfEmpty(r.yMax + 2f).Min();
-                // Down to the pit's own floor (its kill plane), never past it into open air below a raised floor (L012).
-                float fadeTop = top - 0.1f, fadeH = 0.9f, bottom = r.yMin;
-                void Quad(string name, Sprite s, float y0, float y1)
+                // Down to the pit's own floor (its kill plane), never past it into open air below a raised floor (L012). 2026-10-16: a
+                // pit with nothing under its kill plane (L010's chasm) goes on down to the next solid, or past the room's bottom,
+                // so its back wall never ends in a straight edge over the air.
+                float bottom = r.yMin;
+                if (!solids.Any(s => Mathf.Abs(s.Rect.yMax - r.yMin) < 0.05f && s.Rect.xMin < r.xMax && s.Rect.xMax > r.xMin))
+                {
+                    float below = solids.Where(s => s.Rect.yMax < r.yMin && s.Rect.xMin < r.xMax && s.Rect.xMax > r.xMin).Select(s => s.Rect.yMax).DefaultIfEmpty(float.NegativeInfinity).Max();
+                    bottom = float.IsNegativeInfinity(below) ? SoloRoomBuilder.ComputeRoomBounds(room, 0f).min.y - 1f : below;
+                }
+                float height = top - bottom;
+                if (height <= 0.01f) continue;
+                // PAX-A18 W3: as wide as the walls' broken outline reaches into them (DeepReach each side; the stone draws over it),
+                // so a notch in a pit's wall shows the pit's back wall, not the sky behind the level.
+                float width = r.width + 0.1f + 2f * SoloRoomSkin.DeepReach;
+                var centre = new Vector2(r.center.x, (top + bottom) * 0.5f);
+                SpriteRenderer Quad(string name, Sprite s, Vector2 at, float z, Material mat)
                 {
                     var go = new GameObject(name);
                     go.transform.SetParent(c.EnvRoot, false);
                     go.layer = c.LayerIndex;
-                    go.transform.position = new Vector3(r.center.x, (y0 + y1) * 0.5f, c.EnvRoot.position.z);
-                    go.transform.localScale = new Vector3((r.width + 0.1f) / s.bounds.size.x, (y1 - y0) / s.bounds.size.y, 1f);
+                    go.transform.position = new Vector3(at.x, at.y, c.EnvRoot.position.z + z);
                     var sr = go.AddComponent<SpriteRenderer>();
-                    // Round 10: warm near-black (the sprite is cool; this neutralises it); Phase 2 round 2: a little lighter.
-                    sr.sprite = s; sr.sharedMaterial = m; sr.color = new Color(0.62f, 0.42f, 0.3f, 0.85f);
+                    sr.sprite = s; sr.sharedMaterial = mat;
                     sr.sortingLayerName = gameplay; sr.sortingOrder = -4;
+                    return sr;
                 }
-                Quad($"PitVoid_{n}_Fade", ramp, fadeTop - fadeH, fadeTop);
-                // Phase 2 round 2: no warm glow quad at the lip (its top edge read as a hard line); the fade alone carries the drop.
-                // Round 4: edge to edge (a 0.02 u overlap of two 0.85 quads read as a black line across the pit, L018).
-                if (fadeTop - fadeH > bottom) Quad($"PitVoid_{n}", solid, bottom, fadeTop - fadeH);
+                SpriteRenderer back = Quad($"PitVoid_{n}", wall, centre, 0f, stone);
+                back.drawMode = SpriteDrawMode.Tiled; back.tileMode = SpriteTileMode.Continuous; back.size = new Vector2(width, height); back.color = Color.white;
+                // The far edge of the hole (the developer: "All edges need to be a bit bumpy"): the wall's own recessed stone,
+                // broken around the lip's height (ENV_RecessLip_*), over the wall's top. No grass and no lit lip, so it never
+                // reads as a walkway across the pit.
+                if (farLip != null && farLipSlot != null)
+                {
+                    SpriteRenderer far = Quad($"PitVoid_{n}_FarLip", farLip, new Vector2(centre.x, top + farLipSlot.above - farLipSlot.height * 0.5f), -0.0005f, stone);
+                    far.drawMode = SpriteDrawMode.Tiled; far.tileMode = SpriteTileMode.Continuous;
+                    far.size = new Vector2(width, farLipSlot.height); far.color = Color.white;
+                    back.size = new Vector2(width, height - (farLipSlot.above + 0.05f));
+                    back.transform.position = new Vector3(centre.x, bottom + back.size.y * 0.5f, back.transform.position.z);
+                }
+                // The shading: the ramp (clear at its top, opaque at its bottom) turned so its dark end meets the lip or a wall.
+                var shade = new Color(0.36f, 0.26f, 0.2f, 1f);
+                void Ramp(string name, Vector2 at, float angle, float across, float along, float strength)
+                {
+                    SpriteRenderer sr = Quad(name, ramp, at, -0.001f, m);
+                    sr.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+                    sr.transform.localScale = new Vector3(across / ramp.bounds.size.x, along / ramp.bounds.size.y, 1f);
+                    sr.color = new Color(shade.r, shade.g, shade.b, strength);
+                }
+                // (No shadow quad under the lip: darkest at its top, it drew a straight line through the ragged far edge, whose
+                // own dark rim does that job.)
+                float side = Mathf.Min(SideReach, width * 0.5f);
+                Ramp($"PitVoid_{n}_Left", new Vector2(centre.x - width * 0.5f + side * 0.5f, centre.y), -90f, height, side, SideShade);
+                Ramp($"PitVoid_{n}_Right", new Vector2(centre.x + width * 0.5f - side * 0.5f, centre.y), 90f, height, side, SideShade);
                 n++;
             }
         }

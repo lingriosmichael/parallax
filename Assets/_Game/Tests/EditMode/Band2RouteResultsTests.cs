@@ -54,8 +54,10 @@ namespace Parallax.Tests.EditMode
         // stands up and slides faster (1541 ticks).
         // D-146: Hinge_2 stands up in 3 ticks and slides its 8 u in 40 (was 6 and 74): the hand switch over Pit_H has a window of
         // 17 (was 15) and the solution is 1538 ticks.
-        [TestCase("L012", 1538, new[] { 31, 23, 37, 17, 44, 33, 20, 17, 33, 30, 30 },
-            new[] { "Cat.Inverted=17", "Floor_1=14", "Floor_2=14", "Collapse_B=20", "Block_E=29", "Block_E=29", "Orb_A=70", "Spikes_D=13", "Block_E=29", "Hinge_4=35", "Orb_P=37", "Drop_4=7", "Collapse_F=19", "Shelf_W=7", "Drop_3=7", "Hinge_2=55", "Cat.Inverted=969", "Slam_H2=6", "Lift_H2=6", "Piston_1=6", "FakeFloor_D=25", "Cat.Inverted=1422", "Slot_Floor=8", "Spikes_D2=9" }, new string[0])]
+        // D-154: Spikes_D 0.3 u west (x 13.7-15.0) to leave a landing past it: the run-up's window is 45 (was 44) and Spikes_D's
+        // lead 15 (was 13).
+        [TestCase("L012", 1538, new[] { 31, 23, 37, 17, 45, 33, 20, 17, 33, 30, 30 },
+            new[] { "Cat.Inverted=17", "Floor_1=14", "Floor_2=14", "Collapse_B=20", "Block_E=29", "Block_E=29", "Orb_A=70", "Spikes_D=15", "Block_E=29", "Hinge_4=35", "Orb_P=37", "Drop_4=7", "Collapse_F=19", "Shelf_W=7", "Drop_3=7", "Hinge_2=55", "Cat.Inverted=969", "Slam_H2=6", "Lift_H2=6", "Piston_1=6", "FakeFloor_D=25", "Cat.Inverted=1422", "Slot_Floor=8", "Spikes_D2=9" }, new string[0])]
         // PAX-107 (the developer's L013 notes, D-130/D-131): the corner trap removed; on the ground Collapse_1 (T12, Pit_1),
         // Slam_1 (T11), Lift_1 (T1), Ferry_1 over Pit_M (T13); on S2 Slam_2 and Collapse_2 (T14), Lift_2 (T11), Spike_2 by
         // G_B's vent (T3); on S3 Hinge_3 and Spikes_3 (T10); on S4 Lift_4 (T11); Block_C a section of S4 that drops (D-131). G_A erupts at 530
@@ -85,14 +87,16 @@ namespace Parallax.Tests.EditMode
         // 10 % faster (L015, L018, L020 re-pinned).
         // PAX-107 (D-125): the clouds at the cat's run; L015's dance on the cloud's 90-tick clock (three hops), Roof_R over the Run
         // checkpoint; L018's first strike 58 ticks after the wake.
-        [TestCase("L015", 1263, new[] { 21, 51, 34, 51, 51, 40, 22, 25, 39, 51, 51 },
-            new[] { "Cloud=74", "Cloud=164", "Collapse_2=62", "Arrow_3=12", "Mover_M=146", "Spear_P=86", "Cloud=524", "Block_1=24", "Block_3=24", "Cloud=884", "D3=181", "D3=113", "Arrow_9=50", "Spear_10=36" },
-            new[] { "Cloud visible t25, complete t1433", "Mover_M visible t2, complete t1433" })]
+        // D-154 (the developer's play, 2026-10-17): the finale's Spear_10 removed; the solution no longer waits it out (1238 ticks).
+        [TestCase("L015", 1238, new[] { 21, 51, 34, 51, 51, 40, 22, 25, 39, 51, 51 },
+            new[] { "Cloud=74", "Cloud=164", "Collapse_2=62", "Arrow_3=12", "Mover_M=146", "Spear_P=86", "Cloud=524", "Block_1=24", "Block_3=24", "Cloud=884", "D3=181", "D3=113", "Arrow_9=50" },
+            new[] { "Cloud visible t25, complete t1408", "Mover_M visible t2, complete t1408" })]
         // PAX-060 half B (L016-L020, as built and accepted pending play; D-093 (4b)).
         // PAX-107 (D-142): L016 replaced by "Flipside" (three corridors, flips between floor and ceiling).
         // D-145: the hinge floors are faster (Hinge_1 4 u in 20 ticks, Hinge_3 3 u in 36, both a 3-tick swing), Hinge_3's spikes
         // face the cat, and the finale's Slam_3a comes down sooner (4 ticks after Hinge_3, over 8) so the hop still beats it.
-        [TestCase("L016", 1173, new[] { 26, 14, 14, 26, 25, 14, 30, 31 },
+        // D-154: the left ledge (Hang_W1, Moss_W1) reaches 0.4 u lower; step #29's jump has a window of 15 (was 14).
+        [TestCase("L016", 1173, new[] { 26, 14, 15, 26, 25, 14, 30, 31 },
             new[] { "Slam_1=7", "Spikes_CW=55", "CC_1=13", "Lift_1=8", "Lift_1b=8", "Hinge_1=20", "Piston_2=40", "Slam_2=15", "Arrow_M=10", "CC_2=11", "Push_3=18", "Spikes_D2=169", "Cat.Gravity=884", "Hinge_3=27", "Slam_3a=7", "Spikes_3=32", "Spikes_3b=85" },
             new string[0])]
         // D-119: L017's and L018's arrows fire non-stop (windows re-pinned; leads and recoveries unchanged).

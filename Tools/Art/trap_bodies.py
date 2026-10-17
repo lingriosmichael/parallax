@@ -7,8 +7,12 @@ changes pixels only: no path, GUID, config or test moves. Everything here is det
 
 import math
 
+from pathlib import Path
+
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
+
+OUT_DIR = Path(__file__).resolve().parents[2] / "Assets" / "_Game" / "Art" / "Traps"
 
 # The styleframe's warm palette (LOOK_AND_FEEL §4): bronze and rust metal, warm browns, gold light, cream water, no cyan.
 BRONZE = (0.74, 0.52, 0.26)
@@ -212,7 +216,7 @@ def fx_mote(w=16, h=16):
 
 # ---------- the painted versions ----------
 
-def bodies(emit, load_rgba, luminance_alpha, clean_alpha, trim, fit, resize, grid, chatgpt):
+def bodies(emit, load_rgba, luminance_alpha, clean_alpha, trim, fit, resize, grid, chatgpt, keep=None):
     """Emits every body: the developer's painted image when it's saved, a placeholder otherwise."""
 
     def source(name):
@@ -278,6 +282,11 @@ def bodies(emit, load_rgba, luminance_alpha, clean_alpha, trim, fit, resize, gri
                 for suffix, img in out: emit(f"{name}{suffix}", img, tiled=tiled, normal=normal, sources=[src])
             else:
                 emit(name, out, tiled=tiled, normal=normal, sources=[src])
+        elif keep is not None and ((OUT_DIR / f"{name}.png").exists() or sorted(OUT_DIR.glob(f"{name}_[0-9].png"))):
+            # PAX-A18: the developer removed this source (the pilot set replaces it): keep the kit's sprites as they are.
+            if (OUT_DIR / f"{name}.png").exists(): keep(name, tiled=tiled, normal=normal)
+            for p in sorted(OUT_DIR.glob(f"{name}_[0-9].png")):
+                keep(name + p.stem[len(Path(name).name):], tiled=tiled, normal=normal)
         else:
             out = placeholder()
             if isinstance(out, list):

@@ -24,7 +24,7 @@ namespace Parallax.Editor.Art
         const string WorldTileMaterialPath = Folder + "/TrapArtWorldTile.mat";
         const int MaxAtlas = 2048;
 
-        [System.Serializable] class Entry { public string path; public float pivotX, pivotY; public bool tiled; public string normal; public string placeholder; }
+        [System.Serializable] class Entry { public string path; public float pivotX, pivotY; public bool tiled; public string normal; public string placeholder; public float ppu; }
         const int KitVersion = 2;
         [System.Serializable] class Manifest { public float ppu; public Entry[] entries; }
 
@@ -38,7 +38,8 @@ namespace Parallax.Editor.Art
 
             // Normal maps first, so the sprites can name them as secondary textures.
             foreach (Entry e in manifest.entries) if (!string.IsNullOrEmpty(e.normal)) ImportNormal(e.normal, changes);
-            foreach (Entry e in manifest.entries) ImportSprite(e.path, new Vector2(e.pivotX, e.pivotY), e.tiled, string.IsNullOrEmpty(e.normal) ? null : e.normal, manifest.ppu, changes);
+            // PAX-A18: each sprite at its own pixels per unit (the pilot set's bodies are made at 256).
+            foreach (Entry e in manifest.entries) ImportSprite(e.path, new Vector2(e.pivotX, e.pivotY), e.tiled, string.IsNullOrEmpty(e.normal) ? null : e.normal, e.ppu > 0f ? e.ppu : manifest.ppu, changes);
 
             Material material = EnsureMaterial(MaterialPath, ShaderName, "TrapArt", changes);
             Material worldTile = EnsureMaterial(WorldTileMaterialPath, Parallax.Presentation.HostSkin.WorldTileShader, "TrapArtWorldTile", changes);
@@ -159,7 +160,7 @@ namespace Parallax.Editor.Art
                 changes.Add("created " + TrapArtSetup.ConfigPath);
             }
             Sprite S(string name) => AssetDatabase.LoadAssetAtPath<Sprite>($"{Folder}/{name}.png");
-            Sprite[] Many(string prefix) => AssetDatabase.FindAssets("t:Sprite", new[] { Folder + "/Effects" })
+            Sprite[] Many(string prefix, string sub = "/Effects") => AssetDatabase.FindAssets("t:Sprite", new[] { Folder + sub })
                 .Select(AssetDatabase.GUIDToAssetPath).Where(p => Path.GetFileName(p).StartsWith(prefix)).OrderBy(p => p, System.StringComparer.Ordinal)
                 .Select(p => AssetDatabase.LoadAssetAtPath<Sprite>(p)).ToArray();
 
@@ -181,8 +182,15 @@ namespace Parallax.Editor.Art
             Refs("Dust", Many("dust_"));
             Refs("Spray", Many("spray_"));
             Ref("SpikeStrip", S("Bodies/TRAP-04_spike_strip"));
+            Ref("LauncherMouth", S("Bodies/TRAP-01_launcher_mouth"));
+            Refs("SpikeBlades", Many("SPIKE_blade_", "/Bodies").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());
+            Ref("SlamPlate", S("Bodies/SLAM_plate"));
+            Ref("HingeKnuckle", S("Bodies/HINGE_knuckle"));
+            Refs("Cracks", Many("CRACK_").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());
+            Ref("CrumbleEdge", S("Effects/CRUMBLE_edge"));
             Ref("SpearHead", S("Bodies/TRAP-05_spear_head"));
             Ref("SpearShaft", S("Bodies/TRAP-05_spear_shaft"));
+            Ref("SpearWhole", S("Bodies/TRAP-05_spear"));
             Ref("InverterOrb", S("Bodies/TRAP-06_inverter_orb"));
             Ref("CueRing", S("Bodies/TRAP-07_cue_ring"));
             Ref("CueMark", S("Bodies/TRAP-07_cue_mark"));

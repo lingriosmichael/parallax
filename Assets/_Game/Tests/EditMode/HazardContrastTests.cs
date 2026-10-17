@@ -140,7 +140,9 @@ namespace Parallax.Tests.EditMode
                     var greybox = (SpriteRenderer)so.FindProperty("greyboxBody").objectReferenceValue;
                     var body = (SpriteRenderer)so.FindProperty("body").objectReferenceValue;
                     if (greybox == null || body == null) continue;
-                    list.Add(new Hazard { Name = art.name, Renderers = new[] { body }, Pose = () => { greybox.enabled = true; spikes.Apply(); } });
+                    // PAX-A18 (D-151): a strip drawn blade by blade is measured on its blades.
+                    SpriteRenderer[] drawn = spikes.Blades.Count > 0 ? spikes.Blades.ToArray() : new[] { body };
+                    list.Add(new Hazard { Name = art.name, Renderers = drawn, Pose = () => { greybox.enabled = true; spikes.Apply(); } });
                 }
                 else if (art is ArrowArt arrow && arrow.Trap is ArrowTrap trap)
                 {
@@ -165,7 +167,8 @@ namespace Parallax.Tests.EditMode
                     foreach ((string label, int s) in new[] { ("leaving", tell + 1), ("mid-lane", tell + Mathf.Max(1, flight / 2)), ("arriving", tell + Mathf.Max(1, flight - 1)) })
                         list.Add(new Hazard { Name = $"{art.name} ({what} {label})", Renderers = new[] { arrowArt, shaftArt }, Pose = () => Fly(s) });
                     // The launcher: an honest one's body; a disguised one's slot, shown from its fire tick.
-                    SpriteRenderer launcher = arrow.Disguised ? slot : arrow.LauncherArt;
+                    // PAX-A18 (D-108 amendment, the developer 2026-10-16): the launcher's lethal part, its mouth (the frame blends).
+                    SpriteRenderer launcher = arrow.LauncherDanger;
                     if (launcher != null)
                         list.Add(new Hazard { Name = $"{art.name} (launcher)", Renderers = new[] { launcher }, Pose = () => Fly(tell + 1) });
                 }

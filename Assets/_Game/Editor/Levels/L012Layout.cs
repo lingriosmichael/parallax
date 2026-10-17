@@ -120,7 +120,9 @@ namespace Parallax.Editor.Levels
             // PAX-107 round eighteen (the developer: "move these spikes 1 unit to the right. So there is space for the cat to land
             // and jumpover"): x 14-15.3, 1.7 u past PB's edge; they rise 70 ticks after Orb_A (was 55), once a cat that runs on
             // from the hop is past them.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D",(14.65f,15.15f),(1.3f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:70,triggerSource:TrapTriggerSource.Chain,chainSource:"Orb_A")));
+            // D-154 (the developer, 2026-10-17: "the spikes can move just slightly to left so there is space to jump over and
+            // land"): x 13.7-15 (was 14-15.3), 1.4 u past PB's edge, 2 u of F4_B beyond them.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D",(14.35f,15.15f),(1.3f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:70,triggerSource:TrapTriggerSource.Chain,chainSource:"Orb_A")));
             // PAX-107 (the developer: "when this wall falls, make it move right to push the cat towards the spikes"): Block_E
             // drops 3 u out of hall 5's slab, then slides 2.4 u east to PB's edge (a Solid moving along an L), and pushes a cat
             // that stopped at Orb_A into PB. PAX-107 round thirteen (the developer: "The pieces of the floor pushes slightly too

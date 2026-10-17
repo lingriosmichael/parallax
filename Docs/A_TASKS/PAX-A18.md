@@ -4,6 +4,21 @@
 **Proposed** and ruled at the stops.
 **Folder:** `Docs/A_TASKS/` · **Phase:** E, look and feel · **Implementer:** Claude Code (gauntlet loop, batch-mode clone)
 **Phase 1 size:** Full (three workstreams, new art, a kit change).
+
+> **Progress (2026-10-16):**
+> - **Stop 1:** the plan is in `PAX-A18_GAUNTLET_REPORT.md`.
+> - **Stop 2 (W3 on L002):** reached. The tops' ruling is pending; option 2, painted lips, is under way via the pilot's
+>   top lip.
+> - **The pilot is painted:** `PAX-A18_PILOT_PROMPTS.md`, 19 trap and object paintings plus the Sky Isles sky, fill and isle.
+>   It replaces most of the trap list.
+> - **Next:** the 30 background paintings for variety, in `PAX-A18_BACKGROUND_PROMPTS.md`. They supersede the B–E background
+>   entries in `PAX-A18_ASSETS.md`.
+> - Ends, slabs and undersides are no longer painted: the W3 code cuts them from each fill.
+> - **D-151 (the developer, 2026-10-16):**
+>   - Biomes go by level range: L021–L040 are Ember Night, L041–L060 are Sky Isles, and so on. L001–L020 keep today's look.
+>   - W1 and the gauntlet loop are paused.
+>   - **Now:** W2 only. The painted traps (`Art_Source/Traps_ChatGPT/PILOT-*`) go into L001–L020, each kind at one fixed
+>     size everywhere.
 **Depends on:** PAX-A16 (D-103, D-105, D-107), PAX-V08 (D-108), PAX-V09 (whole repeating tiles), PAX-106 (D-114 broken
 stone), PAX-107 committed. Supersedes PAX-A17's draft (its biome table and open items are folded in below).
 

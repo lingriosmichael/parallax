@@ -59,9 +59,11 @@ Shader "Parallax/2D/Env-Sprite-Lit-WorldUV"
             {
                 COMMON_2D_LIT_OUTPUTS
                 half4 color        : COLOR;
+                float2 shadeUV     : TEXCOORD6;
             };
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/Lit2DCommon.hlsl"
+            #include "Assets/_Game/Art/Shaders/StoneShade.hlsl"
 
             // NOTE: Do not ifdef the properties here as SRP batcher can not handle different layouts.
             CBUFFER_START(UnityPerMaterial)
@@ -88,14 +90,28 @@ Shader "Parallax/2D/Env-Sprite-Lit-WorldUV"
 
                 Varyings o = CommonLitVertex(input);
                 o.uv = WorldUV(input.positionOS, input.uv);
+                o.shadeUV = PaxShadeUV(input.positionOS);
                 o.color = input.color * _Color * unity_SpriteColor;
 
                 return o;
             }
 
+            // CommonLitFragment (URP 17, Lit2DCommon.hlsl) with the room's stone shadow on the albedo (StoneShade.hlsl).
             half4 LitFragment(Varyings input) : SV_Target
             {
-                return CommonLitFragment(input, input.color);
+                half4 main = input.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
+                main.rgb = PaxShade(main.rgb, input.shadeUV);
+                const half4 mask = SAMPLE_TEXTURE2D(_MaskTex, sampler_MaskTex, input.uv);
+                const half3 normalTS = UnpackNormal(SAMPLE_TEXTURE2D(_NormalMap, sampler_NormalMap, input.uv));
+                SurfaceData2D surfaceData;
+                InputData2D inputData;
+                InitializeSurfaceData(main.rgb, main.a, mask, normalTS, surfaceData);
+                InitializeInputData(input.uv, input.lightingUV, inputData);
+            #if defined(DEBUG_DISPLAY)
+                SETUP_DEBUG_TEXTURE_DATA_2D_NO_TS(inputData, input.positionWS, input.positionCS, _MainTex);
+                surfaceData.normalWS = input.normalWS;
+            #endif
+                return CombinedShapeLightShared(surfaceData, inputData);
             }
             ENDHLSL
         }

@@ -22,7 +22,7 @@ namespace Parallax.Tests.EditMode
     //    grown by (BodyScale - 1) of its size on each side (D-101);
     //  - an effect is drawn only while the event it shows is happening, read from trap state (a crumble after its floor is
     //    gone, a glint in the arrow's tell, splinters after it stopped, the geyser's tell in its tell and its burst while
-    //    erupting, a block's landing dust once it has landed, a mover's dust while it moves, a door's scrape while it moves,
+    //    erupting, a block's landing dust once it has landed, its heap of rubble from then on (instead of its skin), a mover's dust while it moves, a door's scrape while it moves,
     //    a pulse, flare or snap within its length of the fire; TrapArtMath holds the lengths);
     //  - a death effect is drawn only in the hold, and only the effect of what killed the cat (§3 rule 6);
     //  - the arrow's glint and the geyser's tell are on for exactly their declared window;
@@ -231,11 +231,17 @@ namespace Parallax.Tests.EditMode
                 foreach (TrapArt.Body b in art.Bodies)
                 {
                     bool greybox = Shown(b.Greybox), drawn = Shown(b.Art) && b.Art.sprite != null;
+                    // 2026-10-17: a landed block lies as its heap of broken stone instead of its skin (the heap's own rule below).
+                    if (greybox && !drawn && art is SolidArt && art.Effects.Any(e => e.Group == "rubble" && Drawn(e.Renderer))) continue;
                     if (greybox != drawn) { Fail(tick, $"{art.name}: body {(b.Art != null ? b.Art.name : "null")} drawn {drawn}, grey-box {(b.Greybox != null ? b.Greybox.name : "null")} shown {greybox}"); continue; }
                     if (!drawn) continue;
                     // D-101/D-105: a body may draw past its grey-box by its BodyGrowth (a fraction of the grey-box's size) on each side.
                     Bounds limit = b.Greybox.bounds;
-                    Vector2 g = art.BodyGrowth;
+                    Vector2 g = art.GrowthOf(b);
+                    // PAX-A18: the allowance is in the grey-box's own axes; a body turned a quarter (a standing hinge face) swaps them.
+                    float sin = Mathf.Abs(Mathf.Sin(b.Greybox.transform.eulerAngles.z * Mathf.Deg2Rad));
+                    if (sin > 0.92f) g = new Vector2(g.y, g.x);
+                    else if (sin > 0.38f) g = Vector2.one * Mathf.Max(g.x, g.y);   // turning: its bounds mix both axes
                     limit.Expand(2f * Vector3.Scale(new Vector3(g.x, g.y, 0f), limit.size) + Vector3.one * (2f * TrapArtMath.BoundsTolerance));
                     Bounds a = b.Art.bounds;
                     if (!limit.Contains(a.min) || !limit.Contains(a.max)) Fail(tick, $"{art.name}: body {b.Art.name} {a} outside its grey-box {b.Greybox.bounds}");
@@ -260,6 +266,9 @@ namespace Parallax.Tests.EditMode
                 }
             }
 
+            // A fallen block once it has travelled its distance; a slam that stays once its move is done.
+            bool Landed(RoomTrap trap, int s, Motion m) => s >= 0 && (trap is FallingBlockTrap ? m != null && m.Landed >= 0 : s >= (int)Private(trap, "moveTicks"));
+
             int CheckEffects(TrapArt art, int tick, int roomTick)
             {
                 int live = 0;
@@ -268,7 +277,7 @@ namespace Parallax.Tests.EditMode
                 motion.TryGetValue(art, out Motion m);
                 bool movedLately = m != null && roomTick - m.Changed <= 1;   // it moved this room tick or the last
                 DeathKind? killedBy = death != null && death.IsHolding ? Expected(death.HoldKiller, pits) : null;
-                bool anyTell = false, anyGlint = false, anyCharge = false, anyHole = false;
+                bool anyTell = false, anyGlint = false, anyCharge = false, anyHole = false, anyRubble = false;
                 foreach (TrapArt.Effect e in art.Effects)
                 {
                     if (!Drawn(e.Renderer)) continue;
@@ -286,6 +295,8 @@ namespace Parallax.Tests.EditMode
                         // From its release until it has lain still for the crack's fade.
                         case "crack": allowed = s >= 0 && (m == null || m.Landed < 0 || roomTick - m.Landed < TrapArtMath.CrackFadeTicks); break;
                         case "land": allowed = s >= 0 && m != null && m.Landed >= 0 && roomTick - m.Landed < TrapArtMath.LandDustTicks; break;
+                        // 2026-10-17: a fallen block's heap, from its landing while it's there.
+                        case "rubble": anyRubble = true; allowed = Landed(trap, s, m) && Shown(art.Bodies[0].Greybox); break;
                         // PAX-102: a roof block's hole, once the block is its own height away from its place.
                         case "hole": anyHole = true; allowed = BlockHasLeft(art); break;
                         // Dust while the grey-box moves; a shrinker's chips while it shrinks (from its fire tick).
@@ -311,6 +322,8 @@ namespace Parallax.Tests.EditMode
                     Fail(tick, $"{art.name}: no glint in the tell ({s} since fire)");
                 if (trap is GeyserTrap geyser && geyser.Phase == GeyserPhase.Tell && !anyTell)
                     Fail(tick, $"{art.name}: no tell art in the geyser's tell");
+                if (art.Effects.Any(e => e.Group == "rubble") && Landed(trap, s, m) && (trap is not FallingBlockTrap || roomTick > m.Landed) && Shown(art.Bodies[0].Greybox) && !anyRubble)
+                    Fail(tick, $"{art.name}: the block has landed but lies as its skin, not its heap");
                 if (art.Effects.Any(e => e.Group == "hole") && BlockHasLeft(art) && !anyHole)
                     Fail(tick, $"{art.name}: the block has left its place but its hole doesn't show");
                 if (trap is StormCloudTrap cloud && cloud.Phase == StormCloudPhase.Charge && !anyCharge)

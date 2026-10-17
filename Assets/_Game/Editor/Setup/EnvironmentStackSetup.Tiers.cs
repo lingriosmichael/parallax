@@ -457,6 +457,10 @@ namespace Parallax.Editor.Setup
 
         /// <summary>§3.1: everything from the room's sides out to the frame, under its floor and over its ceiling, is dark
         /// masonry (unreachable, so free to paint), so no void shows at the frame's edge.</summary>
+        /// <summary>How far short of the room the side-wall columns stop: past the deepest notch (SoloRoomSkin.DeepReach), inside
+        /// the side strips' soft inner end (they reach DeepReach + 0.10 into the stone, fading over their last 0.07).</summary>
+        public const float OutsideInset = 0.33f;
+
         static void Outside(TierContext c)
         {
             SoloRoomDefinition room = c.Room.Value;
@@ -476,17 +480,68 @@ namespace Parallax.Editor.Setup
             t.gameObject.layer = c.LayerIndex;
             // The side bands start at the room walls' outer faces (1 u out): the strip over a side wall's top stays air, so the
             // top reads against it like any other (A1).
-            var rects = new[]
+            // 2026-10-16 ("All edges need to be a bit bumpy"): wherever this masonry meets the room's air, it stops OutsideInset
+            // short (behind a broken strip: the walls' own, or one drawn here where no solid stands), never a straight edge.
+            List<SoloRoomSkin.Solid> all = SoloRoomSkin.Solids(room);
+            // (the masonry over and under the room counts too: it meets the columns stone to stone)
+            bool SolidAt(float x, float y) => x > x0 && x < x1 && (y >= content.max.y || y <= content.min.y) || all.Any(s => s.Rect.Contains(new Vector2(x, y)));
+            List<(float a, float b)> Spans(float y0, float y1, System.Func<float, bool> open)
             {
-                Rect.MinMaxRect(frame.min.x, frame.min.y, x0 - 1f, frame.max.y),
-                Rect.MinMaxRect(x1 + 1f, frame.min.y, frame.max.x, frame.max.y),
+                var spans = new List<(float, float)>();
+                float? start = null;
+                for (float y = y0; y <= y1 + 1e-4f; y += 0.05f)
+                {
+                    bool o = y < y1 && open(Mathf.Min(y + 0.025f, y1));
+                    if (o && start == null) start = y;
+                    if (!o && start != null) { spans.Add((start.Value, Mathf.Min(y, y1))); start = null; }
+                }
+                if (start != null) spans.Add((start.Value, y1));   // still open at the end (the last step can overshoot y1)
+                return spans.Where(s => s.Item2 - s.Item1 > 0.05f).ToList();
+            }
+            float topL = ceilingAtLeft ? frame.max.y : room.Origin.y + 8f, topR = ceilingAtRight ? frame.max.y : room.Origin.y + 8f;
+            var rects = new List<Rect>
+            {
                 Rect.MinMaxRect(x0, frame.min.y, x1, content.min.y),
                 Rect.MinMaxRect(x0, content.max.y, x1, frame.max.y),
-                // Gauntlet: the room's side-wall columns (1 u, no renderer of their own) up to the walls' tops: stone, not sky.
-                Rect.MinMaxRect(x0 - 1f, frame.min.y, x0, ceilingAtLeft ? frame.max.y : room.Origin.y + 8f),
-                Rect.MinMaxRect(x1, frame.min.y, x1 + 1f, ceilingAtRight ? frame.max.y : room.Origin.y + 8f),
             };
-            for (int i = 0; i < rects.Length; i++)
+            var strips = new List<(float line, bool facesRight, float a, float b)>();
+            // The side bands start at the room walls' outer faces (1 u out): the strip over a side wall's top stays air, so the
+            // top reads against it like any other (A1). Below the wall's top they're whole (the column stands in front).
+            Band(frame.min.x, x0 - 1f, topL, true);
+            Band(x1 + 1f, frame.max.x, topR, false);
+            // Gauntlet: the room's side-wall columns (1 u, no renderer of their own) up to the walls' tops: stone, not sky.
+            Column(x0 - 1f, x0, topL, true);
+            Column(x1, x1 + 1f, topR, false);
+            void Band(float a, float b, float top, bool left)
+            {
+                float face = left ? b : a;
+                if (top > frame.min.y) rects.Add(Rect.MinMaxRect(a, frame.min.y, b, Mathf.Min(top, frame.max.y)));
+                if (top >= frame.max.y) return;
+                foreach ((float s0, float s1) in Spans(top, frame.max.y, y => !SolidAt(left ? face + 0.02f : face - 0.02f, y)))
+                {
+                    rects.Add(left ? Rect.MinMaxRect(a, s0, b - OutsideInset, s1) : Rect.MinMaxRect(a + OutsideInset, s0, b, s1));
+                    strips.Add((face, left, s0, s1));
+                }
+                // (Where a solid stands against the band above the wall, the band stays whole behind it.)
+                foreach ((float s0, float s1) in Spans(top, frame.max.y, y => SolidAt(left ? face + 0.02f : face - 0.02f, y)))
+                    rects.Add(Rect.MinMaxRect(a, s0, b, s1));
+            }
+            void Column(float a, float b, float top, bool left)
+            {
+                float face = left ? b : a, inside = left ? face + 0.02f : face - 0.02f, behind = left ? face - 0.02f : face + 0.02f;
+                List<(float a, float b)> openSpans = Spans(frame.min.y, top, y => !SolidAt(inside, y));
+                float y = frame.min.y;
+                foreach ((float s0, float s1) in openSpans)
+                {
+                    if (s0 > y) rects.Add(Rect.MinMaxRect(a, y, b, s0));
+                    rects.Add(left ? Rect.MinMaxRect(a, s0, b - OutsideInset, s1) : Rect.MinMaxRect(a + OutsideInset, s0, b, s1));
+                    // No solid wall there (a room taller than its side walls): the strip is this masonry's own.
+                    foreach ((float w0, float w1) in Spans(s0, s1, yy => !SolidAt(behind, yy))) strips.Add((face, left, w0, w1));
+                    y = s1;
+                }
+                if (top > y) rects.Add(Rect.MinMaxRect(a, y, b, top));
+            }
+            for (int i = 0; i < rects.Count; i++)
             {
                 Rect r = rects[i];
                 if (r.width <= 0.01f || r.height <= 0.01f) continue;
@@ -496,25 +551,48 @@ namespace Parallax.Editor.Setup
                 go.transform.position = new Vector3(r.center.x, r.center.y, c.EnvRoot.position.z);
                 var sr = go.AddComponent<SpriteRenderer>();
                 // Gauntlet: the room's own stone, world-UV (so it continues the wall beside it without a seam), in the fixed
-                // stone's batch, under the same shadow as a block's face (a separate quad, the face shade's solid).
+                // stone's batch.
                 sr.sprite = stone; sr.sharedMaterial = fill; sr.color = SoloRoomSkin.Body;
                 sr.drawMode = SpriteDrawMode.Sliced; sr.size = r.size;
                 sr.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); sr.sortingOrder = -3;
-                Sprite shadeSprite = EnvironmentKit.Sprite("ENV_FaceShadeSolid");
-                if (shadeSprite != null)
-                {
-                    var sh = new GameObject("Outside_Shade_" + i);
-                    sh.transform.SetParent(t, false);
-                    sh.layer = c.LayerIndex;
-                    sh.transform.position = new Vector3(r.center.x, r.center.y, c.EnvRoot.position.z - 0.01f);
-                    sh.transform.localScale = new Vector3(r.width / shadeSprite.bounds.size.x, r.height / shadeSprite.bounds.size.y, 1f);
-                    var shr = sh.AddComponent<SpriteRenderer>();
-                    shr.sprite = shadeSprite; shr.sharedMaterial = EnvironmentKit.TileMaterial("Sprite") ?? EnvironmentKit.UnlitMaterial;
-                    // Round 5 (critics, every round: "a navy/purple translucent overlay on the walls"): the shade sprite is navy
-                    // (26,31,56); this tint makes it a neutral dark over the outside stone.
-                    shr.color = new Color(0.9f, 0.66f, 0.37f, Mathf.Min(1f, c.Config.FaceShadeAlpha * 1.25f));
-                    shr.sortingLayerName = sr.sortingLayerName; shr.sortingOrder = -3;
-                }
+                // 2026-10-17: its shade is the room's StoneShade map's outside channel (in the stone's shaders), the same on the
+                // room walls' stone and broken strips where they stand over it (a quad here and a multiply on the strips
+                // never matched).
+            }
+            // The masonry's own broken strips where it meets the air with no solid in front (deep strips: nothing reaches there).
+            for (int i = 0; i < strips.Count; i++)
+            {
+                (float line, bool facesRight, float s0, float s1) = strips[i];
+                (string slot, Material mask) = SoloRoomSkin.OutsideStrip(room, (int)(SoloRoomSkin.Hash(c.LevelId ?? "t", 560 + i) * 4f));
+                EnvironmentKit.Slot def = slot != null ? EnvironmentKit.Get(slot) : null;
+                Sprite sprite = slot != null ? EnvironmentKit.Sprite(slot) : null;
+                if (def == null || sprite == null) break;
+                var owner = new SoloRoomSkin.Solid("Outside", Rect.zero, false, SoloRoomElementKind.Wall);
+                Rect r = SoloRoomSkin.SideStrip(new SoloRoomSkin.Edge(owner, facesRight ? SoloRoomSkin.Side.Right : SoloRoomSkin.Side.Left, s0, s1, line), def);
+                var go = new GameObject("Outside_Strip_" + i);
+                go.transform.SetParent(t, false);
+                go.layer = c.LayerIndex;
+                go.transform.position = new Vector3(r.center.x, r.center.y, c.EnvRoot.position.z - 0.015f);
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = sprite; sr.sharedMaterial = mask; sr.flipX = facesRight;
+                sr.drawMode = SpriteDrawMode.Sliced; sr.size = r.size;
+                sr.color = SoloRoomSkin.Body;
+                sr.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); sr.sortingOrder = -3;
+            }
+            // 2026-10-16 ("All edges need to be a bit bumpy"): the masonry under the room, where the camera sees its top (a room
+            // open at the bottom), ends in the lumpy cap, not a ruler-straight edge.
+            Sprite capTop = EnvironmentKit.Sprite("ENV_Cap");
+            EnvironmentKit.Slot cd = EnvironmentKit.Get("ENV_Cap");
+            if (capTop != null && cd != null && content.min.y > frame.min.y + 0.01f)
+            {
+                var go = new GameObject("Outside_Top");
+                go.transform.SetParent(t, false);
+                go.layer = c.LayerIndex;
+                go.transform.position = new Vector3((x0 + x1) * 0.5f, content.min.y + cd.above - cd.height * 0.5f, c.EnvRoot.position.z - 0.02f);
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = capTop; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = c.Config.OutsideTint * 1.15f;
+                sr.drawMode = SpriteDrawMode.Tiled; sr.size = new Vector2(x1 - x0, cd.height);
+                sr.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); sr.sortingOrder = -3;
             }
             // Gauntlet: the masonry over the room ends in a broken course with roots hanging, not a ruler-straight edge.
             Sprite under = EnvironmentKit.Sprite("ENV_Under");
@@ -530,7 +608,8 @@ namespace Parallax.Editor.Setup
                 go.transform.position = new Vector3((x0 + x1) * 0.5f, content.max.y - ud.below + ud.height * 0.5f, c.EnvRoot.position.z);
                 var sr = go.AddComponent<SpriteRenderer>();
                 sr.sprite = under; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = c.Config.OutsideTint * 1.15f;
-                sr.drawMode = SpriteDrawMode.Tiled; sr.size = new Vector2(x1 - x0 + 2f, ud.height);
+                // (the room's width only, like the masonry it edges: past it its straight top stood over the air beside the columns)
+                sr.drawMode = SpriteDrawMode.Tiled; sr.size = new Vector2(x1 - x0, ud.height);
                 sr.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); sr.sortingOrder = -3; go.transform.position += new Vector3(0f, 0f, -0.02f);
                 // Its underside catches the bounce of the sun (a warm soffit, not a flat black bar).
                 Sprite fade = EnvironmentKit.Sprite("ENV_SkyFade");
@@ -539,12 +618,15 @@ namespace Parallax.Editor.Setup
                     var b = new GameObject("Outside_Bounce");
                     b.transform.SetParent(t, false);
                     b.layer = c.LayerIndex;
-                    b.transform.position = new Vector3((x0 + x1) * 0.5f, content.max.y + 0.6f, c.EnvRoot.position.z);
-                    b.transform.localScale = new Vector3((x1 - x0 + 2f) / fade.bounds.size.x, 1.4f / fade.bounds.size.y, 1f);
+                    // 2026-10-16: from the broken course's line up, behind it (its stone hides the glow's bottom edge, which drew a
+                    // straight warm line through the gaps between the hanging stones).
+                    b.transform.position = new Vector3((x0 + x1) * 0.5f, content.max.y + 0.02f + 0.7f, c.EnvRoot.position.z);
+                    // (the room's width only: past it, over the air beside the columns' tops, it drew a straight-edged band)
+                    b.transform.localScale = new Vector3((x1 - x0) / fade.bounds.size.x, 1.4f / fade.bounds.size.y, 1f);
                     var br = b.AddComponent<SpriteRenderer>();
                     br.sprite = fade; br.sharedMaterial = EnvironmentKit.UnlitMaterial; br.flipY = true;
                     Color warm = c.Palette.SunLight; warm.a = 0.28f; br.color = warm;
-                    br.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); br.sortingOrder = -3; b.transform.position += new Vector3(0f, 0f, -0.03f);
+                    br.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); br.sortingOrder = -3; b.transform.position += new Vector3(0f, 0f, -0.01f);
                 }
                 // Roots and ivy hanging from it one by one: six shapes, random lengths, flips and gaps.
                 for (float x = x0 + 0.3f * SoloRoomSkin.Hash(c.LevelId ?? "t", 500); x < x1; )

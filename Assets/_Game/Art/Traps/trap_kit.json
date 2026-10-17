@@ -1,11 +1,147 @@
 {
   "entries": [
     {
+      "normal": "Assets/_Game/Art/Traps/Bodies/HINGE_knuckle_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/HINGE_knuckle.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SLAM_plate_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SLAM_plate.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_10_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_10.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_11_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_11.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_4_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_4.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_5_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_5.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_6_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_6.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_7_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_7.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_8_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_8.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_9_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_9.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher_n.png",
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher.png",
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_launcher_mouth_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_launcher_mouth.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
       "tiled": false
     },
     {
@@ -14,6 +150,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 256,
       "tiled": false
     },
     {
@@ -22,6 +159,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 256,
       "tiled": false
     },
     {
@@ -30,7 +168,17 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
     },
     {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_head_n.png",
@@ -38,6 +186,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 256,
       "tiled": false
     },
     {
@@ -46,6 +195,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 256,
       "tiled": true
     },
     {
@@ -54,6 +204,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 256,
       "tiled": false
     },
     {
@@ -62,6 +213,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -70,6 +222,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -78,6 +231,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 256,
       "tiled": false
     },
     {
@@ -86,7 +240,44 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 256,
       "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/CRACK_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/CRACK_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/CRACK_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/CRACK_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/CRACK_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/CRACK_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/CRUMBLE_edge_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/CRUMBLE_edge.png",
+      "pivotX": 0.5,
+      "pivotY": 1.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": true
     },
     {
       "normal": "Assets/_Game/Art/Traps/Effects/TRAP-10_scorch_n.png",
@@ -94,6 +285,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -102,6 +294,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 256,
       "tiled": false
     },
     {
@@ -110,6 +303,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -118,6 +312,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -126,6 +321,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -134,6 +330,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -142,6 +339,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -150,6 +348,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -158,6 +357,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -166,6 +366,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -174,6 +375,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -182,6 +384,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -190,6 +393,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -198,6 +402,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -206,6 +411,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -214,6 +420,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -222,6 +429,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": true
     },
     {
@@ -230,6 +438,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": true
     },
     {
@@ -238,6 +447,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": true
     },
     {
@@ -246,6 +456,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": true
     },
     {
@@ -254,6 +465,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": true
     },
     {
@@ -262,6 +474,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": true
     },
     {
@@ -270,6 +483,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": true
     },
     {
@@ -278,6 +492,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": true
     },
     {
@@ -286,6 +501,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -294,6 +510,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -302,6 +519,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -310,6 +528,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -318,6 +537,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     },
     {
@@ -326,6 +546,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
+      "ppu": 128,
       "tiled": false
     }
   ],
@@ -334,14 +555,344 @@
     "Bodies/TRAP-02_arrow: black shading 39.6%",
     "Bodies/TRAP-04_spike_strip: black shading 43.0%",
     "Bodies/TRAP-05_spear_head: black shading 31.7%",
-    "Bodies/TRAP-05_spear_shaft: black shading 21.3%"
+    "Bodies/TRAP-05_spear_shaft: black shading 21.3%",
+    "Bodies/TRAP-01_launcher_mouth: black shading 38.6%",
+    "Bodies/TRAP-02_arrow: black shading 43.5%",
+    "Bodies/TRAP-05_spear: black shading 28.7%",
+    "Bodies/TRAP-05_spear_head: black shading 39.5%",
+    "Bodies/TRAP-05_spear_shaft: black shading 25.2%",
+    "Bodies/SPIKE_blade_0: black shading 60.8%",
+    "Bodies/SPIKE_blade_1: black shading 65.0%",
+    "Bodies/SPIKE_blade_2: black shading 60.2%",
+    "Bodies/SPIKE_blade_3: black shading 58.3%",
+    "Bodies/SPIKE_blade_4: black shading 59.5%",
+    "Bodies/SPIKE_blade_5: black shading 61.8%",
+    "Bodies/SPIKE_blade_6: black shading 60.8%",
+    "Bodies/SPIKE_blade_7: black shading 57.0%",
+    "Bodies/SPIKE_blade_8: black shading 60.8%",
+    "Bodies/SPIKE_blade_9: black shading 56.2%",
+    "Bodies/SPIKE_blade_10: black shading 58.9%",
+    "Bodies/SPIKE_blade_11: black shading 58.3%",
+    "Bodies/HINGE_knuckle: black shading 8.7%",
+    "Effects/CRACK_0: black shading 11.4%",
+    "Effects/CRACK_1: black shading 13.1%",
+    "Effects/CRACK_2: black shading 10.9%",
+    "Effects/TRAP-11_block_crack: black shading 13.1%"
   ],
   "ppu": 128,
   "sprites": {
+    "Bodies/HINGE_knuckle": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/HINGE_knuckle_n.png",
+      "palette": {
+        "black": 0.0874,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/HINGE_knuckle.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        34,
+        108
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-11_hinge_floor_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SLAM_plate": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SLAM_plate_n.png",
+      "palette": {
+        "black": 0.0128,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SLAM_plate.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        107,
+        41
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-07_slam_v2.png"
+      ],
+      "tiled": true
+    },
+    "Bodies/SPIKE_blade_0": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_0_n.png",
+      "palette": {
+        "black": 0.6079,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_0.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        38,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01R_spike_row_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_blade_1": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_1_n.png",
+      "palette": {
+        "black": 0.6495,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_1.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        47,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01R_spike_row_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_blade_10": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_10_n.png",
+      "palette": {
+        "black": 0.589,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_10.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        49,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01_spike_blades_iron_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_blade_11": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_11_n.png",
+      "palette": {
+        "black": 0.5833,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_11.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        43,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01_spike_blades_iron_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_blade_2": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_2_n.png",
+      "palette": {
+        "black": 0.6025,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_2.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        32,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01R_spike_row_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_blade_3": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_3_n.png",
+      "palette": {
+        "black": 0.5831,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_3.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        40,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01R_spike_row_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_blade_4": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_4_n.png",
+      "palette": {
+        "black": 0.5949,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_4.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        40,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01R_spike_row_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_blade_5": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_5_n.png",
+      "palette": {
+        "black": 0.6179,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_5.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        39,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01R_spike_row_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_blade_6": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_6_n.png",
+      "palette": {
+        "black": 0.608,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_6.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        36,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01R_spike_row_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_blade_7": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_7_n.png",
+      "palette": {
+        "black": 0.5699,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_7.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        42,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01_spike_blades_iron_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_blade_8": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_8_n.png",
+      "palette": {
+        "black": 0.6079,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_8.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        45,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01_spike_blades_iron_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_blade_9": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_9_n.png",
+      "palette": {
+        "black": 0.5623,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_9.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        41,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-01_spike_blades_iron_v1.png"
+      ],
+      "tiled": false
+    },
     "Bodies/TRAP-01_arrow_launcher": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher_n.png",
       "palette": {
-        "black": 0.2881,
+        "black": 0.0055,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher.png",
@@ -350,19 +901,42 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 256,
       "size_px": [
-        64,
-        64
+        189,
+        185
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-01_arrow_launcher_v1.png"
+        "Art_Source/Traps_ChatGPT/PILOT-02A_launcher_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/TRAP-01_launcher_mouth": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_launcher_mouth_n.png",
+      "palette": {
+        "black": 0.3861,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_launcher_mouth.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        189,
+        185
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-02A_launcher_v1.png"
       ],
       "tiled": false
     },
     "Bodies/TRAP-02_arrow": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow_n.png",
       "palette": {
-        "black": 0.3957,
+        "black": 0.4353,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow.png",
@@ -371,19 +945,20 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 256,
       "size_px": [
-        214,
-        78
+        213,
+        52
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-02_arrow_v1.png"
+        "Art_Source/Traps_ChatGPT/PILOT-02C_arrow_v1.png"
       ],
       "tiled": false
     },
     "Bodies/TRAP-03_geyser_vent": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-03_geyser_vent_n.png",
       "palette": {
-        "black": 0.0028,
+        "black": 0.012,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-03_geyser_vent.png",
@@ -392,12 +967,13 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 256,
       "size_px": [
-        128,
-        38
+        256,
+        37
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-03_geyser_vent_v1.png"
+        "Art_Source/Traps_ChatGPT/PILOT-02B_vent_v1.png"
       ],
       "tiled": false
     },
@@ -413,6 +989,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         301,
         45
@@ -422,10 +999,32 @@
       ],
       "tiled": true
     },
+    "Bodies/TRAP-05_spear": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_n.png",
+      "palette": {
+        "black": 0.2868,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        364,
+        73
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-02D_spear_v1.png"
+      ],
+      "tiled": false
+    },
     "Bodies/TRAP-05_spear_head": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_head_n.png",
       "palette": {
-        "black": 0.3173,
+        "black": 0.3945,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_head.png",
@@ -434,19 +1033,20 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 256,
       "size_px": [
-        102,
-        39
+        162,
+        91
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-05_spear_v1.png"
+        "Art_Source/Traps_ChatGPT/PILOT-02D_spear_v1.png"
       ],
       "tiled": false
     },
     "Bodies/TRAP-05_spear_shaft": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_shaft_n.png",
       "palette": {
-        "black": 0.2132,
+        "black": 0.252,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_shaft.png",
@@ -455,19 +1055,20 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 256,
       "size_px": [
-        184,
-        44
+        696,
+        104
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-05_spear_v1.png"
+        "Art_Source/Traps_ChatGPT/PILOT-02D_spear_v1.png"
       ],
       "tiled": true
     },
     "Bodies/TRAP-06_inverter_orb": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-06_inverter_orb_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.0018,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-06_inverter_orb.png",
@@ -476,12 +1077,13 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 256,
       "size_px": [
-        77,
-        76
+        200,
+        181
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-06_inverter_orb_v1.png"
+        "Art_Source/Traps_ChatGPT/PILOT-09_inverter_orb_v1.png"
       ],
       "tiled": false
     },
@@ -497,6 +1099,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         39,
         26
@@ -518,6 +1121,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         192,
         50
@@ -539,12 +1143,13 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 256,
       "size_px": [
-        127,
-        128
+        253,
+        256
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-08_glyph_ring_v1.png"
+        "Art_Source/Traps_ChatGPT/PILOT-13_flip_orb_v1.png"
       ],
       "tiled": false
     },
@@ -560,14 +1165,103 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 256,
       "size_px": [
-        245,
-        102
+        512,
+        284
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-09_storm_cloud_v1.png"
+        "Art_Source/Traps_ChatGPT/PILOT-08_storm_cloud_v1.png"
       ],
       "tiled": false
+    },
+    "Effects/CRACK_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/CRACK_0_n.png",
+      "palette": {
+        "black": 0.114,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/CRACK_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        256,
+        253
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-15_crumble_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/CRACK_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/CRACK_1_n.png",
+      "palette": {
+        "black": 0.1308,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/CRACK_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        256,
+        204
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-15_crumble_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/CRACK_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/CRACK_2_n.png",
+      "palette": {
+        "black": 0.1087,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/CRACK_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        256,
+        234
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-15_crumble_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/CRUMBLE_edge": {
+      "normal": "Assets/_Game/Art/Traps/Effects/CRUMBLE_edge_n.png",
+      "palette": {
+        "black": 0.0195,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/CRUMBLE_edge.png",
+      "pivot": [
+        0.5,
+        1.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        242,
+        56
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-15_crumble_v1.png"
+      ],
+      "tiled": true
     },
     "Effects/TRAP-10_scorch": {
       "normal": "Assets/_Game/Art/Traps/Effects/TRAP-10_scorch_n.png",
@@ -581,6 +1275,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         154,
         23
@@ -593,7 +1288,7 @@
     "Effects/TRAP-11_block_crack": {
       "normal": "Assets/_Game/Art/Traps/Effects/TRAP-11_block_crack_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.1308,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Effects/TRAP-11_block_crack.png",
@@ -602,12 +1297,13 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 256,
       "size_px": [
-        126,
-        128
+        256,
+        204
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-11_block_crack_v1.png"
+        "Art_Source/Traps_ChatGPT/PILOT-15_crumble_v1.png"
       ],
       "tiled": false
     },
@@ -623,6 +1319,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         51,
         128
@@ -644,6 +1341,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         46,
         128
@@ -665,6 +1363,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         49,
         128
@@ -686,6 +1385,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         22,
         24
@@ -707,6 +1407,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         21,
         24
@@ -728,6 +1429,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         21,
         24
@@ -749,6 +1451,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         24,
         24
@@ -770,6 +1473,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         21,
         24
@@ -791,6 +1495,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         22,
         24
@@ -812,6 +1517,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         16,
         64
@@ -831,6 +1537,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         64,
         33
@@ -852,6 +1559,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         64,
         30
@@ -873,6 +1581,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         64,
         35
@@ -894,6 +1603,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         128,
         128
@@ -913,6 +1623,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         128,
         214
@@ -934,6 +1645,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         128,
         214
@@ -955,6 +1667,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         128,
         214
@@ -976,6 +1689,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         128,
         214
@@ -997,6 +1711,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         128,
         214
@@ -1018,6 +1733,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         128,
         214
@@ -1039,6 +1755,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         128,
         214
@@ -1060,6 +1777,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         128,
         214
@@ -1081,6 +1799,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         32,
         32
@@ -1100,6 +1819,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         16,
         16
@@ -1119,6 +1839,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         128,
         128
@@ -1138,6 +1859,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         51,
         28
@@ -1159,6 +1881,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         51,
         26
@@ -1180,6 +1903,7 @@
         0.5
       ],
       "placeholder": "",
+      "ppu": 128,
       "size_px": [
         51,
         22

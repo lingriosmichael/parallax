@@ -4185,3 +4185,205 @@ storey, and stone fills everything that isn't played.
 **Why:** the developer's request (2026-10-15) and the taste rules in §4c.
 
 **Amendment (same day):** V_3 hangs from Bracket_V (stone, x 1-2.2, y 11.8-12.5, under Door_Ledge), its top 0.05 under it, not in open air; running the vine up to the slab let a jump off its top reach S4. T9's lead V_3 30 -> 34.
+
+### D-151 · 2026-10-16 · Accepted (the developer, PAX-A18)
+**Decision:** biomes are kinds of place, assigned by **level range**, not per level:
+- **L001–L020** keep today's look (Golden Ruins, D-103/D-107) and get no new environment art.
+- **L021–L040** are Ember Night.
+- **L041–L060** are Sky Isles.
+- Sunken Grotto and Jungle Falls take later ranges, in the same pattern.
+
+The background prompts (`Docs/A_TASKS/PAX-A18_BACKGROUND_PROMPTS.md`) wait until those levels are built. The developer adds
+them gradually. PAX-A18's W1 (biomes) and its gauntlet loop are paused.
+
+The trap art (W2) goes ahead now on L001–L020, from the developer's painted pilot set
+(`Docs/A_TASKS/PAX-A18_PILOT_PROMPTS.md`, `Art_Source/Traps_ChatGPT/PILOT-*`).
+
+**Every trap kind draws at one fixed world size in every level**, whatever its grey-box box. Spike strips are laid out blade by
+blade at one scale; their irregular spacing absorbs the strip's width. D-108, P10, D-052 and the hitboxes are unchanged.
+
+Supersedes PAX-A18 §1 W1's split of L001–L020 into five biomes (the Stop 1 table).
+**Why:** the developer (2026-10-16): "EmberNight will be the assets for levels 21-40, Skyisles for 41-60 … Since we are now
+only 20 levels in, we dont need new assets … What I already did do however are the TRAPS_CHATGPT ones. Those can be updated
+throughout the first 20 levels. Make sure sizes are always consistent throughout. We pause the gauntlet loop for now for
+strict improvement of traps."
+
+### D-108 amendment · 2026-10-16 · Accepted (the developer, PAX-A18 W2)
+**Decision:** an arrow or spear launcher is two layers:
+- **The carved stone frame:** not lethal. It may blend into the wall it is built into.
+- **The mouth:** the slot, its bronze lips and its crimson rim. This is the lethal part, drawn over the frame on the same canvas. It carries D-108's dark outer line and light inner rim.
+
+`HazardContrastTests` measures a launcher's **mouth** (`ArrowArt.LauncherDanger`), not its frame. The 3:1-on-30% rule is
+unchanged for the mouth and for every other hazard. A disguised launcher reveals its mouth alone, opening in its own wall
+(P10 unchanged: nothing shows before the reveal tick). The frame draws at one fixed size in every level (D-151).
+
+**Why:** the developer (2026-10-16), choosing "Test only its mouth" over a smaller, bright-bordered launcher or a dark iron
+frame. A frame carved from the wall's own stone can't reach 3:1 against that wall, and a bigger frame lowers the share
+further. D-108 already names "the launcher's mouth" among the lethal things.
+
+### D-103 amendment · 2026-10-16 · Accepted (the developer, PAX-A18 W2)
+**Decision:** a pit shows the inside of the ruin, never the sky. Behind every pit (an opening whose hazard lines its bottom)
+an opaque **recessed stone back wall** replaces the dark void:
+- **Stone:** the level's own fill, as its `ENV_Fill_*_Recess` twin from `env_kit.py`: blurred, half the contrast, re-centred
+  on a light warm brown (`RECESS_MEAN`).
+- **Drawn unlit:** so every pit is the same mid brown, whatever the light there.
+- **Shading:** soft shadows under the lip and down both walls, and a faint darkening toward the bottom
+  (`EnvironmentStackSetup` `PitVoids`).
+
+**Why:** the developer, 2026-10-16: "you shouldnt be able to see the sky if the floor caves in. We need a lighter brown color
+something that shows okay the floor collapsed and behind it is not the sky." Their ruling on the tone: lighter and softer
+than the stone around it.
+
+**Measured:** dark iron spikes read at 3:1 against it, with the back wall at luminance 0.155–0.165. A lit wall varied with
+each pit's light and fell to 0.09–0.13. That is the band where neither near-black iron nor its bright edges reach 3:1
+(rounds t21–t23).
+
+Supersedes the same day's first amendment, which only lightened the void, to alpha 0.35, over the sky.
+
+### D-152 · 2026-10-16 · Proposed (PAX-A18 W2: trap art v2 on L001–L020)
+**Decision:** the painted pilot set (`Art_Source/Traps_ChatGPT/PILOT-*`, D-151) replaces the trap kit's bodies. It is
+processed by `Tools/Art/trap_v2.py` at 256 px per unit.
+- **Spikes are dark forged iron, drawn blade by blade.** Each painted blade keeps its own variant, at one fixed scale
+  (`SpikeArt.bladeGrowth` 1.98). `SpikeLayout.Lay` sets each strip's run of variants and its irregular gaps (0.04–0.16 u,
+  seeded per strip). The leftover width is shared out among the gaps, so no blade is stretched or cut.
+- **How a blade reads (D-108, kept):**
+  - a thin 3 px dark outer line, for light backgrounds;
+  - a near-black core (the painted iron at 40%), which reads at 3:1 on any mid or light background;
+  - a 4 px bright edge on the lit side (upper left) and a 3 px bright-steel edge on the shadow side, for dark backgrounds;
+  - a light-crimson glow, 6 px, on the edge around the tip.
+- **A spike strip is a dense bed (the developer, 2026-10-16: "Can we overlap them somehow?").** A back row stands
+  between each two front blades:
+  - drawn just behind them;
+  - `SpikeArt.BackScale` 0.8 of their size;
+  - at full brightness. Dimmed, its edges fell under 3:1 in dark rooms.
+  
+  Each row draws at its own one size in every level.
+- **No blade shows past what hides it (the developer, 2026-10-16: "This is the type of things I would like to avoid
+  visually … make it smaller if necessary we can make small exceptions").**
+  - Each blade gets its own reach (`SpikeArt.bladeReach`, set by `TrapArtSetup.BladeReach` from the layout at its
+    start pose). It must stay inside a solid that covers its strip and stop short of any solid in front of it.
+  - Only the blades that need it draw smaller. These are the one exception to the one size, for example L019's
+    Thorns_0 under Hinge_0 and the blades under L004's Step_1.
+  - `TrapArtSizeTests.EverySpikeBlade_StaysInsideItsCover_AndPiercesNothing` checks it.
+- **Arrows and spears:** the same iron with 5 px edges on both sides. The spear shaft carries 15 px edges, so its dark length
+  is framed on a dark wall.
+- **Launchers:** each is a frame plus a mouth, per the D-108 amendment.
+- **One size per kind (D-151):**
+  - every launcher frame, inverter orb (`InverterArt`) and flip ring (`FlipArt`, ring side 0.99 u) draws at one world size;
+  - slam plates and hinge knuckles are fittings drawn on their solid's skin;
+  - `TrapArtSizeTests` checks this across L001–L020.
+- **Not wired yet:**
+  - the crumble's cracks and broken edge, because a crack shown before a collapse would be a tell;
+  - the geyser vent's tell, which keeps its code effect.
+
+**Gates (round t20):** `TrapArtSizeTests`, `TrapArtParityTests` and `HazardContrastTests` pass, 58 of 58. Every L001–L020
+hazard reads, including L008 `Hinge_S2_Spikes`, which failed before W2.
+
+**Why:** D-151. The developer, 2026-10-16, asked for spikes that stay dark rather than cream, and: "Make sure sizes are always
+consistent throughout".
+
+
+### D-153 · 2026-10-16 · Accepted (the developer, PAX-A18 W3)
+**Decision:** every edge of the play layer's stone is a bit bumpy. No straight stretch is left on floors, walls, ceilings,
+slabs, undersides, pit walls, trap solids or the room's own boundary. Colliders, triggers and routes are unchanged.
+
+What it changes:
+- **Walkable tops:** they carry lumps beyond the walking line, up to 0.09 u (0.05 u under a hazard's spikes). They're drawn
+  behind the cat and are never a dip, so W3's flat tops go (Stop 2 option 3).
+- **Sides beside hazards:** they take the same broken strips as any face. HazardContrastTests still holds D-108.
+- **Trap solids:**
+  - Their sides and ends stand proud of the face, because their skin is a whole rectangle.
+  - A fixed face against a trap keeps its broken strip, and the trap's skin fills those notches until it leaves.
+  - A trap resting on fixed stone shows its hanging underside.
+- **Narrow uprights:** they're drawn as stone blocks, not the painted columns (ENV_Post, ENV_SlimPost). Thin ones (under
+  0.8 u) take band strips only and keep stone between their faces.
+- **Undersides:** the hanging stones never leave a bare stretch. The thick undersides, and the ivy over lips, end raggedly,
+  except where a neighbour's own underside carries on along the same line.
+- **The face shadow:** it covers only the inset fill, and the side strips carry the same shade as a tint (the old full-width
+  shadow drew straight navy edges).
+- **The outside masonry:** it stops short of every face that looks into the room and breaks its own edge where no wall
+  stands. The masonry under an open-bottomed room ends in the lumpy cap.
+- **A pit without a floor:** its back wall goes on down.
+
+**Checked by two audits,** `~/Parallax_batch_tools/PAX-A18/tools/edge_audit.py` (straight runs of 0.5 u or more) and
+`hole_audit.py` (sky showing inside stone):
+- Straight runs fell from 1155 to 50 across L001–L020. Most of the 50 are lines painted inside the stone texture, moss
+  carpets or translucent decoration. About 8 small cut edges are left.
+- Two holes of under 70 px each remain.
+
+**Why:** the developer, 2026-10-16: "I still saw a lot of straight lines in floors and walls. Go level by level make sure
+there are non left. All edges need to be a bit bumpy. Fix all levels".
+
+**D-153 amendment 1 · 2026-10-17 · Proposed (PAX-A18 W3, after the developer's play-test of L007):**
+1. **One shadow per place.** The stone's shadows are drawn by its shaders from a small world-space map per room
+   (`StoneShade`, baked by `SoloRoomSkin` at Rebuild; `StoneShade.hlsl` in Env-Sprite-Lit-WorldUV, Env-Sprite-Lit-EdgeMask
+   and Sprite-Lit-WorldTile). Red is the face shadow, green the outside masonry's. The shadow quads and the strips' multiply
+   tints are gone, so a block, its broken strips, a disguised trap and the stone a trap lends its neighbour take the same
+   shade at the same place.
+   - The face shadow follows the stone column at each x (every solid stacked on, under or over), not each solid's own
+     rectangle: a trap floor flush in the ground, a pit floor under it and two overlapping walls shade alike.
+   - It's softened 0.5 u across a change of column and carried 0.5 u out over the air beside a face (the strips' stones).
+   - The outside masonry's shade fades in over 1.2 u across the room's box, so the room's walls and ceiling meet the
+     outside's stone without a straight line.
+   - The face shadow is the outside's neutral dark, no longer the shade sprite's navy (round 5's critics; on every strip the
+     navy turned whole undersides blue).
+   - A trap's lent stone now covers its neighbour's whole side strip (DeepReach + 0.18 u) and, where their tops are one line,
+     its broken top corner (0.5 u of cap).
+2. **A fallen block is rubble.** Every falling block in L001–L020 stays down until its room resets. From its landing tick its
+   skin and trims give way to a heap of broken stone cut from the room's fill (`ENV_RubbleHeap_<Sq|Wide|Slab>_<v>`, masks on
+   Env-Sprite-Lit-EdgeMask, `_Axis` 3): two layers of chunks and small stones spilled 0.45 u out on the floor. Its collider
+   is unchanged; the heap keeps the block's top as a walkable top (lumps within 0.09 u). Grip walls (L001) keep their skin
+   (D-114: moss is grip).
+3. **The hole it leaves is broken.** A block's hole in a ceiling or a slab's underside (LeavesHole) has deep broken strips at
+   its sides and hanging stones at its top, behind the block until it falls; the host's fill stops DeepReach short of the
+   hole and the block lends its stone over that while it's there.
+
+**Why:** the developer, 2026-10-17: "sometimes it doesnt match the color of the tile it is attached to", and "when things fall
+from the ceiling everything is straight. Whatever falls needs to crash and look like a pile of rubble and not like a perfect
+square, but this goes only for the ones that fall and never go back up."
+
+**D-153 amendment 2 · 2026-10-17 · Accepted (the developer's second L001–L020 play-test)**
+- **Smaller bumps.** Walk-band strips reach 0.08 u (was 0.12), deep strips 0.18 u (was 0.30), top lumps 0.05 u (was 0.09),
+  0.03 u under a hazard (was 0.05), and hanging stones 0.09 u (was 0.15).
+- **Nothing stands proud where the cat stands.**
+  - A walk-band strip's outline only cuts inward of its collider face.
+  - A trap solid's sides stand at most 0.03 u proud.
+  - A fallen block's heap stays inside its collider: corners broken off, sides cut inward, no spill.
+  - The stone a trap lends its neighbours (`TrapReach`) shows only while the trap is at rest (`ShownAtRest`). Before this it
+    rode out with the trap: L012's Block_E overhung PB by about 0.3 u, and L016's landed slams overlapped the cat.
+- **Slams that stay down are rubble.** A slam that comes straight down and stays (L016's Slam_1, Slam_3a and Slam_3b) lies
+  as a heap from its last move tick, as a fallen block does.
+- **Every climb vine's art reaches up to the stone over its grab box** (4 u at most) and 0.08 u into it, with a second
+  anchor at the stone when the gap holds one. The reach is environment art beside the vine, not part of it: the vine's
+  own renderers and grab box are unchanged (the route harness reads them), and the reach shows only while the vine hangs
+  where it was built.
+- **The inverter orb draws at 0.78 u** (was 0.6), past its 0.6 u zone. A zone under 0.5 u (L012's disguised Inv_H) keeps a
+  smaller orb.
+
+**Why:** the developer, 2026-10-17:
+- "All the bumpy edges are done WAAAAAY too obvious reduce it a bit."
+- "Cat is overlapping the rubble. This should be a general rule everywhere."
+- "In level 012 the box on the left goes slightly to far and over the edge."
+- "Just make of these vines attached to the ceiling and not just hanging mid air … for ever vine."
+- "Inverters make them slightly bigger."
+
+### D-154 · 2026-10-17 · Accepted (the developer, play-test of L001–L020 during PAX-A18)
+**Decision:**
+1. **Lances (spears) draw the developer's painted spear whole, at one fixed size** (`TRAP-05_spear`: 1.4 u long, 0.26 u tall),
+   their tip at the shaft's leading end, in every level. **Hitboxes are unchanged**, so a lance's art can be shorter than
+   its hitbox:
+   - L011's V4 (2.4 u), Spear_Door (2.8 u) and Spear_Gap (3.0 u), and L015's Spear_B (2.8 u), keep up to 1.6 u of deadly or
+     standable shaft with no art.
+   - On shorter hitboxes (1.0–1.2 u) the art's tail runs past the hitbox.
+
+   The developer ruled "Fixed art, keep hitboxes, and fixed length" over unifying the hitboxes at 1.4 u.
+2. **L012:** Spikes_D move 0.3 u west, to x 13.7–15.0, leaving room past them to land.
+3. **L015:** the finale's Spear_10 is removed, with its solution wait and its betrayal T10.
+4. **L016:** Hang_W1 and Moss_W1, the chimney's left mossy pillar, reach down to 2.0 u (was 2.4).
+
+**Why:** the developer, 2026-10-17:
+- "Why are lances still using the old design? … I did a new design for it. … We also have a lot of different size lances.
+  We agreed on same sizes."
+- "the spikes can move just slightly to left so there is space to jump over and land."
+- "Remove this pointless trap at the end Level 015 with the lance."
+- "On level 16 make the left ledge slightly longer."

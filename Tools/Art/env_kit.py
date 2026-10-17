@@ -1,4 +1,4 @@
-"""PAX-A15: the environment kit. Turns the developer's ChatGPT stills (Art_Source/Environment/A/ENV-*.png, never changed)
+"""PAX-A15: the environment kit. Turns the developer's ChatGPT stills (Art_Source/Environment/GoldenRuins/ENV-*.png, never changed)
 into the slots the level builder draws, at their exact pixel sizes:
 
 - play layer -> Assets/_Game/Art/RealityA/Environment/Kit/ (196.667 px/u; fills are materials at 98.333)
@@ -23,7 +23,7 @@ import trap_process as tp  # noqa: E402
 import hazard_readable  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "Art_Source/Environment/A"
+SRC = ROOT / "Art_Source/Environment/GoldenRuins"
 KIT = ROOT / "Assets/_Game/Art/RealityA/Environment/Kit"
 LAYERS = ROOT / "Assets/_Game/Art/RealityA/Environment/Backgrounds/Kit"
 WORLD_PPU = 196.66666
@@ -153,6 +153,45 @@ def vertical_fade(width, height):
     return out
 
 
+RECESS_MEAN = np.array([0.56, 0.45, 0.34], np.float32)   # the back wall's average colour (sRGB): a light warm brown
+RECESS_CONTRAST = 0.5
+
+
+RECESS_LIP_ABOVE = 0.15   # the strip's top to its nominal line (the lip's height)
+RECESS_LIP_REACH = 0.12   # how far the ragged edge strays from that line, both ways
+RECESS_LIP_HEIGHT = 0.5
+
+
+def recess_lip(wall, ppu):
+    """The recessed wall's broken top: RECESS_LIP_HEIGHT of its rows, the top edge ragged around a line RECESS_LIP_ABOVE
+    below the strip's top (periodic fractal noise across, so it tiles), darkened along the break, faded out at the bottom
+    over the wall it overlaps."""
+    import env_bumpy
+    h, w = int(round(RECESS_LIP_HEIGHT * ppu)), wall.shape[1]
+    a = wall[:h].copy()
+    rng = np.random.default_rng(1871)
+    n = env_bumpy.fractal(w, rng, max(1, int(w / ppu / 1.2)), max(2, int(w / ppu / 0.15)), 1.0)   # broken: neither a zig-zag nor a wave
+    n = (n - n.min()) / max(1e-4, n.max() - n.min())
+    cut = (RECESS_LIP_ABOVE - RECESS_LIP_REACH + n * 2 * RECESS_LIP_REACH) * ppu
+    y = np.arange(h, dtype=np.float32)[:, None]
+    a[..., 3] = np.clip(y - cut[None, :] + 0.5, 0, 1) * np.clip((h - y) / (0.12 * ppu), 0, 1)
+    rim = np.clip(1 - (y - cut[None, :]) / 4.0, 0, 1)
+    a[..., :3] *= (1 - 0.3 * rim)[..., None]
+    return a
+
+
+def recess(a, radius=4):
+    """A fill's recessed twin: blurred with wrap-around (still seamless), its contrast halved, re-centred on RECESS_MEAN."""
+    pad = radius * 3
+    rgb = np.pad(a[..., :3], ((pad, pad), (pad, pad), (0, 0)), mode="wrap")
+    soft = np.dstack([np.asarray(Image.fromarray((rgb[..., c] * 255 + 0.5).astype(np.uint8), "L").filter(ImageFilter.GaussianBlur(radius))).astype(np.float32) / 255
+                      for c in range(3)])[pad:-pad, pad:-pad]
+    mean = soft.mean(axis=(0, 1), keepdims=True)
+    out = np.ones(a.shape, np.float32)
+    out[..., :3] = np.clip(RECESS_MEAN + (soft - mean) * RECESS_CONTRAST, 0, 1)
+    return out
+
+
 def blur(a, radius):
     pre = a.copy()
     pre[..., :3] *= pre[..., 3:4]
@@ -275,10 +314,17 @@ def build():
     put(play, "ENV_Water", scale(crossfade(water, 160, 1), 0.45), WORLD_PPU, kind="strip")
 
     # Door (the lit frame, ruling 5 / Phase 1 answer 2), checkpoint stones idle and crossed.
-    door = load("ENV-24")
-    boxes = split_pieces(door)
-    lit = door[boxes[1][1]:boxes[1][3], boxes[1][0]:boxes[1][2]]
-    put(play, "ENV_Door", fit_width(lit, round(1.7 * WORLD_PPU)), WORLD_PPU, kind="object")
+    # PAX-A18 (D-151): the developer's painted exit door (the pilot set), at the old door's height (1.84 u, standing on its
+    # base), when it's saved; ENV-24's lit frame otherwise.
+    pilot_door = ROOT / "Art_Source/Traps_ChatGPT/PILOT-10_exit_door_v1.png"
+    if pilot_door.exists():
+        d = tp.trim(tp.load_rgba(pilot_door))
+        put(play, "ENV_Door", scale(d, round(1.84 * WORLD_PPU) / d.shape[0]), WORLD_PPU, kind="object")
+    else:
+        door = load("ENV-24")
+        boxes = split_pieces(door)
+        lit = door[boxes[1][1]:boxes[1][3], boxes[1][0]:boxes[1][2]]
+        put(play, "ENV_Door", fit_width(lit, round(1.7 * WORLD_PPU)), WORLD_PPU, kind="object")
     cp = load("ENV-25")
     boxes = split_pieces(cp)
     for key, box in zip(("ENV_Checkpoint", "ENV_CheckpointLit"), boxes[:2]):
@@ -376,6 +422,21 @@ def build():
     env_tiers.build(sys.modules[__name__], load, put, play, layers)
     # PAX-106 (D-114): broken-stone sides and the shortened thick underside.
     broken_stone(play, slots, put)
+    # PAX-A18 W3 (amends D-114): bumpy stone, drawn only (env_bumpy.py).
+    import env_bumpy  # noqa: E402
+    env_bumpy.build(sys.modules[__name__], play, slots, put, FILL_SLOTS)
+    # The developer (2026-10-16): a hole in the ground shows the inside of the ruin, never the sky. Each fill's recessed
+    # twin, the back wall of pits and shafts: the same stone, softer, lower in contrast, warmer and lighter (mid brown, so
+    # dark iron spikes read against it). Same world size as its fill, so the Fill material tiles it the same way.
+    for key, _ in FILL_SLOTS:
+        a = play[key]
+        ppu = a.shape[1] / slots[key]["width"]
+        put(play, key + "_Recess", recess(a), ppu, kind="fill", normal=False)
+        # Its broken top edge (the far side of the hole, at the lip's height): the same recessed stone, ragged within
+        # RECESS_LIP_REACH of the line, a dark rim along the break, fading into the wall below. No grass, no lit lip: it must
+        # never read as a walkway across the pit.
+        put(play, "ENV_RecessLip_" + key[len("ENV_Fill_"):], recess_lip(play[key + "_Recess"], ppu), ppu, kind="strip", normal=False,
+            above=RECESS_LIP_ABOVE)
     # PAX-106 (ruling R9): the grip faces' moss carpet, once the developer paints it (§12's prompt) as ENV-31; until then the
     # builder stacks ENV_Moss tufts.
     if (SRC / "ENV-31.png").exists():
@@ -460,15 +521,9 @@ def chip_strip(stone, reach_px, inner_px, blend_px, seed):
 
 
 def broken_stone(play, slots, put):
-    """PAX-106 (D-114): for each fill stone, four chipped side strips (ENV_SideChip_<fill>_0..3; the builder picks one per
-    face by hash) cut from that stone at the play layer's PPU; and ENV_ThickUnderShort, the thick underside cut to its
-    stone band and THICK_IVY of ivy, fading out."""
-    reach_px, inner_px, blend_px = CHIP_REACH * WORLD_PPU, CHIP_INNER * WORLD_PPU, CHIP_BLEND * WORLD_PPU
-    for fill_key, suffix in FILL_SLOTS:
-        stone = play[fill_key]   # the gauntlet bakes the fills at the play layer's PPU (env_tiers' thick underside reads them so)
-        for v in range(4):
-            put(play, f"ENV_SideChip_{suffix}_{v}", chip_strip(stone, reach_px, inner_px, blend_px, v + 10 * len(suffix)), WORLD_PPU,
-                kind="vstrip", normal=True, outside=round(reach_px / WORLD_PPU, 4))
+    """PAX-106 (D-114): ENV_ThickUnderShort, the thick underside cut to its stone band and THICK_IVY of ivy, fading out.
+    (The chipped side strips moved to env_bumpy.py in PAX-A18.)"""
+    # PAX-A18 W3: the side strips (band and deep), the bumpy tops, undersides, slab ends and corner ends are env_bumpy's.
     thick = play["ENV_ThickUnder"]
     rows = min(thick.shape[0], int(round((THICK_SOLID + THICK_IVY) * WORLD_PPU)))
     short = thick[:rows].copy()

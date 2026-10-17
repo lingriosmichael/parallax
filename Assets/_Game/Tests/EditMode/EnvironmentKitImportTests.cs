@@ -50,8 +50,8 @@ namespace Parallax.Tests.EditMode
                 importer.ReadTextureSettings(settings);
                 if (settings.spriteMeshType != SpriteMeshType.FullRect) failures.Add($"{s.name}: mesh {settings.spriteMeshType}");
                 // PAX-106 (D-114): the broken-stone side strips tile down a face; the cut thick underside across.
-                bool fill = s.name.StartsWith("ENV_Fill_"), u = fill || Horizontal.Contains(s.name) || s.name == "ENV_ThickUnderShort",
-                    v = fill || Vertical.Contains(s.name) || s.name.StartsWith("ENV_SideChip_");
+                bool fill = s.name.StartsWith("ENV_Fill_"), u = fill || Horizontal.Contains(s.name) || s.name is "ENV_ThickUnderShort" or "ENV_UnderWalk" or "ENV_SlabFlip" or "ENV_CapFlat" || s.name.StartsWith("ENV_RecessLip_"),
+                    v = fill || Vertical.Contains(s.name) || s.name.StartsWith("ENV_SideChip_") || s.name.StartsWith("ENV_SideDeep_") || s.name.StartsWith("ENV_SideIn_");
                 if ((importer.wrapModeU == TextureWrapMode.Repeat) != u || (importer.wrapModeV == TextureWrapMode.Repeat) != v)
                     failures.Add($"{s.name}: wrap {importer.wrapModeU}/{importer.wrapModeV}");
                 TextureImporterPlatformSettings android = importer.GetPlatformTextureSettings("Android");

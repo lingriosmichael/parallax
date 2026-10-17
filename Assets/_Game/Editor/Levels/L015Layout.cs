@@ -23,7 +23,7 @@ namespace Parallax.Editor.Levels
     //    last platform, until the cooldown ends. The dance: on D1 and D2 over Pit_9, with nowhere to go on and no cover, hop
     //    out from under each lock (back, when D3 is gone), then on over D3 onto P1 under Roof_9, which sets off Arrow_9
     //    across P2: wait until it has stopped; then P2, and past the cloud's range. The
-    //    finale: landing on Floor_F1 sets off Spear_10 (disguised, 36-tick tell) along Floor_F2 below it, the way to the
+    //    finale (D-154: Spear_10 removed): landing on Floor_F1 once set off Spear_10 along Floor_F2 below it, the way to the
     //    door; stop dead on Floor_F1, let it stick in its face, then go down over it and hop Curb_F to the door.
     static class L015Layout
     {
@@ -119,15 +119,13 @@ namespace Parallax.Editor.Levels
             // D-119 (the developer: all launchers shoot non-stop): Arrow_9 keeps its first shot's trigger, then fires every 230 ticks (Continuous).
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_9",(58.2f,.3f),(.4f,.4f),(54.2f,4.5f),(.4f,9f),
                 new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Left,.3f,55.2f,unitsPerTick:.36f,tellTicks:50),new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:230))));
-            // The finale: the cut at x 58.5-58.9, on Floor_F1, sets off Spear_10 (disguised, 36-tick tell) from Curb_F along
-            // Floor_F2 at shin height; it sticks in Floor_F1's east face. A cat that stops on Floor_F1 is above the lane; a cat
-            // that runs on drops onto Floor_F2 into it.
-            elements.Add(Spear("Spear_10", 62.8f, .3f, ArrowDirection.Left, 60.4f, 1.2f, (58.7f, 4.5f), (.4f, 9f), new SoloRoomTrapSettings(delayTicks:0), tell: 36, disguised: true, launcherWidth: .4f));
+            // D-154 (the developer, 2026-10-17: "Remove this pointless trap at the end Level 015 with the lance"): the finale's
+            // Spear_10 (disguised, from Curb_F along Floor_F2) is gone; the run ends over the shaft and Curb_F to the door.
 
             var sections = new[] {
                 CheckpointSection.Start("Open", new Vector2(2f, 0f), new[] { "Cloud", "Arrow_3", "Collapse_2" }),
                 new CheckpointSection("Shelter", new Vector2(18.5f, 0f), new Rect(17.9f, 0f, .2f, 9f), new[] { "Mover_M", "Spear_P", "Spear_B" }),
-                new CheckpointSection("Run", new Vector2(41.2f, 0f), new Rect(40.6f, 0f, .2f, 9f), new[] { "Block_1", "Block_2", "Block_3", "D3", "Arrow_9", "Spear_10" }),
+                new CheckpointSection("Run", new Vector2(41.2f, 0f), new Rect(40.6f, 0f, .2f, 9f), new[] { "Block_1", "Block_2", "Block_3", "D3", "Arrow_9" }),
             };
             // D-083: the dance is a precision section (Floor_E's end to P1). Its bait gaps: with D3 gone, neither D2 (1.7 below
             // P1, above the jump's 1.6) nor D1 reaches P1.

@@ -223,7 +223,7 @@ environment style header, then the prompt. Append to every prompt:
 > point, no characters, no text, no watermark.
 
 ChatGPT gives 1536 × 1024, 1024 × 1536 or 1024 × 1024. Wide bands are painted tileable and repeated; `env_kit.py`
-crops, blends seams, pre-blurs and bakes each tier's haze. Save to `Art_Source/Environment/A/` with the name given.
+crops, blends seams, pre-blurs and bakes each tier's haze. Save to `Art_Source/Environment/GoldenRuins/` with the name given.
 
 ### Batch 1: the slice (L001, L004)
 

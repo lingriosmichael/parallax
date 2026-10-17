@@ -50,7 +50,63 @@
       "height": 0.6814,
       "kind": "strip",
       "normal": true,
-      "above": 0.2593
+      "above": 0.2593,
+      "lump": 0.05
+    },
+    {
+      "name": "ENV_CapEnd_0",
+      "file": "ENV_CapEnd_0.png",
+      "folder": "Kit",
+      "width": 0.4475,
+      "height": 0.6814,
+      "kind": "end",
+      "normal": true,
+      "above": 0.2593,
+      "outside": 0.0814
+    },
+    {
+      "name": "ENV_CapEnd_1",
+      "file": "ENV_CapEnd_1.png",
+      "folder": "Kit",
+      "width": 0.4475,
+      "height": 0.6814,
+      "kind": "end",
+      "normal": true,
+      "above": 0.2593,
+      "outside": 0.0814
+    },
+    {
+      "name": "ENV_CapEnd_2",
+      "file": "ENV_CapEnd_2.png",
+      "folder": "Kit",
+      "width": 0.4475,
+      "height": 0.6814,
+      "kind": "end",
+      "normal": true,
+      "above": 0.2593,
+      "outside": 0.0814
+    },
+    {
+      "name": "ENV_CapEnd_3",
+      "file": "ENV_CapEnd_3.png",
+      "folder": "Kit",
+      "width": 0.4475,
+      "height": 0.6814,
+      "kind": "end",
+      "normal": true,
+      "above": 0.2593,
+      "outside": 0.0814
+    },
+    {
+      "name": "ENV_CapFlat",
+      "file": "ENV_CapFlat.png",
+      "folder": "Kit",
+      "width": 11.1254,
+      "height": 0.6814,
+      "kind": "strip",
+      "normal": true,
+      "above": 0.2593,
+      "lump": 0.03
     },
     {
       "name": "ENV_CapWash",
@@ -146,7 +202,7 @@
       "name": "ENV_Door",
       "file": "ENV_Door.png",
       "folder": "Kit",
-      "width": 1.6983,
+      "width": 1.4644,
       "height": 1.8407,
       "kind": "object"
     },
@@ -385,6 +441,15 @@
       "normal": true
     },
     {
+      "name": "ENV_Fill_A2_Recess",
+      "file": "ENV_Fill_A2_Recess.png",
+      "folder": "Kit",
+      "width": 11.7356,
+      "height": 11.7356,
+      "kind": "fill",
+      "normal": false
+    },
+    {
       "name": "ENV_Fill_A3",
       "file": "ENV_Fill_A3.png",
       "folder": "Kit",
@@ -392,6 +457,24 @@
       "height": 11.7356,
       "kind": "fill",
       "normal": true
+    },
+    {
+      "name": "ENV_Fill_A3_Recess",
+      "file": "ENV_Fill_A3_Recess.png",
+      "folder": "Kit",
+      "width": 11.7356,
+      "height": 11.7356,
+      "kind": "fill",
+      "normal": false
+    },
+    {
+      "name": "ENV_Fill_A_Recess",
+      "file": "ENV_Fill_A_Recess.png",
+      "folder": "Kit",
+      "width": 11.7356,
+      "height": 11.7356,
+      "kind": "fill",
+      "normal": false
     },
     {
       "name": "ENV_Fog",
@@ -496,6 +579,16 @@
       "width": 6.7983,
       "height": 0.8492,
       "kind": "strip"
+    },
+    {
+      "name": "ENV_LipVinesEnd",
+      "file": "ENV_LipVinesEnd.png",
+      "folder": "Kit",
+      "width": 0.6,
+      "height": 0.8492,
+      "kind": "end",
+      "normal": false,
+      "outside": 0.15
     },
     {
       "name": "ENV_MidAqueduct",
@@ -645,6 +738,102 @@
       "kind": "piece"
     },
     {
+      "name": "ENV_RecessLip_A",
+      "file": "ENV_RecessLip_A.png",
+      "folder": "Kit",
+      "width": 11.7356,
+      "height": 0.4983,
+      "kind": "strip",
+      "normal": false,
+      "above": 0.15
+    },
+    {
+      "name": "ENV_RecessLip_A2",
+      "file": "ENV_RecessLip_A2.png",
+      "folder": "Kit",
+      "width": 11.7356,
+      "height": 0.4983,
+      "kind": "strip",
+      "normal": false,
+      "above": 0.15
+    },
+    {
+      "name": "ENV_RecessLip_A3",
+      "file": "ENV_RecessLip_A3.png",
+      "folder": "Kit",
+      "width": 11.7356,
+      "height": 0.4983,
+      "kind": "strip",
+      "normal": false,
+      "above": 0.15
+    },
+    {
+      "name": "ENV_RubbleHeap_Slab_0",
+      "file": "ENV_RubbleHeap_Slab_0.png",
+      "folder": "Kit",
+      "width": 1.9983,
+      "height": 0.5492,
+      "kind": "end",
+      "normal": true,
+      "outside": 0.0,
+      "above": 0.05
+    },
+    {
+      "name": "ENV_RubbleHeap_Slab_1",
+      "file": "ENV_RubbleHeap_Slab_1.png",
+      "folder": "Kit",
+      "width": 1.9983,
+      "height": 0.5492,
+      "kind": "end",
+      "normal": true,
+      "outside": 0.0,
+      "above": 0.05
+    },
+    {
+      "name": "ENV_RubbleHeap_Sq_0",
+      "file": "ENV_RubbleHeap_Sq_0.png",
+      "folder": "Kit",
+      "width": 1.0017,
+      "height": 1.0475,
+      "kind": "end",
+      "normal": true,
+      "outside": 0.0,
+      "above": 0.05
+    },
+    {
+      "name": "ENV_RubbleHeap_Sq_1",
+      "file": "ENV_RubbleHeap_Sq_1.png",
+      "folder": "Kit",
+      "width": 1.0017,
+      "height": 1.0475,
+      "kind": "end",
+      "normal": true,
+      "outside": 0.0,
+      "above": 0.05
+    },
+    {
+      "name": "ENV_RubbleHeap_Wide_0",
+      "file": "ENV_RubbleHeap_Wide_0.png",
+      "folder": "Kit",
+      "width": 1.9983,
+      "height": 1.0475,
+      "kind": "end",
+      "normal": true,
+      "outside": 0.0,
+      "above": 0.05
+    },
+    {
+      "name": "ENV_RubbleHeap_Wide_1",
+      "file": "ENV_RubbleHeap_Wide_1.png",
+      "folder": "Kit",
+      "width": 1.9983,
+      "height": 1.0475,
+      "kind": "end",
+      "normal": true,
+      "outside": 0.0,
+      "above": 0.05
+    },
+    {
       "name": "ENV_Rubble_0",
       "file": "ENV_Rubble_0.png",
       "folder": "Kit",
@@ -690,121 +879,361 @@
       "name": "ENV_SideChip_A2_0",
       "file": "ENV_SideChip_A2_0.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
     },
     {
       "name": "ENV_SideChip_A2_1",
       "file": "ENV_SideChip_A2_1.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
     },
     {
       "name": "ENV_SideChip_A2_2",
       "file": "ENV_SideChip_A2_2.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
     },
     {
       "name": "ENV_SideChip_A2_3",
       "file": "ENV_SideChip_A2_3.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
     },
     {
       "name": "ENV_SideChip_A3_0",
       "file": "ENV_SideChip_A3_0.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
     },
     {
       "name": "ENV_SideChip_A3_1",
       "file": "ENV_SideChip_A3_1.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
     },
     {
       "name": "ENV_SideChip_A3_2",
       "file": "ENV_SideChip_A3_2.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
     },
     {
       "name": "ENV_SideChip_A3_3",
       "file": "ENV_SideChip_A3_3.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
     },
     {
       "name": "ENV_SideChip_A_0",
       "file": "ENV_SideChip_A_0.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
     },
     {
       "name": "ENV_SideChip_A_1",
       "file": "ENV_SideChip_A_1.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
     },
     {
       "name": "ENV_SideChip_A_2",
       "file": "ENV_SideChip_A_2.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
     },
     {
       "name": "ENV_SideChip_A_3",
       "file": "ENV_SideChip_A_3.png",
       "folder": "Kit",
-      "width": 0.1983,
+      "width": 0.361,
       "height": 11.7356,
       "kind": "vstrip",
       "normal": true,
-      "outside": 0.06
+      "outside": 0.08
+    },
+    {
+      "name": "ENV_SideDeep_A2_0",
+      "file": "ENV_SideDeep_A2_0.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideDeep_A2_1",
+      "file": "ENV_SideDeep_A2_1.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideDeep_A2_2",
+      "file": "ENV_SideDeep_A2_2.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideDeep_A2_3",
+      "file": "ENV_SideDeep_A2_3.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideDeep_A3_0",
+      "file": "ENV_SideDeep_A3_0.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideDeep_A3_1",
+      "file": "ENV_SideDeep_A3_1.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideDeep_A3_2",
+      "file": "ENV_SideDeep_A3_2.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideDeep_A3_3",
+      "file": "ENV_SideDeep_A3_3.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideDeep_A_0",
+      "file": "ENV_SideDeep_A_0.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideDeep_A_1",
+      "file": "ENV_SideDeep_A_1.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideDeep_A_2",
+      "file": "ENV_SideDeep_A_2.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideDeep_A_3",
+      "file": "ENV_SideDeep_A_3.png",
+      "folder": "Kit",
+      "width": 0.4576,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.18
+    },
+    {
+      "name": "ENV_SideIn_A2_0",
+      "file": "ENV_SideIn_A2_0.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
+    },
+    {
+      "name": "ENV_SideIn_A2_1",
+      "file": "ENV_SideIn_A2_1.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
+    },
+    {
+      "name": "ENV_SideIn_A2_2",
+      "file": "ENV_SideIn_A2_2.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
+    },
+    {
+      "name": "ENV_SideIn_A2_3",
+      "file": "ENV_SideIn_A2_3.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
+    },
+    {
+      "name": "ENV_SideIn_A3_0",
+      "file": "ENV_SideIn_A3_0.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
+    },
+    {
+      "name": "ENV_SideIn_A3_1",
+      "file": "ENV_SideIn_A3_1.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
+    },
+    {
+      "name": "ENV_SideIn_A3_2",
+      "file": "ENV_SideIn_A3_2.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
+    },
+    {
+      "name": "ENV_SideIn_A3_3",
+      "file": "ENV_SideIn_A3_3.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
+    },
+    {
+      "name": "ENV_SideIn_A_0",
+      "file": "ENV_SideIn_A_0.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
+    },
+    {
+      "name": "ENV_SideIn_A_1",
+      "file": "ENV_SideIn_A_1.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
+    },
+    {
+      "name": "ENV_SideIn_A_2",
+      "file": "ENV_SideIn_A_2.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
+    },
+    {
+      "name": "ENV_SideIn_A_3",
+      "file": "ENV_SideIn_A_3.png",
+      "folder": "Kit",
+      "width": 0.361,
+      "height": 11.7356,
+      "kind": "vstrip",
+      "normal": true,
+      "outside": 0.03
     },
     {
       "name": "ENV_SkyFade",
@@ -928,7 +1357,30 @@
       "height": 1.0678,
       "kind": "end",
       "normal": true,
-      "above": 0.2186
+      "above": 0.2186,
+      "outside": 0.0814
+    },
+    {
+      "name": "ENV_SlabEndThick",
+      "file": "ENV_SlabEndThick.png",
+      "folder": "Kit",
+      "width": 0.6,
+      "height": 1.3169,
+      "kind": "end",
+      "normal": true,
+      "above": 0.2186,
+      "outside": 0.0814
+    },
+    {
+      "name": "ENV_SlabFlip",
+      "file": "ENV_SlabFlip.png",
+      "folder": "Kit",
+      "width": 11.1254,
+      "height": 1.0678,
+      "kind": "strip",
+      "normal": true,
+      "above": 0.2186,
+      "lump": 0.05
     },
     {
       "name": "ENV_SlimPost",
@@ -965,6 +1417,16 @@
       "normal": false
     },
     {
+      "name": "ENV_ThickUnderEnd",
+      "file": "ENV_ThickUnderEnd.png",
+      "folder": "Kit",
+      "width": 0.6,
+      "height": 1.9119,
+      "kind": "end",
+      "normal": false,
+      "outside": 0.15
+    },
+    {
       "name": "ENV_ThickUnderShort",
       "file": "ENV_ThickUnderShort.png",
       "folder": "Kit",
@@ -974,14 +1436,35 @@
       "normal": false
     },
     {
+      "name": "ENV_ThickUnderShortEnd",
+      "file": "ENV_ThickUnderShortEnd.png",
+      "folder": "Kit",
+      "width": 0.6,
+      "height": 1.5915,
+      "kind": "end",
+      "normal": false,
+      "outside": 0.15
+    },
+    {
       "name": "ENV_Under",
       "file": "ENV_Under.png",
       "folder": "Kit",
       "width": 11.1254,
-      "height": 0.3102,
+      "height": 0.4017,
       "kind": "strip",
       "normal": true,
-      "below": 0.0102
+      "below": 0.1017
+    },
+    {
+      "name": "ENV_UnderWalk",
+      "file": "ENV_UnderWalk.png",
+      "folder": "Kit",
+      "width": 11.1254,
+      "height": 0.361,
+      "kind": "strip",
+      "normal": true,
+      "below": 0.061,
+      "lump": 0.05
     },
     {
       "name": "ENV_VineAnchor",

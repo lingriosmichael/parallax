@@ -36,6 +36,27 @@ MonoBehaviour:
   - {fileID: 21300000, guid: cd79aaa7124184d419890e6e1ae3b89a, type: 3}
   - {fileID: 21300000, guid: bf00a89b9f5f2451688485f1e6e6926d, type: 3}
   SpikeStrip: {fileID: 21300000, guid: aead46466f2534388b05c74caf03d728, type: 3}
+  LauncherMouth: {fileID: 21300000, guid: 1c48f1c0d7d424e93a49c5e0fb8a27ae, type: 3}
+  SpikeBlades:
+  - {fileID: 21300000, guid: 24191bbc59ff944e58c7ffb1a32e437a, type: 3}
+  - {fileID: 21300000, guid: 8c604a113a76e477280ebad1bfb08f78, type: 3}
+  - {fileID: 21300000, guid: ca30bcc5d46b043df923978889313669, type: 3}
+  - {fileID: 21300000, guid: 89d378dd18add4144b29b39255ca68a6, type: 3}
+  - {fileID: 21300000, guid: 48d18f1b9c54c4c66b0a7f5ea4f7994d, type: 3}
+  - {fileID: 21300000, guid: 691dfcc256c1341b9837ff0212f4dc6e, type: 3}
+  - {fileID: 21300000, guid: 914ca795d36b243c0b27b7293cb15639, type: 3}
+  - {fileID: 21300000, guid: c17849309e6be4524b901a76de160e4c, type: 3}
+  - {fileID: 21300000, guid: 0db0cacfaf07c423f9b8ae94ff93b0a0, type: 3}
+  - {fileID: 21300000, guid: bc624599bb77047b7b5fa2654de72488, type: 3}
+  - {fileID: 21300000, guid: ed6332a67f3f0492ab7c7720b3b34875, type: 3}
+  - {fileID: 21300000, guid: 2bca339a8dd7146a7b60d87bafdbb6fd, type: 3}
+  SlamPlate: {fileID: 21300000, guid: 04b240e4aeedc498b9c4e295c293d471, type: 3}
+  HingeKnuckle: {fileID: 21300000, guid: 3de11f71a6922435b8bb1929214650f3, type: 3}
+  Cracks:
+  - {fileID: 21300000, guid: 16a82e52129974bfba029fa742f17f17, type: 3}
+  - {fileID: 21300000, guid: 129815a865281458590ab7aaf3bc653b, type: 3}
+  - {fileID: 21300000, guid: 7e9bb6f4b83c94990af0a3b087e505c1, type: 3}
+  CrumbleEdge: {fileID: 21300000, guid: 12ce1d7c3041d4cedb887e1d727dc333, type: 3}
   SpearHead: {fileID: 21300000, guid: 99a680e10aa63493aae444d348194794, type: 3}
   SpearShaft: {fileID: 21300000, guid: 22293b67a94414e77897a89a40f76b2e, type: 3}
   InverterOrb: {fileID: 21300000, guid: 4c9d52b0e5d1b47bb827185dc1649ca9, type: 3}
@@ -62,6 +83,9 @@ MonoBehaviour:
   Mote: {fileID: 21300000, guid: 6af5180fdb2e14dd3a19797e13d0621c, type: 3}
   Placeholders: []
   KitVersion: 2
+  BodyScale: 1.1
+  SpikeHeightScale: 1.8
+  SpikeStripTeeth: 11
   ShardRows: 2
   DustPerFloor: 4
   ImpactPuffs: 2
