@@ -63,12 +63,8 @@ namespace Parallax.Editor.Levels
             L001Layout.AddShaft(elements, 3, 10.8f, 12.6f);
             L001Layout.AddShaft(elements, 5, 16.55f, 18.45f);
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Floor_3",(11.7f,-1.5f),(1.8f,3f),settings:new SoloRoomTrapSettings(delayTicks:16)));
-            // Dead end: the right tower's rhythm goes on past S1; that tread gives way onto spikes on the tread below. The
-            // spikes' trigger is the space over the tread (its top to S2's underside), so only a cat on the tread sets it off,
-            // never one jumping under it from Tread_R2; the tread gives way as the spikes show. It sits right of the Tread_R2 to
-            // Tread_R3 take-off (x 29.5-31), so that jump doesn't hit its underside.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_R",(30.75f,2.65f),(2.5f,.3f),(30.25f,7f),(1.5f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Tread_R4",(30.25f,4.75f),(1.5f,.5f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_R",delayTicks:1)));
+            // (The dead end, Tread_R4 over the right tower giving way onto Spikes_R, removed 2026-10-18, the developer: "remove this
+            // platform that is just hanging there in the middle".)
             // D-113, S1. The arrows: Arrow_L in S1_A's face flies right, Arrow_R in Post_R flies left, along the whole floor at the
             // cat's height: Arrow_R every 100 ticks, Arrow_L every 200 (the developer: "more time in between arrows"), on the
             // lift's rhythm; jump each one.
@@ -87,10 +83,9 @@ namespace Parallax.Editor.Levels
             // Shrink_1 (4.6 u, over the ground's pits 1 and 3; too wide to jump across): shrinks away from its right end, behind
             // the cat, over 50 ticks from when the cat comes onto it; a cat that stops on it falls.
             elements.Add(E(SoloRoomElementKind.ShrinkingFloor,"Shrink_1",(10.3f,4.5f),(4.6f,1f),(12.1f,9.5f),(1f,9f),new SoloRoomTrapSettings(new ShrinkSettings(50,0f,ShrinkFrom.Right),new SoloRoomTrapSettings(delayTicks:0))));
-            // T4: the left tower's rhythm goes on to the wall at the top; that tread gives way onto spikes on the tread below.
-            // As with Tread_R4, the trigger is the space over the tread (its top to the roof), out of reach of a jump from below.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_B",(.5f,7.65f),(1f,.3f),(.5f,12.125f),(1f,3.75f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Tread_D",(.5f,10f),(1f,.5f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_B",delayTicks:1)));
+            // 2026-10-18 (the developer: "the one that is higher and on the very left is pointless because jumping on it doesnt take
+            // you anywhere but into a trap"): T4 removed, Tread_D (the left tower's top step at the wall, giving way) and Spikes_B
+            // (on Tread_B under it).
             // D-113 amendment (the developer: "make the whole bottom full of spikes, and all the platforms that are moving above
             // the ground ... precision jumping between them ... jump up and down onto the moving platforms. Make some false
             // landings"): S2 is one spike bed from S2_A to S2_C. Over it: False_1 (fake, the obvious first step), Hop_1, Ride_1

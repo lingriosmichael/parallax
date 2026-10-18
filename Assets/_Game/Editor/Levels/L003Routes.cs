@@ -7,8 +7,8 @@ namespace Parallax.Editor.Levels
 {
     // PAX-059 (D-085): level 3's anatomy. T1 (a floor that isn't there) teaches jumping; T2 punishes stopping where that
     // jump lands (keep going); T3 drops the cat from S1 back to the ground (a Recovers betrayal: it walks round again);
-    // T4 is the left tower's rhythm step at the wall (take the step off the rhythm, onto S2); T5 punishes keeping going
-    // (the one bait). The right tower's rhythm step past S1 is the dead end. Every release that sets up a landing or a
+    // T4 (the left tower's rhythm step at the wall) was removed 2026-10-18; T5 punishes keeping going
+    // (the one bait). (The right tower's step past S1, the dead end, was removed 2026-10-18.) Every release that sets up a landing or a
     // take-off spot is a timed step (its window is measured).
     // PAX-103: S2 was the arrow floor. D-113: S1 is the arrow floor now (jump the arrows from both ends; Lift_1 and Shrink_1
     // in it), and S2 is two spike trenches crossed on shuttling floors; T3 (S1_Mid) is gone.
@@ -72,9 +72,7 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Hold(Right)", "run onto Floor_1", Until(Dead())), revealedBy: "Floor_1"),
                 new Betrayal("T2: the floor where the jump lands gives way under a cat that stops", "Pit3_Hazard", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Grounded)", "stop where it lands", Release(), Until(Dead())), revealedBy: "Floor_3"),
-                new Betrayal("T4: the left tower's step at the wall gives way onto spikes", "Spikes_B", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Tread_C))", "keep the rhythm",
-                        Release(), Until(Still()), Hold(Left), Until(XAtMost(3.1f)), Release(), Until(Still()), Hold(Left), Jump(), Until(Dead()))),
+                // (T4, the left tower's top step at the wall giving way onto Spikes_B: removed 2026-10-18 with the step.)
                 // D-113: S1, the arrow floor.
                 new Betrayal("T6: a cat that waits on S1_C is shot", "Arrow_L", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(S1_C))", "wait", Release(), Until(Dead()))),
@@ -91,10 +89,8 @@ namespace Parallax.Editor.Levels
                 new Betrayal("T11: False_2, the near step after the lift, is a fake; a cat that lands on it falls onto the spikes", "Trench_Hazard", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Lift_2))", "hop onto the near step", Hold(Right), Jump(), Until(XAtLeast(19.9f)), Release(), Until(Dead())), revealedBy: "False_2"),
                 new Betrayal("T12: a cat that lets Ride_2 go back without it and then steps off Hop_2 falls onto the spikes", "Trench_Hazard", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Stopped(Ride_2))", "step off after it's gone", Until(Moving("Ride_2")), Until(Home("Ride_2")), Until(Home("Hop_2")), Hold(Right), Until(Dead())), revealedBy: "Ride_2"),
-                new Betrayal("Dead end: the right tower's step past S1 gives way onto spikes", "Spikes_R", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Tread_R3))", "keep climbing",
-                        Until(Still()), Hold(Right), Jump(), Until(Dead()))));
+                    Route.PrefixOf(solution, "Until(Stopped(Ride_2))", "step off after it's gone", Until(Moving("Ride_2")), Until(Home("Ride_2")), Until(Home("Hop_2")), Hold(Right), Until(Dead())), revealedBy: "Ride_2"));
+            // (The dead end, Tread_R4 giving way onto Spikes_R, removed 2026-10-18 with the step.)
         }
     }
 }

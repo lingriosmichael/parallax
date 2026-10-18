@@ -328,6 +328,47 @@ namespace Parallax.Tests.EditMode
             finally { rig.Dispose(); }
         }
 
+        // The developer (2026-10-17): the debug panel's invincibility (testing only): no kill lands, nothing is held or counted.
+        [Test]
+        public void Invincible_AHazardKill_IsIgnored()
+        {
+            Rig rig = Rig.Build(10, Vector2.zero, includeDoor: false);
+            try
+            {
+                rig.Death.Invincible = true;
+                bool died = false;
+                rig.Death.Died += _ => died = true;
+
+                rig.Death.Kill(ObserverId.A, DeathCause.Hazard);
+
+                Assert.IsFalse(died);
+                Assert.IsFalse(rig.Death.IsHolding);
+                Assert.AreEqual(0, rig.Death.DeathsIn(0));
+            }
+            finally { rig.Dispose(); }
+        }
+
+        // ...and a cat that leaves the room's bounds is put back at its checkpoint, no death counted.
+        [Test]
+        public void Invincible_OutOfBounds_RespawnsWithoutADeath()
+        {
+            Rig rig = Rig.Build(10, Vector2.zero, includeDoor: false);
+            try
+            {
+                SetPrivate(rig.Rooms, "bounds", new[] { new RoomBoundsEntry(0, new Vector2(5f, 0f), new Vector2(4f, 4f)) });
+                rig.Death.Invincible = true;
+                rig.CatGo.transform.position = new Vector2(20f, 0f);
+                Physics2D.SyncTransforms();
+
+                rig.Tick();
+
+                Assert.AreEqual(0, rig.Death.DeathsIn(0));
+                Assert.IsFalse(rig.Death.IsHolding);
+                Assert.Less(rig.CatGo.transform.position.x, 10f, "the cat is back at its checkpoint, not left out of bounds");
+            }
+            finally { rig.Dispose(); }
+        }
+
         [Test]
         public void OutOfBounds_WithHoldTicksAboveZero_StartsTheHoldImmediately()
         {

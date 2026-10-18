@@ -92,8 +92,10 @@ namespace Parallax.Presentation
             {
                 bool telling = phase == GeyserPhase.Tell && s >= 0;
                 float pulse = telling ? 0.75f + 0.25f * Mathf.Sin(s * 0.7f) : 0f;
-                Place(tellGlow, telling, mouth, 1f, pulse);
-                if (telling) tellGlow.transform.localScale = new Vector3(2.4f * pulse, 1.1f * pulse, 1f);
+                // 2026-10-18 visual review (L013: "a flat, unshaded, saturated orange blob ... reads as spilled paint"): a soft
+                // glow at half strength, not a flat pool 2.4 vents wide (the steam and the warming vent carry the tell too).
+                Place(tellGlow, telling, mouth, 1f, pulse * 0.5f);
+                if (telling) tellGlow.transform.localScale = new Vector3(1.5f * pulse, 0.8f * pulse, 1f);
             }
             for (int i = 0; i < tellDrops.Length; i++)
             {

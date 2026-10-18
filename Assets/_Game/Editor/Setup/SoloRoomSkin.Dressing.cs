@@ -138,8 +138,10 @@ namespace Parallax.Editor.Setup
                         if (h < MinDressing) { x += 0.4f; continue; }
                         float w = def.width * h / def.height * (0.7f + 0.5f * Hash(e.Owner.Name, 140 + i));
                         var centre = new Vector2(x + w * 0.5f, e.Line - h * 0.5f + 0.05f);
-                        x += w * (0.5f + 0.8f * Hash(e.Owner.Name, 145 + i)) + (pick < 0.3f ? 0.3f + Hash(e.Owner.Name, 150 + i) : 0f);
-                        if (centre.x + w * 0.5f > e.To || pick < 0.15f) continue;
+                        // 2026-10-18 visual review (L011-L019: "an even comb of near-identical drips with uniform spacing"): clusters
+                        // with real gaps between them (was a gap after 30 %, a skip at 15 %).
+                        x += w * (0.5f + 0.8f * Hash(e.Owner.Name, 145 + i)) + (pick < 0.5f ? 0.5f + 1.8f * Hash(e.Owner.Name, 150 + i) : 0f);
+                        if (centre.x + w * 0.5f > e.To || pick < 0.3f) continue;
                         if (ClearOfVisible(Box(centre, new Vector2(w, h)))) { place(e.Owner, $"Drape_{Idx(e)}_{i}", slot, centre, new Vector2(Hash(e.Owner.Name, 155 + i) < 0.5f ? -w : w, h), ZDrape + 0.0001f + AtlasNudge(slot)); drapeCount++; }
                     }
                 }

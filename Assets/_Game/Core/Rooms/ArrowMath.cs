@@ -47,7 +47,11 @@ namespace Parallax.Core
 
         /// <summary>The angles an arrow may fire at, in degrees from horizontal, positive towards world up (gravity
         /// doesn't change it).</summary>
-        public static readonly float[] AllowedAngles = { 0f, 30f, -30f, 45f, -45f, 60f, -60f };
+        public static readonly float[] AllowedAngles = { 0f, 30f, -30f, 45f, -45f, 60f, -60f, 90f, -90f };
+
+        /// <summary>D-156 (the developer, 2026-10-18: "no more diagonal arrow launchers ... several spaced out vertical arrows that
+        /// shoot from the top to the bottom"): a lane straight down (-90) or up (+90), from a launcher's bottom or top face.</summary>
+        public static bool IsVertical(float angleDegrees) => Mathf.Abs(Mathf.Abs(angleDegrees) - 90f) < 1e-3f;
 
         public static bool IsAllowedAngle(float degrees)
         {
@@ -59,6 +63,7 @@ namespace Parallax.Core
         public static Vector2 Direction(ArrowDirection direction, float angleDegrees)
         {
             float a = angleDegrees * Mathf.Deg2Rad;
+            if (IsVertical(angleDegrees)) return new Vector2(0f, Mathf.Sign(angleDegrees));
             return angleDegrees == 0f ? new Vector2(Sign(direction), 0f) : new Vector2(Sign(direction) * Mathf.Cos(a), Mathf.Sin(a));
         }
 
@@ -68,6 +73,9 @@ namespace Parallax.Core
 
         /// <summary>Travel along an angled lane whose tip stops at x = laneEndX: the lane's horizontal run over cos a, less
         /// the arrow's length. Equal to Travel at 0 degrees.</summary>
+        /// <summary>D-156: travel down (or up) a vertical lane, from the mouth's height to the height where the tip stops.</summary>
+        public static float VerticalTravel(float mouthY, float laneEndY, float length) => Mathf.Abs(laneEndY - mouthY) - length;
+
         public static float Travel(float mouthX, float laneEndX, float length, float angleDegrees) =>
             angleDegrees == 0f ? Travel(mouthX, laneEndX, length) : Mathf.Abs(laneEndX - mouthX) / Mathf.Cos(angleDegrees * Mathf.Deg2Rad) - length;
 

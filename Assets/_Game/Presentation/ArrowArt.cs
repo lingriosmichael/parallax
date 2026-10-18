@@ -113,6 +113,9 @@ namespace Parallax.Presentation
                 else
                 {
                     DrawFitted(launcherArt, launcherSprite, LauncherDrawSize);
+                    // D-156: a vertical launcher's carved frame turns with its arrow, its mouth facing down (or up).
+                    if (greyboxArrow != null && Mathf.Abs(Mathf.Abs(Mathf.DeltaAngle(0f, greyboxArrow.transform.eulerAngles.z)) - 90f) < 1f)
+                        launcherArt.transform.rotation = greyboxArrow.transform.rotation;
                     if (mouthArt != null)
                     {
                         // The mouth on the frame's canvas: the same pose, size and facing; the tell glows on the mouth, the frame stays stone.
@@ -154,7 +157,9 @@ namespace Parallax.Presentation
                 {
                     // PAX-099 (D-106): a turned arrow's back corners would swing behind the mouth, into its launcher (a disguised
                     // launcher's reveal frame must not change); its back is trimmed by that much, its tip stays where it was.
-                    float tilt = Mathf.Abs(Mathf.Tan(arrowArt.transform.eulerAngles.z * Mathf.Deg2Rad));
+                    float z = Mathf.Abs(Mathf.DeltaAngle(0f, arrowArt.transform.eulerAngles.z));
+                    // (D-156: a vertical arrow leaves its launcher's face square on; nothing swings into it)
+                    float tilt = Mathf.Abs(z - 90f) < 1f ? 0f : Mathf.Abs(Mathf.Tan(arrowArt.transform.eulerAngles.z * Mathf.Deg2Rad));
                     float back = Mathf.Max(0f, arrowSize.y * 0.5f * tilt - arrowSize.x * (1f - ArrowFill) * 0.5f);
                     DrawFitted(arrowArt, arrowSprite, new Vector2(arrowSize.x * ArrowFill - back, arrowSize.y) * bodyScale);
                     Vector3 forward = arrowArt.transform.right * (FacesLeft ? -1f : 1f);

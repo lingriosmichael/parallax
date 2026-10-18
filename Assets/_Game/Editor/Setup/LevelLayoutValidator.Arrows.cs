@@ -17,8 +17,11 @@ namespace Parallax.Editor.Setup
         // TriggerCoverage and SoloRoomBuilder through the internal helpers below; KillVolumes is unchanged.
 
         internal static bool IsArrow(SoloRoomElement e) => e.Kind == SoloRoomElementKind.Arrow;
-        internal static float ArrowMouthX(SoloRoomElement e) => e.Position.x + ArrowMath.Sign(e.Settings.Arrow.Direction) * e.Size.x * .5f;
-        internal static float ArrowTravel(SoloRoomElement e) => ArrowMath.Travel(ArrowMouthX(e), e.Settings.Arrow.LaneEndX, e.Settings.Arrow.Length, e.Settings.Arrow.AngleDegrees);
+        // D-156: a vertical lane's mouth is the middle of the launcher's bottom (or top) face.
+        internal static float ArrowMouthX(SoloRoomElement e) => e.Settings.Arrow.Vertical ? e.Position.x : e.Position.x + ArrowMath.Sign(e.Settings.Arrow.Direction) * e.Size.x * .5f;
+        internal static float ArrowTravel(SoloRoomElement e) => e.Settings.Arrow.Vertical
+            ? ArrowMath.VerticalTravel(e.Settings.Arrow.LaneY, e.Settings.Arrow.LaneEndY, e.Settings.Arrow.Length)
+            : ArrowMath.Travel(ArrowMouthX(e), e.Settings.Arrow.LaneEndX, e.Settings.Arrow.Length, e.Settings.Arrow.AngleDegrees);
         internal static int ArrowFlightTicks(SoloRoomElement e) => ArrowMath.FlightTicks(ArrowTravel(e), e.Settings.Arrow.UnitsPerTick);
         // Tell plus every lethal tick: the arrow is stopped (harmless) from this many ticks after its fire.
         internal static int ArrowStopTick(SoloRoomElement e) => e.Settings.Arrow.TellTicks + ArrowFlightTicks(e) + 1;
@@ -63,6 +66,7 @@ namespace Parallax.Editor.Setup
         {
             ArrowLane lane = e.Settings.Arrow;
             float mouth = ArrowMouthX(e);
+            if (lane.Vertical) return new Vector2(mouth, lane.LaneEndY);
             return new Vector2(lane.LaneEndX, lane.LaneY + (lane.LaneEndX - mouth) * ArrowMath.Sign(lane.Direction) * Mathf.Tan(lane.AngleDegrees * Mathf.Deg2Rad));
         }
 
@@ -125,7 +129,7 @@ namespace Parallax.Editor.Setup
                 ArrowLane lane = e.Settings.Arrow;
                 if (!lane.IsConfigured) { errors.Add($"{levelId}: {e.Name} is an arrow with no ArrowLane."); continue; }
                 if (lane.MirrorWithGravity && (lane.Spear || lane.AngleDegrees != 0f)) { errors.Add($"{levelId}: {e.Name} mirrors with gravity but is a spear or angled; only a level arrow mirrors (D-123)."); continue; }
-                if (!ArrowMath.IsAllowedAngle(lane.AngleDegrees)) { errors.Add($"{levelId}: {e.Name} angle {lane.AngleDegrees:0.##} is not one of 0, ±30, ±45, ±60 (D-106)."); continue; }
+                if (!ArrowMath.IsAllowedAngle(lane.AngleDegrees)) { errors.Add($"{levelId}: {e.Name} angle {lane.AngleDegrees:0.##} is not one of 0, ±30, ±45, ±60, ±90 (D-106, D-156)."); continue; }
                 if (lane.Spear && lane.AngleDegrees != 0f) { errors.Add($"{levelId}: {e.Name} is a spear at {lane.AngleDegrees:0.##} degrees; spears fly level (D-106)."); continue; }
                 if (lane.AngleDegrees != 0f) { CheckAngledLane(levelId, room, e, fixedSolids, minY, maxY, errors); continue; }
                 float mouth = ArrowMouthX(e), sign = ArrowMath.Sign(lane.Direction);
@@ -168,8 +172,9 @@ namespace Parallax.Editor.Setup
             const float eps = 1e-3f;
             ArrowLane lane = e.Settings.Arrow;
             float mouth = ArrowMouthX(e);
-            if ((lane.LaneEndX - mouth) * ArrowMath.Sign(lane.Direction) <= 0f || ArrowTravel(e) <= 0f)
-            { errors.Add($"{levelId}: {e.Name} lane end x {lane.LaneEndX:F2} is not beyond its mouth x {mouth:F2} by more than the arrow length."); return; }
+            if (lane.Vertical ? (lane.LaneEndY - lane.LaneY) * Mathf.Sign(lane.AngleDegrees) <= 0f || ArrowTravel(e) <= 0f
+                : (lane.LaneEndX - mouth) * ArrowMath.Sign(lane.Direction) <= 0f || ArrowTravel(e) <= 0f)
+            { errors.Add($"{levelId}: {e.Name} lane end is not beyond its mouth by more than the arrow length."); return; }
             Rect launcherBox = Box(e, Vector2.zero), laneBox = ArrowLaneBox(e, Vector2.zero);
             if (!fixedSolids.Any(s => Box(s, Vector2.zero).Overlaps(launcherBox)))
                 errors.Add($"{levelId}: {e.Name} launcher {Describe(launcherBox)} is not hosted in fixed geometry.");
@@ -180,7 +185,8 @@ namespace Parallax.Editor.Setup
             if (!endFace) errors.Add($"{levelId}: {e.Name} lane's tip stops at ({tip.x:F2}, {tip.y:F2}), not on a fixed solid's end face.");
 
             float a = Mathf.Abs(lane.AngleDegrees) * Mathf.Deg2Rad;
-            float trim = lane.Thickness * .5f * Mathf.Max(Mathf.Tan(a), 1f / Mathf.Tan(a)) + eps;
+            // (D-156: a vertical lane meets its launcher's and its end's faces square on)
+            float trim = lane.Vertical ? eps : lane.Thickness * .5f * Mathf.Max(Mathf.Tan(a), 1f / Mathf.Tan(a)) + eps;
             Vector2[] trimmed = ArrowLaneCorners(e, Vector2.zero, trim);
             foreach (SoloRoomElement s in fixedSolids)
                 if (QuadOverlapsRect(trimmed, Box(s, Vector2.zero))) errors.Add($"{levelId}: {e.Name} lane {Describe(laneBox)} is blocked by {s.Name}.");
@@ -272,7 +278,7 @@ namespace Parallax.Editor.Setup
             Rect lane = ArrowLaneBox(e, Vector2.zero);
             // PAX-099 (D-106): a cat on a walkway crosses an angled lane only where it cuts the cat's band (its height).
             float a = Mathf.Abs(e.Settings.Arrow.AngleDegrees) * Mathf.Deg2Rad;
-            float footprint = a == 0f ? lane.width : Mathf.Min(lane.width, (config.ColliderSize.y + e.Settings.Arrow.Thickness / Mathf.Cos(a)) / Mathf.Tan(a));
+            float footprint = a == 0f || e.Settings.Arrow.Vertical ? lane.width : Mathf.Min(lane.width, (config.ColliderSize.y + e.Settings.Arrow.Thickness / Mathf.Cos(a)) / Mathf.Tan(a));
             float crossing = FromRestCrossingTicks(footprint + config.ColliderSize.x + .5f, config);
             int period = e.Settings.RepeatMode == TrapRepeatMode.Continuous ? e.Settings.CooldownTicks + e.Settings.DelayTicks : e.Settings.PeriodTicks;
             int window = period - ArrowStopTick(e);

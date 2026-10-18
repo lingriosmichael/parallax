@@ -32,7 +32,7 @@ namespace Parallax.Editor.Setup
         static readonly Dictionary<string, string[]> Signatures = new()
         {
             ["Aqueduct"] = new[] { "ENV_MidAqueduct", "ENV_MidTree_0" },
-            ["Ruins"] = new[] { "ENV_MidRuins", "ENV_MidPillar" },
+            ["Ruins"] = new[] { "ENV_MidRuins" },   // 2026-10-18: no ENV_MidPillar (it read as a platform; see NearPalette)
             ["Colonnade"] = new[] { "ENV_MidColonnade", "ENV_MidArch_1", "ENV_MidTree_1" },
             ["Towers"] = new[] { "ENV_MidTowers", "ENV_MidArch_0" },
             ["GreatTree"] = new[] { "ENV_MidTree_1", "ENV_MidRuins" },
@@ -231,6 +231,8 @@ namespace Parallax.Editor.Setup
         /// <summary>The developer (2026-10-16): the back wall's shading: the shadow down each side wall (its
         /// strength, 0..1, and its reach in world units). (Its faint darkening toward the bottom went for the draw budget.)</summary>
         const float SideShade = 0.3f, SideReach = 0.4f;
+        /// <summary>The shadow down a pit's back wall at its hazard's line and under it (0..1).</summary>
+        const float DepthShade = 0.8f;   // 0.62 barely showed on L010's chasm
 
         /// <summary>The recessed stone's tint. 2026-10-17 visual review: the shadow is in the recess texture itself (env_kit.py
         /// RECESS_MEAN: the stone's hue and texture, just under a lit face); a tint here (0.44) flattened it to felt.</summary>
@@ -245,7 +247,7 @@ namespace Parallax.Editor.Setup
         {
             SoloRoomDefinition room = c.Room.Value;
             Sprite fill = SoloRoomSkin.FillSprite(room);
-            Sprite wall = fill != null ? EnvironmentKit.Sprite(fill.name + "_Recess") : null, ramp = EnvironmentKit.Sprite("ENV_FaceShade");
+            Sprite wall = fill != null ? EnvironmentKit.Sprite(fill.name + "_Recess") : null, ramp = EnvironmentKit.Sprite("ENV_FaceShade"), solidShade = EnvironmentKit.Sprite("ENV_FaceShadeSolid");
             Material stone = EnvironmentKit.UnlitMaterial, m = EnvironmentKit.TileMaterial("Sprite") ?? EnvironmentKit.UnlitMaterial;
             if (wall == null || ramp == null || stone == null) { Debug.LogWarning("EnvironmentStack: no recessed stone (ENV_Fill_*_Recess) in the kit; pits keep the sky behind them. Run Tools/Art/env_kit.py and let Unity import the kit, then rebuild."); return; }
             string gameplay = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay);
@@ -255,8 +257,23 @@ namespace Parallax.Editor.Setup
             List<SoloRoomSkin.Solid> solids = SoloRoomSkin.Solids(room);
             int n = 0;
             // PAX-107: or the hidden spikes a pit opening names as its hazard (L007's shaft 1: its spikes are T1's trigger).
+            // 2026-10-18 visual review (L015-L019: "every pit in this level is a hole into the sky"): also any spike strip lying in a
+            // pit by its shape, a floor at each side of it reaching higher than it and down past it (band 2's pits aren't
+            // declared as openings).
+            bool InPit(SoloRoomElement x)
+            {
+                if (x.Kind is not (SoloRoomElementKind.Hazard or SoloRoomElementKind.HiddenSpikes)) return false;
+                var hr = new Rect(room.Origin + x.Position - x.Size * 0.5f, x.Size);
+                bool Side(bool left) => solids.Any(o => !o.Trap && Mathf.Abs((left ? o.Rect.xMax : o.Rect.xMin) - (left ? hr.xMin : hr.xMax)) < 0.3f
+                    && o.Rect.yMax >= hr.yMax + 0.3f && o.Rect.yMax <= hr.yMax + 6f && o.Rect.yMin <= hr.yMin + 0.05f);
+                // (never spikes hung flush under stone, in a ceiling's recess: L016/L020's Spikes_CC*, whose "pit" ran down to the
+                // floor below as a dark column)
+                bool hung = solids.Any(o => Mathf.Abs(o.Rect.yMin - hr.yMax) < 0.1f && Mathf.Min(o.Rect.xMax, hr.xMax) - Mathf.Max(o.Rect.xMin, hr.xMin) > 0.5f * hr.width);
+                return hr.width > hr.height && !hung && Side(true) && Side(false);
+            }
             foreach (SoloRoomElement e in room.Elements.Where(x => (x.Kind == SoloRoomElementKind.Hazard && x.HazardRole == SoloRoomHazardRole.OpeningBottom)
-                || (x.Kind == SoloRoomElementKind.HiddenSpikes && (room.Openings ?? System.Array.Empty<SoloRoomOpening>()).Any(o => o.Kind == SoloRoomOpeningKind.Pit && o.HazardName == x.Name))))
+                || (x.Kind == SoloRoomElementKind.HiddenSpikes && (room.Openings ?? System.Array.Empty<SoloRoomOpening>()).Any(o => o.Kind == SoloRoomOpeningKind.Pit && o.HazardName == x.Name))
+                || InPit(x)))
             {
                 var r = new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size);
                 // The pit's lip: the lower of the floors at its two sides (a tall neighbour must not pull the wall up the sky).
@@ -275,7 +292,9 @@ namespace Parallax.Editor.Setup
                 // 2026-10-17 visual review (L003's spike corridor: "an opaque band runs the whole corridor length ... a regular
                 // wavy cardboard-mountain line"): a shallow trench along a floating slab is a spike bed under the sky, not a hole
                 // into the ruin; no back wall there (the bed's spikes read against the sky like any other row).
-                if (height < ShallowTrench && r.width > 3f * height) continue;
+                // (2026-10-18, L018: unless something covers it, a trench inside a slab under its cover is a recess)
+                bool coveredOver = solids.Any(o => o.Rect.yMin >= top - 0.05f && o.Rect.yMin <= top + 1.5f && o.Rect.xMin <= r.xMin + 0.05f && o.Rect.xMax >= r.xMax - 0.05f);
+                if (height < ShallowTrench && r.width > Mathf.Max(3f * height, 6f) && !coveredOver) continue;   // (a long corridor bed, L003's; L018's 4 u briar keeps its wall)
                 // PAX-A18 W3: as wide as the walls' broken outline reaches into them (DeepReach each side; the stone draws over it),
                 // so a notch in a pit's wall shows the pit's back wall, not the sky behind the level.
                 float width = r.width + 0.1f + 2f * SoloRoomSkin.DeepReach;
@@ -320,12 +339,25 @@ namespace Parallax.Editor.Setup
                 float side = Mathf.Min(SideReach, width * 0.5f);
                 Ramp($"PitVoid_{n}_Left", new Vector2(centre.x - width * 0.5f + side * 0.5f, centre.y), -90f, height, side, SideShade);
                 Ramp($"PitVoid_{n}_Right", new Vector2(centre.x + width * 0.5f - side * 0.5f, centre.y), 90f, height, side, SideShade);
+                // 2026-10-17 visual review (L006-L010: "the pit back walls read lighter and nearer than the faces around them";
+                // L010: "the chasm is a fully lit flat wall ... the spike row floats mid-wall"): the wall darkens down the pit,
+                // light near the lip (the developer: the cave-in easy to see), in shadow at the hazard's line, and fully in
+                // shadow under it (a chasm's wall going on down past its spikes).
+                float kill = Mathf.Max(bottom, r.yMin);
+                if (top - kill > 0.2f) Ramp($"PitVoid_{n}_Depth", new Vector2(centre.x, (top + kill) * 0.5f), 0f, width, top - kill, DepthShade);
+                if (kill - bottom > 0.05f && solidShade != null)
+                {
+                    SpriteRenderer under = Quad($"PitVoid_{n}_Deep", solidShade, new Vector2(centre.x, (kill + bottom) * 0.5f), -0.001f, m);
+                    under.transform.localScale = new Vector3(width / solidShade.bounds.size.x, (kill - bottom) / solidShade.bounds.size.y, 1f);
+                    under.color = new Color(shade.r, shade.g, shade.b, DepthShade);
+                }
                 n++;
             }
 
             // 2026-10-17 visual review (L004 Roof_4: "once it collapses, two dark posts float over open sky"): a trap that fills a
             // notch in fixed stone (fixed stone at both its sides and over or under it) leaves a recess, not a window to the
             // sky: the same recessed back wall behind it (the trap's skin covers it until it goes), unless a pit's already does.
+            float roomTop = SoloRoomBuilder.ComputeRoomBounds(room, 0f).max.y;
             var voids = new List<Rect>();
             foreach (Transform v in c.EnvRoot) if (v.name.StartsWith("PitVoid_") && v.GetComponent<SpriteRenderer>() is SpriteRenderer pv && v.name.Split('_').Length == 2) voids.Add(new Rect((Vector2)pv.bounds.min, pv.bounds.size));
             bool Flush(SoloRoomSkin.Solid s, Rect r, System.Func<Rect, Rect, bool> touches) => !s.Trap && touches(s.Rect, r);
@@ -337,9 +369,19 @@ namespace Parallax.Editor.Setup
                 float Along(Rect a) => Mathf.Min(a.yMax, r.yMax) - Mathf.Max(a.yMin, r.yMin);
                 List<Rect> lefts = solids.Where(o => Flush(o, r, (a, b) => Mathf.Abs(a.xMax - b.xMin) < 0.05f && Along(a) >= 0.5f * b.height)).Select(o => o.Rect).ToList();
                 List<Rect> rights = solids.Where(o => Flush(o, r, (a, b) => Mathf.Abs(a.xMin - b.xMax) < 0.05f && Along(a) >= 0.5f * b.height)).Select(o => o.Rect).ToList();
-                bool over = solids.Any(o => Flush(o, r, (a, b) => Mathf.Abs(a.yMin - b.yMax) < 0.05f && a.xMin <= b.xMin + 0.05f && a.xMax >= b.xMax - 0.05f));
+                // (or the masonry over the room: a block that drops out of the room's roof leaves a hole in it; L006-L009)
+                bool over = solids.Any(o => Flush(o, r, (a, b) => Mathf.Abs(a.yMin - b.yMax) < 0.05f && a.xMin <= b.xMin + 0.05f && a.xMax >= b.xMax - 0.05f))
+                    || r.yMax >= roomTop - 0.05f;
                 bool under = solids.Any(o => Flush(o, r, (a, b) => Mathf.Abs(a.yMax - b.yMin) < 0.05f && a.xMin <= b.xMin + 0.05f && a.xMax >= b.xMax - 0.05f));
-                if (lefts.Count == 0 || rights.Count == 0 || !(over || under) || voids.Any(v => v.Overlaps(r))) continue;
+                if (lefts.Count == 0 || rights.Count == 0 || voids.Any(v => v.Overlaps(r))) continue;
+                // 2026-10-18 (the developer, L007's S1_T4/S1_T6: "fill in the gap there in the ceiling it should be tiling"): a trap
+                // flush between two fixed pieces of one slab (open above and below) leaves the slab's own stone, set back.
+                if (!over && !under)
+                {
+                    bool Whole(List<Rect> side) => side.Any(a => a.yMin <= r.yMin + 0.05f && a.yMax >= r.yMax - 0.05f);
+                    if (Whole(lefts) && Whole(rights)) Recess(r, false, false);
+                    continue;
+                }
                 // The recess runs as far as stone stands flush at both sides (every solid there, joined end to end, from the
                 // closed end), so it never stops short of the stone framing it.
                 float Reach(bool atLeft, bool down)
@@ -357,15 +399,92 @@ namespace Parallax.Editor.Setup
                 float y0 = over ? Mathf.Max(Reach(true, true), Reach(false, true)) : r.yMin;
                 float y1 = over ? r.yMax : Mathf.Min(Reach(true, false), Reach(false, false));
                 if (y1 - y0 < 0.3f) continue;
-                SpriteRenderer back = Quad(Rect.MinMaxRect(r.xMin, y0, r.xMax, y1), $"TrapVoid_{k++}");
-                // Its open end: the recess's broken edge (the pits' far lip, turned to face the opening), not a ruler line.
-                if (farLip != null && farLipSlot != null)
+                Recess(Rect.MinMaxRect(r.xMin, y0, r.xMax, y1), over, under);
+            }
+
+            // 2026-10-17 visual review (L006: "a flat, featureless block-shaped hole in the ceiling" where Block_2 dropped out
+            // of the one ceiling it sat in): every hole a falling block leaves in fixed stone (SoloRoomSkin.Holes) is a recess
+            // too, open on the side the block left by.
+            foreach (SoloRoomSkin.Solid f in solids.Where(o => !o.Trap))
+                foreach (Rect h in SoloRoomSkin.Holes(f, room))
                 {
-                    var lip = new GameObject($"TrapVoid_{k - 1}_Lip");
+                    if (voids.Any(v => v.Overlaps(h))) continue;
+                    // (a hole through a roof is closed above by the masonry over the room)
+                    bool openBelow = h.yMin <= f.Rect.yMin + 0.05f, openAbove = h.yMax >= f.Rect.yMax - 0.05f && f.Rect.yMax < roomTop - 0.05f;
+                    if (openBelow == openAbove) continue;   // through the whole solid, or not open at all: nothing to frame
+                    Recess(h, openBelow, openAbove);
+                }
+
+            // 2026-10-18 (the developer, L004 Sink_R: "there is too much white space"): a section that rises into a recess (a
+            // solid mover going straight up, walled at both sides, under a cover within 0.6 u of where it stops) has the recess's
+            // back wall behind its whole travel.
+            foreach (SoloRoomElement e in room.Elements.Where(x => x.Kind == SoloRoomElementKind.MovingTrap && x.Settings.MovingKind == Parallax.Gameplay.Rooms.MovingTrapKind.Solid
+                && x.Settings.Offset.y > 0f && Mathf.Abs(x.Settings.Offset.x) < 1e-3f))
+            {
+                var rest = new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size);
+                float stop = rest.yMax + e.Settings.Offset.y;
+                SoloRoomSkin.Solid? cover = solids.Where(o => !o.Trap && o.Rect.yMin >= stop - 0.05f && o.Rect.yMin <= stop + 0.6f && o.Rect.xMin <= rest.xMin + 0.05f && o.Rect.xMax >= rest.xMax - 0.05f)
+                    .Select(o => (SoloRoomSkin.Solid?)o).FirstOrDefault();
+                bool Side(bool left) => solids.Any(o => !o.Trap && Mathf.Abs((left ? o.Rect.xMax : o.Rect.xMin) - (left ? rest.xMin : rest.xMax)) < 0.05f && o.Rect.yMax > rest.yMax && o.Rect.yMin < stop);
+                if (!cover.HasValue || !Side(true) || !Side(false) || voids.Any(v => v.Overlaps(rest))) continue;
+                Recess(Rect.MinMaxRect(rest.xMin, rest.yMin, rest.xMax, cover.Value.Rect.yMin), true, false);
+            }
+
+            // The back wall over `area` (as wide as the walls' broken outline reaches into it) and its broken open end. `over`:
+            // closed above, open below (and the reverse for `under`).
+            void Recess(Rect area, bool over, bool under)
+            {
+                var go = new GameObject($"TrapVoid_{k}");
+                go.transform.SetParent(c.EnvRoot, false);
+                go.layer = c.LayerIndex;
+                var back = go.AddComponent<SpriteRenderer>();
+                // 2026-10-18 (the developer, L004's Roof_4: "Why is the normal tiles whiter than the section with the trap"): a
+                // recess in a wall is the wall's own stone, lit and world-tiled like it (so the room's StoneShade map shades both
+                // alike), set back (RecessBack); the pits' unlit recessed stone never matched the wall around it.
+                Material litFill = EnvironmentKit.TileMaterial("Fill");
+                Sprite fillSprite = SoloRoomSkin.FillSprite(room);
+                bool lit = litFill != null && fillSprite != null;
+                back.sprite = lit ? fillSprite : wall; back.sharedMaterial = lit ? litFill : stone;
+                back.sortingLayerName = gameplay; back.sortingOrder = -4;
+                back.drawMode = lit ? SpriteDrawMode.Sliced : SpriteDrawMode.Tiled; if (!lit) back.tileMode = SpriteTileMode.Continuous;
+                back.size = new Vector2(area.width + 2f * SoloRoomSkin.DeepReach, area.height + (over ? SoloRoomSkin.DeepReach : 0f) + (under ? SoloRoomSkin.DeepReach : 0f));
+                go.transform.position = new Vector3(area.center.x, area.center.y + ((over ? SoloRoomSkin.DeepReach : 0f) - (under ? SoloRoomSkin.DeepReach : 0f)) * 0.5f, c.EnvRoot.position.z);
+                back.color = lit ? SoloRoomSkin.Body * RecessBack : VoidTint; back.color = new Color(back.color.r, back.color.g, back.color.b, 1f);
+                voids.Add(area);
+                // 2026-10-18 visual review (L016: "ceiling spikes appear mid-face after firing"): the lit back wall reads as a
+                // recess, not as more face: in shadow at its closed end and down both its sides, like a pit's.
+                if (lit && ramp != null)
+                {
+                    var shade = new Color(0.36f, 0.26f, 0.2f, 1f);
+                    void Shade(string name, Vector2 at, float angle, float across, float along, float strength)
+                    {
+                        var s = new GameObject($"TrapVoid_{k}_{name}");
+                        s.transform.SetParent(c.EnvRoot, false);
+                        s.layer = c.LayerIndex;
+                        s.transform.position = new Vector3(at.x, at.y, c.EnvRoot.position.z - 0.001f);
+                        s.transform.rotation = Quaternion.Euler(0f, 0f, angle);
+                        s.transform.localScale = new Vector3(across / ramp.bounds.size.x, along / ramp.bounds.size.y, 1f);
+                        var sr = s.AddComponent<SpriteRenderer>();
+                        sr.sprite = ramp; sr.sharedMaterial = m; sr.sortingLayerName = gameplay; sr.sortingOrder = -4;
+                        sr.color = new Color(shade.r, shade.g, shade.b, strength);
+                    }
+                    float side = Mathf.Min(SideReach, area.width * 0.5f);
+                    Shade("Left", new Vector2(area.xMin + side * 0.5f, area.center.y), -90f, area.height, side, RecessSideShade);
+                    Shade("Right", new Vector2(area.xMax - side * 0.5f, area.center.y), 90f, area.height, side, RecessSideShade);
+                    // (the ramp is opaque at its bottom: turned over for a recess closed above)
+                    float deep = Mathf.Min(RecessDeepReach, area.height);
+                    if (over && !under) Shade("Deep", new Vector2(area.center.x, area.yMax - deep * 0.5f), 180f, area.width, deep, RecessDeepShade);
+                    if (under && !over) Shade("Deep", new Vector2(area.center.x, area.yMin + deep * 0.5f), 0f, area.width, deep, RecessDeepShade);
+                }
+                // Its open end: the recess's broken edge (the pits' far lip, turned to face the opening), not a ruler line. (Not on
+                // the wall's own stone: there the open end is the line of the faces either side, whose broken strips edge it.)
+                if (!lit && farLip != null && farLipSlot != null)
+                {
+                    var lip = new GameObject($"TrapVoid_{k}_Lip");
                     lip.transform.SetParent(c.EnvRoot, false);
                     lip.layer = c.LayerIndex;
-                    float open = over ? y0 : y1, inward = over ? 1f : -1f;
-                    lip.transform.position = new Vector3(r.center.x, open + inward * (LipBelow + farLipSlot.height * 0.5f), c.EnvRoot.position.z - 0.0005f);
+                    float open = over ? area.yMin : area.yMax, inward = over ? 1f : -1f;
+                    lip.transform.position = new Vector3(area.center.x, open + inward * (LipBelow + farLipSlot.height * 0.5f), c.EnvRoot.position.z - 0.0005f);
                     var lr = lip.AddComponent<SpriteRenderer>();
                     lr.sprite = farLip; lr.sharedMaterial = stone; lr.sortingLayerName = gameplay; lr.sortingOrder = -4;
                     lr.drawMode = SpriteDrawMode.Tiled; lr.tileMode = SpriteTileMode.Continuous;
@@ -373,28 +492,18 @@ namespace Parallax.Editor.Setup
                     // The panel stops where the lip's solid part begins.
                     float cut = LipBelow + farLipSlot.height * 0.5f;
                     back.size = new Vector2(back.size.x, Mathf.Max(0.1f, back.size.y - cut));
-                    back.transform.position += new Vector3(0f, inward * cut * 0.5f, 0f);
+                    go.transform.position += new Vector3(0f, inward * cut * 0.5f, 0f);
                 }
-                SpriteRenderer Quad(Rect at, string name)
-                {
-                    var go = new GameObject(name);
-                    go.transform.SetParent(c.EnvRoot, false);
-                    go.layer = c.LayerIndex;
-                    go.transform.position = new Vector3(at.center.x, at.center.y, c.EnvRoot.position.z);
-                    var sr = go.AddComponent<SpriteRenderer>();
-                    sr.sprite = wall; sr.sharedMaterial = stone;
-                    sr.sortingLayerName = gameplay; sr.sortingOrder = -4;
-                    sr.drawMode = SpriteDrawMode.Tiled; sr.tileMode = SpriteTileMode.Continuous;
-                    sr.size = new Vector2(at.width + 2f * SoloRoomSkin.DeepReach, at.height + (over ? SoloRoomSkin.DeepReach : 0f) + (under ? SoloRoomSkin.DeepReach : 0f));
-                    go.transform.position += new Vector3(0f, ((over ? SoloRoomSkin.DeepReach : 0f) - (under ? SoloRoomSkin.DeepReach : 0f)) * 0.5f, 0f);
-                    sr.color = VoidTint;
-                    return sr;
-                }
+                k++;
             }
         }
 
         /// <summary>How far below the pit's lip line its back wall's broken top edge stays (world units).</summary>
         const float LipBelow = 0.04f;
+        /// <summary>A recess's back wall against the wall around it (the same stone, set back in shadow).</summary>
+        const float RecessBack = 0.72f;
+        /// <summary>A lit recess's shadow at its closed end (its strength, 0..1, and how far it reaches toward the opening) and down its sides.</summary>
+        const float RecessDeepShade = 0.8f, RecessDeepReach = 1.2f, RecessSideShade = 0.5f;
         /// <summary>A pit shallower than this (lip to floor, world units) and over three times as wide is a trench: no back wall.</summary>
         const float ShallowTrench = 1.2f;
 

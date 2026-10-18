@@ -383,7 +383,7 @@ def rubble_heap(ppu, w_u, h_u, rng):
     for i in range(n_top):
         chunk(xs_top[i] - (0.02 * ppu if i else 0), xs_top[i + 1] + (0.02 * ppu if i < n_top - 1 else 0), line,
               split + rng.uniform(0.0, 0.16) * ppu,
-              BAND_REACH * ppu if i == 0 else 0, BAND_REACH * ppu if i == n_top - 1 else 0, flat_top=True)
+              DEEP_REACH * 0.8 * ppu if i == 0 else 0, DEEP_REACH * 0.8 * ppu if i == n_top - 1 else 0, flat_top=True)   # 2026-10-17: a pile, not a box (was BAND_REACH)
     for _ in range(int(rng.integers(2, 4))):   # a few cracks
         px, py = rng.uniform(0, W), rng.uniform(line + 6, H - 6)
         ang, length = rng.uniform(0.3, 1.3) * rng.choice([-1, 1]), rng.uniform(0.2, 0.45) * ppu

@@ -17,6 +17,10 @@ HI_PPU = 256
 
 # The drawn sizes (world units), one per kind, everywhere.
 LAUNCHER_FRAME_TONE = np.array([0.66, 0.62, 0.56], np.float32)   # the carved frame against the walls' stone
+# The slot's lip: worn bronze, not pale cream (2026-10-17 visual review, L007-L010: "a bright cream bar ... like a UI button").
+LAUNCHER_LIP = np.array([0.97, 0.8, 0.5], np.float32)   # light bronze (0.9, 0.7, 0.4 left L012 Arrow_C at 26 % at 3:1)
+VENT_SATURATION = 0.4      # the vent's colour kept (of its painted terracotta)
+VENT_TONE = np.array([0.92, 0.88, 0.82], np.float32)
 LAUNCHER_U = 0.7          # the launcher's carved frame (square); its niche adds about 0.1 u a side
 ARROW_U = (0.8, 0.16)     # the arrow, pointing right
 SPEAR_HEAD_U = 0.6        # the spear's blade and collar, along its length
@@ -99,6 +103,19 @@ def _shift(m, dy, dx):
     return out
 
 
+def ragged_vignette(h, w, rng, inset=0.2, soft=0.16, jitter=0.07):
+    """An alpha mask that is 1 in the middle and fades out toward the edges along a rounded, irregular line: a carving set
+    into the wall rather than a tile laid on it. `inset`, `soft` and `jitter` are fractions of the half-size."""
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    u, v = (xx + 0.5) / w * 2 - 1, (yy + 0.5) / h * 2 - 1
+    d = 1 - (np.abs(u) ** 4 + np.abs(v) ** 4) ** 0.25          # 0 at a rounded-square edge, 1 at the centre
+    noise = rng.normal(0, 1, (max(2, h // 12), max(2, w // 12))).astype(np.float32)
+    noise = np.array(Image.fromarray(noise).resize((w, h), Image.BICUBIC), np.float32)
+    noise /= max(1e-4, np.abs(noise).max())
+    edge = inset + jitter * noise
+    return np.clip((d - edge) / soft + 0.5, 0, 1).astype(np.float32)
+
+
 def iron_edge(a, tip=None, outer_px=4, lit_px=3, tip_px=4, wrap_x=False, shade_px=2, steel=STEEL, core=1.0):
     """D-108 for dark forged iron (the developer, 2026-10-16: keep the spikes dark, not cream): a dark outer line; a light
     rim on the LIT side only (light from the upper left: the pixels whose outside lies above or to the left), so the
@@ -177,6 +194,15 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         # The slot: the darkest band across the middle. Its lips catch the danger colour, a few px deep.
         lum = (a[..., :3] * np.array([0.3, 0.55, 0.15], np.float32)).sum(-1)
         slot = (lum < 0.12) & (a[..., 3] > 0.5) & (yy > h * 0.3) & (yy < h * 0.62) & (xx > w * 0.2) & (xx < w * 0.8)
+        # 2026-10-17: only the slot itself, the band of rows that are mostly dark around the darkest one (the painted panel's
+        # grid lines above and below it made the mouth a rectangle).
+        band = slot[:, int(w * 0.2):int(w * 0.8)].mean(axis=1)
+        r0, r1 = int(h * 0.4), int(h * 0.62)   # the arrows' slot, under the panel's top bar
+        mid = r0 + int(np.argmax(band[r0:r1]))
+        lo, hi = mid, mid
+        while lo > 0 and band[lo - 1] > 0.5: lo -= 1
+        while hi < h - 1 and band[hi + 1] > 0.5: hi += 1
+        slot &= (yy >= lo) & (yy <= hi)
         # Only the slot's own rim (a 1-2 px line just inside the dark), so the mouth reads as the danger point without
         # turning the carving red; the tell (ArrowArt) adds the crimson glow on top.
         rim = slot & hr._dilate(~slot, 1)
@@ -187,15 +213,18 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         # the wall (no outline); the MOUTH (the slot, its bronze lips, the crimson rim) is the lethal part, drawn over it on the
         # same canvas, outlined to read on any wall; HazardContrastTests measures the mouth. A disguised launcher reveals the
         # mouth alone, opening in its own wall.
-        mouth_mask = hr._dilate(slot, max(4, int(h * 0.05)))
+        # 2026-10-17 (the developer: "The arrow launchers are way to square and dont look like a part of the wall"): the mouth is
+        # the slot and its pale bronze lip, a few px (it was the whole panel filled pale gold and outlined: a cream box on the
+        # wall); the lip and rim are what read on a dark wall (HazardContrastTests).
+        mouth_mask = hr._dilate(slot, max(3, int(h * 0.035)))
         mouth = a.copy()
         mouth[..., 3] = np.where(mouth_mask, mouth[..., 3], 0.0)
         # The slot a deep shadow; its bronze lips (the ring around it) catch the light, pale gold: dark against light, so the
         # mouth reads on light and dark walls alike.
         mouth[..., :3] = np.where(slot[..., None], mouth[..., :3] * 0.5, mouth[..., :3])
         lips = mouth_mask & ~slot
-        mouth[..., :3] = np.where(lips[..., None], np.clip(mouth[..., :3] * 0.35 + np.array([1.0, 0.86, 0.55], np.float32) * 0.65, 0, 1), mouth[..., :3])
-        put("Bodies/TRAP-01_launcher_mouth", iron_edge(mouth, tip=None, outer_px=5, lit_px=3, shade_px=3, steel=BRIGHT_STEEL), source=s)
+        mouth[..., :3] = np.where(lips[..., None], np.clip(mouth[..., :3] * 0.4 + LAUNCHER_LIP * 0.6, 0, 1), mouth[..., :3])
+        put("Bodies/TRAP-01_launcher_mouth", iron_edge(mouth, tip=None, outer_px=4, lit_px=3, shade_px=3, steel=BRIGHT_STEEL), source=s)
         # The frame under the mouth is plain carved stone (filled from the stone around it), so the mouth is the only place
         # the slot exists: hidden, the frame shows unbroken stone there; shown, the dark slot reads against that stone.
         frame = a.copy()
@@ -206,6 +235,9 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         # 2026-10-17 visual review ("the arrow launchers are pale cream boxes that look unlit and flat ... about twice as bright
         # as the stone around them"): the carving toned to the walls' lit stone (it isn't lethal; the mouth reads on its own).
         frame[..., :3] = frame[..., :3] * LAUNCHER_FRAME_TONE
+        # 2026-10-17 ("way to square ... dont look like a part of the wall"): the carving fades into the wall along a ragged,
+        # rounded line, no square silhouette.
+        frame[..., 3] *= ragged_vignette(h, w, np.random.default_rng(1207))
         put("Bodies/TRAP-01_arrow_launcher", hr.pad(frame, 5), source=s)
 
     # ---- the arrow (2C): painted, the head's cutting edges and the fletching's edge crimson ----
@@ -246,7 +278,8 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         wx = np.mgrid[0:wh, 0:ww][1]
         # Darkened to 0.65 with a 4 px rim: with 0.8 and a 2 px rim, L017 V1 and L019 Spear_1 read under 30 % at 3:1 (the dark
         # wood over L019's dark drapery); darker wood barely helped (0.52: 28 %) and lost the painting, the wider rim reads there.
-        whole[..., :3] = whole[..., :3] * 0.65
+        # 0.58 (was 0.65) once the pits' back walls were lightened (L015 Spear_B over one: 28 % at 0.65).
+        whole[..., :3] = whole[..., :3] * 0.58
         # The shaft is round, lit from the upper left: a band of sunlit wood along its top (0.22-0.38 of its thickness down,
         # fading out by 0.14 and 0.46), so it also reads over dark stone (L019 Spear_1: 28 % at 3:1 without it); on the collar
         # and blade (from 0.5-0.6 of the length) it's a thinner steel glint along the bevel.
@@ -257,7 +290,8 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         bot = np.where(has, wh - 1 - sil[::-1].argmax(axis=0), 0)[None, :]
         f = (rows - top) / np.maximum(1, bot - top)
         metal = np.clip((wx - ww * 0.5) / (ww * 0.1), 0.0, 1.0)
-        reach, soft = 0.16 - 0.07 * metal, 0.08 - 0.03 * metal   # narrower on the metal (a thin bevel line, the bindings kept)
+        # Narrower on the metal (a thin bevel line, the bindings kept); 0.2 on the wood (0.16 read 29 % over L015's lightened pit).
+        reach, soft = 0.2 - 0.11 * metal, 0.08 - 0.03 * metal
         band = (np.clip((reach - np.abs(f - 0.3)) / soft, 0.0, 1.0) * 0.85 * sil)[..., None]
         glint = SUNLIT_WOOD * (1 - metal[..., None]) + BRIGHT_STEEL * metal[..., None]
         whole[..., :3] = whole[..., :3] * (1 - band) + glint * band
@@ -311,11 +345,21 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
     # ---- the vent (2B) ----
     if (s := src("PILOT-02B_vent_v1")):
         a = clean_alpha(trim(load_rgba(s)))
+        # 2026-10-18 visual review (L013: "a saturated orange vent blob and flat orange vent strips"): the terracotta pulled
+        # toward the walls' stone (VENT_SATURATION, VENT_TONE); it warms through its tell in code (GeyserArt).
+        lum = (a[..., :3] * np.array([0.299, 0.587, 0.114], np.float32)).sum(-1, keepdims=True)
+        a[..., :3] = np.clip((lum + (a[..., :3] - lum) * VENT_SATURATION) * VENT_TONE, 0.0, 1.0)
         put("Bodies/TRAP-03_geyser_vent", fit_box(a, VENT_U[0], VENT_U[1] * 1.6), pivot=(0.5, 0.5), source=s)
 
     # ---- the storm cloud (8), the inverter orb (9), the flip ring (13) ----
     if (s := src("PILOT-08_storm_cloud_v1")):
-        put("Bodies/TRAP-09_storm_cloud", fit_box(clean_alpha(trim(load_rgba(s))), CLOUD_U[0], CLOUD_U[1] * 1.4), source=s)
+        cloud = fit_box(clean_alpha(trim(load_rgba(s))), CLOUD_U[0], CLOUD_U[1] * 1.4)
+        # 2026-10-17 visual review (L007: "its palette matches the background storm clouds ... reads as scenery, not a hazard";
+        # L010: "a warm sepia, sunset-lit cumulus ... reads as a cute puff"): a darker, cooler thundercloud, so it never passes
+        # for the sky's own clouds.
+        grey = cloud[..., :3].mean(-1, keepdims=True)
+        cloud[..., :3] = np.clip((cloud[..., :3] * 0.6 + grey * 0.4) * np.array([0.68, 0.7, 0.78], np.float32), 0, 1)
+        put("Bodies/TRAP-09_storm_cloud", cloud, source=s)
     if (s := src("PILOT-09_inverter_orb_v1")):
         put("Bodies/TRAP-06_inverter_orb", fit_box(clean_alpha(trim(load_rgba(s))), ORB_U, ORB_U), source=s)
     if (s := src("PILOT-13_flip_orb_v1")):

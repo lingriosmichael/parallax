@@ -232,6 +232,10 @@ namespace Parallax.Editor.Setup
             PostVolume(c);
         }
 
+        const float MoonHaloScale = 0.33f, MoonHaloAlpha = 0.5f;
+        /// <summary>A moon's disc against a sun's (EnvironmentStackSetup places the disc).</summary>
+        public const float MoonDiscScale = 0.65f;
+
         static void SunHaloAndRays(TierContext c)
         {
             // Plain alpha sprites on the background's unlit shader: the back of the scene draws without a shader switch
@@ -244,7 +248,10 @@ namespace Parallax.Editor.Setup
                 // and a moon's is half the size.
                 bool moon = c.Palette != null && c.Palette.Moon;
                 Color haloColour = c.Palette != null ? Color.Lerp(Color.white, c.Palette.Sun, 0.6f) : new Color(1f, 0.98f, 0.93f, 1f); haloColour.a = 1f;
-                SpriteRenderer halo = c.Place(c.Layer("Sun"), "SunHalo", "ENV_Glow", c.SunAt, Vector2.one * (c.SunSize * c.Config.SunHaloScale * (moon ? 0.5f : 1f) / disc.bounds.size.x), haloColour, c.Config.GetLayer("Sun").Order + 1, c.Back);
+                // 2026-10-17 visual review (L010: "the moon is a flat, soft yellow blob ... the brightest, most saturated thing on
+                // screen, pulling the eye from the cat"): a moon's halo is a third of the sun's, and faint.
+                if (moon) haloColour.a = MoonHaloAlpha;
+                SpriteRenderer halo = c.Place(c.Layer("Sun"), "SunHalo", "ENV_Glow", c.SunAt, Vector2.one * (c.SunSize * c.Config.SunHaloScale * (moon ? MoonHaloScale : 1f) / disc.bounds.size.x), haloColour, c.Config.GetLayer("Sun").Order + 1, c.Back);
                 halo.sharedMaterial = glow;
                 halo.gameObject.AddComponent<AmbientMotion>().Configure(0f, 0f, 0f, 0f, 0f, 0f, 0.04f, 0.1f, 0.2f);
             }
@@ -414,7 +421,10 @@ namespace Parallax.Editor.Setup
         }
 
         // A16 round 2 (the developer: "missing intermediate to closer assets that look slightly bigger"): the near tier.
-        static readonly string[] NearPalette = { "ENV_MidArch_0", "ENV_MidTowers", "ENV_MidTree_1", "ENV_MidArch_1", "ENV_MidColonnade", "ENV_MidTree_0", "ENV_MidPillar" };
+        // 2026-10-18 (the developer, L003: "There is absolutely no reason for one to jump on this platform, its a platform that is
+        // just there ... please just remove them"): no ENV_MidPillar. Painted as sharp as the play layer's stone, a vine-wrapped
+        // pillar on the near tier read as a platform (L003) and as a column through the slabs (L007).
+        static readonly string[] NearPalette = { "ENV_MidArch_0", "ENV_MidTowers", "ENV_MidTree_1", "ENV_MidArch_1", "ENV_MidColonnade", "ENV_MidTree_0" };
 
         /// <summary>Ruins and trees at 1.3x, standing from below the lowest floor, spaced along the whole frame, on the Near
         /// layer (speed 0.6, lightly hazed). Each level starts the palette at its own place and alternates flips, so no two
@@ -463,6 +473,10 @@ namespace Parallax.Editor.Setup
         /// outer side walls"): the masonry stops as far short of its face as the broken strips reach into it (DeepReach), not
         /// further (0.33 left a slot of sky between the masonry and a strip after the bumps shrank).</summary>
         public const float OutsideInset = SoloRoomSkin.DeepReach;
+        /// <summary>2026-10-17 visual review (L010: "the level's ceiling is a pale grey-lavender strip with an icicle-like edge ...
+        /// reads as frost"): the masonry's own broken course (unlit strips) in the stone's colour in shadow, as the masonry
+        /// itself is (StoneShade's outside channel), not the grade's outside tint (navy by day, lavender at night).</summary>
+        static readonly Color OutsideStripTint = new(0.56f, 0.52f, 0.47f, 1f);
 
         static void Outside(TierContext c)
         {
@@ -507,6 +521,10 @@ namespace Parallax.Editor.Setup
                 Rect.MinMaxRect(x0, frame.min.y, x1, content.min.y),
                 Rect.MinMaxRect(x0, content.max.y, x1, frame.max.y),
             };
+            // 2026-10-18 visual review (L013: "the start floor's rectangular sky windows"): and up into the air under the room's
+            // lowest stone where that stops short of the room's bottom (SoloRoomSkin.UnderFill).
+            List<Rect> underFill = SoloRoomSkin.UnderFill(room);
+            rects.AddRange(underFill);
             var strips = new List<(float line, bool facesRight, float a, float b)>();
             // The side bands start at the room walls' outer faces (1 u out): the strip over a side wall's top stays air, so the
             // top reads against it like any other (A1). Below the wall's top they're whole (the column stands in front).
@@ -592,7 +610,8 @@ namespace Parallax.Editor.Setup
             if (capTop != null && cd != null && content.min.y > frame.min.y + 0.01f)
             {
                 float yb = content.min.y;
-                bool Open(float x) => !all.Any(s => s.Rect.xMin <= x && s.Rect.xMax >= x && s.Rect.yMin <= yb + 0.05f && s.Rect.yMax > yb + 0.05f);
+                bool Open(float x) => !all.Any(s => s.Rect.xMin <= x && s.Rect.xMax >= x && s.Rect.yMin <= yb + 0.05f && s.Rect.yMax > yb + 0.05f)
+                    && !underFill.Any(f => f.xMin <= x && f.xMax >= x);
                 var open = new List<(float a, float b)>();
                 float? start = null;
                 for (float x = x0; x <= x1 + 1e-4f; x += 0.05f)
@@ -611,7 +630,7 @@ namespace Parallax.Editor.Setup
                     go.layer = c.LayerIndex;
                     go.transform.position = new Vector3((a + b) * 0.5f, yb + cd.above - cd.height * 0.5f, c.EnvRoot.position.z - 0.02f);
                     var sr = go.AddComponent<SpriteRenderer>();
-                    sr.sprite = capTop; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = c.Config.OutsideTint * 1.15f;
+                    sr.sprite = capTop; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = OutsideStripTint;
                     sr.drawMode = SpriteDrawMode.Tiled; sr.size = new Vector2(b - a, cd.height);
                     sr.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); sr.sortingOrder = -3;
                 }
@@ -629,7 +648,7 @@ namespace Parallax.Editor.Setup
                 go.layer = c.LayerIndex;
                 go.transform.position = new Vector3((x0 + x1) * 0.5f, content.max.y - ud.below + ud.height * 0.5f, c.EnvRoot.position.z);
                 var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = under; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = c.Config.OutsideTint * 1.15f;
+                sr.sprite = under; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = OutsideStripTint;
                 // (the room's width only, like the masonry it edges: past it its straight top stood over the air beside the columns)
                 sr.drawMode = SpriteDrawMode.Tiled; sr.size = new Vector2(x1 - x0, ud.height);
                 sr.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); sr.sortingOrder = -3; go.transform.position += new Vector3(0f, 0f, -0.02f);
@@ -647,7 +666,7 @@ namespace Parallax.Editor.Setup
                     b.transform.localScale = new Vector3((x1 - x0) / fade.bounds.size.x, 1.4f / fade.bounds.size.y, 1f);
                     var br = b.AddComponent<SpriteRenderer>();
                     br.sprite = fade; br.sharedMaterial = EnvironmentKit.UnlitMaterial; br.flipY = true;
-                    Color warm = c.Palette.SunLight; warm.a = 0.28f; br.color = warm;
+                    Color warm = c.Palette.SunLight; warm.a = 0.14f; br.color = warm;   // 0.28 lit a night roof's edge pale lavender (L010)
                     br.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); br.sortingOrder = -3; b.transform.position += new Vector3(0f, 0f, -0.01f);
                 }
                 // Roots and ivy hanging from it one by one: six shapes, random lengths, flips and gaps.

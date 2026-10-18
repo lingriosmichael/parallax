@@ -135,15 +135,21 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapA2",(22f,5.15f),(1f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_GapA")));
             // Gap B's reach west to x 5 (a cat that runs off Ride_B lands as far as x 6.8); the overhang's top (x 16-17.5) catches a
             // fall through Sink_S, so it gets its own.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapB",(8.75f,5.15f),(7.5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_GapA")));
+            // 2026-10-17 visual review (once S1_T4 has fallen, gap B's spikes ran on over its hole with sky under them; the developer:
+            // split them, as gap A's are around S1_T6's hole): on S1_A (x 5-9.5) and on S1_B (x 11.3-12.5), not over S1_T4 (x
+            // 9.5-11.3); a fall through it lands on Spikes_4, up since T4.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapB",(7.25f,5.15f),(4.5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_GapA")));
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapB2",(11.9f,5.15f),(1.2f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_GapA")));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_GapO",(16.75f,7.75f),(1.5f,.3f),settings:new SoloRoomTrapSettings(revealDelayTicks:6,triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_GapA")));
             // PAX-102: a repeating arrow (every 150 ticks) from a carved corbel under the roof, crossing S2 before the door on a short
             // steep lane: a cat that stops in it is hit by the next shot. PAX-107 (the developer: "Remove this arrow launcher. It
             // doesn't do anything"): the ground's Arrow_G and its corbel are gone.
-            elements.Add(E(SoloRoomElementKind.Wall,"Corbel_S",(5.5f,13.25f),(1f,1.5f)));
-            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_S",(5.25f,12.9f),(.5f,.4f),settings:new SoloRoomTrapSettings(
-                new ArrowLane(ArrowDirection.Left,12.9f,5f - 2.9f / Mathf.Tan(60f * Mathf.Deg2Rad),angleDegrees:-60f),
-                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:116,cooldownTicks:60))));
+            // D-156 (the developer, 2026-10-18: "no more diagonal arrow launchers"): the corbel and its -60 degree Arrow_S are two
+            // launchers in the roof (x 3.5 and 5.5), shooting straight down onto S2 before the door together.
+            foreach ((string name, float x) in new[] { ("Arrow_S", 3.5f), ("Arrow_S2", 5.5f) })
+                elements.Add(E(SoloRoomElementKind.Arrow,name,(x,14.25f),(.5f,.5f),settings:new SoloRoomTrapSettings(
+                    new ArrowLane(ArrowDirection.Right,14f,x,angleDegrees:-90f,laneEndY:10f),
+                    new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:116,cooldownTicks:60))));
             var jumps = new[] {
                 J("Floor_1",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Left,27.1f,24.3f,0f,0f,3f,sourceName:"Ground_A",destinationName:"Ground_M"),
                 J("Tread_LA",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Left,5.4f,3.6f,0f,1.25f,3f,sourceName:"Ground_B",destinationName:"Tread_LA"),

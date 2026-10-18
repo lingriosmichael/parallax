@@ -16,7 +16,8 @@ namespace Parallax.Editor.Setup
     // the replays for a real level. Separate from Validate(), like the band-1 rules.
     public static partial class LevelLayoutValidator
     {
-        public const int Band2MinLethal = 8, Band2MinSequence = 6, Band2MinDeadEnds = 2;
+        // D-155: dead ends optional (was 2).
+        public const int Band2MinLethal = 8, Band2MinSequence = 6, Band2MinDeadEnds = 0;
         public const int Band2MinTicks = 1100, Band2MaxTicks = 2500;   // §13 R4: the floor lowered from 1500
         public const int Band2MinSections = 2, Band2MaxSections = 3;
         // D-093 amendment (2026-10-03): at least ChaosMinElements change in the window, on screen or not, and at least

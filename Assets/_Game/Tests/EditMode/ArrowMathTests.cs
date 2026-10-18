@@ -231,8 +231,9 @@ namespace Parallax.Tests.EditMode
             CatMotorConfig config = RealConfig();
             float run = config.MaxSpeed * TickTime.SecondsPerTick;
             Assert.AreEqual(ArrowMath.MaxUnitsPerTick(L, config.ColliderSize, run), ArrowMath.MaxUnitsPerTick(L, config.ColliderSize, run, .4f, 0f));
-            foreach (float angle in new[] { 0f, 30f, -30f, 45f, -45f, 60f, -60f }) Assert.IsTrue(ArrowMath.IsAllowedAngle(angle), $"{angle} is allowed");
-            foreach (float angle in new[] { 15f, 90f, -90f, 44f }) Assert.IsFalse(ArrowMath.IsAllowedAngle(angle), $"{angle} is not");
+            foreach (float angle in new[] { 0f, 30f, -30f, 45f, -45f, 60f, -60f, 90f, -90f }) Assert.IsTrue(ArrowMath.IsAllowedAngle(angle), $"{angle} is allowed");
+            // D-156: ±90 (vertical) is allowed.
+            foreach (float angle in new[] { 15f, 75f, -89f, 44f }) Assert.IsFalse(ArrowMath.IsAllowedAngle(angle), $"{angle} is not");
         }
 
         [TestCase(30f, .632f)] [TestCase(45f, .505f)] [TestCase(60f, .427f)]

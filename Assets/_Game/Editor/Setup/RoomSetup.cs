@@ -147,7 +147,9 @@ namespace Parallax.Editor.Setup
             var look = AssetDatabase.LoadAssetAtPath<Parallax.Editor.Levels.LevelLookConfig>(Parallax.Editor.Levels.LevelLookConfig.AssetPath);
             bool ready = on && look != null;
             // A soft dark pocket behind the door, then a warm glow around its opening: the lit doorway pops (A6).
-            DoorBacking(art, "Shade", ready ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Halo") : null, ready ? look.DoorShadeSize : 0f, new Color(1f, 1f, 1f, ready ? look.DoorShadeAlpha : 0f), DoorArtSortingOrder - 2, root, changes);
+            // 2026-10-17 visual review (L002: "a darker brown ring ... a dirty halo around the exit"; L008: "a sickly green-yellow
+            // ring"): the pocket over a light sky read as a stain; warm and at 0.55 of its strength.
+            DoorBacking(art, "Shade", ready ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Halo") : null, ready ? look.DoorShadeSize : 0f, new Color(1f, 0.86f, 0.72f, ready ? look.DoorShadeAlpha * 0.55f : 0f), DoorArtSortingOrder - 2, root, changes);
             DoorBacking(art, "Glow", ready ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Glow") : null, ready ? look.DoorGlowSize : 0f, new Color(1f, 0.86f, 0.58f, ready ? look.DoorGlowAlpha : 0f), DoorArtSortingOrder - 1, root, changes);
         }
 

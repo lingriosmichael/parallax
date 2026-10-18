@@ -30,7 +30,7 @@ namespace Parallax.Tests.EditMode
         public void RearmingFlip_PulsesFromTheTickItFlipsTheCat()
         {
             object room = RouteValidatorTests.Room("L004"), routes = RouteValidatorTests.Routes("L004");
-            object betrayal = ((IEnumerable)F(routes, "Betrayals")).Cast<object>().First(b => ((string)F(b, "Name")).StartsWith("T2:"));
+            object betrayal = ((IEnumerable)F(routes, "Betrayals")).Cast<object>().First(b => ((string)F(b, "Name")).StartsWith("Dead end"));   // 2026-10-18: T2 (Flip_A) removed; the dead end flips at Flip_L
             int firedAt = -1, pulsedAt = -1;
             bool rearming = false;
             using (IDisposable session = OpenSession())
@@ -38,7 +38,7 @@ namespace Parallax.Tests.EditMode
                 object options = Activator.CreateInstance(T("ReplayOptions"));
                 Set(options, "AfterTick", (Action<int>)(tick =>
                 {
-                    var art = Object.FindObjectsByType<FlipArt>(FindObjectsSortMode.None).FirstOrDefault(a => a.Trap != null && a.Trap.name == "Flip_A");
+                    var art = Object.FindObjectsByType<FlipArt>(FindObjectsSortMode.None).FirstOrDefault(a => a.Trap != null && a.Trap.name == "Flip_L");
                     if (art == null) return;
                     rearming = (bool)Private(art.Trap, "rearmOnExit");
                     if (firedAt < 0 && art.Trap.State == TrapState.Fired) firedAt = tick;
@@ -47,9 +47,9 @@ namespace Parallax.Tests.EditMode
                 }));
                 ReplayRoute(session, room, F(betrayal, "Route"), options);
             }
-            Assert.IsTrue(rearming, "L004's Flip_A is no longer a re-arming flip; pick another for this test");
-            Assert.That(firedAt, Is.GreaterThanOrEqualTo(0), "Flip_A never fired on L004's T2");
-            Assert.AreEqual(firedAt, pulsedAt, $"Flip_A fired at t{firedAt}; its pulse first showed at t{pulsedAt} (-1: never)");
+            Assert.IsTrue(rearming, "L004's Flip_L is no longer a re-arming flip; pick another for this test");
+            Assert.That(firedAt, Is.GreaterThanOrEqualTo(0), "Flip_L never fired on L004's dead end");
+            Assert.AreEqual(firedAt, pulsedAt, $"Flip_L fired at t{firedAt}; its pulse first showed at t{pulsedAt} (-1: never)");
         }
 
         [Test]

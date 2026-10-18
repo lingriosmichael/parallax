@@ -41,15 +41,16 @@ namespace Parallax.Tests.EditMode
         // D-113: L003 re-pinned: S1 the arrow floor (the jumps past Post_R, Lift_1, Shrink_1 and onto Post_L), S2 the spike bed
         // (D-113 amendment: Hop_1, Ride_1, Lift_2, Hop_2, Ride_2, the fakes False_1 and False_2); no Recovers (S1_Mid is gone).
         // D-113 amendment 2: the perch on Post_R (1.2 u), raised S1_A, Hop_2 moving.
-        [TestCase("L003", new[] { 31, 34, 20, 25, 21, 32, 16, 13, 27, 12, 16, 17, 18, 20, 13, 18 }, new int[0], new[] { "Floor_1=26", "Floor_3=21", "Spikes_B=18", "Arrow_L=6", "Lift_1=659", "Shrink_1=47", "False_1=8", "Ride_1=898", "False_2=7", "Ride_2=1043", "Spikes_R=20" }, new string[0])]
+        [TestCase("L003", new[] { 31, 34, 20, 25, 21, 32, 16, 13, 27, 12, 16, 17, 18, 20, 13, 18 }, new int[0], new[] { "Floor_1=26", "Floor_3=21", "Arrow_L=6", "Lift_1=659", "Shrink_1=47", "False_1=8", "Ride_1=898", "False_2=7", "Ride_2=1043" }, new string[0])]
         // D-117-D-119, PAX-107: L004 played inverted; Left_Post reaches the floor, so the way is the climb (flip up, down the
         // mossy gap, up through Flip_A); the start's launchers fire from the start; Arrow_7 first fires at 420. PAX-107: the
-        // corbel 1 u higher, one wall jump under it (T2's lead from 60).
-        [TestCase("L004", new[] { 12, 13, 13, 12, 31 }, new int[0], new[] { "Arrow_Run=6", "Arrow_Jump=6", "Sink_R=44", "Arrow_7=18", "Spikes_A=68", "Spikes_3=7", "Roof_4=21", "Ride_2=823", "Ride_4=833", "Spikes_L=26" }, new string[0])]
+        // corbel 1 u higher, one wall jump under it (T2's lead from 60). 2026-10-18: T2 (Spikes_A) removed; Step_1 0.3 u higher;
+        // RecessC_Hazard just under the risen Sink_R (Sink_R's lead and the climb's windows re-pinned).
+        [TestCase("L004", new[] { 12, 13, 13, 12, 31 }, new int[0], new[] { "Arrow_Run=6", "Arrow_Jump=6", "Sink_R=44", "Arrow_7=18", "Spikes_3=7", "Roof_4=21", "Ride_2=823", "Ride_4=833", "Spikes_L=26" }, new string[0])]
         // D-116/D-119: L005 re-pinned: non-stop arrows, the corbel's 45-degree Arrow_X, S1's and the ground's riders, the crush
         // ledge (Ledge_D) at the ground's right end, the storm cloud on every floor.
         // D-126: Arrow_A every 100 ticks; the cat jumps its second shot where it waits for Arrow_X (window 25).
-        [TestCase("L005", new[] { 24, 25, 13, 19, 12, 32 }, new int[0], new[] { "Arrow_A=6", "Arrow_Drip=6", "Arrow_X=6", "Arrow_B=6", "Ledge_Lo2=21", "Ledge_Lo2=25", "Arrow_C=6", "Arrow_D=6", "Floor_6=27", "Spikes_D=14", "Ledge_D=12" }, new string[0])]
+        [TestCase("L005", new[] { 24, 25, 13, 19, 12, 32 }, new int[0], new[] { "Arrow_A=6", "Arrow_V2=6", "Arrow_B=6", "Arrow_C=6", "Arrow_D=6", "Floor_6=27", "Spikes_D=14", "Rise_D=0" }, new string[0])]
         // D-119: L006 re-pinned: Ride_7 over Pit_7 and the hinge floor Flip_8 (window 21; T7, T8). PAX-107: the lid 1.5 u longer
         // in all (the step-off dead end now lands on its spikes), the hinge 20 % faster, twice.
         // D-124: the way down is the climb onto Lift_G (no sweep, so no T3); the lid's gap (the step-off dead end into Pit_5).

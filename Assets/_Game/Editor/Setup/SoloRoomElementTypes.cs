@@ -40,14 +40,20 @@ namespace Parallax.Editor.Setup
         // PAX-107 (D-123): a level arrow that follows the cat's gravity. Each shot flies on the lane the cat's gravity picks as it
         // fires: LaneY with gravity down, its mirror about MirrorAxisY (room-local) with gravity up; the launcher moves with it.
         public readonly bool MirrorWithGravity; public readonly float MirrorAxisY;
-        public ArrowLane(ArrowDirection direction, float laneY, float laneEndX, float length = .8f, float thickness = .16f, float unitsPerTick = .3f, int tellTicks = 6, bool disguised = false, bool spear = false, float angleDegrees = 0f, bool mirrorWithGravity = false, float mirrorAxisY = 0f)
-        { IsConfigured = true; Direction = direction; LaneY = laneY; LaneEndX = laneEndX; Length = length; Thickness = thickness; UnitsPerTick = unitsPerTick; TellTicks = tellTicks; Disguised = disguised; Spear = spear; AngleDegrees = angleDegrees; MirrorWithGravity = mirrorWithGravity; MirrorAxisY = mirrorAxisY; }
+        // D-156: a vertical lane (angle ±90) leaves the launcher's bottom (or top) face at LaneY and its tip stops at LaneEndY;
+        // LaneEndX is unused there.
+        public readonly float LaneEndY;
+        public ArrowLane(ArrowDirection direction, float laneY, float laneEndX, float length = .8f, float thickness = .16f, float unitsPerTick = .3f, int tellTicks = 6, bool disguised = false, bool spear = false, float angleDegrees = 0f, bool mirrorWithGravity = false, float mirrorAxisY = 0f, float laneEndY = 0f)
+        { IsConfigured = true; Direction = direction; LaneY = laneY; LaneEndX = laneEndX; Length = length; Thickness = thickness; UnitsPerTick = unitsPerTick; TellTicks = tellTicks; Disguised = disguised; Spear = spear; AngleDegrees = angleDegrees; MirrorWithGravity = mirrorWithGravity; MirrorAxisY = mirrorAxisY; LaneEndY = laneEndY; }
+
+        /// <summary>D-156: a lane straight down or up (ArrowMath.IsVertical).</summary>
+        public bool Vertical => ArrowMath.IsVertical(AngleDegrees);
 
         /// <summary>PAX-107 (D-123): how far the launcher moves up for a mirrored shot (0 for a lane that doesn't mirror).</summary>
         public float MirrorShift => MirrorWithGravity ? 2f * (MirrorAxisY - LaneY) : 0f;
 
         /// <summary>PAX-107 (D-123): the lane a mirrored shot flies on (itself not mirroring).</summary>
-        public ArrowLane Mirrored => new(Direction, LaneY + MirrorShift, LaneEndX, Length, Thickness, UnitsPerTick, TellTicks, Disguised, Spear, AngleDegrees);
+        public ArrowLane Mirrored => new(Direction, LaneY + MirrorShift, LaneEndX, Length, Thickness, UnitsPerTick, TellTicks, Disguised, Spear, AngleDegrees, laneEndY: LaneEndY);
 
         // PAX-084 (D-086) defaults: 1.4 long, 0.4 thick (PlatformSizeConfig.SpearMinThickness), 1.2 u/tick, tell 8.
         public static ArrowLane SpearLane(ArrowDirection direction, float laneY, float laneEndX, float length = 1.4f, float thickness = .4f, float unitsPerTick = 1.2f, int tellTicks = 8, bool disguised = false) =>

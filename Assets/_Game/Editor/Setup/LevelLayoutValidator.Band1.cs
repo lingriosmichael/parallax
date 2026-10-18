@@ -25,7 +25,9 @@ namespace Parallax.Editor.Setup
         public static bool IsBand1(int level) => level >= 1 && level <= 10;
         public static int Band1MinLethal(int level) => level <= 5 ? 5 : level <= 7 ? 6 : 7;
         public static int Band1MinSequence(int level) => level <= 5 ? 4 : 5;
-        public static int Band1MinDeadEnds(int level) => level <= 5 ? 1 : 2;
+        // D-155 (the developer, 2026-10-18: "change the rules make it optional"): dead ends are optional (were 1 for levels 1-5 and
+        // 2 for 6-10); a level keeps a dead end only where it earns its place.
+        public static int Band1MinDeadEnds(int level) => 0;
 
         public static List<string> ValidateBand1Content(string levelId, int level, SoloRoomDefinition room, RoomRoutes routes)
         {

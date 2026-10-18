@@ -44,6 +44,10 @@ namespace Parallax.Presentation
 
         /// <summary>The back row's size and tint, relative to the front row's.</summary>
         public const float BackScale = 0.8f;
+        /// <summary>2026-10-17 visual review ("about 100 near-identical blades ... monotonous"; the developer: proceed with
+        /// varying the blades, never with gaps, since a gap in a lethal row would read as a safe spot): each front blade leans up
+        /// to this many degrees about its foot, and BrokenShare of them stand at BrokenScale of their height.</summary>
+        public const float BladeLean = 7f, BrokenShare = 0.14f, BrokenScale = 0.72f;
         public static readonly Color BackTint = Color.white;   // t22: dimmed (0.82), its bright edges fell under 3:1 in dark rooms
 
         /// <summary>Whether blade `i` stands in the back row.</summary>
@@ -165,9 +169,13 @@ namespace Parallax.Presentation
                 if (trapMaterial != null && b.sharedMaterial != trapMaterial) b.sharedMaterial = trapMaterial;
                 b.drawMode = SpriteDrawMode.Simple;   // before the scale: switching draw mode rewrites a SpriteRenderer's scale
                 b.flipY = pointsSide == 0 && pointsDown;
-                b.transform.rotation = pointsSide != 0 ? turn * Quaternion.Euler(0f, 0f, -90f * pointsSide) : turn;
                 bool back = IsBack(i);
+                uint look = TrapArtMath.Seed(SeedName, 0);
+                float lean = back ? 0f : TrapArtMath.HashSigned(look, 1300 + i) * BladeLean;
+                bool broken = !back && TrapArtMath.Hash01(look, 1400 + i) < BrokenShare;
+                b.transform.rotation = (pointsSide != 0 ? turn * Quaternion.Euler(0f, 0f, -90f * pointsSide) : turn) * Quaternion.Euler(0f, 0f, lean);
                 (float k, float stretch) = Reach(k0 * (back ? BackScale : 1f), stretch0, bladeHeight, i < bladeReach.Length ? bladeReach[i] : 0f);
+                if (broken) stretch *= BrokenScale;
                 Color tint = back ? BackTint : Color.white;
                 if (b.color != tint) b.color = tint;
                 b.transform.localScale = new Vector3(k, k * stretch * rise, 1f);

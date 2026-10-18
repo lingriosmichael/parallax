@@ -30,6 +30,8 @@ namespace Parallax.DebugTools
         [SerializeField] RoomDeath roomDeath;
 
         static readonly Rect DbgButtonRect = new Rect(10f, 10f, 70f, 30f);
+        // The developer (2026-10-17): invincibility, one tap, always on screen (no need to open the panel).
+        static readonly Rect GodButtonRect = new Rect(85f, 10f, 70f, 30f);
         static readonly Rect PanelRect = new Rect(10f, 45f, 340f, 450f);
 
         bool open;
@@ -108,6 +110,15 @@ namespace Parallax.DebugTools
             if (GUI.Button(DbgButtonRect, "DBG"))
             {
                 open = !open;
+            }
+
+            if (roomDeath == null) roomDeath = FindFirstObjectByType<RoomDeath>();
+            if (roomDeath != null)
+            {
+                Color was = GUI.backgroundColor;
+                if (roomDeath.Invincible) GUI.backgroundColor = Color.green;
+                if (GUI.Button(GodButtonRect, roomDeath.Invincible ? "GOD on" : "GOD")) roomDeath.Invincible = !roomDeath.Invincible;
+                GUI.backgroundColor = was;
             }
 
             if (!open || observers == null || switchController == null) return;
@@ -286,7 +297,7 @@ namespace Parallax.DebugTools
         {
             Vector2 guiPoint = new Vector2(screenPos.x, Screen.height - screenPos.y);
 
-            if (DbgButtonRect.Contains(guiPoint)) return true;
+            if (DbgButtonRect.Contains(guiPoint) || GodButtonRect.Contains(guiPoint)) return true;
             if (open && PanelRect.Contains(guiPoint)) return true;
 
             return false;

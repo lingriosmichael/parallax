@@ -250,7 +250,7 @@ namespace Parallax.Editor.Setup
                       Mathf.Clamp(grade.Sun.y + (SoloRoomSkin.Hash(levelId, 721) - 0.5f) * 0.18f, 0.58f, 0.86f), grade.SunSize);
             Sprite sunSprite = EnvironmentKit.Sprite("ENV_Sun");
             var sunAt = new Vector2(mid.x + (sunSpec.x - 0.5f) * width * 0.8f, mid.y + (sunSpec.y - 0.5f) * view);
-            Place(Layer("Sun"), "Sun", "ENV_Sun", sunAt, Vector2.one * (sunSpec.z / sunSprite.bounds.size.x), palette.Sun, Order("Sun"), Back);
+            Place(Layer("Sun"), "Sun", "ENV_Sun", sunAt, Vector2.one * (sunSpec.z * (palette.Moon ? MoonDiscScale : 1f) / sunSprite.bounds.size.x), palette.Sun, Order("Sun"), Back);
 
             float horizon = HorizonY(room, worldFrame);
             // Gauntlet: no tiled bands. The composer (Compose, from BuildTiers) places every background piece whole; an

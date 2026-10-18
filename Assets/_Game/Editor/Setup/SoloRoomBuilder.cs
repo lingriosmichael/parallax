@@ -381,7 +381,8 @@ namespace Parallax.Editor.Setup
             SetSortingOrder(launcherVisual, -1, changes);
 
             float sign = ArrowMath.Sign(lane.Direction);
-            Vector2 mouth = new(sign * e.Size.x * .5f, lane.LaneY - e.Position.y);
+            // D-156: a vertical lane leaves the middle of the launcher's bottom (or top) face.
+            Vector2 mouth = lane.Vertical ? new(0f, lane.LaneY - e.Position.y) : new(sign * e.Size.x * .5f, lane.LaneY - e.Position.y);
             Transform arrow = SetupUtility.EnsureChild(launcher, lane.Spear ? e.Name + "_Shaft" : "Arrow", root.gameObject.layer, changes);
             SetupUtility.SetLocalPosition(arrow, ArrowMath.Centre(mouth, ArrowMath.Direction(lane.Direction, lane.AngleDegrees), lane.Length, 0f), changes);
             // PAX-099 (D-106): an angled arrow's box is turned (ArrowTrap sets the same rotation on Awake).

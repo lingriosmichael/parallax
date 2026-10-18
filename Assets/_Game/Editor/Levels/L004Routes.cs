@@ -5,7 +5,7 @@ using static Parallax.Editor.Routes.R;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-059 (D-085): level 4's anatomy. T1 is jumped; T2, the flip everyone jumps into, is walked under; T3 (spikes on
+    // PAX-059 (D-085): level 4's anatomy. T1 is jumped; T2 (gone 2026-10-18: Flip_A is walked under, nothing past it); T3 (spikes on
     // the roof) are jumped upside down; T4 punishes that jump (the landing gives way: jump straight off it); T5 punishes
     // keeping on along the roof (the door backs away over a section that gives way: go back down, along the slab's top,
     // and up under the door). The flip toward the door from the start is the dead end.
@@ -70,8 +70,6 @@ namespace Parallax.Editor.Levels
                         .Concat(d > 0 ? new[] { For(d) } : System.Array.Empty<RouteStep>())
                         .Concat(new[] { Hold(Right), Until(XAtMost(22.4f)), Jump(), Until(Airborne()), Until(GroundedOn("Roof_4")), Jump(), Until(GroundedOn("Roof_M")),
                             Jump(), Until(GravityDown()), Release(), Until(GroundedOn("Slab")) }).Concat(Climb()).ToArray())),
-                new Betrayal("T2: Flip_A sends a cat that jumps back into it onto spikes under the slab", "Spikes_A", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Ground))", "jump back into the flip", Hold(Right), Until(XAtMost(19.6f)), Release(), Until(Still()), Jump(), Until(Dead()))),
                 new Betrayal("T3: spikes on the roof under a cat walking it upside down", "Spikes_3", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Stopped(Arrow_7))", "walk on", Hold(Right), Until(Dead()))),
                 new Betrayal("T4: the roof where the jump lands gives way under a cat that stops", "Recess4_Hazard", DeathCause.Hazard,

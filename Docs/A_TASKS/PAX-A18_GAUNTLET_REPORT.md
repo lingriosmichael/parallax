@@ -285,3 +285,26 @@ pile of rubble".
   - the spikes' sticker look (D-108's readability style);
   - saturated blue banners.
 - **Tests:** the 13 art fixtures pass 315/315 at b41. No layout, route or gameplay code changed.
+
+## 6f. Launchers, pits and the L006–L010 visual QA, 2026-10-17 (builds b42–b47, D-153 amendment 4)
+
+- **Review:** five reviewers, one per level, run one at a time. Report: `~/Parallax_batch_tools/PAX-A18/review6/REPORT.md`.
+- **Fixed:**
+  - square launchers;
+  - pits too dark, and then, at the lighter tone, flat with no depth;
+  - roof and ceiling holes showing sky (L006–L009);
+  - L008's sky strip, sky window and haze edge;
+  - L010's lavender ceiling strip;
+  - L009's floating cap chunks;
+  - grey slabs (an L006 tell);
+  - box-like heaps;
+  - the scenery-like storm cloud.
+- **Left (art or design, not code):**
+  - long uniform spike rows (a gap would lie about a lethal row);
+  - background sprites' halo mattes;
+  - L010's moon blob;
+  - L008's door halo hue;
+  - L007's near pillar seen through slabs;
+  - mid-face seams and straight cut ends case by case;
+  - L007's spike strip spanning a gap after a drop (a layout question).
+- **Tests:** the 13 art fixtures plus RoomDeathHoldTests pass 326/326 at b47.

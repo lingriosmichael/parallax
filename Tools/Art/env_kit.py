@@ -157,7 +157,9 @@ def vertical_fade(width, height):
 # untextured fills that read as felt ... redder than the stone ... the cat disappears against them"): the room's own stone
 # in shadow, its hue (about 36 degrees) and most of its texture, just under a lit face's brightness, still under the dark
 # iron's dead zone (D-108: the spikes' bright edges read against it).
-RECESS_MEAN = np.array([0.31, 0.245, 0.165], np.float32)   # the back wall's average colour (sRGB)
+# The developer, 2026-10-17 (after playing L001-L005): "make it slighty brighter and not so dark so its easier to tell that its
+# caved in" (was 0.31, 0.245, 0.165).
+RECESS_MEAN = np.array([0.355, 0.28, 0.19], np.float32)   # the back wall's average colour (sRGB)
 RECESS_CONTRAST = 0.75
 RECESS_BLUR = 2   # px: a little softer than the stone in front (depth), not smeared
 
@@ -176,13 +178,38 @@ def recess_lip(wall, ppu):
     a = wall[:h].copy()
     rng = np.random.default_rng(1871)
     n = env_bumpy.fractal(w, rng, max(1, int(w / ppu / 1.2)), max(2, int(w / ppu / 0.15)), 1.0)   # broken: neither a zig-zag nor a wave
-    n = (n - n.min()) / max(1e-4, n.max() - n.min())
+    # 2026-10-18 visual review ("the top edge of the set-back wall is a regular sawtooth ... a little mountain range"): stones
+    # broken out of it, flat-bottomed steps of random width and depth over the fine break, so no rhythm shows.
+    steps = np.zeros(w, np.float32)
+    x = 0
+    while x < w:
+        run = int(rng.uniform(0.25, 0.9) * ppu)
+        if rng.random() < 0.45: steps[x:x + run] = rng.uniform(0.4, 1.0)
+        x += run
+    n = 0.55 * (n - n.min()) / max(1e-4, n.max() - n.min()) + 0.45 * steps
     cut = (RECESS_LIP_ABOVE - RECESS_LIP_REACH + n * 2 * RECESS_LIP_REACH) * ppu
     y = np.arange(h, dtype=np.float32)[:, None]
     a[..., 3] = np.clip(y - cut[None, :] + 0.5, 0, 1) * np.clip((h - y) / (0.12 * ppu), 0, 1)
     rim = np.clip(1 - (y - cut[None, :]) / 4.0, 0, 1)
-    a[..., :3] *= (1 - 0.3 * rim)[..., None]
+    a[..., :3] *= (1 - 0.5 * rim)[..., None]   # the break in shadow (0.3 read as a pale crest)
     return a
+
+
+def defringe(a, radius=4, floor=0.15, ceil=0.85):
+    """A cut-out piece's soft edge without the sheet's pale backdrop baked into it (2026-10-17 visual review, L009/L010: "pale
+    rounded halo mattes with visible boundaries against the clouds"): every pixel short of opaque takes the colour of the
+    opaque painting just inside it, and the faintest fringe (alpha under `floor`) goes."""
+    out = a.copy()
+    solid = (a[..., 3] >= ceil).astype(np.float32)
+    def soft(ch):
+        img = Image.fromarray((np.clip(ch, 0, 1) * 255 + 0.5).astype(np.uint8), "L").filter(ImageFilter.GaussianBlur(radius))
+        return np.asarray(img, np.float32) / 255
+    weight = soft(solid)
+    inner = np.dstack([soft(a[..., c] * solid) for c in range(3)]) / np.maximum(weight[..., None], 1e-4)
+    edge = (a[..., 3] < ceil) & (weight > 1e-3)
+    out[..., :3] = np.where(edge[..., None], inner, out[..., :3])
+    out[..., 3] = np.clip((a[..., 3] - floor) / (1 - floor), 0, 1)
+    return out
 
 
 def recess(a, radius=RECESS_BLUR):
@@ -289,7 +316,14 @@ def build():
     e = load("ENV-11")
     body_top, body_bottom = 452, 595
     k = 0.5 * WORLD_PPU / (body_bottom - body_top)
-    strip = e[408:688]
+    strip = e[408:688].copy()
+    # 2026-10-17 visual review (L005: "small pit-rim ledges are greyer and desaturated ... a different material"; L006: the slab
+    # trap "is cooler and greyer than the warm ground ... you can spot the trap by colour"): the slab's body graded to the
+    # room fill's colour under the stone tint (SoloRoomSkin.Body; the slab draws untinted), per channel, gains held to 0.75-1.35.
+    body = strip[body_top - 408:body_bottom - 408, :, :3]
+    target = play["ENV_Fill_A"][..., :3].reshape(-1, 3).mean(0) * np.array([0.9, 0.87, 0.82], np.float32)
+    gain = np.clip(target / np.maximum(body.reshape(-1, 3).mean(0), 1e-3), 0.75, 1.35)
+    strip[..., :3] = np.clip(strip[..., :3] * gain, 0, 1)
     put(play, "ENV_Slab", scale(crossfade(strip[:, 330:1230], 60, 1), k), WORLD_PPU, kind="strip", normal=True,
         above=round((body_top - 408) * k / WORLD_PPU, 4))
     put(play, "ENV_SlabEnd", scale(strip[:, 32:330], k), WORLD_PPU, kind="end", normal=True,
@@ -399,8 +433,8 @@ def build():
                 # 0.1 goes, 0.1-0.35 ramps in, the island itself is unchanged.
                 piece = piece.copy()
                 piece[..., 3] *= np.clip((piece[..., 3] - 0.1) / 0.25, 0, 1)
-            put(layers, key, piece, HALF_PPU, kind="piece")
-    put(layers, "ENV_MidPillar", tp.trim(load("ENV-15"), 0.05), HALF_PPU, kind="piece")
+            put(layers, key, defringe(piece), HALF_PPU, kind="piece")
+    put(layers, "ENV_MidPillar", defringe(tp.trim(load("ENV-15"), 0.05)), HALF_PPU, kind="piece")
     aq = load("ENV-07c")
     rows = np.nonzero((aq[..., 3] > 0.02).any(axis=1))[0]
     import env_v2 as v2  # noqa: E402

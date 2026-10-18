@@ -4412,3 +4412,108 @@ visual QA review of L001–L005)**
 - **Underside strips fade into their block along a ragged line**, not a straight one.
 - **Ivy curtains on lips:** clusters with real gaps between them, each its own length under the top band, each its own
   light.
+
+**D-153 amendment 4 · 2026-10-17 · Accepted (the developer, after playing L001–L005: launchers "way to square", pits
+"slighty brighter"; then a visual QA of L006–L010, "proceed with fixing all findings")**
+- **Arrow launchers:**
+  - The carved frame fades into the wall along a rounded, ragged line, with no square silhouette.
+  - The mouth is only the slot with a light-bronze lip, no longer a pale-gold rectangle.
+  - The lip and rim keep the mouth at 30 % at 3:1 (D-108).
+- **Pit back walls:**
+  - The recess texture is a little lighter (`RECESS_MEAN` 0.355, 0.28, 0.19), so a cave-in is easy to see.
+  - The wall darkens down the pit, fully in shadow at the hazard's line and below it (`DepthShade` 0.8; L010's chasm).
+- **Recess back walls also go behind holes:**
+  - every hole a falling block leaves in fixed stone (`SoloRoomSkin.Holes`), open on the side it left by;
+  - traps in the room's roof (the masonry over the room closes them).
+- **L008's ruin wall** stands on one base under the sump's floor (-3.6). This closes the sky strip over the walkway and the
+  sky window in the dip.
+- **The masonry's own broken courses** (`Outside_Top`, `Outside_Edge`) are the stone's colour in shadow, not the grade's
+  outside tint. L010's ceiling read as lavender frost. The warm bounce under the roof is halved.
+- **A trap no longer lends its cap** over a neighbour narrower than the cap plus 0.3 u (L009's floating lit chunks).
+- **Slabs:** the slab texture is graded to the room fill's colour (L005's grey ledges, L006's slab trap told by its colour).
+- **Rubble heaps** narrow at the top, a pile rather than a box.
+- **The storm cloud** is darker and cooler than the sky's own clouds.
+- **Testing aid:** RoomDeath.Invincible, toggled by the debug panel's GOD button (Editor and development builds only). No
+  kill lands, and leaving the bounds respawns at the checkpoint with no room reset.
+
+### D-155 · 2026-10-18 · Accepted (the developer, play-testing L003–L005)
+**Decision:**
+1. **Dead ends are optional.** `Band1MinDeadEnds` and `Band2MinDeadEnds` are 0. They were 1 for L001–L005, 2 for L006–L010
+   and 2 for band 2. A level keeps a dead end only where it earns its place.
+2. **L003:**
+   - The near layer's vine-wrapped pillar (ENV_MidPillar) is removed from every level. It read as a platform (L003) and as a
+     column through the slabs (L007).
+   - Tread_D and Spikes_B (T4) are removed.
+   - Tread_R4 and Spikes_R (the dead end) are removed.
+3. **L004:**
+   - Spikes_A (T2) is removed.
+   - RecessC_Hazard now sits just under the risen Sink_R and points down at the cat it carries. A strip inside a rising solid
+     points down.
+   - The band over the roof is masonry: Upper_L, Upper_B, Upper_M, Upper_R.
+   - Step_1 is 0.3 u higher.
+   - Hazards inside a resting trap are hidden until it goes.
+4. **L005:**
+   - Ledge_Lo and Ledge_Lo2, with Spikes_3, Spikes_3b and both T3 routes, are removed. The cat drops from S2 to S1.
+   - S1_A and S1_B1 reach down to the nook's underside.
+   - The Post is 1 u wide.
+   - Ledge_D is 0.25 u higher.
+   - The cloud's ground floor starts at x 10.6.
+5. **L007:** Spikes_GapB is split around S1_T4's hole.
+
+**Why:** the developer, 2026-10-18:
+- "There is absolutely no reason for one to jump on this platform … please just remove them instead."
+- "the one that is higher and on the very left is pointless because jumping on it doesnt take you anywhere but into a trap"
+- "These spikes are pointless in level 004 … So we can maybe remove it for now."
+- "the spikes should be inverted and there is too much white space"
+- "Lets make it fully a wall"
+- "Remove this platform entirely."
+- "In levl 3 I thought I told you to remove this platform that is just hanging there"
+- "If the tests flag it... change the rules make it optional"
+
+### D-156 · 2026-10-18 · Accepted (the developer: "no more diagonal arrow launchers and arrows ... change them to several spaced out vertical arrows that shoot from the top to the bottom. Lets test that out in level 05")
+**Decision:**
+- Arrows may fly straight down or up (±90): `ArrowMath.AllowedAngles` adds ±90 to D-106's angles.
+- A vertical lane (`ArrowLane.Vertical`) leaves the middle of its launcher's bottom (or top) face at `LaneY`, and its tip stops
+  at `LaneEndY`. Its launcher's carved frame turns with it.
+- New diagonal launchers aren't added. Existing ones are replaced level by level, starting with L005: the corbel's Arrow_Drip
+  (-60) and Arrow_X (-45) become three roof launchers (Arrow_V1-V3 at x 14, 17, 20) firing down onto S2 together every 120
+  ticks.
+- L005's solution and T1b are rewritten for the volley but not re-validated: the developer tests by hand (2026-10-18).
+
+**D-153 amendment 5 · 2026-10-18 · Accepted (the developer: "review level 11-20 ... proceed with fixing them")**
+- **Fixes after the L011–L020 visual QA** (report: `~/Parallax_batch_tools/PAX-A18/review12/REPORT.md`):
+  - Trims hidden under a resting trap are only caps and undersides. Hiding everything there took whole slab bodies out
+    under slams (L017, L018, L020).
+  - Back walls go behind every spike strip lying in a pit by shape, not only in declared openings.
+  - A shallow trench skips its back wall only when it is a long, uncovered corridor bed (over 6 u).
+  - The slam's plate and the hinge floor's knuckle show from the trap's fire.
+  - Lip drapes form clusters with real gaps.
+  - The recess lip breaks into irregular stepped stones.
+  - The geyser's tell glow is half as strong.
+  - A vine doesn't reach past a trap above it.
+  - A thin fixed floor lying wholly on fixed stone is bedded: it is a block, not a slab.
+  - A slab with no exposed underside takes the flat slab art.
+- **Arrows (D-156):** L004's Arrow_O and Arrow_7 and L007's Arrow_S are now vertical pairs. No diagonal launchers remain in
+  L001–L020; the Trap Lab keeps its angle fixtures.
+
+**D-153 amendment 6 · 2026-10-18 · Accepted (the developer: "Finish fixing everything")**
+- **The rest of the L011–L020 visual QA:**
+  - A vertical solid mover keeps its neighbours' notches filled over the span of their faces it covers through its whole travel
+    (L011's Riser left sky slivers beside it as it rose).
+  - A hole a falling block leaves cuts its host's stone beside it at the hole's height only (L012: two sky squares over Drop_3's
+    corners).
+  - The masonry under the room fills the air under the room's lowest fixed stone where that stops at most 2 u short of the
+    room's bottom and the gap is walled at both ends (`SoloRoomSkin.UnderFill`); that stone shows no underside there (L013's
+    start floor had sky windows under it).
+  - A spike strip hung flush under stone (a ceiling recess's spikes) is never a pit: it drew a back wall from the ceiling down
+    to the floor below (L016, L020).
+  - A lit recess is in shadow at its closed end and down its sides, so it reads as a hole, not more face (L016's ceiling spikes
+    looked stuck in the wall after CC_1 gave way).
+  - An upright hung under a slab or a roof takes its light from where it hangs. It isn't shaded as the deep face of the slab's
+    column (L019's thin jambs read as slate; L020's vine bracket was a dark stub).
+  - The geyser vent's terracotta is pulled toward the walls' stone (40 % of its colour). It still warms through its tell.
+- **Left as they are:**
+  - Launchers on small posts: their posts are layout.
+  - The haze and the background ruins at walkway level: as in L001–L005.
+  - The walked undersides' straight rims in flip rooms: a cat stands on them.
+  - L006's plinth crush: not reproduced.

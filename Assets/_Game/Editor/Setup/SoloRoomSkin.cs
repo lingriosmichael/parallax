@@ -33,6 +33,8 @@ namespace Parallax.Editor.Setup
         /// STRIP_BLEND, so it covers the neighbour's whole side strip), and how far its lent cap runs (past a broken top corner,
         /// ENV_CapEnd's 0.45 u).</summary>
         const float ReachPastStrip = 0.18f, CapReach = 0.5f;
+        /// <summary>An underside with stone closer under it than this (world units) gets no hanging underside strip.</summary>
+        const float ShallowOverhang = 0.3f;
         /// <summary>2026-10-17: how far a vine's drawn top may reach up to the stone over its grab box, and how far into it.</summary>
         const float VineReachUp = 4f, VineIntoStone = 0.08f;
         const float ZFill = -0.005f, ZSide = -0.010f, ZUnder = -0.011f, ZCap = -0.012f, ZDrape = -0.015f, ZPanel = -0.02f, ZMoss = -0.025f;
@@ -48,10 +50,13 @@ namespace Parallax.Editor.Setup
             /// <summary>PAX-106 (D-110 amendment 4): its side faces can be held (a grip wall, or a grip falling block), so they wear
             /// the moss carpet.</summary>
             public readonly bool Grip;
-            public Solid(string name, Rect rect, bool trap, SoloRoomElementKind kind, bool shrinks = false, bool grip = false) { Name = name; Rect = rect; Trap = trap; Kind = kind; Shrinks = shrinks; Grip = grip; }
+            /// <summary>2026-10-18 visual review (L020: "the walkway slab is drawn as its own one-course slab on top of the
+            /// full-height wall"): a thin fixed floor lying wholly on fixed stone is that stone's top course, a block, not a slab.</summary>
+            public readonly bool Bedded;
+            public Solid(string name, Rect rect, bool trap, SoloRoomElementKind kind, bool shrinks = false, bool grip = false, bool bedded = false) { Name = name; Rect = rect; Trap = trap; Kind = kind; Shrinks = shrinks; Grip = grip; Bedded = bedded; }
             public Shape Shape =>
                 Kind == SoloRoomElementKind.PitBottom ? Shape.PitBottom
-                : Rect.height <= 0.55f && Rect.width > Rect.height ? Shape.Slab
+                : Rect.height <= 0.55f && Rect.width > Rect.height && !Bedded ? Shape.Slab
                 // D-111 (the developer, 2026-10-04: "give the walls that are falling a similar look and art as the floor"): a
                 // falling block is never a column; it wears the floor's stone, fill and edges.
                 : Kind == SoloRoomElementKind.FallingBlock ? Shape.Block
@@ -99,6 +104,15 @@ namespace Parallax.Editor.Setup
                         if (e.Settings.Arrow.IsConfigured && e.Settings.Arrow.Disguised) list.Add(new Solid(e.Name, rect, true, e.Kind));
                         break;
                 }
+            }
+            // A thin fixed floor wholly on fixed stone is bedded (a block: Solid.Bedded).
+            for (int i = 0; i < list.Count; i++)
+            {
+                Solid t = list[i];
+                if (t.Trap || t.Rect.height > 0.55f) continue;
+                float under = list.Where(o => !o.Trap && o.Name != t.Name && Mathf.Abs(o.Rect.yMax - t.Rect.yMin) < Eps)
+                    .Sum(o => Mathf.Max(0f, Mathf.Min(o.Rect.xMax, t.Rect.xMax) - Mathf.Max(o.Rect.xMin, t.Rect.xMin)));
+                if (under >= t.Rect.width - Eps) list[i] = new Solid(t.Name, t.Rect, t.Trap, t.Kind, t.Shrinks, t.Grip, bedded: true);
             }
             // The room's side walls (SoloRoomBuilder.BuildRoomCore).
             list.Add(new Solid("Wall_Left", new Rect(room.Origin + new Vector2(-1f, -4f), new Vector2(1f, 12f)), false, SoloRoomElementKind.Wall));
@@ -221,7 +235,7 @@ namespace Parallax.Editor.Setup
         }
 
         // PAX-107: a fixed solid's fill, less every falling block flush inside it (LeavesHole): strips left and right of each
-        // block at full height, and above and below it at its width.
+        // block at its height, and above and below it at full width.
         static List<Rect> FillPieces(Solid s, SoloRoomDefinition room) => Cut(s.Rect, Holes(s, room));
 
         // 2026-10-17 (the developer: "when things fall from the ceiling everything is straight"): a fill piece beside a hole stops
@@ -240,7 +254,7 @@ namespace Parallax.Editor.Setup
         }
 
         // PAX-107: the falling blocks flush inside this fixed solid that leave a hole (LeavesHole).
-        static List<Rect> Holes(Solid s, SoloRoomDefinition room)
+        internal static List<Rect> Holes(Solid s, SoloRoomDefinition room)
         {
             var holes = new List<Rect>();
             if (s.Trap) return holes;
@@ -252,7 +266,7 @@ namespace Parallax.Editor.Setup
             return holes;
         }
 
-        // `r` less every hole: strips left and right of each at r's full height, and above and below it at its width.
+        // `r` less every hole: strips left and right of each at its height, and above and below it at r's full width.
         static List<Rect> Cut(Rect r, List<Rect> holes)
         {
             var pieces = new List<Rect> { r };
@@ -262,11 +276,15 @@ namespace Parallax.Editor.Setup
                 foreach (Rect p in pieces)
                 {
                     if (!p.Overlaps(hole)) { next.Add(p); continue; }
+                    // 2026-10-18 visual review (L012: "square holes through the walkway slab" over Drop_3's corners): the strips
+                    // beside it at its height only, so their inset behind its broken rim (HoleInsets) stops where it does; above
+                    // and below it at the piece's whole width.
                     float x0 = Mathf.Max(p.xMin, hole.xMin), x1 = Mathf.Min(p.xMax, hole.xMax);
-                    if (x0 - p.xMin > Eps) next.Add(Rect.MinMaxRect(p.xMin, p.yMin, x0, p.yMax));
-                    if (p.xMax - x1 > Eps) next.Add(Rect.MinMaxRect(x1, p.yMin, p.xMax, p.yMax));
-                    if (hole.yMin - p.yMin > Eps) next.Add(Rect.MinMaxRect(x0, p.yMin, x1, hole.yMin));
-                    if (p.yMax - hole.yMax > Eps) next.Add(Rect.MinMaxRect(x0, hole.yMax, x1, p.yMax));
+                    float y0 = Mathf.Max(p.yMin, hole.yMin), y1 = Mathf.Min(p.yMax, hole.yMax);
+                    if (x0 - p.xMin > Eps) next.Add(Rect.MinMaxRect(p.xMin, y0, x0, y1));
+                    if (p.xMax - x1 > Eps) next.Add(Rect.MinMaxRect(x1, y0, p.xMax, y1));
+                    if (y0 - p.yMin > Eps) next.Add(Rect.MinMaxRect(p.xMin, p.yMin, p.xMax, y0));
+                    if (p.yMax - y1 > Eps) next.Add(Rect.MinMaxRect(p.xMin, y1, p.xMax, p.yMax));
                 }
                 pieces = next;
             }
@@ -505,6 +523,7 @@ namespace Parallax.Editor.Setup
             Bounds content = SoloRoomBuilder.ComputeRoomBounds(room, 0f);
             List<Edge> allEdges = ExposedEdges(solids);
             List<Edge> edges = allEdges.Where(e => !FacesOut(e, content, room)).ToList();
+            List<Solid> fixedSolids = solids.Where(o => !o.Trap).ToList();
             // 2026-10-17 visual review (L001: "each top is a ruler-straight, flat, dark, featureless band ... no lit cap"): a block
             // that falls from inside the stone over it has a top no one sees until it falls; it gets its lit course anyway,
             // shown once it has left (ShownAtRest, whenMoved).
@@ -539,7 +558,11 @@ namespace Parallax.Editor.Setup
                         float k = r.height / 0.5f, h = slab.height * k, above = slab.above * k;
                         float cy = r.yMax + above - h * 0.5f;
                         // PAX-A18 W3: a hanging, broken underside where no cat stands on it; the flat one in a flip room.
-                        string slabSlot = flips && EnvironmentKit.Get("ENV_SlabFlip") != null ? "ENV_SlabFlip" : "ENV_Slab";
+                        // 2026-10-18 visual review (L020: "its wavy, light underside rim and an evenly spaced row of moss drips run
+                        // horizontally through the middle of the solid masonry"): a slab lying on stone (no underside exposed) takes the
+                        // flat one too; its hanging underside drew across the wall under it.
+                        bool slabCovered = !mine.Any(e => e.Side == Side.Bottom);
+                        string slabSlot = (flips || slabCovered) && EnvironmentKit.Get("ENV_SlabFlip") != null ? "ENV_SlabFlip" : "ENV_Slab";
                         // PAX-A18 W3: broken ends within BandReach of the face (their `outside`); the right one is the thick end
                         // (a chunk hanging under it) where no cat stands under the slab. 2026-10-16: on every slab from 0.5 u (shorter
                         // ones were hard-cut rectangles), and the slab's strip stops where each end's stone begins, so the end's notches
@@ -653,6 +676,10 @@ namespace Parallax.Editor.Setup
                     }
                     case Side.Bottom:
                         if (Thick(s, e)) break;
+                        // 2026-10-17 visual review ("a dead-straight horizontal seam through the big slab ... as if it were a lip"):
+                        // an underside with stone just under it (closer than ShallowOverhang) is a joint in the wall, not a ledge;
+                        // no hanging underside there (its drapes already need 2.2 u of air, ClearBelow).
+                        if (ClearBelow(e, fixedSolids) < ShallowOverhang) break;   // (fixed stone: over a trap it shows once the trap goes)
                         Tint(Add(s, "Under_" + Idx(e), under.name, new Vector2(mid, e.Line - under.below + under.height * 0.5f), new Vector2(e.Length, under.height),
                             new Vector2(under.width, under.height), new Vector4(mid, under.height * 0.5f, 1f, 1f), false, ZUnder, true, under.name == "ENV_UnderWalk" ? "UnderWalk" : "Under"), face);
                         break;
@@ -763,13 +790,17 @@ namespace Parallax.Editor.Setup
             (float top, float bottom) Column(Solid s, float x)
             {
                 float top = s.Rect.yMax, bottom = s.Rect.yMin;
+                // 2026-10-18 visual review (L019: "cold slate hanging columns"): an upright hung under a slab or a roof is lit from
+                // where it hangs, not shaded as the deep face of the slab's whole column (a thin pillar against the sky read as
+                // slate); its top meets the slab's unshaded underside.
+                bool upright = s.Kind == SoloRoomElementKind.Wall;
                 for (bool grew = true; grew;)
                 {
                     grew = false;
                     foreach (Solid o in solids)
                     {
                         if (o.Shape is not (Shape.Block or Shape.PitBottom or Shape.Slab) || o.Rect.xMin >= x || o.Rect.xMax <= x) continue;
-                        if (o.Rect.yMin <= top + Eps && o.Rect.yMax > top + Eps) { top = o.Rect.yMax; grew = true; }
+                        if (o.Rect.yMin <= top + Eps && o.Rect.yMax > top + Eps && !(upright && o.Kind != SoloRoomElementKind.Wall)) { top = o.Rect.yMax; grew = true; }
                         if (o.Rect.yMax >= bottom - Eps && o.Rect.yMin < bottom - Eps) { bottom = o.Rect.yMin; grew = true; }
                     }
                 }
@@ -781,6 +812,10 @@ namespace Parallax.Editor.Setup
                 if (s.Shape is not (Shape.Block or Shape.PitBottom) || faceShade == null || shadeSolid == null) return (0f, 0f, false);
                 if (!s.Trap && roomRoot.Find(s.Name)?.GetComponent<SpriteRenderer>() == null) return (0f, 0f, false);
                 (float top, float bottom) = Column(s, x);
+                // An upright hung under a slab or a roof (Column stops at its top) has no lit top to fall away from: unshaded,
+                // like the underside it hangs from.
+                if (s.Kind == SoloRoomElementKind.Wall && solids.Any(o => o.Kind != SoloRoomElementKind.Wall && o.Shape is Shape.Block or Shape.Slab
+                    && Mathf.Abs(o.Rect.yMin - top) < Eps && o.Rect.xMin < x && o.Rect.xMax > x)) return (0f, 0f, false);
                 // A pit's floor with nothing on it lies down in the shadow already: shaded whole, from its top.
                 if (s.Shape == Shape.PitBottom && top <= s.Rect.yMax + Eps) return (s.Rect.yMax, 0f, true);
                 float start = ShadeStart;
@@ -792,6 +827,16 @@ namespace Parallax.Editor.Setup
             // 2026-10-16: a fixed block's face against a trap keeps its broken strip (ExposedEdges), whose notches cut into the
             // block. While the trap is there its own stone fills them: the trap's skin reaches DeepReach into the neighbour (the
             // same world-tiled stone, so nothing changes) and leaves with it, baring the broken face.
+            // The heights a vertical solid mover's side covers at every point of its travel (none for any other trap).
+            (float, float) AlwaysCovered(Solid s)
+            {
+                SoloRoomElement e = room.Elements.FirstOrDefault(x => x.Name == s.Name);
+                if (e.Kind != SoloRoomElementKind.MovingTrap || e.Settings.MovingKind != MovingTrapKind.Solid || Mathf.Abs(e.Settings.Offset.x) > Eps
+                    || Mathf.Abs(e.Settings.Offset.y) <= Eps || e.Settings.Floor.Hinges) return (0f, 0f);
+                float dy = e.Settings.Offset.y;
+                return (Mathf.Max(s.Rect.yMin, s.Rect.yMin + dy), Mathf.Min(s.Rect.yMax, s.Rect.yMax + dy));
+            }
+
             void TrapReach(Solid s)
             {
                 Sprite fillSprite = FillSprite(room);
@@ -812,7 +857,9 @@ namespace Parallax.Editor.Setup
                         Rect q = right ? Rect.MinMaxRect(face, y0, face + lend, y1) : Rect.MinMaxRect(face - lend, y0, face, y1);
                         // And over its broken top corner, where the two tops are one line: the neighbour's cap runs on under the
                         // trap's (a broken corner beside the trap's whole top was a step in the lit lip).
-                        if (!host && cap != null && f.Shape != Shape.Slab && Mathf.Abs(f.Rect.yMax - s.Rect.yMax) < Eps)
+                        // (2026-10-17 visual review, L009: on a post no wider than the cap, it stood out past the post as a floating
+                        // lit chunk: only over a top wide enough to continue, CapReach + 0.3.)
+                        if (!host && cap != null && f.Shape != Shape.Slab && Mathf.Abs(f.Rect.yMax - s.Rect.yMax) < Eps && f.Rect.width >= CapReach + 0.3f)
                         {
                             float cx = right ? face + CapReach * 0.5f : face - CapReach * 0.5f, cy = f.Rect.yMax + cap.above - cap.height * 0.5f;
                             Add(s, (right ? "ReachCapR_" : "ReachCapL_") + f.Name, cap.name, new Vector2(cx, cy), new Vector2(CapReach, cap.height),
@@ -831,6 +878,17 @@ namespace Parallax.Editor.Setup
                         // (Shaded where it stands by the room's StoneShade map, like the neighbour's own stone.)
                         Tint(Add(s, (right ? "ReachR_" : "ReachL_") + f.Name, fillSprite.name, q.center, q.size, fillSprite.bounds.size, new Vector4(q.center.x, q.center.y, 1f, 1f),
                             false, ZSide - 0.001f, true, "Fill"), body);
+                        // 2026-10-18 visual review (L011: "sky slivers between abutting bodies" beside the Riser): a mover sliding
+                        // straight up or down along the face still covers it over the span it never leaves; there the neighbour's
+                        // own stone fills its notches for good (the lent stone hides once the mover leaves its rest).
+                        (float c0, float c1) = AlwaysCovered(s);
+                        float k0 = Mathf.Max(y0, c0), k1 = Mathf.Min(y1, c1);
+                        if (k1 - k0 > 0.1f)
+                        {
+                            Rect kq = Rect.MinMaxRect(q.xMin, k0, q.xMax, k1);
+                            Tint(Add(f, (right ? "KeptR_" : "KeptL_") + s.Name, fillSprite.name, kq.center, kq.size, fillSprite.bounds.size, new Vector4(kq.center.x, kq.center.y, 1f, 1f),
+                                false, ZSide - 0.001f, true, "Fill"), body);
+                        }
                     }
             }
 
@@ -884,6 +942,14 @@ namespace Parallax.Editor.Setup
                     }
                 // Softened across a change of column (a step in the stone's top), so it's never a straight line down the stone.
                 face = BoxBlurRows(spread, w, h, Mathf.RoundToInt(ShadeSoften * Ppu));
+                // The masonry filling under the room's lowest stone (UnderFill) goes on in that stone's shadow.
+                foreach (Rect f in UnderFill(room))
+                {
+                    int i0 = Mathf.Max(0, Mathf.FloorToInt((f.xMin - area.xMin) * Ppu)), i1 = Mathf.Min(w - 1, Mathf.CeilToInt((f.xMax - area.xMin) * Ppu));
+                    int j0 = Mathf.Max(0, Mathf.FloorToInt((f.yMin - area.yMin) * Ppu)), jTop = Mathf.Clamp(Mathf.RoundToInt((f.yMax - area.yMin) * Ppu), 0, h - 1);
+                    for (int i = i0; i <= i1; i++)
+                        for (int j = j0; j < jTop; j++) face[j * w + i] = Mathf.Max(face[j * w + i], face[jTop * w + i]);
+                }
                 var outside = new float[w * h];
                 for (int j = 0; j < h; j++)
                     for (int i = 0; i < w; i++)
@@ -991,8 +1057,30 @@ namespace Parallax.Editor.Setup
                         {
                             Bounds b = r.bounds;
                             float over = Mathf.Min(b.max.x, t.Rect.xMax) - Mathf.Max(b.min.x, t.Rect.xMin);
-                            if (b.min.y < line - Eps && b.max.y > line + Eps && over >= 0.6f * b.size.x) covered.Add(r);
+                            // Only a lit course or an underside strip (Cap*, Under*): a slab's body is one "Slab" sprite, and hiding it
+                            // took the whole slab out wherever a trap rested against it (2026-10-18, L017's slams).
+                            bool course = r.name.StartsWith("Cap") || r.name.StartsWith("Under");
+                            if (course && b.min.y < line - Eps && b.max.y > line + Eps && over >= 0.6f * b.size.x) covered.Add(r);
                         }
+                    }
+                    // 2026-10-18 (the developer, L004: "Look how weird it looks"): a static hazard hidden in the trap's box (a kill strip
+                    // in the recess behind Roof_4 or under Sink_R) drew over the trap's skin; it shows once the trap has gone.
+                    // (hidden only: SpikeArt shows its own blades, and keeps its legacy strip off)
+                    var blades = new List<SpriteRenderer>();
+                    foreach (SoloRoomElement h in room.Elements.Where(x => x.Kind == SoloRoomElementKind.Hazard))
+                    {
+                        var hr = new Rect(room.Origin + h.Position - h.Size * 0.5f, h.Size);
+                        Transform art = artRoot != null ? artRoot.Find(h.Name) : null;
+                        if (art == null || !(t.Rect.Contains(hr.min + Vector2.one * Eps) && t.Rect.Contains(hr.max - Vector2.one * Eps))) continue;
+                        blades.AddRange(art.GetComponentsInChildren<SpriteRenderer>(true));
+                    }
+                    if (blades.Count > 0)
+                    {
+                        ShownAtRest hide = Child(env, "InTrap_" + t.Name, layer).gameObject.AddComponent<ShownAtRest>();
+                        TrapKitSetup.Write(hide, changes, ("owner", owner), ("rest", (Vector2)owner.transform.position), ("whenGone", true), ("hideOnly", true));
+                        SetupUtility.SetArray(hide, "renderers", blades.Cast<Object>().ToArray(), changes);
+                        hide.Apply();
+                        changes.Add($"{blades.Count} hazard sprites in {t.Name} show once it has gone");
                     }
                     if (covered.Count == 0) continue;
                     ShownAtRest gone = Child(env, "UnderTrap_" + t.Name, layer).gameObject.AddComponent<ShownAtRest>();
@@ -1018,8 +1106,12 @@ namespace Parallax.Editor.Setup
                     if (anchorArt == null || midArt == null || midArt.drawMode != SpriteDrawMode.Tiled) continue;
                     Bounds knot = anchorArt.bounds;
                     float x = knot.center.x, top = knot.max.y;
-                    float above = solids.Where(o => !o.Trap && o.Rect.xMin < x && o.Rect.xMax > x && o.Rect.yMin >= top - Eps)
-                        .Select(o => o.Rect.yMin).DefaultIfEmpty(float.MaxValue).Min();
+                    // The nearest stone over it; a trap there (a slam, a falling block) stops it: no reach past something that moves
+                    // (2026-10-18 visual review, L014: a vine run up through a slam's plate to the stone behind it).
+                    Solid? over = solids.Where(o => o.Rect.xMin < x && o.Rect.xMax > x && o.Rect.yMin >= top - Eps)
+                        .OrderBy(o => o.Rect.yMin).Cast<Solid?>().FirstOrDefault();
+                    if (!over.HasValue || over.Value.Trap) continue;
+                    float above = over.Value.Rect.yMin;
                     if (above - top > VineReachUp || above - top < Eps) continue;
                     float reachTop = above + VineIntoStone;
                     Transform holder = Child(env, "VineReach_" + v.Name, layer);
@@ -1119,7 +1211,7 @@ namespace Parallax.Editor.Setup
         /// outside masonry's columns stand against it, so it isn't broken (its notches would show the air between them).</summary>
         static bool FacesOut(Edge e, Bounds content, SoloRoomDefinition room)
         {
-            if (FacesOut(e, content)) return true;
+            if (FacesOut(e, content) || FacesUnderFill(e, room)) return true;
             bool right = e.Side == Side.Right && e.Line >= room.Origin.x + room.Width - Eps, left = e.Side == Side.Left && e.Line <= room.Origin.x + Eps;
             if (!right && !left) return false;
             // Only up to the outside's column there (EnvironmentStackSetup.Outside): the wall's top, or the frame where the room's
@@ -1127,6 +1219,77 @@ namespace Parallax.Editor.Setup
             bool roofed = Solids(room).Any(s => s.Kind == SoloRoomElementKind.Ceiling && s.Rect.yMax >= content.max.y - 0.05f
                 && (left ? s.Rect.xMin <= room.Origin.x + 0.05f : s.Rect.xMax >= room.Origin.x + room.Width - 0.05f));
             return roofed || e.To <= room.Origin.y + 8f + Eps;
+        }
+
+        /// <summary>The deepest a gap under the room's lowest fixed stone may be and still be filled by the masonry under the room.</summary>
+        public const float MaxUnderFill = 2f;
+        static SoloRoomElement[] underFillFor;
+        static List<Rect> underFill;
+
+        /// <summary>2026-10-18 visual review (L013: "the start floor's rectangular sky windows"): where the room's lowest fixed
+        /// stone at an x stops short of the room's bottom (a 1 u ground beside pits sunk 1.5 u), the air under it is no play space;
+        /// the masonry under the room fills it (EnvironmentStackSetup.Outside), and the stone over it shows no underside there.
+        /// Not under a trap (its fall or travel must show), nor over a gap deeper than MaxUnderFill.</summary>
+        public static List<Rect> UnderFill(SoloRoomDefinition room)
+        {
+            if (underFillFor == room.Elements && underFill != null) return underFill;
+            const float Step = 0.05f;
+            List<Solid> solids = Solids(room);
+            float bottom = SoloRoomBuilder.ComputeRoomBounds(room, 0f).min.y, x0 = room.Origin.x, x1 = room.Origin.x + room.Width;
+            var fills = new List<Rect>();
+            float runFrom = x0, runTop = float.NaN;
+            for (float x = x0; x <= x1 + 1e-4f; x += Step)
+            {
+                float top = float.NaN;
+                if (x < x1 - 1e-4f)
+                {
+                    float mid = x + Step * 0.5f;
+                    List<Solid> here = solids.Where(s => s.Rect.xMin < mid && s.Rect.xMax > mid).ToList();
+                    if (here.Count > 0)
+                    {
+                        Solid lowest = here.OrderBy(s => s.Rect.yMin).First();
+                        float gap = lowest.Rect.yMin - bottom;
+                        if (!lowest.Trap && gap > 0.02f && gap <= MaxUnderFill) top = lowest.Rect.yMin;
+                    }
+                }
+                bool same = float.IsNaN(top) ? float.IsNaN(runTop) : !float.IsNaN(runTop) && Mathf.Abs(top - runTop) < 1e-3f;
+                if (same) continue;
+                if (!float.IsNaN(runTop) && x - runFrom > 0.04f) fills.Add(Rect.MinMaxRect(runFrom, bottom, Mathf.Min(x, x1), runTop));
+                runFrom = x; runTop = top;
+            }
+            // Only a gap walled at both ends (fixed stone down to the room's bottom, another fill, or the room's side): under a
+            // bridge over an open chasm the air is the chasm's.
+            bool Walled(Rect f, bool left)
+            {
+                float edge = left ? f.xMin : f.xMax;
+                if (left ? edge <= x0 + 0.06f : edge >= x1 - 0.06f) return true;
+                if (fills.Any(o => o != f && Mathf.Abs((left ? o.xMax : o.xMin) - edge) < 0.06f)) return true;
+                return solids.Any(s => !s.Trap && Mathf.Abs((left ? s.Rect.xMax : s.Rect.xMin) - edge) < 0.06f && s.Rect.yMin <= f.yMin + 0.05f && s.Rect.yMax >= f.yMax - 0.05f);
+            }
+            for (bool dropped = true; dropped;)
+            {
+                List<Rect> keep = fills.Where(f => Walled(f, true) && Walled(f, false)).ToList();
+                dropped = keep.Count < fills.Count;
+                fills = keep;
+            }
+            underFillFor = room.Elements; underFill = fills;
+            return fills;
+        }
+
+        /// <summary>Whether the air just outside edge `e` (all along it) lies in the masonry filling under the room.</summary>
+        static bool FacesUnderFill(Edge e, SoloRoomDefinition room)
+        {
+            List<Rect> fills = UnderFill(room);
+            if (fills.Count == 0) return false;
+            bool Inside(Vector2 p) => fills.Any(f => f.xMin - Eps <= p.x && p.x <= f.xMax + Eps && f.yMin - Eps <= p.y && p.y <= f.yMax + Eps);
+            Vector2 At(float t) => e.Side switch
+            {
+                Side.Bottom => new Vector2(Mathf.Lerp(e.From, e.To, t), e.Line - 0.02f),
+                Side.Top => new Vector2(Mathf.Lerp(e.From, e.To, t), e.Line + 0.02f),
+                Side.Left => new Vector2(e.Line - 0.02f, Mathf.Lerp(e.From, e.To, t)),
+                _ => new Vector2(e.Line + 0.02f, Mathf.Lerp(e.From, e.To, t)),
+            };
+            return Inside(At(0.02f)) && Inside(At(0.5f)) && Inside(At(0.98f));
         }
 
         static bool FacesOut(Edge e, Bounds content) => e.Side switch

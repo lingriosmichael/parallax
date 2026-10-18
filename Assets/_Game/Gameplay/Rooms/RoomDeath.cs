@@ -55,6 +55,11 @@ namespace Parallax.Gameplay.Rooms
         public bool IsRoomLive(int roomId) => rooms != null && rooms.IsLive(roomId);
         public event Action<DeathInfo> Died;
 
+        /// <summary>Testing aid (the developer, 2026-10-17: "invicibility mode, when its on I cant die due to anything"): while on,
+        /// no kill lands; leaving the room's bounds puts the cat back at its checkpoint, the room as it is. Set only by the debug
+        /// panel (Parallax.DebugTools, Editor and development builds); off at start, never saved.</summary>
+        public bool Invincible { get; set; }
+
         public bool IsHolding => hold != null && hold.IsHolding;
         // PAX-A13 (§11 R5): the held death, read-only, for its impact effect while the room is frozen (D-058).
         public int HoldTick => IsHolding ? pendingTick : -1;
@@ -86,6 +91,11 @@ namespace Parallax.Gameplay.Rooms
             if (observers == null || checkpoints == null) return;
             ObserverContext observer = observers.Get(observerId);
             if (observer == null || observer.Driver == null || observer.Driver.Kind != InputSourceKind.LocalHuman) return;
+            if (Invincible)
+            {
+                if (cause == DeathCause.OutOfBounds) checkpoints.Respawn(observer);
+                return;
+            }
 
             if (rooms == null || observerId != rooms.SoloReality)
             {

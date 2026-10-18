@@ -21,6 +21,9 @@ namespace Parallax.Presentation
         [Tooltip("Shown while the owner is shown away from its rest (its own trims that its resting place hides: a falling block's " +
             "top course, inside the ceiling it hangs from until it falls).")]
         [SerializeField] bool whenMoved;
+        [Tooltip("Only hide (when the condition is off); never show. For renderers another component shows and hides (a hazard's " +
+            "blades, which SpikeArt draws; switching all of them on drew its unused legacy strip too).")]
+        [SerializeField] bool hideOnly;
 
         public SpriteRenderer Owner => owner;
         public SpriteRenderer[] Renderers => renderers;
@@ -33,7 +36,7 @@ namespace Parallax.Presentation
             bool still = ((Vector2)(owner != null ? owner.transform.position : Vector3.zero) - rest).sqrMagnitude < 1e-6f
                 && owner != null && Mathf.Abs(owner.transform.eulerAngles.z) < 1e-3f;
             bool shown = whenMoved ? visible && !still : (visible && still) != whenGone;
-            foreach (SpriteRenderer r in renderers) if (r != null) r.enabled = shown;
+            foreach (SpriteRenderer r in renderers) if (r != null && (!hideOnly || !shown)) r.enabled = shown;
         }
     }
 }

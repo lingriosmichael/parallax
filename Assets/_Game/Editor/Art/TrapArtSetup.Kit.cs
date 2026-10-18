@@ -161,6 +161,12 @@ namespace Parallax.Editor.Art
         {
             static bool Fixed(SoloRoomElementKind k) => k is SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.GripWall or SoloRoomElementKind.PitBottom;
             var box = new Rect(e.Position - e.Size * 0.5f, e.Size);
+            // 2026-10-18 (the developer, L004's RecessC_Hazard: "the spikes should be inverted"): a strip hidden in a solid that
+            // rises (Sink_R) is met by the cat it carries up from below: it points down, at that cat.
+            foreach (SoloRoomElement h in room.Elements)
+                if (h.Kind == SoloRoomElementKind.MovingTrap && h.Settings.MovingKind == MovingTrapKind.Solid && h.Settings.Offset.y > 0f
+                    && Mathf.Abs(h.Settings.Offset.x) < 1e-3f && new Rect(h.Position - h.Size * 0.5f, h.Size).Contains(box.center))
+                    return true;
             bool above = false, below = false;
             foreach (SoloRoomElement h in room.Elements)
             {

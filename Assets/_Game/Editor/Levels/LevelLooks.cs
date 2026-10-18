@@ -126,7 +126,7 @@ namespace Parallax.Editor.Levels
                 {
                     new Piece("ENV_MidAqueduct", 16f, 0.9f, span: 37f),
                     new Piece("ENV_MidTree_1", 5f, -0.8f),
-                    new Piece("ENV_MidPillar", 27.5f, -3.2f),
+                    // 2026-10-18: the pillar (ENV_MidPillar, 27.5, -3.2) removed; it read as a platform (see NearPalette).
                     new Piece("ENV_FarIsland_2", 16f, 6.4f, 1.5f),
                     new Piece("ENV_Fog", 16f, -0.6f, span: 37f, alpha: 0.6f),
                 },
@@ -137,7 +137,8 @@ namespace Parallax.Editor.Levels
                 Grade = "GoldenHour", Stone = Fill.A2, Dress = new Dressing(0.35f, drapes: true, banners: true, rubble: true, glyphs: true), Signature = "collapsed ruins",
                 Pieces = new[]
                 {
-                    new Piece("ENV_MidPillar", 7f, -3.2f),
+                    // 2026-10-17 visual review ("the tall cracked column is drawn through the platform's lower course"): the near
+                    // pillar (ENV_MidPillar, 7, -3.2) removed; on the near layer it slid behind the slabs wherever the camera went.
                     new Piece("ENV_MidArch_1", 25f, 4f),
                     new Piece("ENV_FarSpire_1", 16f, 3f, 1.5f),
                     new Piece("ENV_FarIsland_1", 29f, 10f, 1.4f),
@@ -149,9 +150,12 @@ namespace Parallax.Editor.Levels
                 Grade = "GoldenHour", Stone = Fill.A, Dress = new Dressing(0.4f, drapes: true, glyphs: true), Signature = "light shafts through the back wall",
                 Pieces = new[]
                 {
-                    // 2026-10-03: 10.8 u apart (no gap between the feathered ends; see L004).
-                    new Piece("ENV_RuinWall", 2f, -0.5f, flip: true), new Piece("ENV_RuinWall", 12.8f, 0.2f), new Piece("ENV_RuinWall", 23.6f, -0.6f, flip: true),
-                    new Piece("ENV_RuinWall", 34.4f, -0.3f),
+                    // 2026-10-03: 10.8 u apart (no gap between the feathered ends; see L004). 2026-10-17 visual review ("a strip of
+                    // sky runs between the background ruin wall's straight bottom edge and the floor", "the floor dip shows a
+                    // window of far sky", "a grey haze strip with a hard edge" where two pieces met at different heights): one
+                    // base for all four, under the sump's floor (-3.6: -2 still stopped partway down the dip).
+                    new Piece("ENV_RuinWall", 2f, -3.6f, flip: true), new Piece("ENV_RuinWall", 12.8f, -3.6f), new Piece("ENV_RuinWall", 23.6f, -3.6f, flip: true),
+                    new Piece("ENV_RuinWall", 34.4f, -3.6f),
                     new Piece("ENV_MidTowers", 20f, 8.5f),
                     new Piece("ENV_Shaft", 11f, 1.5f, alpha: 0.45f),
                     new Piece("ENV_Shaft", 24.5f, 2.5f, alpha: 0.35f),

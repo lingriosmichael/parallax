@@ -556,9 +556,9 @@
     "Bodies/TRAP-04_spike_strip: black shading 43.0%",
     "Bodies/TRAP-05_spear_head: black shading 31.7%",
     "Bodies/TRAP-05_spear_shaft: black shading 21.3%",
-    "Bodies/TRAP-01_launcher_mouth: black shading 38.6%",
+    "Bodies/TRAP-01_launcher_mouth: black shading 59.2%",
     "Bodies/TRAP-02_arrow: black shading 43.5%",
-    "Bodies/TRAP-05_spear: black shading 28.7%",
+    "Bodies/TRAP-05_spear: black shading 31.4%",
     "Bodies/TRAP-05_spear_head: black shading 39.5%",
     "Bodies/TRAP-05_spear_shaft: black shading 25.2%",
     "Bodies/SPIKE_blade_0: black shading 60.8%",
@@ -573,6 +573,7 @@
     "Bodies/SPIKE_blade_9: black shading 56.2%",
     "Bodies/SPIKE_blade_10: black shading 58.9%",
     "Bodies/SPIKE_blade_11: black shading 58.3%",
+    "Bodies/TRAP-03_geyser_vent: black shading 2.5%",
     "Bodies/HINGE_knuckle: black shading 8.7%",
     "Effects/CRACK_0: black shading 11.4%",
     "Effects/CRACK_1: black shading 13.1%",
@@ -892,7 +893,7 @@
     "Bodies/TRAP-01_arrow_launcher": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher_n.png",
       "palette": {
-        "black": 0.0104,
+        "black": 0.0185,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher.png",
@@ -914,7 +915,7 @@
     "Bodies/TRAP-01_launcher_mouth": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_launcher_mouth_n.png",
       "palette": {
-        "black": 0.3861,
+        "black": 0.5917,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_launcher_mouth.png",
@@ -925,8 +926,8 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        189,
-        185
+        187,
+        183
       ],
       "sources": [
         "Art_Source/Traps_ChatGPT/PILOT-02A_launcher_v1.png"
@@ -958,7 +959,7 @@
     "Bodies/TRAP-03_geyser_vent": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-03_geyser_vent_n.png",
       "palette": {
-        "black": 0.012,
+        "black": 0.025,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-03_geyser_vent.png",
@@ -1002,7 +1003,7 @@
     "Bodies/TRAP-05_spear": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_n.png",
       "palette": {
-        "black": 0.2868,
+        "black": 0.3135,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear.png",
@@ -1156,7 +1157,7 @@
     "Bodies/TRAP-09_storm_cloud": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-09_storm_cloud_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.0018,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-09_storm_cloud.png",

@@ -72,7 +72,10 @@ namespace Parallax.Presentation
         // as tall as the floor allows.
         void Fittings()
         {
-            bool shown = skin != null && skin.enabled;
+            // 2026-10-18 visual review (L011-L018: "a bright warm studded brick strip ... pasted onto the dark ceiling undersides";
+            // "the vertical launchers read as copper capsules or pipe fittings stuck on the stone"): the slam's plate and the hinge
+            // floor's knuckle show from the trap's fire on; at rest it's the stone it is disguised as.
+            bool shown = skin != null && skin.enabled && TicksSinceFire >= 0;
             Vector2 size = greyboxBody != null ? greyboxBody.size : Vector2.zero;
             if (plate != null)
             {
