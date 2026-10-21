@@ -99,8 +99,8 @@ namespace Parallax.Tests.EditMode
 
         static bool Skinned(TrapArt art) => art is IHostSkinned s && s.HostSkin.IsSet && art.Trap != null;
 
-        // The element's grey-box area at 128 px per unit, with the cat, every other trap's bodies (PAX-104) and every effect
-        // hidden, except this element's shards on its reveal tick (they are the frame; everything else that starts that tick
+        // The element's grey-box area at 128 px per unit, with the cat, every other trap's bodies (PAX-104), the element's
+        // fittings (PAX-109) and every effect hidden, except this element's shards on its reveal tick (they are the frame; everything else that starts that tick
         // may differ).
         static Color[] Render(TrapArt art, bool startingNow)
         {
@@ -108,6 +108,10 @@ namespace Parallax.Tests.EditMode
             var hidden = new List<Renderer>();
             foreach (CatMotor2D cat in Object.FindObjectsByType<CatMotor2D>(FindObjectsSortMode.None))
                 foreach (Renderer r in cat.GetComponentsInChildren<Renderer>()) if (!r.forceRenderingOff) { r.forceRenderingOff = true; hidden.Add(r); }
+            // PAX-109 (D-153 amendment 5): the element's fittings (a slam's plate, a hinge floor's knuckle) show from its fire
+            // tick, like the effects that start then; they're left out of both frames (TrapArtParityTests checks when they show).
+            foreach (TrapArt.Body b in art.Bodies)
+                if (b.FromFire && b.Art != null && !b.Art.forceRenderingOff) { b.Art.forceRenderingOff = true; hidden.Add(b.Art); }
             foreach (TrapArt other in Object.FindObjectsByType<TrapArt>(FindObjectsSortMode.None))
             {
                 if (other != art)

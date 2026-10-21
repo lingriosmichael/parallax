@@ -19,15 +19,16 @@ namespace Parallax.Tests.EditMode
     {
         const string LevelSelectPath = "Assets/_Game/Scenes/LevelSelect.unity";
         const string LevelsFolder = "Assets/_Game/Scenes/Levels";
+        const string TitlePath = "Assets/_Game/Scenes/Title.unity";
 
         static readonly Type BuildSceneListType = Type.GetType("Parallax.Editor.Setup.BuildSceneList, Parallax.Editor");
 
-        static EditorBuildSettingsScene[] Compute(EditorBuildSettingsScene[] current, IReadOnlyList<string> configScenePaths, string levelsFolder)
+        static EditorBuildSettingsScene[] Compute(EditorBuildSettingsScene[] current, IReadOnlyList<string> configScenePaths, string levelsFolder, bool titleFirst = false)
         {
             Assert.NotNull(BuildSceneListType, "Parallax.Editor.Setup.BuildSceneList not found.");
             MethodInfo method = BuildSceneListType.GetMethod("Compute", BindingFlags.Public | BindingFlags.Static);
             Assert.NotNull(method, "BuildSceneList.Compute not found.");
-            return (EditorBuildSettingsScene[])method.Invoke(null, new object[] { current, configScenePaths, levelsFolder });
+            return (EditorBuildSettingsScene[])method.Invoke(null, new object[] { current, configScenePaths, levelsFolder, titleFirst });
         }
 
         static EditorBuildSettingsScene Scene(string path, bool enabled) => new EditorBuildSettingsScene(path, enabled);
@@ -93,6 +94,48 @@ namespace Parallax.Tests.EditMode
                 result.Select(s => s.path).ToArray());
         }
 
+        // ---------- PAX-108 (D-157): the title scene starts the app ----------
+
+        [Test]
+        public void Compute_WithTitle_PutsTitleFirst_ThenLevelSelect_AndKeepsOneOfEach()
+        {
+            var current = new[]
+            {
+                Scene(TitlePath, false), // a stray earlier placement, wrong enabled state
+                Scene("Assets/_Game/Scenes/Sandbox_Realities.unity", true),
+            };
+            var configScenePaths = new[] { LevelsFolder + "/Level_001.unity" };
+
+            EditorBuildSettingsScene[] result = Compute(current, configScenePaths, LevelsFolder, true);
+
+            CollectionAssert.AreEqual(
+                new[] { TitlePath, LevelSelectPath, LevelsFolder + "/Level_001.unity", "Assets/_Game/Scenes/Sandbox_Realities.unity" },
+                result.Select(s => s.path).ToArray());
+            Assert.IsTrue(result[0].enabled, "Title must be enabled: the player starts on it");
+            Assert.IsTrue(result[1].enabled, "LevelSelect must be enabled");
+        }
+
+        [Test]
+        public void Compute_WithoutTitle_LeavesLevelSelectFirst()
+        {
+            var configScenePaths = new[] { LevelsFolder + "/Level_001.unity" };
+
+            EditorBuildSettingsScene[] result = Compute(new EditorBuildSettingsScene[0], configScenePaths, LevelsFolder, false);
+
+            CollectionAssert.AreEqual(new[] { LevelSelectPath, LevelsFolder + "/Level_001.unity" }, result.Select(s => s.path).ToArray());
+        }
+
+        [Test]
+        public void Compute_WithTitle_RunTwice_SecondRunChangesNothing()
+        {
+            var configScenePaths = new[] { LevelsFolder + "/Level_001.unity" };
+            EditorBuildSettingsScene[] first = Compute(new[] { Scene("Assets/Scenes/SampleScene.unity", true) }, configScenePaths, LevelsFolder, true);
+            EditorBuildSettingsScene[] second = Compute(first, configScenePaths, LevelsFolder, true);
+
+            CollectionAssert.AreEqual(first.Select(s => s.path), second.Select(s => s.path));
+            CollectionAssert.AreEqual(first.Select(s => s.enabled), second.Select(s => s.enabled));
+        }
+
         // ---------- 5.2 Idempotent ----------
 
         [Test]
@@ -131,7 +174,8 @@ namespace Parallax.Tests.EditMode
             var configScenePaths = config.Levels.Select(e => $"{LevelsFolder}/{e.SceneName}.unity").ToArray();
 
             EditorBuildSettingsScene[] currentAsEntries = onDisk.Select(e => Scene(e.path, e.enabled)).ToArray();
-            EditorBuildSettingsScene[] expected = Compute(currentAsEntries, configScenePaths, LevelsFolder);
+            bool titleExists = File.Exists(Path.Combine(Directory.GetCurrentDirectory(), TitlePath));
+            EditorBuildSettingsScene[] expected = Compute(currentAsEntries, configScenePaths, LevelsFolder, titleExists);
 
             CollectionAssert.AreEqual(expected.Select(s => s.path), onDisk.Select(e => e.path),
                 "ProjectSettings/EditorBuildSettings.asset has drifted from what BuildSceneList.Sync() would produce; run PARALLAX/Setup/Levels/Sync Build Scene List.");

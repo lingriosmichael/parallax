@@ -40,6 +40,18 @@ namespace Parallax.Gameplay.Levels
             }
         }
 
+        /// <summary>PAX-108 (D-157 amendment 1): the title's START GAME. Erases every listed level's unlock and best death
+        /// count, so the next Load is a fresh start (only the first level unlocked).</summary>
+        public static void Clear(IReadOnlyList<string> orderedLevelIds)
+        {
+            for (int i = 0; i < orderedLevelIds.Count; i++)
+            {
+                PlayerPrefs.DeleteKey(UnlockedPrefix + orderedLevelIds[i]);
+                PlayerPrefs.DeleteKey(BestPrefix + orderedLevelIds[i]);
+            }
+            PlayerPrefs.Save();
+        }
+
         public static void Save(LevelProgress progress, IReadOnlyList<string> orderedLevelIds)
         {
             for (int i = 0; i < orderedLevelIds.Count; i++)

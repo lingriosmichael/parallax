@@ -21,10 +21,13 @@ namespace Parallax.Editor.Setup
     public static class BuildSceneList
     {
         public const string LevelSelectScenePath = "Assets/_Game/Scenes/" + LevelSceneLoader.LevelSelectSceneName + ".unity";
+        /// <summary>PAX-108 (D-157): the scene the app starts on, once PARALLAX/Setup/Title Screen has made it.</summary>
+        public const string TitleScenePath = "Assets/_Game/Scenes/Title.unity";
         const string LevelListConfigPath = "Assets/_Game/Data/LevelListConfig.asset";
         const string LevelsFolder = "Assets/_Game/Scenes/Levels";
 
-        /// <summary>Produces: LevelSelect first (enabled), then configScenePaths in order
+        /// <summary>Produces: Title first when titleFirst (PAX-108: the app starts on it), then LevelSelect (enabled), then
+        /// configScenePaths in order
         /// (enabled), then every other scene from currentEntries that isn't under levelsFolder
         /// (kept, with its own enabled state and relative order) - deduplicated against paths
         /// already placed. Any scene under levelsFolder that isn't in configScenePaths (the
@@ -32,11 +35,13 @@ namespace Parallax.Editor.Setup
         public static EditorBuildSettingsScene[] Compute(
             EditorBuildSettingsScene[] currentEntries,
             IReadOnlyList<string> configScenePaths,
-            string levelsFolder)
+            string levelsFolder,
+            bool titleFirst)
         {
             var result = new List<EditorBuildSettingsScene>();
             var placed = new HashSet<string>();
 
+            if (titleFirst) AddIfNew(result, placed, TitleScenePath, true);
             AddIfNew(result, placed, LevelSelectScenePath, true);
             foreach (string path in configScenePaths) AddIfNew(result, placed, path, true);
 
@@ -87,7 +92,9 @@ namespace Parallax.Editor.Setup
                 configScenePaths.Add(path);
             }
 
-            EditorBuildSettingsScene[] updated = Compute(EditorBuildSettings.scenes, configScenePaths, LevelsFolder);
+            bool titleExists = AssetDatabase.LoadAssetAtPath<Object>(TitleScenePath) != null;
+            if (!titleExists) Debug.LogWarning("BuildSceneList: '" + TitleScenePath + "' does not exist yet; the app starts on LevelSelect until PARALLAX/Setup/Title Screen makes it.");
+            EditorBuildSettingsScene[] updated = Compute(EditorBuildSettings.scenes, configScenePaths, LevelsFolder, titleExists);
             EditorBuildSettings.scenes = updated;
             // Explicit persist call (named per pax-ticket review): EditorBuildSettings.scenes'
             // setter only dirties the in-memory list. AssetDatabase.SaveAssets() flushes it to

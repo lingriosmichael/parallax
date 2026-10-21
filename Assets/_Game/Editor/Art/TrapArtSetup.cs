@@ -45,7 +45,7 @@ namespace Parallax.Editor.Art
                 else if (t.TryGetComponent(out ArrowTrap arrow) && config.HasArrow) built.Add(BuildArrow(artRoot, roomRoot, room, e, arrow, rooms, config, layer, changes));
                 else if (t.TryGetComponent(out GeyserTrap geyser) && config.HasGeyser) built.Add(BuildGeyser(artRoot, e, geyser, rooms, config, layer, changes));
                 else if (BuildKitElement(artRoot, roomRoot, room, e, t, rooms, config, layer, changes) is string name) built.Add(name);
-                if (t.TryGetComponent(out MovingTrap spiked) && BuildSpikedFace(artRoot, e, spiked, rooms, config, layer, changes) is string face) { built.Add(face); faces.Add(face); }   // PAX-107 (D-124)
+                if (t.TryGetComponent(out MovingTrap spiked) && BuildSpikedFace(artRoot, room, e, spiked, rooms, config, layer, changes) is string face) { built.Add(face); faces.Add(face); }   // PAX-107 (D-124)
             }
             built.Add(BuildDeath(artRoot, room, roomRoot, rooms, config, layer, changes));
             // D-101: trap bodies draw BodyScale bigger. Disguises (collapsing floors, falling blocks, moving and shrinking floors)

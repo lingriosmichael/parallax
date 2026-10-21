@@ -35,9 +35,14 @@ namespace Parallax.Tests.EditMode
         static string Summary(object report) => (string)report.GetType().GetMethod("Summary").Invoke(report, null);
 
         // PAX-105 (D-110 amendment 3): L001 re-pinned to its falling grip walls (the climb out replaced the timed hop over Block_1).
-        [TestCase("L001", new int[0], new int[0], new[] { "Floor_2=26", "Block_1=20", "Block_2=20", "Spikes_1=10", "Floor_7=27", "Spikes_2=7" }, new[] { "Door visible t262, complete t330" })]
+        // D-159: L001 is "Run!": the bridge falling behind the cat, Slam_1, Hinge_1 onto Spikes_H, Block_1, then the lower storey
+        // with the cloud chasing, Crumble, Pop, and the door riding its lift over the pit (jumps over Spikes_H, Crumble, Pop and
+        // the pit, each a timed step).
+        [TestCase("L001", new[] { 14, 36, 12, 18 }, new int[0], new[] { "Bridge_2=44", "Slam_1=6", "Hinge_1=20", "Block_1=16", "Crumble=24", "Pop=8", "Cloud=25", "Lift_D=45" }, new[] { "Door visible t474, complete t530" })]
         // D-112: L002 re-pinned to its ferry crossing (the drop onto Ferry, the jump up to the door, Stone and Tread_3).
-        [TestCase("L002", new[] { 26, 24, 26, 21, 20, 23, 29, 15, 32, 28, 13, 15, 17 }, new int[0], new[] { "Block_1=10", "Block_2=10", "Block_3=10", "Spikes_4=50", "Door=90", "Ferry=773", "Stone=16", "Tread_3=23", "Tread_2=45", "Spikes_6=20" }, new string[0])]
+        // D-160: L002 is "Backwards": Invert a stride from the start, Hinge_1 onto Spikes_1, Flip_U1 onto the ceiling (CC_1, Lift_1,
+        // Pop_C), up the shaft, Push_2 onto Spikes_C2, Flip_D2, then Hinge_W chasing over Pop_2 and Crumble to the door.
+        [TestCase("L002", new[] { 15, 22, 14, 15, 12, 33 }, new int[0], new[] { "Hinge_1=18", "Hinge_1=18", "CC_1=13", "Lift_1=8", "Pop_C=8", "Push_2=18", "Hinge_W=18", "Pop_2=8", "Crumble=14" }, new string[0])]
         // D-113: L003 re-pinned: S1 the arrow floor (the jumps past Post_R, Lift_1, Shrink_1 and onto Post_L), S2 the spike bed
         // (D-113 amendment: Hop_1, Ride_1, Lift_2, Hop_2, Ride_2, the fakes False_1 and False_2); no Recovers (S1_Mid is gone).
         // D-113 amendment 2: the perch on Post_R (1.2 u), raised S1_A, Hop_2 moving.
@@ -80,7 +85,8 @@ namespace Parallax.Tests.EditMode
         // D-125 (8): the chasm's spikes 1.2 u under S1 (was 3; L3 dies sooner), the slabs' spikes set off by a cat rising
         // toward them, not one walking under them (T1, the flip dead ends: shorter leads).
         // D-146: the hinge floors stand up in 3 ticks and slide faster (leads re-pinned).
-        [TestCase("L009", new[] { 16, 14 }, new int[0], new[] { "Spikes_1=16", "Arrow_W1=6", "Arrow_W2=6", "Spikes_1=6", "Spikes_F1=46", "Spikes_F2=46", "Spikes_LA=8", "Spikes_LB=8", "Lift_A=126", "Hinge_9=84", "Spikes_R3=78", "Lift_B=439", "Roof_5=21", "Spikes_R1=84", "Spikes_D1=8", "Ledge_D2=13", "Spikes_D1=8", "Spikes_D1=8" }, new string[0])]
+        // 2026-10-19 (D-153 amendment 7): Ledge_D2's dead end removed.
+        [TestCase("L009", new[] { 16, 14 }, new int[0], new[] { "Spikes_1=16", "Arrow_W1=6", "Arrow_W2=6", "Spikes_1=6", "Spikes_F1=46", "Spikes_F2=46", "Spikes_LA=8", "Spikes_LB=8", "Lift_A=126", "Hinge_9=84", "Spikes_R3=78", "Lift_B=439", "Roof_5=21", "Spikes_R1=84", "Spikes_D1=8", "Spikes_D1=8", "Spikes_D1=8" }, new string[0])]
         // PAX-107: L010 starts at S1's east end over a chasm (Ride_A, Sink_S), no stair, the storm faster.
         // D-125: Step_A and Hop_B over the start's hole (no Ride_A); the storm from the start at the cat's run, every 145; Drop_10
         // faster; Ride_E leaves as the cat boards (T8: the storm strikes a cat that waits for the next ride).

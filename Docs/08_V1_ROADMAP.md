@@ -80,9 +80,10 @@ PAX-058 in this phase's build order even though their numbers are higher; PAX-05
 | | PAX-A13 | Trap art kit: every trap, every state, death effects | PAX-A12 |
 | | PAX-V05 | Trap presentation: flipbooks driven by trap state, effects, particles, no-tell by sprite | PAX-A13 |
 | | PAX-V06 | Game feel: squash/stretch, dust, camera impulse, death/checkpoint/complete beats, transitions (with PAX-064/065) | PAX-V05, PAX-V07 |
+| | PAX-108 | Title screen and intro (D-157): the app starts on a live title with a skippable intro; PLAY/CONTINUE and LEVELS. **Built** 2026-10-19 on a batch clone; awaiting the developer's `PARALLAX/Setup/Title Screen` run and look | PAX-053 |
 | | PAX-A09 | UI art to the premium target (live title scene, line-icon HUD, styled stick) | PAX-V06 |
 | | PAX-A10 | App icon + store graphics (after the finished look) | PAX-A09 |
-| F · Audio & haptics | PAX-064 | Audio: mixer, ambient bed, trap/death/UI cues, volume wiring | PAX-054 |
+| F · Audio & haptics | PAX-064 | Audio (D-158): sounds synthesized in code, ambient bed, trap/death/cat/UI cues, channel volumes. **Built** 2026-10-20 on a batch clone; awaiting the developer's `PARALLAX/Setup/Audio (PAX-064)` run, Rebuild All Levels, and a listen | PAX-054 |
 | | PAX-065 | Haptics: trap and death cues, toggle | PAX-064 |
 | G · Release prep | PAX-066 | Paid unlock (Unity IAP), locked levels, restore | PAX-053, D-068 |
 | | PAX-067 | Release build: signed AAB, stripping, build checks | PAX-066 |
@@ -113,4 +114,4 @@ Phase E (art) and the art tickets can run alongside B–D, as today; they don't 
   continuous days first; recruit 15–25 people well before Phase H. An organization account
   (D-U-N-S) is exempt.
 - Privacy policy URL (needed for the listing even with no data collected).
-- Audio source material (licences) for PAX-064.
+- ~~Audio source material (licences) for PAX-064.~~ Not needed: v1 sounds are synthesized in code (D-158).

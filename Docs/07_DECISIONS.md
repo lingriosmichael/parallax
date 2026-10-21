@@ -4517,3 +4517,181 @@ visual QA review of L001–L005)**
   - The haze and the background ruins at walkway level: as in L001–L005.
   - The walked undersides' straight rims in flip rooms: a cat stands on them.
   - L006's plinth crush: not reproduced.
+
+### D-157 · 2026-10-19 · Proposed (PAX-108; the developer: "How about the loading menu and intro")
+
+**Decision:** The app starts on a **Title** scene, ahead of the level list (`BuildSceneList` puts `Title.unity` first once it
+exists; D-072's single writer is kept). It plays a short intro on a live Reality A backdrop (the levels' environment stack with
+L002's palette, panning slowly): fade from black, the "PARALLAX" wordmark closing from wide to key-art letter spacing, a rule,
+the tagline "Every room is lying." (Vision §1), then the menu. A tap skips the intro to its end; the buttons answer 0.2 s after
+the menu is fully shown, so the skipping tap can't press one. **PLAY** (labelled **CONTINUE** once any level is completed) loads
+the first unlocked, uncompleted level in list order, or the last unlocked one when all are done; **LEVELS** opens the list.
+Loads go through `LevelSceneLoader` (D-072); nothing writes `Time.timeScale` (D-073); the intro runs on unscaled seconds and
+touches no gameplay tick. Tunables in `TitleScreenConfig`. The wordmark uses the project's LiberationSans until PAX-A09 §4
+picks the licensed display font.
+**Open:** the developer's look at it in the Editor and on device; Android back on the title (quit?) and on the level list
+(back to the title?); whether the intro plays on every launch or only the first.
+
+**D-153 amendment 7 · 2026-10-19 · Accepted (the developer's play-test of L004 and L007)**
+
+(1) **L004** ("it used to be clean"): a spike strip hidden inside a solid (RecessC_Hazard inside the rising Sink_R) is never a
+pit. Its pit back wall had run from the ground up through the open roof walk as a dark column (`EnvironmentStackSetup.Compose`,
+`InPit`).
+(2) **L007, at rest** ("the empty space there on the 2nd floor is just empty for no reason ... patch it up with tiling"):
+Lintel_G runs on west to S1_T4's edge (x 11.3-15.5, was 12.5-15.5), so S1_B's underside there is stone. It is out of reach
+from the ground (a jump tops out at 2.16; the lintel starts at 3). `ClearBelow` ignores a solid that only touches an
+underside's end within float noise.
+(3) **L007, after S1_T4 falls** ("the empty space should look like the background"): a trap flush in a slab open above and
+below leaves a real hole with the sky through it. This reverses the 2026-10-18 set-back stone, which read as a floor that
+wasn't there; that round's "gap in the ceiling" was (2)'s notch.
+(4) A fixed thick underside never counts on a trap's to carry it on. It ends in a broken end, which the trap's strip covers
+until the trap leaves; before, it ended in a straight cut over the hole. This applies to every level: **Rebuild All Levels**.
+(5) **The developer's rule for holes left by traps (2026-10-19):** "If tiles fall from a platform on top of a cat, then the
+empty space becomes the background sky. If it's part of the ceiling or floor, then you see the background of the floor or
+ceiling, not the sky." A trap in a free-standing slab or platform (open above and below) leaves a hole to the sky, as in (3).
+A trap in the room's ceiling or floor mass leaves a recess: the pit and recess back walls, as before. Every back wall now
+wears a veil of the level's haze (alpha 0.22, `BackVeil`, a warm stone light leaning toward the haze), so it reads lighter and further off than the stone around it ("make
+it even brighter so you can tell the difference").
+(6) **L009** ("this ledge next to the wall ... it's totally unnecessary, remove it"): Ledge_D2 and its Spikes_D2 are removed,
+together with their dead-end betrayal. L009 keeps its other dead end (D-155).
+(7) **L011** ("this gap ... looks super weird. Fill in the tiles properly"): the Gallery is 0.8 u deep over x 17.5–21.5 (was
+0.5), down to 10.45, where the Riser stops, and G_East now rises only to 10.45. The risen pillar meets stone instead of a 0.3 u
+strip of sky. The walked top (11.25) and the Riser's motion are unchanged; the crush happens a little sooner.
+
+### D-158 · 2026-10-20 · Accepted (PAX-064; the developer: "Do it in code. I trust you. Do this next")
+
+**Decision:** v1's sound is **synthesized in code**; no recorded clips or sound licences are needed to ship. This settles D-062's
+audio clause for v1 (haptics stay with PAX-065).
+(1) **Sounds.** `SfxSynth` renders each cue from layers in `SfxPresets`: tones, filtered noise and plucked strings (Karplus-Strong).
+They are soft and organic to sit with the painted art (Vision §9); death and respawn are short and light. The same recipe always
+renders the same samples, with no randomness. Repeats of a cue walk a fixed pitch pattern within a third of a semitone.
+(2) **Ambient bed.** `AmbientBed` loops 24 s of wind, a slow breathing low chord and a few far-off birds. Every tone and swell
+fits whole cycles in the loop, and the wind's end is cross-faded into its start.
+(3) **What makes a sound.** `RoomTrap.Fired` is raised once on each fire tick (`StepTiming`, and a rearm-on-exit flip trap's
+countdown). It is presentation only: a listener's exception is logged and never reaches the tick. `LevelAudioEvents` plays a
+cue for:
+- each trap kind's fire (`TrapCues`);
+- the start of a death hold, by PAX-V07's death kind, or the death itself when there's no hold;
+- the respawn, level complete, the solo cat's jumps and wall jumps, and its landings (hard after 40 airborne ticks).
+`GameAudio` clicks for every button in its scene; the click outlives a scene load. All of it reads state and subscribes; none of
+it writes gameplay state or `Time.timeScale`, and removing it changes no test.
+(4) **Mix.** `AudioCueBank` (`Assets/_Game/Data`) holds Music/Sfx/UI volumes and, per cue, an optional recording that replaces
+the synthesized sound, a volume trim or a mute. There is no `AudioMixer` asset: Unity has no public API to build one from an
+Editor script, and its `.asset` isn't hand-edited.
+(5) **Mix limits.** Each cue has a voice cap and a minimum gap between starts (`CueLimiter`). The pool has 12 voices. Pause ducks
+the bed to 40%.
+(6) **Placement.** `PARALLAX/Setup/Audio (PAX-064)` gives `_LevelTemplate`, Title and LevelSelect a `GameAudio` root.
+`Rebuild All Levels` carries the template's into every level, and `PARALLAX/Setup/Title Screen` adds it as well.
+**Not in this decision:** an in-game volume or mute control. PAX-054 stored no volumes, contrary to PAX-064's draft premise, and
+phones have their own media volume. It's a later ticket if the device session asks for it.
+
+**D-157 amendment 1 · 2026-10-20 · Accepted (the developer: "I need an option START game in the title to start from fresh")**
+
+Once any level is completed, the title shows **CONTINUE**, **START GAME** and **LEVELS**. START GAME asks "Start over from level
+1? Your progress and best death counts will be erased." **START OVER** erases every listed level's unlock and best death count
+(`LevelProgressStore.Clear`), then loads the first level; **CANCEL** closes the question. With no progress the title shows
+**PLAY** and **LEVELS** only (LEVELS moves up into START GAME's place). CONTINUE is unchanged: the first unlocked level not yet
+completed.
+
+### D-159 · 2026-10-20 · Accepted (the developer: "I have one opportunity to catch a users attention, and that is in level 1 ... it has to be fun ... I dont care about progression in difficulty anymore"; they picked "Run!")
+
+**Decision:** L001 is rebuilt as "Run!", a loop over two storeys 5 u apart, so both share the screen. It is about 10.6 s when known (530 ticks), with eight lethal betrayals on the normal run, and the door's ride away as a final recovery.
+
+(1) **The bridge.** The cat starts on Ledge_S at the west wall. The bridge (Bridge_1–4, 1.3 u tiles over a spike chasm) falls away tile by tile behind the cat from its first step onto it: Bridge_1 goes 10 ticks after that step, and each next tile 15 ticks later. That is a little slower than a run, so a cat that keeps running reaches the Pier, and one that stops falls onto PitW's spikes.
+- The chasm is open air under a free-standing bridge. It is not a pit opening and has no back wall: the sky shows through it before and after the bridge falls (trap-hole rule, 2026-10-19).
+- Ledge_S stands 0.02 u above the bridge. With a level seam between the stone and a falling tile, two replays' contacts differed by a millionth and failed the determinism check.
+
+(2) **The top storey, east.**
+- Slam_1 comes down out of the roof 16 ticks after the cat crosses x 9.6: on a cat that runs on (lead 6). One that stops lets it hold and rise, then passes.
+- Hinge_1 stands up behind the cat and shoves it toward Spikes_H. This is L016's hinge: a 3-tick swing, 4 u in 20 ticks. Jump the spikes and don't stop.
+- Block_1, a section of the roof, drops onto the slab ahead (lead 16). Stop, hop onto it, and run off the slab's end down to the lower storey.
+
+(3) **The lower storey, west, with the storm cloud chasing.**
+- The cloud wakes where the cat lands. It follows at 0.1 u a tick, a little slower than a run, so a running cat stays ahead of its strikes; first strike at 70 ticks, then every 90.
+- Crumble gives way on a touch (jump it), and Pop springs up 1.7 u ahead (jump it).
+- The door stands on Lift_D, the lid of a 1 u spike pit by the Pier. As the cat comes within x 18, the lift carries the door 2.8 u west and 0.8 u up over the spikes. The cat leaps after it.
+- Retreat and Lift_D share one trigger, so they set off on the same tick and the door rides the lift (a chained trap would start a tick late).
+
+(4) **Band 1 exceptions for L001 only, per the developer's waiver of difficulty progression.** None of these is a fairness rule: lead, visibility, soft-locks, kill bounds and clean falls are unchanged and pass.
+- The storm cloud is allowed before level 5 (D-090 amendment).
+- A push wall (Hinge_1) is allowed before level 3 (D-106).
+- The door-distance rule is waived, because the loop puts the door under the start's storey (D-085).
+- The bridge tiles may show before they fall (D-085's no-tells rule, like L011's bridge).
+
+(5) **D-106 refinement for every level:** a door may stand on a Solid lift that moves by the retreat's own offset, at both of its poses.
+
+(6) D-111's L001 exemptions (SurfaceCoverage "L001/Squeeze", WallJump "L001/Spikes_1", the early-shrinker entry) went with the old layout. TrapContactSheet's "death by fall" row now uses L001 T5 (Crumble's pit).
+
+### D-160 · 2026-10-20 · Accepted (the developer: "I have one opportunity to catch a users attention ... levels 1 and 2 are kind bleh. I dont care about progression in difficulty anymore, it needs to be fun"; they picked "Backwards")
+
+**Decision:** L002 is rebuilt as "Backwards": two corridors 4.5 u tall, one above the other on 2 u stone slabs (L016's "Flipside" style, with floor and ceiling both in view). From the first second, left and right are swapped. It takes about 11.3 s when known (566 ticks), with nine lethal betrayals, all on the normal run.
+
+(1) **The lower corridor, west.**
+- The cat starts at the east end and runs a stride west into Invert, which fills the corridor. From then to the end of the attempt, left is right. It fires about 0.8 s in, and a death resets it, so the cat meets it again on every attempt (L004's whole-level inverter).
+- Hinge_1, the ground's top unit behind the cat, shares Invert's trigger. 6 ticks later it stands up and slides 4 u west, faster than a run, to Spikes_1's edge.
+  - A cat that stops is shoved onto the spikes.
+  - So is a cat that keeps pressing the way it was going, because that now turns it back.
+  - One that presses the other way jumps them.
+- Flip_U1 throws the cat onto the ceiling. Honest spikes line the corridor's floor below the whole ceiling walk.
+
+(2) **On the ceiling, still west.**
+- CC_1 (slab A's bottom unit) gives way 3 ticks after a touch, and the cat falls up into a spiked recess. Jump it.
+- Lift_1 rises 4.5 u out of the ground into the ceiling where that jump lands. It starts 15 ticks after the cat crosses x 11.6. Stop, and let it go up and down.
+- Pop_C springs out of the ceiling 6 ticks after the cat comes within 1.7 u. Jump it, and walk on into the shaft, up which the cat falls into the upper corridor.
+- Upside down, a jump on the reveal tick is caught. So Pop_C's strip is 1.2 u, not the floor pops' 1.5 u, which keeps that jump's window at 14.
+
+(3) **The upper corridor, on its ceiling, east.**
+- Push_2 (the roof's bottom unit) comes down behind the cat and slides 3.2 u east, so a cat that stops short of Spikes_C2 is shoved onto them (L016's Push_3). Jump the spikes.
+- Flip_D2 drops the cat to the floor.
+
+(4) **The finale.**
+- Hinge_W, slab A's spiked top unit, stands up behind the cat as it lands. It chases 16 u east in 140 ticks, a little slower than a run. A cat that stops is caught.
+- Pop_2 springs up ahead (jump it). Crumble gives way 2 ticks after a touch into a spiked recess (jump it).
+- The door stands at the east end of the upper floor.
+
+(5) **Band 1 exceptions for L002 only, per the developer's waiver of difficulty progression.** None of these is a fairness rule: lead, visibility, soft-locks, kill bounds, clean falls and wall-jump shortcuts are unchanged and pass.
+- Invert is a whole-level inverter in level 2 (WholeLevelInverters; the inverter band).
+- Push walls (Hinge_1, Push_2, Hinge_W) are allowed before level 3 (D-106, EarlyPushLevels).
+
+(6) D-112's L002 exemption (EarlyMoverLevels "L002", the ferry) went with the old layout. ShippedRouteResultsTests re-pins L002.
+
+**D-158 amendment 1 · 2026-10-20 · Proposed, awaiting the developer's listen (the developer: "Im not a big fan of the arrow sounds. When too many arrows launching at a time is too bleh ... Storms needs to sound like thunder, and I prefer more cat sounds than environment sounds. Falling or crubmling floor maybe a bit more of a crash sound.")**
+
+(1) **The cat's voice.** `SfxSynth` gains a pitch and filter contour through a middle point (`Bend`), a resonant vowel filter
+(`BandPass`), tremolo and a release. With them `SfxPresets` voices the cat: every death cue is a cry (a yowl, a falling
+"mraaooow", a "mrk!" cut short by the crush, a buzzing yowl, a startled "mew!"), with only a little of what hit it underneath.
+The respawn is a trilled "mrrp?", the level complete adds a happy "mrrrow!" and a purr under the chime, a gravity flip is a
+surprised "mew!", the inverter a confused "mrrow?", a wall jump a little "hup" and a hard landing a grunted "mrf". The plain
+jump and landing stay voiceless, because they repeat too often.
+(2) **The room sits under the cat.** Trap cues default to volume 0.45 (was 0.7). Cat death cues are 0.85 (was 0.75).
+(3) **Arrows.** An arrow is a soft "fft" with no click or ring, at volume 0.22, one voice at a time, and at least 0.22 s between starts.
+(4) **Distance.** A cue placed in the world plays at full volume within 9 u of the camera and fades out by 17 u (`AudioCues.Falloff`,
+`GameAudio.fullWithin`/`silentBeyond`). So a launcher firing off-screen is quiet or silent.
+(5) **Thunder.** A storm cloud waking is far thunder rolling in. Each strike plays `TrapStormStrike` (a new cue, appended):
+the lightning's crack, then thunder breaking and rolling away, about 1.7 s. `LevelAudioEvents` hears a strike by reading each
+cloud's `Phase` after the tick. It reads only and changes nothing.
+(6) **Crash.** A collapsing floor and a falling block (the L001 bridge, dropping roofs) play a crack, then a crash of stone with a
+low boom, then debris. The falling block's version is heavier and adds a rush of air.
+
+### D-161 · 2026-10-20 · Trial on L001 (the developer: "I think some spikes are still not very noticeable. Especially if there is environment grass close to it"; shown four in-game mock-ups: "Of the spikes I like option 3. Lets try it in one level first")
+
+**Decision:** stout steel spikes with red tips, tried on L001 only.
+(1) **Art.** `SPIKE_steel_<i>` (`Tools/Art/spike_steel.py`, also called by `trap_process.py` after `trap_v2`) repaints the 12 painted
+blades with the same shapes: a dark steel core, a bright steel edge (one pixel thicker than the painted rim), and a scarlet tip
+(1.0, 0.36, 0.3). `PARALLAX/Art/Import Trap Kit` puts them in `TrapArtConfig.SpikeBladesStout`.
+(2) **Size.** Stout blades draw `TrapArtConfig.StoutBladeScale` (1.6 wide, 1.25 tall) times the standard blade, at the standard blades'
+spacing. So they overlap into one dense bed, as in the mock-up. The row is laid out on a strip shortened by the extra width, so the
+end blades stay inside their strip. The extra height goes through the same per-blade reach cap as before, so no blade shows past
+its cover (the developer, 2026-10-16). Hitboxes are unchanged.
+(3) **Where.** `LevelLooks.Look.StoutSpikes`, set for L001 only. Any other level keeps D-151's blades until the developer extends
+the trial. `TrapArtSizeTests` measures stout blades as their own size class.
+(4) **Readability.** `HazardContrastTests` holds: L001 PitD's worst pose is 34% at 3:1 (≥ 30%). A deep red tip (0.86, 0.14, 0.12) and
+the painted rim's width left it at 25–27%, because against L001's dark pit stone only the bright edge reaches 3:1.
+
+**D-161 amendment 1 · 2026-10-21 · Every level** (the developer: "Yes I aprove the spikes from lvl 1, put them in every level now.")
+`LevelLooks.Look.StoutSpikes` now defaults to true, so every level's spikes are the stout steel blades, L011–L020 included
+(through `LevelLooks.Default`). The Trap Lab's rooms use the default look too, so they get the stout blades the next time its
+setup menu runs. Setting `StoutSpikes = false` on a level's look brings back D-151's painted blades. The art, the size, the
+reach caps and the hitboxes are as in (1)–(4). One addition: a front blade whose lean would carry its tip across the edge of a solid
+over its strip moves back by its lean, so its foot and its tip are on the same side of that solid (L019 Thorns_F, at the edge of
+Fake_1, broke the no-art-through-covers rule with the stout layout).

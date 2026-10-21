@@ -77,8 +77,6 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(X<=11)", "run on", Until(Dead()))),
                 new Betrayal("Dead end: the flip floating in front of the start, straight up to the door", "Spikes_D1", DeathCause.Hazard,
                     new Route("straight up", Hold(Left), Until(XAtLeast(4f)), Jump(), Until(Dead()))),
-                new Betrayal("Dead end: the ledge behind the start, the first step up to the door", "Spikes_D2", DeathCause.Hazard,
-                    new Route("up the ledge", Hold(Right), Jump(), Until(Fired("Spikes_D2")), Release(), Until(Dead())), revealedBy: "Ledge_D2"),
                 new Betrayal("Dead end: the flip floating in front of the start, jumped into at its far edge", "Spikes_D1", DeathCause.Hazard,
                     new Route("straight up", Hold(Left), Until(XAtLeast(4.6f)), Jump(), Until(Dead()))),
                 // PAX-099 ruling 3 (the room auditor's open question): the same flip entered moving left, from a run-up. PAX-107

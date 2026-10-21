@@ -28,6 +28,10 @@ namespace Parallax.Presentation
         public Sprite LauncherMouth;
         [Tooltip("PAX-A18 (D-151): the painted spike blades (SPIKE_blade_*), laid out one by one at one fixed size (SpikeLayout); empty = the tiled strip.")]
         public Sprite[] SpikeBlades = new Sprite[0];
+        [Tooltip("D-161: the stout steel blades (SPIKE_steel_*, Tools/Art/spike_steel.py), for levels whose look asks for them (LevelLooks.Look.StoutSpikes).")]
+        public Sprite[] SpikeBladesStout = new Sprite[0];
+        [Tooltip("D-161: how much wider (x) and taller (y) the stout blades draw than the standard ones (art only; hitboxes unchanged).")]
+        public Vector2 StoutBladeScale = new(1.6f, 1.25f);
         [Tooltip("PAX-A18: a slam's iron striking plate, repeated along its bottom edge; and a hinge floor's knuckle at its pivot.")]
         public Sprite SlamPlate, HingeKnuckle;
         [Tooltip("PAX-A18: cracks growing on a crumbling floor (small to shattering) and its broken edge.")]

@@ -325,7 +325,8 @@ namespace Parallax.Editor.Setup
             float best = float.MaxValue;
             foreach (Solid o in solids)
             {
-                if (o.Name == e.Owner.Name || o.Rect.xMax <= e.From || o.Rect.xMin >= e.To || o.Rect.yMax > e.Line + Eps) continue;
+                // (a solid that only touches the edge's end, within float noise, isn't under it: L007's Lintel_G at S1_T4's end)
+                if (o.Name == e.Owner.Name || o.Rect.xMax <= e.From + Eps || o.Rect.xMin >= e.To - Eps || o.Rect.yMax > e.Line + Eps) continue;
                 best = Mathf.Min(best, e.Line - o.Rect.yMax);
             }
             return best;

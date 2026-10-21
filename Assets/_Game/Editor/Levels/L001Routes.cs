@@ -4,47 +4,54 @@ using static Parallax.Editor.Routes.R;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-059 (D-085): level 1's anatomy. T1 (the first floor) teaches jumping; T2 punishes running on to it (stop as it
-    // goes); T3 punishes backing away from T2 (stay put: both land as grip walls, climbed wall to wall, PAX-105); T4 is
-    // passed on the shelf (the other ledge); T5 is T1 again before the door. The door backing away is a Recovers betrayal on
-    // the solution itself. D-111 (the developer, 2026-10-04): the floor between the walls shrinks away (stay and fall), the
-    // ledge falls on a cat that runs under it, and the last falling floor is 4 u long, so the solution below doesn't
-    // complete yet: the developer's solution comes later.
+    // D-159: level 1's routes ("Run!"). The solution runs the bridge as it falls, stops for Slam_1 and passes under it once it's
+    // back up, jumps Spikes_H ahead of Hinge_1, stops for Block_1 and hops it, drops to the lower storey, and runs west ahead of
+    // the cloud, jumping Crumble and Pop, to leap after the door as its lift carries it over the pit. Every betrayal is a way a
+    // normal run meets a trap: stopping where the room says run, running where it says stop.
     static class L001Routes
     {
+        // At least `ticks` room ticks since the element last fired.
+        static RouteCondition Since(string element, int ticks) => new($"{element} +{ticks}", v =>
+        {
+            int i = v.Result.Elements.IndexOf(element);
+            return i >= 0 && v.Last.FireTick[i] >= 0 && v.Last.RoomLifeTick - v.Last.FireTick[i] >= ticks;
+        });
+
         public static RoomRoutes Build()
         {
             var solution = new Route("L001 solution",
-                Hold(Right), Until(XAtLeast(4.4f)), Jump(), Until(GroundedOn("Ground_2")),
-                // Stop as Block_1 goes: it lands ahead of the cat (and Block_2 behind it), walling it in. PAX-105 (D-110 amendment 3):
-                // jump at Block_1 (it latches by itself, PAX-106) and wall-jump from wall to wall until the kick off Block_2 lands the cat on
-                // Block_1's top; then run off it onto the shelf.
-                Until(Fired("Block_1")), Release(), Until(Still()), Until(Stopped("Block_1")), Until(Stopped("Block_2")),
-                Hold(Right), Jump(), Until(Falling()), Until(ClingingRight()), Release(),
-                Jump(), Hold(Left), Until(ClingingLeft()), Release(),
-                Jump(), Hold(Right), Until(GroundedOn("Block_1")), Until(GroundedOn("Shelf")),
-                // Off the end of the shelf, then over the last floor.
-                Until(XAtLeast(25.7f)), Until(Airborne()), Until(Grounded()), Until(XAtLeast(27.3f)), Jump(), Until(RoomComplete()));
+                // The bridge: run.
+                Hold(Right), Until(GroundedOn("Pier")),
+                // Slam_1: stop as it starts down, let it go back up, pass under.
+                Until(Fired("Slam_1")), Release(), Until(Still()), Until(Since("Slam_1", 63)),
+                // Hinge_1 stands up behind: keep going and jump Spikes_H.
+                Hold(Right), Until(XAtLeast(19.8f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
+                // Block_1: stop as it drops, hop onto it, and run off the slab's end to the lower storey.
+                Until(Fired("Block_1")), Release(), Until(Still()), Until(Stopped("Block_1")),
+                Hold(Right), Jump(), Until(GroundedOn("Block_1")), Until(GroundedOn("Ground_2")),
+                // The lower storey, ahead of the cloud: jump Crumble, jump Pop as it springs, leap after the door.
+                Hold(Left), Until(XAtMost(26.8f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(GroundedOn("Ground_1")),
+                Until(Fired("Pop")), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
+                Until(XAtMost(14.8f)), Jump().Timed(TimedMode.Shift), Until(RoomComplete()));
 
             return new RoomRoutes(solution,
-                new Betrayal("T1: the first floor drops a cat that runs on", "Pit1_Hazard", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Hold(Right)", "run onto Floor_2", Until(Dead())), revealedBy: "Floor_2"),
-                new Betrayal("T2: Block_1 lands on a cat that runs on to it", "Block_1", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Ground_2))", "run on after the jump", Until(Dead()))),
-                new Betrayal("T3: Block_2 lands on a cat that backs away from Block_1", "Block_2", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Fired(Block_1))", "back away", Hold(Left), Until(Dead()))),
-                new Betrayal("T4: Spikes_1 rise under a cat that stays on the ground", "Spikes_1", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Block_1))", "step down to the ground and run on under the shelf",
-                        Release(), Until(Still()), Hold(Right), Until(XAtLeast(13.9f)), Release(), Until(GroundedOn("Ground_2b")), Hold(Right), Until(Dead()))),
-                // D-111: the floor between the walls shrinks away under a cat that stays on it.
-                new Betrayal("Squeeze: the floor between the walls shrinks away under a cat that stays", "Pit2_Hazard", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Stopped(Block_2))", "stay between the walls", Until(Dead())), revealedBy: "Squeeze"),
-                // D-111: the ledge falls on a cat that runs through the gap under it.
-                new Betrayal("The ledge falls on a cat that runs under it", "Ledge", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Shelf))", "run on under the ledge", Until(Dead()))),
-                new Betrayal("T5: the last floor before the door drops a cat that runs on", "Pit5_Hazard", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=27.3)", "run on", Until(Dead())), revealedBy: "Floor_7"),
-                Betrayal.Recovers("The door backs away from a cat on the shelf, which follows it", "Door", solution));
+                new Betrayal("T1: the bridge falls under a cat that stops on it", "PitW_Hazard", DeathCause.Hazard,
+                    new Route("stop on the bridge", Hold(Right), Until(XAtLeast(3.3f)), Release(), Until(Dead())), revealedBy: "Bridge_2"),
+                new Betrayal("T2: Slam_1 comes down on a cat that runs on", "Slam_1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Fired(Slam_1))", "run on under Slam_1", Until(Dead()))),
+                new Betrayal("T3: Hinge_1 shoves a cat that stops short onto Spikes_H", "Spikes_H", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Slam_1 +63)", "stop past the hinge", Hold(Right), Until(Fired("Hinge_1")), Release(), Until(Dead())), revealedBy: "Hinge_1"),
+                new Betrayal("T4: Block_1 drops on a cat that runs on", "Block_1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Fired(Block_1))", "run on under Block_1", Until(Dead()))),
+                new Betrayal("T5: Crumble gives way under a cat that runs on", "PitC_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Ground_2))", "run on west", Hold(Left), Until(Dead())), revealedBy: "Crumble"),
+                new Betrayal("T6: Pop springs up under a cat that runs on", "Pop", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Fired(Pop))", "run on into Pop", Until(Dead()))),
+                new Betrayal("T7: the cloud strikes a cat that stops on the lower storey", "Cloud", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Ground_2))", "stay where it lands", Release(), Until(Dead()))),
+                new Betrayal("T8: a cat that runs off the edge after the door falls into the pit", "PitD_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X<=14.8)", "run off the edge", Until(Dead())), revealedBy: "Lift_D"),
+                Betrayal.Recovers("The door rides its lift away from a cat that comes to it, which leaps after it", "Door", solution));
         }
     }
 }

@@ -41,6 +41,8 @@ namespace Parallax.Presentation
         [SerializeField] float[] bladeReach = new float[0];
         [Tooltip("The developer (2026-10-16, \"Can we overlap them somehow?\"): per blade, whether it stands in the back row (between two front blades, BackScale smaller, drawn behind), so a strip reads as one dense bed.")]
         [SerializeField] bool[] bladeBack = new bool[0];
+        [Tooltip("D-161: stout blades draw this much wider (x) and taller (y) than the standard size (TrapArtConfig.StoutBladeScale); (1, 1) = standard.")]
+        [SerializeField] Vector2 bladeStretch = Vector2.one;
 
         /// <summary>The back row's size and tint, relative to the front row's.</summary>
         public const float BackScale = 0.8f;
@@ -55,13 +57,19 @@ namespace Parallax.Presentation
 
         /// <summary>Whether blade `i` draws smaller than the standard size to stay inside its cover.</summary>
         public bool Reached(int i) => i < bladeReach.Length && bladeReach[i] > 0f && greyboxBody != null
-            && bladeHeight * BladeScale(Strip(greyboxBody.size).y, Growth, bladeHeight).k * (IsBack(i) ? BackScale : 1f) > bladeReach[i] + 1e-4f;
+            && bladeHeight * BladeScale(Strip(greyboxBody.size).y, Growth, bladeHeight).k * bladeStretch.y * (IsBack(i) ? BackScale : 1f) > bladeReach[i] + 1e-4f;
 
         public IReadOnlyList<SpriteRenderer> Blades => blades;
+
+        /// <summary>D-161: (1, 1) for the standard blades; StoutBladeScale for a stout steel strip.</summary>
+        public Vector2 BladeStretch => bladeStretch;
 
         /// <summary>D-105: only a thin strip (a floor's or a ceiling's spikes) is drawn longer; a taller grey-box, like a sweep
         /// that waits inside a post, already reads as long blades, and lengthening it would push it out of its host.</summary>
         public const float MaxStripHeight = 0.5f;
+
+        /// <summary>D-161: a stout blade's lean lifts its wide corner a little above its upright tip; its growth allows for it.</summary>
+        float StoutLean => bladeStretch.x > 1f ? 1.06f : 1f;
 
         float HeightScale => greyboxBody != null && Strip(greyboxBody.size).y > MaxStripHeight ? 1f : heightScale;
 
@@ -71,7 +79,7 @@ namespace Parallax.Presentation
             {
                 // PAX-A18: blades draw at the one standard growth (bladeGrowth), across within the strip.
                 // Along the strip the blades stay inside it by construction; a little allowance covers a turning blade's bounds.
-                float along = blades.Length > 0 ? Mathf.Max(bodyScale - 1f, 0.1f) : bodyScale - 1f, tips = blades.Length > 0 ? Mathf.Max(bodyScale * HeightScale, Growth) - 1f : bodyScale * HeightScale - 1f;
+                float along = blades.Length > 0 ? Mathf.Max(bodyScale - 1f, 0.1f) : bodyScale - 1f, tips = blades.Length > 0 ? Mathf.Max(bodyScale * HeightScale, Growth * bladeStretch.y * StoutLean) - 1f : bodyScale * HeightScale - 1f;
                 return pointsSide != 0 ? new(tips, along) : new(along, tips);
             }
         }
@@ -174,11 +182,12 @@ namespace Parallax.Presentation
                 float lean = back ? 0f : TrapArtMath.HashSigned(look, 1300 + i) * BladeLean;
                 bool broken = !back && TrapArtMath.Hash01(look, 1400 + i) < BrokenShare;
                 b.transform.rotation = (pointsSide != 0 ? turn * Quaternion.Euler(0f, 0f, -90f * pointsSide) : turn) * Quaternion.Euler(0f, 0f, lean);
-                (float k, float stretch) = Reach(k0 * (back ? BackScale : 1f), stretch0, bladeHeight, i < bladeReach.Length ? bladeReach[i] : 0f);
+                // D-161: a stout blade's extra height goes through the same reach cap as any other.
+                (float k, float stretch) = Reach(k0 * (back ? BackScale : 1f), stretch0 * bladeStretch.y, bladeHeight, i < bladeReach.Length ? bladeReach[i] : 0f);
                 if (broken) stretch *= BrokenScale;
                 Color tint = back ? BackTint : Color.white;
                 if (b.color != tint) b.color = tint;
-                b.transform.localScale = new Vector3(k, k * stretch * rise, 1f);
+                b.transform.localScale = new Vector3(k * bladeStretch.x, k * stretch * rise, 1f);
                 float along = i < bladeAlong.Length ? bladeAlong[i] : 0f;
                 Vector2 foot = baseLine + across * along;
                 b.transform.position = new Vector3(foot.x, foot.y, b.transform.position.z);

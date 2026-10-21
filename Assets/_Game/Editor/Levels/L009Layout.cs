@@ -138,13 +138,11 @@ namespace Parallax.Editor.Levels
                 new InverterSettings(L004Layout.WholeLevelTicks,endPosition:new Vector2(31.5f,6f),endSize:new Vector2(1f,2f)),new SoloRoomTrapSettings(delayTicks:0))));
             // T5: the roof between the lifts gives way under a cat that stops (PAX-107: where a cat waits out the lifts).
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Roof_5",(18.75f,15.5f),(2.5f,3f),settings:new SoloRoomTrapSettings(delayTicks:28)));
-            // Dead ends, both "straight up to the door": a flip floating in front of the start, onto spikes under the slab
-            // over it; and the ledge by the wall behind the start, "the first step up", which gives way onto spikes on S1 under
-            // it (its trigger is the space over it).
+            // The dead end, "straight up to the door": a flip floating in front of the start, onto spikes under the slab over it.
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_D1",(5f,7.8f),(1.5f,2f),settings:flip));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D1",(5.1f,10.35f),(7.2f,.3f),(5.1f,8.75f),(7.8f,2.9f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D2",(1f,5.15f),(1f,.3f),(1f,10.125f),(1f,7.75f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Ledge_D2",(1f,6f),(1f,.5f),settings:new SoloRoomTrapSettings(triggerSource:TrapTriggerSource.Chain,chainSource:"Spikes_D2",delayTicks:1)));
+            // 2026-10-19 (the developer: "this ledge next to the wall ... it's totally unnecessary, remove it"): the second dead end,
+            // Ledge_D2 and its Spikes_D2, is gone (dead ends are optional, D-155).
             // PAX-102 (the developer: "I don't want to be able to solve this level by jumping on a door while inverted"): the
             // door stands on Slab_D's top (the platform on the far left), and a flip floating under the roof over Slab_D's east
             // end (x 7.5-8.5, from the roof down to the slab) turns a cat walking the roof upside down back down before it gets

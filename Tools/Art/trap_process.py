@@ -239,6 +239,10 @@ def build():
     import trap_v2
     trap_v2.build(emit, load_rgba, clean_alpha, trim, CHATGPT)
 
+    # D-161: the stout steel blades, repainted from the blades trap_v2 just wrote.
+    import spike_steel
+    spike_steel.build(emit, load_rgba)
+
     return manifest
 
 

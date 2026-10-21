@@ -20,10 +20,14 @@ namespace Parallax.Editor.Setup
         internal const int ExplicitSurfaceMotionFromLevel = 3;
         internal const int FloorPatternsFromLevel = 3;
         internal const string MovingFloorLabRoom = "TrapLab12";
-        // D-111 (the developer, 2026-10-04): L001's floor between its falling grip walls shrinks away.
-        static readonly string[] EarlyShrinkerLevels = { "L001" };
-        // D-112 (the developer, 2026-10-04): L002's last gap is a ferry crossing.
-        static readonly string[] EarlyMoverLevels = { "L002" };
+        // D-111's L001 shrinker went with D-159's redesign; the list stays for a later one.
+        static readonly string[] EarlyShrinkerLevels = { };
+        // D-159 (the developer, 2026-10-20: "I dont care about progression in difficulty anymore, it needs to be fun"): L001's
+        // Hinge_1 shoves the cat toward Spikes_H. D-160 (the same waiver, "Backwards"): L002's Hinge_1 and Push_2 shove the cat
+        // toward spikes, and its spiked Hinge_W chases it to the door.
+        static readonly string[] EarlyPushLevels = { "L001", "L002" };
+        // D-112's L002 ferry went with D-160's redesign; the list stays for a later one.
+        static readonly string[] EarlyMoverLevels = { };
 
         static bool IsMovingSolid(SoloRoomElement e) => e.Kind == SoloRoomElementKind.MovingTrap && e.Settings.MovingKind == MovingTrapKind.Solid;
 
@@ -61,7 +65,7 @@ namespace Parallax.Editor.Setup
                 if (s.Floor.Pushes) CheckPushPath(levelId, room, e, fixedSolids, errors);
                 if (!firstLevels) continue;
                 if (s.RepeatMode == TrapRepeatMode.Periodic && System.Array.IndexOf(EarlyMoverLevels, levelId) < 0) errors.Add($"{levelId}: mover '{e.Name}' in level {number}; movers are for levels {FloorPatternsFromLevel}+ only (D-106).");
-                if (s.Floor.Pushes) errors.Add($"{levelId}: push wall '{e.Name}' in level {number}; push walls are for levels {FloorPatternsFromLevel}+ only (D-106).");
+                if (s.Floor.Pushes && System.Array.IndexOf(EarlyPushLevels, levelId) < 0) errors.Add($"{levelId}: push wall '{e.Name}' in level {number}; push walls are for levels {FloorPatternsFromLevel}+ only (D-106).");
             }
 
             foreach (SoloRoomElement e in shrinkers)

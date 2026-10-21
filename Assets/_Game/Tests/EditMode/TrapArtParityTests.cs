@@ -208,7 +208,7 @@ namespace Parallax.Tests.EditMode
                     art.Apply();
                     Track(art, roomTick);
                     Tamper?.Invoke(art, tick);
-                    CheckBodies(art, tick);
+                    CheckBodies(art, tick, roomTick);
                     live += CheckEffects(art, tick, roomTick);
                     CheckSkin(art, tick);
                     Hash(art, hash);
@@ -226,13 +226,15 @@ namespace Parallax.Tests.EditMode
                 previousRoomTick = roomTick;
             }
 
-            void CheckBodies(TrapArt art, int tick)
+            void CheckBodies(TrapArt art, int tick, int roomTick)
             {
                 foreach (TrapArt.Body b in art.Bodies)
                 {
                     bool greybox = Shown(b.Greybox), drawn = Shown(b.Art) && b.Art.sprite != null;
                     // 2026-10-17: a landed block lies as its heap of broken stone instead of its skin (the heap's own rule below).
                     if (greybox && !drawn && art is SolidArt && art.Effects.Any(e => e.Group == "rubble" && Drawn(e.Renderer))) continue;
+                    // PAX-109 (D-153 amendment 5): a fitting is drawn with its grey-box only from the trap's fire on.
+                    if (b.FromFire && !(art.Trap != null && art.Trap.LatestFireTick >= 0 && roomTick >= art.Trap.LatestFireTick)) { if (drawn) Fail(tick, $"{art.name}: fitting {b.Art.name} drawn before its trap fired"); continue; }
                     if (greybox != drawn) { Fail(tick, $"{art.name}: body {(b.Art != null ? b.Art.name : "null")} drawn {drawn}, grey-box {(b.Greybox != null ? b.Greybox.name : "null")} shown {greybox}"); continue; }
                     if (!drawn) continue;
                     // D-101/D-105: a body may draw past its grey-box by its BodyGrowth (a fraction of the grey-box's size) on each side.

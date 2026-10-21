@@ -68,7 +68,10 @@ namespace Parallax.Editor.Levels
             // trigger is the storey under the lintel's east end, x 14.5-15.5): a cat that runs on is crushed; stop, let it land,
             // and hop it.
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_G1",(17.5f,.15f),(1f,.3f),(22.5f,2f),(2f,4f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            elements.Add(E(SoloRoomElementKind.Ceiling,"Lintel_G",(14f,3.5f),(3f,1f)));
+            // 2026-10-19 (the developer: "the empty space there on the 2nd floor is just empty for no reason ... patch it up with
+            // tiling"): the lintel runs on west to S1_T4's edge (x 11.3), so S1_B's underside is stone there, not a notch. Out of
+            // reach from the ground (top of a jump 2.16, lintel from 3).
+            elements.Add(E(SoloRoomElementKind.Ceiling,"Lintel_G",(13.4f,3.5f),(4.2f,1f)));
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_G",(14f,3.5f),(1f,1f),(15f,1.5f),(1f,3f),new SoloRoomTrapSettings(delayTicks:0,unitsPerTick:.2f,travelDistance:3f)));
             // T5: the stretch after T4 is real, but spikes show under the overhang as the cat comes to it: a cat that jumps
             // it, as T4 taught, meets them; a cat that walks passes under.

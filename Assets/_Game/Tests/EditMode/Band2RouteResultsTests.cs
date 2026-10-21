@@ -40,8 +40,9 @@ namespace Parallax.Tests.EditMode
         // it (T3e, Bridge_4); the jump over Spear_G has a window of 30 (was 29).
         // PAX-107 round seventeen: T_Rise fills the dip between Post_D and Curb_T (one hop up from Spear_Gap, a drop down to
         // T_West: 1813 ticks); Stop_Hi is gone (the high ledge's lead is 6, the Lip's 27).
+        // D-153 amendment 7: the Gallery's underside meets the risen Riser, so a rider is crushed 3 ticks sooner (lead 85).
         [TestCase("L011", 1813, new[] { 34, 32, 30, 30, 44, 16 },
-            new[] { "Riser=88", "Slab_1=14", "Spear_1=8", "Foot_C=21", "Spear_2=8", "Ledge_M=133", "Cloud=72", "Bridge_4=55", "V1=8", "Spear_K=8", "Spear_Top=8", "Spear_Gap=12", "Lip=27", "Block_Door=7", "Spikes_D2=6" }, new string[0])]
+            new[] { "Riser=85", "Slab_1=14", "Spear_1=8", "Foot_C=21", "Spear_2=8", "Ledge_M=133", "Cloud=72", "Bridge_4=55", "V1=8", "Spear_K=8", "Spear_Top=8", "Spear_Gap=12", "Lip=27", "Block_Door=7", "Spikes_D2=6" }, new string[0])]
         // PAX-107 (the developer: "Level 12 to have some more traps"): Drop_3 (T11), Hinge_2 (T12) and Piston_1 (T13); the
         // Handoff checkpoint moves to x 8.3 (gate 7.9), off Hinge_2.
         // The developer's next notes: Block_E slides on into PB after it lands (T3, and T6 is now pushed); hall 4's run gains

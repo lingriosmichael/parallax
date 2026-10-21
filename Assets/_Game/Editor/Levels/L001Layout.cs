@@ -7,82 +7,141 @@ using static Parallax.Editor.Levels.LevelElementFactory;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-059 (D-085): level 1, left to right on a flat floor: the floor lies, and hesitating is the answer until it isn't.
-    // D-111 (the developer, 2026-10-04): the floor between the falling grip walls shrinks away, the shelf and ledge are 25%
-    // higher and the ledge falls on a cat passing under it, and the last falling floor is 4 u long. Unsolvable for now.
-    // The ground is solid from y -4 to 0, and a trap floor over a pit fills its whole shaft (no tells). The two falling
-    // blocks hang from the ceiling as walls and land as a grip shaft (PAX-105, D-110 amendment 3). The shelf (top 1.30) is the way over the hidden spikes; the high ledge above it is the dead end;
-    // the last floor before the door is the memory check; the door backs away while the cat is on the shelf.
+    // D-159 (the developer, 2026-10-20: "I have one opportunity to catch a users attention, and that is in level 1 ... it has to
+    // be fun"; they picked "Run!"): level 1 is a loop over two storeys 5 u apart, so both share the screen.
+    //  - The bridge: the cat starts on a bridge over a spike chasm, and it falls away tile by tile behind the cat from its
+    //    first step. Run.
+    //  - The top storey, east: Slam_1 comes down out of the roof on a cat that runs on (stop, let it go back up, pass);
+    //    Hinge_1 stands up behind the cat and shoves it toward Spikes_H (jump them, don't stop); Block_1 drops out of the roof
+    //    ahead (stop, then hop it); off the end, down to the lower storey.
+    //  - The lower storey, west, with the storm cloud chasing at a run: Crumble gives way (jump it), Pop springs up ahead (jump
+    //    it), and the door rides its lift up and away over the pit as the cat comes to it: leap after it.
+    // The chasm under the bridge is walled off by the Pier, so the only way down is the drop at the far end.
     static class L001Layout
     {
+        // The lower storey's floor, the top slab's underside and top, and the roof's underside and top (room-local y).
+        internal const float F1 = 0f, C1 = 3f, F2 = 5f, C2 = 9.5f, RoofTop = 11.5f, PitFloor = -3f;
+        // The bridge: four tiles from the start ledge to the Pier, each falling BridgeStep ticks after the one before.
+        internal const int BridgeCount = 4, BridgeFirstDelay = 10, BridgeStep = 15;
+        // The start ledge stands a hair above the bridge, so the cat steps down onto it (a level seam between stone and a
+        // falling tile let two replays' contacts differ by a millionth).
+        internal const float LedgeTop = F2 + .02f;
+        internal const float BridgeStart = 1.3f, BridgeWidth = 1.3f, BridgeTravel = 7.75f;
+        // The door's lift: up and west, over the pit, as the cat comes within Retreat's trigger.
+        internal static readonly Vector2 DoorRide = new(-2.8f, .8f);
+        internal const int DoorRideTicks = 30;
+        static readonly (float x, float y) DoorTrigger = (17.75f, (F1 + C1) * .5f);
+
         public static SoloRoomDefinition Build()
         {
             var elements = new List<SoloRoomElement> {
-                E(SoloRoomElementKind.Ceiling,"Ceiling",(16f,8.9f),(32f,1f)),
-                E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(.6f,0f),(0f,0f)),
-                E(SoloRoomElementKind.Floor,"Ground_1",(2.5f,-2f),(5f,4f)),
-                // D-111 (the developer, 2026-10-04): the ground between the two walls is a shrinking floor over a pit, and the
-                // falling floor before the door runs from x 25.6: Ground_2 now ends at Block_2's landing (8.9) and Ground_2b runs
-                // from Block_1's landing (12.5) to 25.6.
-                E(SoloRoomElementKind.Floor,"Ground_2",(7.75f,-2f),(2.3f,4f)),
-                E(SoloRoomElementKind.Floor,"Ground_2b",(19.05f,-2f),(13.1f,4f)),
-                E(SoloRoomElementKind.Floor,"Ground_3",(30.8f,-2f),(2.4f,4f)),
-                // The developer (2026-10-02, "the spacing is not good"): the shelf as high as band 1's reach allowed (top 1.30)
-                // and the gap to the ledge 10% wider. D-111 (2026-10-04): both raised 25% (shelf top 1.30 -> 1.625, ledge top
-                // 2.735 -> 3.419); the shelf is now out of a ground jump's reach and is reached from Block_1's top.
-                E(SoloRoomElementKind.Floor,"Shelf",(21f,1.375f),(9f,.5f)),
+                E(SoloRoomElementKind.Wall,"Wall_L",(-.5f,3.75f),(1f,15.5f)),
+                E(SoloRoomElementKind.Wall,"Wall_R",(32.5f,3.75f),(1f,15.5f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(.6f,LedgeTop),(0f,0f)),
+                E(SoloRoomElementKind.Door,"Door",(13.6f,F1 + .75f),(.6f,1.5f)),
             };
-            // T1: a floor that isn't there.
-            AddShaft(elements, 1, 5f, 6.6f);
-            elements.Add(E(SoloRoomElementKind.FakePlatform,"Floor_2",(5.8f,-1.5f),(1.6f,3f)));
-            // T2: fires as the cat comes up to it (2 u short, past T1) and lands where a cat that runs on is: stop at once
-            // and let it land in front. T3: chained from it, lands behind, on a cat that backs away from T2. Both are set off
-            // only right at them, so they can't be set off from afar and waited out (developer's play, after PAX-059a).
-            // PAX-105 (D-110 amendment 3, the developer 2026-10-04): both are grip walls 4.5 u tall, hanging from the ceiling
-            // (y 3.9-8.4) until they fall 3.9 to the floor (0.1675 u a tick: they land 23 ticks after setting off, as the 1 u
-            // blocks' 8.4 u fall at 0.36 did); landed, their faces are 3.6 u apart and the cat between them climbs out wall to
-            // wall (Grab, then latch mode) onto Block_1's top.
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_1",(13f,6.15f),(1f,4.5f),(10.5f,4.2f),(.5f,8.4f),
-                new SoloRoomTrapSettings(GripSettings.On, new SoloRoomTrapSettings(unitsPerTick:.1675f,travelDistance:3.9f))));
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_2",(8.4f,6.15f),(1f,4.5f),settings:
-                new SoloRoomTrapSettings(GripSettings.On, new SoloRoomTrapSettings(delayTicks:1,unitsPerTick:.1675f,travelDistance:3.9f,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_1"))));
-            // D-111: the floor between the walls (x 8.9-12.5, the pit's full depth) shrinks from both sides to nothing, starting
-            // 30 ticks after Block_2 sets off (just after both walls have landed), over 75 ticks: grab a wall or fall.
-            // Built after Block_2: a chain source is looked up among the traps built before it.
-            AddShaft(elements, 2, 8.9f, 12.5f);
-            elements.Add(E(SoloRoomElementKind.ShrinkingFloor,"Squeeze",(10.7f,-1.5f),(3.6f,3f),settings:new SoloRoomTrapSettings(new ShrinkSettings(75,0f,ShrinkFrom.Both),
-                new SoloRoomTrapSettings(delayTicks:30,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_2"))));
-            // T4: under the shelf, where the cat can't jump; its trigger spans the spikes (they can be met from either side).
-            // D-111: the trigger fills the gap under the raised shelf (y 0-1.125), so the cat can't hop over it.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_1",(21.7f,.15f),(4.6f,.3f),(21f,.5625f),(7f,1.125f),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            // D-111: the ledge over the shelf (x 19.5-22.5, y 2.919-3.419) falls onto a cat that goes through the gap between
-            // them (its trigger is the column over the shelf, up to the ceiling): 1.294 u at 0.06 u a tick, onto the shelf. Its
-            // dead-end spikes are gone.
-            elements.Add(E(SoloRoomElementKind.FallingBlock,"Ledge",(21f,3.169f),(3f,.5f),(21f,5.0125f),(3f,6.775f),new SoloRoomTrapSettings(unitsPerTick:.06f,travelDistance:1.294f)));
-            // T5: T1 again, the last floor before the door: D-111, from x 25.6 (the stone after the shelf) to the door's platform.
-            AddShaft(elements, 5, 25.6f, 29.6f);
-            elements.Add(E(SoloRoomElementKind.FakePlatform,"Floor_7",(27.6f,-1.5f),(4f,3f)));
-            // The door backs away while the cat is on the shelf.
-            elements.Add(E(SoloRoomElementKind.Door,"Door",(30.3f,.75f),(.6f,1.5f)));
-            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(23.25f,4.2f),(.5f,8.4f),settings:new SoloRoomTrapSettings(moveTicks:24,offset:new Vector2(1.3f,0f))));
-            var jumps = new[] {
-                J("Floor_2",RequiredJumpKind.Pit,RequiredJumpFrame.Floor,RequiredJumpDirection.Right,4.4f,7f,0f,0f,3f,sourceName:"Ground_1",destinationName:"Ground_2"),
-                // D-111: no jump up to the shelf (it's reached from Block_1's top) and none over the falling floor (4 u, out of
-                // reach: L001 is unsolvable until the developer's solution).
-            };
-            return new SoloRoomDefinition(0,0f,32f,elements.ToArray(),new[] { Shaft(1,5f,6.6f), Shaft(2,8.9f,12.5f), Shaft(5,25.6f,29.6f) },jumps);
+            // The start: a ledge on the west wall, where the bridge begins.
+            Block(elements, SoloRoomElementKind.Floor, "Ledge_S", 0f, BridgeStart, F2 - 1.5f, LedgeTop);
+            // The Pier: stone from the chasm's floor to the top storey, between the chasm and the lower storey's pit.
+            Block(elements, SoloRoomElementKind.Floor, "Pier", 6.5f, 8.5f, -4f, F2);
+            // The lower storey's ground, around Crumble's shaft (x 24-26); the door's pit runs from the Pier to x 14.5.
+            Block(elements, SoloRoomElementKind.Floor, "Ground_1", 14.5f, 24f, -4f, F1);
+            Block(elements, SoloRoomElementKind.Floor, "Ground_2", 26f, 32f, -4f, F1);
+            // The top storey's slab (its underside is the lower storey's ceiling), around Hinge_1's seat; it ends at x 30, where
+            // the cat drops to the lower storey.
+            Block(elements, SoloRoomElementKind.Floor, "Slab_A", 8.5f, 15f, C1, F2);
+            Block(elements, SoloRoomElementKind.Floor, "Seat_H", 15f, 16.5f, C1, F2 - 1f);
+            Block(elements, SoloRoomElementKind.Floor, "Slab_B", 16.5f, 30f, C1, F2);
+            // The roof, 2 u of stone, around Slam_1's cap; Block_1 is a section of Roof_B's underside.
+            Block(elements, SoloRoomElementKind.Ceiling, "Roof_A", 0f, 11.8f, C2, RoofTop);
+            Block(elements, SoloRoomElementKind.Ceiling, "Cap_S", 11.8f, 13.3f, C2 + 1f, RoofTop);
+            Block(elements, SoloRoomElementKind.Ceiling, "Roof_B", 13.3f, 32f, C2, RoofTop);
+
+            // The pits: the chasm under the bridge, Crumble's shaft, and the door's pit. The chasm is open air under a
+            // free-standing bridge, so it is no opening and has no back wall: the sky shows through it, before and after the
+            // bridge falls (the developer's rule, 2026-10-19). The two pits in the lower storey's ground show its recessed stone.
+            Pit(elements, "PitW", 0f, 6.5f, opening: false);
+            Pit(elements, "PitC", 24f, 26f);
+            // The door's pit is 1 u deep, so its spikes are in view from the lower storey: the lift carries the door over them.
+            Pit(elements, "PitD", 8.5f, 14.5f, floor: F1 - 1f);
+
+            // ---------- The bridge ----------
+            // Four tiles over the chasm. The cat's first step onto it (its trigger is the chasm's full height, its floor to the roof)
+            // sets Bridge_1 off; each next tile goes BridgeStep ticks after the one before, a little slower than a run: a cat that
+            // runs is on the Pier before the wave reaches it, one that stops goes down with its tile onto PitW's spikes (each
+            // tile lands with its top under the spikes' tips, so a cat riding one dies on them).
+            for (int i = 0; i < BridgeCount; i++)
+            {
+                float x0 = BridgeStart + i * BridgeWidth, cx = x0 + BridgeWidth * .5f;
+                elements.Add(i == 0
+                    ? E(SoloRoomElementKind.FallingBlock, "Bridge_1", (cx, F2 - .25f), (BridgeWidth, .5f), ((BridgeStart - .05f + 6.5f) * .5f, (PitFloor + C2) * .5f), (6.5f - BridgeStart + .05f, C2 - PitFloor),
+                        new SoloRoomTrapSettings(delayTicks:BridgeFirstDelay,unitsPerTick:.25f,travelDistance:BridgeTravel))
+                    : E(SoloRoomElementKind.FallingBlock, "Bridge_" + (i + 1), (cx, F2 - .25f), (BridgeWidth, .5f),
+                        settings:new SoloRoomTrapSettings(delayTicks:BridgeStep,unitsPerTick:.25f,travelDistance:BridgeTravel,triggerSource:TrapTriggerSource.Chain,chainSource:"Bridge_" + i)));
+            }
+
+            // ---------- The top storey ----------
+            // Slam_1, the roof's bottom unit at x 11.8-13.3 (under Cap_S), slams 4.5 u onto the slab 16 ticks after the cat
+            // crosses x 9.6: on a cat that runs on. One that stops as it starts down is clear of it; it holds, goes back up, and
+            // the way is open.
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Slam_1",(12.55f,C2 + .5f),(1.5f,1f),(9.6f,(F2 + C2) * .5f),(.4f,C2 - F2),new SoloRoomTrapSettings(
+                new MovingFloorSettings(SurfaceMotion.Carry,crushPartner:"Cap_S",slams:true),
+                new SoloRoomTrapSettings(delayTicks:16,offset:new Vector2(0f,F2 - C2),moveTicks:7,holdTicks:25,returnTicks:15,movingKind:MovingTrapKind.Solid))));
+            // Hinge_1, the slab's top unit at x 15-16.5 (on Seat_H, hinged at its west end), stands up behind a cat walking east
+            // past x 17.8 and slides 4 u east to Spikes_H's edge: a cat that stops short of them is shoved onto them (L016's
+            // Hinge_1: a 3-tick swing, 4 u in 20 ticks).
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Hinge_1",(15.75f,F2 - .5f),(1.5f,1f),(17.8f,(F2 + C2) * .5f),(.4f,C2 - F2),new SoloRoomTrapSettings(
+                new MovingFloorSettings(SurfaceMotion.Slip,pushes:true,hingeTicks:3,hingeAtRight:false),
+                new SoloRoomTrapSettings(delayTicks:4,offset:new Vector2(4f,0f),moveTicks:20,holdTicks:600,movingKind:MovingTrapKind.Solid))));
+            Spikes(elements, "Spikes_H", 20.5f, 21.7f, F2);
+            // Block_1, a section of the roof's underside at x 26-27.5, drops 4.5 u onto the slab 2 ticks after the cat crosses
+            // x 24.75: on a cat that runs on. One that stops lets it land in front, hops onto it and runs off the slab's end.
+            elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_1",(26.75f,C2 + .5f),(1.5f,1f),(24.75f,(F2 + C2) * .5f),(.5f,C2 - F2),
+                new SoloRoomTrapSettings(delayTicks:2,unitsPerTick:.25f,travelDistance:C2 - F2)));
+
+            // ---------- The lower storey ----------
+            // The storm cloud wakes as the cat lands from the drop and chases it west, a little slower than a run (D-125 clouds
+            // run at 0.12 u a tick; this one at 0.1, so a cat that keeps running pulls ahead of its strikes, and one that stops is struck).
+            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(31f,2.05f),(2f,.8f),(31f,(F1 + C1) * .5f),(2f,C1 - F1),
+                new SoloRoomTrapSettings(new StormCloudSettings(new[] { new StormFloor(-100f, 2.05f, 15.5f, 31f) },
+                    followSpeed:.1f, firstStrikeDelay:70, strikePeriod:90, climbSpeed:.24f), new SoloRoomTrapSettings(delayTicks:0))));
+            // Crumble fills its shaft and gives way 2 ticks after a touch: a cat that runs on falls onto PitC's spikes. Jump it.
+            elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Crumble",(25f,-1.5f),(2f,3f),settings:new SoloRoomTrapSettings(delayTicks:2)));
+            // Pop: spikes in the floor at x 18.5-20 spring up as the cat comes within 1.7 u of them (the trigger holds them too): jump them.
+            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Pop",(19.25f,F1 + .15f),(1.5f,.3f),(20.1f,(F1 + C1) * .5f),(3.2f,C1 - F1),new SoloRoomTrapSettings(revealDelayTicks:6)));
+            // The door rides its lift up and away over PitD as the cat comes within x 18: the lift (the pit's lid at x 12.7-14.5)
+            // carries it 2.8 u west and 0.8 u up and stays. Leap after it from the pit's edge (2.3 u, up 0.8).
+            // Both have the same trigger, so they set off on the same tick and the door rides the lift (a chain is a tick late).
+            elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(DoorTrigger.x,DoorTrigger.y),(.5f,C1 - F1),settings:new SoloRoomTrapSettings(moveTicks:DoorRideTicks,offset:DoorRide)));
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Lift_D",(13.6f,F1 - .25f),(1.8f,.5f),(DoorTrigger.x,DoorTrigger.y),(.5f,C1 - F1),new SoloRoomTrapSettings(
+                new MovingFloorSettings(SurfaceMotion.Carry),
+                new SoloRoomTrapSettings(offset:DoorRide,moveTicks:DoorRideTicks,holdTicks:600,movingKind:MovingTrapKind.Solid))));
+
+            return new SoloRoomDefinition(0, 0f, 32f, elements.ToArray(), new[] { Shaft("PitC", 24f, 26f), Shaft("PitD", 8.5f, 14.5f) },
+                System.Array.Empty<RequiredJump>());
         }
 
-        // A pit shaft between two ground blocks: its bottom at y -4..-3 and the hazard on it. The ground blocks are its
-        // walls. A trap floor over it fills it from y -3 to 0, hiding the hazard until it gives way.
-        internal static void AddShaft(List<SoloRoomElement> elements, int id, float minX, float maxX)
+        static void Block(List<SoloRoomElement> e, SoloRoomElementKind kind, string name, float x0, float x1, float y0, float y1) =>
+            e.Add(E(kind, name, ((x0 + x1) * .5f, (y0 + y1) * .5f), (x1 - x0, y1 - y0)));
+
+        // An honest spike strip on a floor's top.
+        static void Spikes(List<SoloRoomElement> e, string name, float x0, float x1, float face) =>
+            e.Add(E(SoloRoomElementKind.Hazard, name, ((x0 + x1) * .5f, face + .15f), (x1 - x0, .3f)));
+
+        // A pit between two solids: its bottom from y -4 up to `floor` (-3 by default) and the spikes on it.
+        static void Pit(List<SoloRoomElement> elements, string id, float minX, float maxX, bool opening = true, float floor = -3f)
         {
             float centre = (minX + maxX) * .5f, width = maxX - minX;
-            elements.Add(E(SoloRoomElementKind.PitBottom,$"Pit{id}_Bottom",(centre,-3.5f),(width,1f)));
-            elements.Add(E(SoloRoomElementKind.Hazard,$"Pit{id}_Hazard",(centre,-2.85f),(width,.3f),hazardRole:SoloRoomHazardRole.OpeningBottom));
+            elements.Add(E(SoloRoomElementKind.PitBottom,$"{id}_Bottom",(centre,(floor - 4f) * .5f),(width,floor + 4f)));
+            elements.Add(E(SoloRoomElementKind.Hazard,$"{id}_Hazard",(centre,floor + .15f),(width,.3f),hazardRole:opening ? SoloRoomHazardRole.OpeningBottom : SoloRoomHazardRole.Normal));
         }
 
-        internal static SoloRoomOpening Shaft(int id, float minX, float maxX) =>
-            O(SoloRoomOpeningKind.Pit,minX,maxX,"","",$"Pit{id}_Bottom",$"Pit{id}_Hazard");
+        static SoloRoomOpening Shaft(string id, float minX, float maxX) =>
+            O(SoloRoomOpeningKind.Pit,minX,maxX,"","",$"{id}_Bottom",$"{id}_Hazard");
+
+        // L002 keeps using these (its pits and shaft were built with them).
+        internal static void AddShaft(List<SoloRoomElement> elements, int id, float minX, float maxX) => Pit(elements, $"Pit{id}", minX, maxX);
+
+        internal static SoloRoomOpening Shaft(int id, float minX, float maxX) => Shaft($"Pit{id}", minX, maxX);
     }
 }

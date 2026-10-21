@@ -256,6 +256,25 @@ namespace Parallax.Editor.Setup
             EnvironmentKit.Slot farLipSlot = lipSlot != null ? EnvironmentKit.Get(lipSlot) : null;
             List<SoloRoomSkin.Solid> solids = SoloRoomSkin.Solids(room);
             int n = 0;
+            // 2026-10-19 (the developer: "if it's part of the ceiling or floor you see the background of the floor or ceiling, not
+            // the sky ... make it even brighter so you can tell the difference"): a veil of the level's haze over every back wall,
+            // so a hole into the ruin reads lighter and further off than the stone around it.
+            Sprite white = EnvironmentKit.Sprite("ENV_White");
+            void Veil(string name, Vector3 at, Vector2 size)
+            {
+                if (white == null) return;
+                var go = new GameObject(name);
+                go.transform.SetParent(c.EnvRoot, false);
+                go.layer = c.LayerIndex;
+                go.transform.position = new Vector3(at.x, at.y, c.EnvRoot.position.z - 0.0002f);
+                go.transform.localScale = new Vector3(size.x / white.bounds.size.x, size.y / white.bounds.size.y, 1f);
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = white; sr.sharedMaterial = stone; sr.sortingLayerName = gameplay; sr.sortingOrder = -4;
+                // A warm stone light leaning toward the level's haze: over the recess's darker stone, a cool haze alone flattened
+                // it to grey (L004's Roof_4).
+                Color haze = Color.Lerp(c.Grade.Haze, VeilLight, 0.65f);
+                sr.color = new Color(haze.r, haze.g, haze.b, BackVeil);
+            }
             // PAX-107: or the hidden spikes a pit opening names as its hazard (L007's shaft 1: its spikes are T1's trigger).
             // 2026-10-18 visual review (L015-L019: "every pit in this level is a hole into the sky"): also any spike strip lying in a
             // pit by its shape, a floor at each side of it reaching higher than it and down past it (band 2's pits aren't
@@ -269,7 +288,12 @@ namespace Parallax.Editor.Setup
                 // (never spikes hung flush under stone, in a ceiling's recess: L016/L020's Spikes_CC*, whose "pit" ran down to the
                 // floor below as a dark column)
                 bool hung = solids.Any(o => Mathf.Abs(o.Rect.yMin - hr.yMax) < 0.1f && Mathf.Min(o.Rect.xMax, hr.xMax) - Mathf.Max(o.Rect.xMin, hr.xMin) > 0.5f * hr.width);
-                return hr.width > hr.height && !hung && Side(true) && Side(false);
+                // (nor a strip hidden inside a solid, such as L004's RecessC_Hazard inside the rising Sink_R: its "pit" ran down
+                // through the open roof walk to the ground as a dark column; 2026-10-19, the developer: "it used to be clean")
+                bool inside = room.Elements.Any(o => o.Kind is SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall
+                    or SoloRoomElementKind.MovingTrap or SoloRoomElementKind.FallingBlock or SoloRoomElementKind.CollapsingFloor
+                    && new Rect(room.Origin + o.Position - o.Size * 0.5f, o.Size).Contains(hr.center));
+                return hr.width > hr.height && !hung && !inside && Side(true) && Side(false);
             }
             foreach (SoloRoomElement e in room.Elements.Where(x => (x.Kind == SoloRoomElementKind.Hazard && x.HazardRole == SoloRoomHazardRole.OpeningBottom)
                 || (x.Kind == SoloRoomElementKind.HiddenSpikes && (room.Openings ?? System.Array.Empty<SoloRoomOpening>()).Any(o => o.Kind == SoloRoomOpeningKind.Pit && o.HazardName == x.Name))
@@ -325,6 +349,7 @@ namespace Parallax.Editor.Setup
                     back.size = new Vector2(width, height - LipBelow - farLipSlot.height * 0.5f);
                     back.transform.position = new Vector3(centre.x, bottom + back.size.y * 0.5f, back.transform.position.z);
                 }
+                Veil($"PitVoid_{n}_Veil", new Vector3(centre.x, (top + bottom) * 0.5f, 0f), new Vector2(width, height));
                 // The shading: the ramp (clear at its top, opaque at its bottom) turned so its dark end meets the lip or a wall.
                 var shade = new Color(0.36f, 0.26f, 0.2f, 1f);
                 void Ramp(string name, Vector2 at, float angle, float across, float along, float strength)
@@ -374,14 +399,11 @@ namespace Parallax.Editor.Setup
                     || r.yMax >= roomTop - 0.05f;
                 bool under = solids.Any(o => Flush(o, r, (a, b) => Mathf.Abs(a.yMax - b.yMin) < 0.05f && a.xMin <= b.xMin + 0.05f && a.xMax >= b.xMax - 0.05f));
                 if (lefts.Count == 0 || rights.Count == 0 || voids.Any(v => v.Overlaps(r))) continue;
-                // 2026-10-18 (the developer, L007's S1_T4/S1_T6: "fill in the gap there in the ceiling it should be tiling"): a trap
-                // flush between two fixed pieces of one slab (open above and below) leaves the slab's own stone, set back.
-                if (!over && !under)
-                {
-                    bool Whole(List<Rect> side) => side.Any(a => a.yMin <= r.yMin + 0.05f && a.yMax >= r.yMax - 0.05f);
-                    if (Whole(lefts) && Whole(rights)) Recess(r, false, false);
-                    continue;
-                }
+                // 2026-10-19 (the developer, L007's S1_T4: "it's falling from the second floor, the empty space should look like the
+                // background"): a trap flush in a slab open above and below leaves a real hole, the sky through it (the set-back
+                // stone the 2026-10-18 round put there read as a floor that wasn't). That round's "gap in the ceiling" was the
+                // notch beside it at rest, now stone in the layout (L007's Lintel_G).
+                if (!over && !under) continue;
                 // The recess runs as far as stone stands flush at both sides (every solid there, joined end to end, from the
                 // closed end), so it never stops short of the stone framing it.
                 float Reach(bool atLeft, bool down)
@@ -451,6 +473,7 @@ namespace Parallax.Editor.Setup
                 go.transform.position = new Vector3(area.center.x, area.center.y + ((over ? SoloRoomSkin.DeepReach : 0f) - (under ? SoloRoomSkin.DeepReach : 0f)) * 0.5f, c.EnvRoot.position.z);
                 back.color = lit ? SoloRoomSkin.Body * RecessBack : VoidTint; back.color = new Color(back.color.r, back.color.g, back.color.b, 1f);
                 voids.Add(area);
+                Veil($"TrapVoid_{k}_Veil", go.transform.position, back.size);
                 // 2026-10-18 visual review (L016: "ceiling spikes appear mid-face after firing"): the lit back wall reads as a
                 // recess, not as more face: in shadow at its closed end and down both its sides, like a pit's.
                 if (lit && ramp != null)
@@ -502,6 +525,9 @@ namespace Parallax.Editor.Setup
         const float LipBelow = 0.04f;
         /// <summary>A recess's back wall against the wall around it (the same stone, set back in shadow).</summary>
         const float RecessBack = 0.72f;
+        /// <summary>The haze veil over every pit and recess back wall (its alpha): the hole reads lighter and further off.</summary>
+        const float BackVeil = 0.22f;
+        static readonly Color VeilLight = new(1f, 0.9f, 0.74f, 1f);
         /// <summary>A lit recess's shadow at its closed end (its strength, 0..1, and how far it reaches toward the opening) and down its sides.</summary>
         const float RecessDeepShade = 0.8f, RecessDeepReach = 1.2f, RecessSideShade = 0.5f;
         /// <summary>A pit shallower than this (lip to floor, world units) and over three times as wide is a trench: no back wall.</summary>

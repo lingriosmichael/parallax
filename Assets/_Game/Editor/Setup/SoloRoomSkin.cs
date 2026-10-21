@@ -744,9 +744,18 @@ namespace Parallax.Editor.Setup
                     // ragged ends left a sliver of sky between them).
                     float beyond = atLeft ? e.From - 0.05f : e.To + 0.05f;
                     bool below = solids.Any(o => o.Name != s.Name && o.Rect.Contains(new Vector2(beyond, e.Line - 0.2f)));
+                    // 2026-10-19 (the developer, L007: "this section is not clean"): a fixed underside never counts on a trap's to
+                    // carry it on; the trap leaves (a floor collapses, a block falls), and the fixed one ended in a straight cut over
+                    // the hole. Its broken end hides under the trap's strip until then.
                     bool carriesOn = !below && allEdges.Any(o => o.Owner.Name != s.Name && o.Side == Side.Bottom && Mathf.Abs(o.Line - e.Line) < Eps
-                        && o.From <= beyond && o.To >= beyond && ThickUnderFits(o, solids, flips, visualKeepOut));
-                    if (carriesOn) continue;
+                        && o.From <= beyond && o.To >= beyond && (s.Trap || !o.Owner.Trap) && ThickUnderFits(o, solids, flips, visualKeepOut));
+                    if (carriesOn)
+                    {
+                        // A trap's strip runs on over the fixed neighbour's broken end (drawn since 2026-10-19, above), so the end's
+                        // notches don't show the sky while the trap is in place; it leaves with the trap.
+                        if (s.Trap && end != null) { float over = end.width - end.outside; if (atLeft) from -= over; else to += over; }
+                        continue;
+                    }
                     float into = below ? ThickEndInto : 0f;
                     float x = atLeft ? e.From - into - end.outside + end.width * 0.5f : e.To + into + end.outside - end.width * 0.5f;
                     SpriteRenderer piece = Add(s, (atLeft ? "ThickEndL_" : "ThickEndR_") + Idx(e), end.name, new Vector2(x, cy), new Vector2(end.width, h), Vector2.zero, Vector4.zero, false, ZUnder - 0.0005f, false);
@@ -841,7 +850,13 @@ namespace Parallax.Editor.Setup
             {
                 Sprite fillSprite = FillSprite(room);
                 if (fillSprite == null || !ChipsReady(room)) return;
-                foreach (Solid f in solids.Where(o => !o.Trap && o.Shape is Shape.Block or Shape.PitBottom or Shape.Slab))
+                // 2026-10-19 (the developer, L011: "this gap ... looks super weird"): a vertical solid mover lends its stone over the
+                // span its face covers at the far end of its travel too, and to a post beside it (G_East beside the Riser showed
+                // its broken face as a sky sliver all the way up the risen pillar).
+                (float c0, float c1) = AlwaysCovered(s);
+                SoloRoomElement me = room.Elements.FirstOrDefault(x => x.Name == s.Name);
+                float dy = c1 > c0 ? me.Settings.Offset.y : 0f;
+                foreach (Solid f in solids.Where(o => !o.Trap && (o.Shape is Shape.Block or Shape.PitBottom or Shape.Slab || (dy != 0f && o.Shape == Shape.Post))))
                     foreach (bool right in new[] { true, false })
                     {
                         float face = right ? s.Rect.xMax : s.Rect.xMin;
@@ -850,11 +865,20 @@ namespace Parallax.Editor.Setup
                             && (right ? f.Rect.xMax > face + Eps : f.Rect.xMin < face - Eps);
                         if (!host && Mathf.Abs((right ? f.Rect.xMin : f.Rect.xMax) - face) > Eps) continue;
                         float y0 = Mathf.Max(s.Rect.yMin, f.Rect.yMin), y1 = Mathf.Min(s.Rect.yMax, f.Rect.yMax);
+                        // A neighbour the mover slides along (its face runs on past the mover's rest in the way it travels): the lent
+                        // stone covers every height of the face the mover's side passes, in the mover's rest frame, and rides with it.
+                        bool ride = dy > 0f ? f.Rect.yMax > s.Rect.yMax + Eps : dy < 0f && f.Rect.yMin < s.Rect.yMin - Eps;
+                        if (ride)
+                        {
+                            float m0 = Mathf.Max(s.Rect.yMin, f.Rect.yMin - dy), m1 = Mathf.Min(s.Rect.yMax, f.Rect.yMax - dy);
+                            if (m1 - m0 > Eps) { if (y1 - y0 > Eps) { y0 = Mathf.Min(y0, m0); y1 = Mathf.Max(y1, m1); } else { y0 = m0; y1 = m1; } }
+                        }
                         if (y1 - y0 <= Eps) continue;
+                        string lend = ride ? (right ? "RideR_" : "RideL_") : (right ? "ReachR_" : "ReachL_");
                         // 2026-10-17: over the neighbour's whole strip (its notches and the shade it paints toward its broken edge,
                         // fading into the fill over STRIP_OVERLAP + STRIP_BLEND): stopping at DeepReach left a darker band beside it.
-                        float lend = DeepReach + ReachPastStrip;
-                        Rect q = right ? Rect.MinMaxRect(face, y0, face + lend, y1) : Rect.MinMaxRect(face - lend, y0, face, y1);
+                        float reach = DeepReach + ReachPastStrip;
+                        Rect q = right ? Rect.MinMaxRect(face, y0, face + reach, y1) : Rect.MinMaxRect(face - reach, y0, face, y1);
                         // And over its broken top corner, where the two tops are one line: the neighbour's cap runs on under the
                         // trap's (a broken corner beside the trap's whole top was a step in the lit lip).
                         // (2026-10-17 visual review, L009: on a post no wider than the cap, it stood out past the post as a floating
@@ -871,18 +895,17 @@ namespace Parallax.Editor.Setup
                             string slabName = flips && EnvironmentKit.Get("ENV_SlabFlip") != null ? "ENV_SlabFlip" : "ENV_Slab";
                             float k = f.Rect.height / 0.5f, h = slab.height * k, cy = f.Rect.yMax + slab.above * k - h * 0.5f;
                             q = Rect.MinMaxRect(q.xMin, cy - h * 0.5f, q.xMax, cy + h * 0.5f);
-                            Add(s, (right ? "ReachR_" : "ReachL_") + f.Name, slabName, q.center, q.size, new Vector2(slab.width * k, h), new Vector4(q.center.x, h * 0.5f, 1f, 1f),
+                            Add(s, lend + f.Name, slabName, q.center, q.size, new Vector2(slab.width * k, h), new Vector4(q.center.x, h * 0.5f, 1f, 1f),
                                 false, ZCap - 0.0005f, true, "Slab");
                             continue;
                         }
                         // (Shaded where it stands by the room's StoneShade map, like the neighbour's own stone.)
-                        Tint(Add(s, (right ? "ReachR_" : "ReachL_") + f.Name, fillSprite.name, q.center, q.size, fillSprite.bounds.size, new Vector4(q.center.x, q.center.y, 1f, 1f),
+                        Tint(Add(s, lend + f.Name, fillSprite.name, q.center, q.size, fillSprite.bounds.size, new Vector4(q.center.x, q.center.y, 1f, 1f),
                             false, ZSide - 0.001f, true, "Fill"), body);
                         // 2026-10-18 visual review (L011: "sky slivers between abutting bodies" beside the Riser): a mover sliding
                         // straight up or down along the face still covers it over the span it never leaves; there the neighbour's
                         // own stone fills its notches for good (the lent stone hides once the mover leaves its rest).
-                        (float c0, float c1) = AlwaysCovered(s);
-                        float k0 = Mathf.Max(y0, c0), k1 = Mathf.Min(y1, c1);
+                        float k0 = Mathf.Max(Mathf.Max(s.Rect.yMin, f.Rect.yMin), c0), k1 = Mathf.Min(Mathf.Min(s.Rect.yMax, f.Rect.yMax), c1);
                         if (k1 - k0 > 0.1f)
                         {
                             Rect kq = Rect.MinMaxRect(q.xMin, k0, q.xMax, k1);
@@ -1008,6 +1031,7 @@ namespace Parallax.Editor.Setup
                     TrapKitSetup.Write(follow, changes, ("holdWith", shard), ("holdAt", home));
                 }
                 // 2026-10-17: the stone it lends its neighbours stays with them (ShownAtRest), never riding out with it.
+                // (A vertical mover's stone for a face it slides along is named Ride*, not Reach*: it rides with it, TrapReach.)
                 List<SpriteRenderer> lent = pair.Value.Where(r => r.name.StartsWith("Reach")).ToList();
                 // A fallen block's top course (fallenTops) shows once it has left the stone it hung in.
                 Solid trap = solids.First(o => o.Name == pair.Key);

@@ -184,6 +184,7 @@ namespace Parallax.Editor.Art
             Ref("SpikeStrip", S("Bodies/TRAP-04_spike_strip"));
             Ref("LauncherMouth", S("Bodies/TRAP-01_launcher_mouth"));
             Refs("SpikeBlades", Many("SPIKE_blade_", "/Bodies").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());
+            Refs("SpikeBladesStout", Many("SPIKE_steel_", "/Bodies").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());   // D-161
             Ref("SlamPlate", S("Bodies/SLAM_plate"));
             Ref("HingeKnuckle", S("Bodies/HINGE_knuckle"));
             Refs("Cracks", Many("CRACK_").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());

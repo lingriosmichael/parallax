@@ -38,6 +38,10 @@ namespace Parallax.Gameplay.Rooms
         protected RealityRoot Reality { get; private set; }
         TrapTiming timing;
         public int LatestFireTick => timing == null ? -1 : timing.LatestFireTick;
+
+        /// <summary>PAX-064 (D-158): raised once on the tick this trap fires, for presentation only (its sound; haptics later).
+        /// Gameplay never listens, and a listener's exception is logged, never let into the tick.</summary>
+        public event System.Action<RoomTrap> Fired;
         protected bool UsesOverlapSource => triggerSource == TrapTriggerSource.Overlap;
         protected bool IsPeriodic => repeatMode == TrapRepeatMode.Periodic;
         protected int RoomLifeTick => rooms != null ? rooms.RoomLifeTick : 0;
@@ -112,9 +116,15 @@ namespace Parallax.Gameplay.Rooms
             if (timing == null) return false;
             bool fired = timing.Step(rooms != null ? rooms.RoomLifeTick : 0, overlapping, chainSource != null ? chainSource.LatestFireTick : -1);
             if (timing.JustRearmed) OnTimingRearmed();
-            if (fired) State = TrapState.Fired;
+            if (fired) { State = TrapState.Fired; RaiseFired(); }
             else if (timing.IsArmed) State = TrapState.Armed;
             return fired;
+        }
+
+        protected void RaiseFired()
+        {
+            try { Fired?.Invoke(this); }
+            catch (System.Exception e) { Debug.LogException(e, this); }
         }
 
         protected abstract void OnReset();

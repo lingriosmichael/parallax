@@ -73,7 +73,9 @@ namespace Parallax.Editor.Setup
             if (!HasSections(room) && spears.Length == 0 && inverters.Length == 0 && geysers.Length == 0 && vines.Length == 0 && clouds.Length == 0) return errors;
             if (levels == null) { errors.Add($"{levelId}: no LevelListConfig ({LevelListPath}); the band (D-065) is undefined."); return errors; }
             int number = LevelNumber(levels, levelId);
-            if (number > 0 && number < StormCloudFirstLevel)
+            // D-159 (the developer, 2026-10-20: "I dont care about progression in difficulty anymore, it needs to be fun"): L001's
+            // lower storey is run with the cloud chasing.
+            if (number > 0 && number < StormCloudFirstLevel && levelId != "L001")
                 foreach (SoloRoomElement cloud in clouds)
                     errors.Add($"{levelId}: storm cloud '{cloud.Name}' in level {number}; storm clouds are for levels {StormCloudFirstLevel}+ only (D-090 amendment).");
             if (number <= 0 || number > EasyBandLastLevel) return errors;

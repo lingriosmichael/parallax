@@ -22,7 +22,9 @@ namespace Parallax.Editor.Setup
         // PAX-107 (D-141, the developer: "arrow inverter at the begining of this level 13"; "the ground floor"): L013's, from
         // the start to G_1's launch (its end box).
         // PAX-107 (D-150): L020's Inv_2, from G_1's launch to its end box at S2's turn (Flip_D2).
-        static readonly string[] WholeLevelInverters = { "L004/Invert", "L009/Invert", "L013/Invert", "L020/Inv_2" };
+        // D-160 (the developer, 2026-10-20: "I dont care about progression in difficulty anymore, it needs to be fun"; they picked
+        // "Backwards"): L002's, from a stride after the start to the end.
+        static readonly string[] WholeLevelInverters = { "L002/Invert", "L004/Invert", "L009/Invert", "L013/Invert", "L020/Inv_2" };
         internal static bool IsWholeLevelInverter(string levelId, SoloRoomElement e) => System.Array.IndexOf(WholeLevelInverters, $"{levelId}/{e.Name}") >= 0;
 
         // D-126 (the developer: "if you fall through we automatically invert your arrow direction, to force a death"): L006's

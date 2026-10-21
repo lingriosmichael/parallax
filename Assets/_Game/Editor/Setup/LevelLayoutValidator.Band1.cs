@@ -23,6 +23,7 @@ namespace Parallax.Editor.Setup
         public static bool IsDeadEnd(Betrayal b) => b.Outcome == BetrayalOutcome.Recovers || b.Name.StartsWith(DeadEndPrefix, System.StringComparison.Ordinal);
 
         public static bool IsBand1(int level) => level >= 1 && level <= 10;
+        static readonly HashSet<string> DoorDistanceExempt = new() { "L001" };
         public static int Band1MinLethal(int level) => level <= 5 ? 5 : level <= 7 ? 6 : 7;
         public static int Band1MinSequence(int level) => level <= 5 ? 4 : 5;
         // D-155 (the developer, 2026-10-18: "change the rules make it optional"): dead ends are optional (were 1 for levels 1-5 and
@@ -49,7 +50,10 @@ namespace Parallax.Editor.Setup
                 errors.Add($"{levelId}: the room is {room.Width:F2} u wide, wider than the frame ({Band1MaxWidth:F0} u, D-085).");
             SoloRoomElement? checkpoint = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Checkpoint).Cast<SoloRoomElement?>().FirstOrDefault();
             SoloRoomElement? door = room.Elements.Where(e => e.Kind == SoloRoomElementKind.Door).Cast<SoloRoomElement?>().FirstOrDefault();
-            if (checkpoint.HasValue && door.HasValue)
+            // D-159 (the developer, 2026-10-20: "I dont care about progression in difficulty anymore, it needs to be fun"): L001 is a
+            // loop, out along the top storey and back along the lower one, so its door sits under its start; the whole room lies
+            // between them.
+            if (checkpoint.HasValue && door.HasValue && !DoorDistanceExempt.Contains(levelId))
             {
                 // The room's height is the space the cat moves through: the lowest floor top to the highest ceiling underside
                 // (not the solid ground and pit shafts under the floor).
@@ -135,8 +139,8 @@ namespace Parallax.Editor.Setup
                 // D-110 amendment 3: a grip falling block is meant to be seen (its claw look says where it holds), so it may hang
                 // in the open; L001's two walls hang from the ceiling until they fall.
                 if (block.Settings.Grip.IsConfigured) continue;
-                // D-111 (the developer, 2026-10-04): L001's ledge is a floor that falls on the cat passing under it.
-                if (levelId == "L001" && block.Name == "Ledge") continue;
+                // D-159 (the developer, 2026-10-20: "Run!"): L001's bridge falls away tile by tile behind the cat from its first step.
+                if (levelId == "L001" && block.Name.StartsWith("Bridge_")) continue;
                 // D-127 (the developer's sketch, 2026-10-10): L011's slab, four blocks the cat runs across, falls as it lands on them.
                 if (levelId == "L011" && block.Name.StartsWith("Slab_")) continue;
                 // PAX-107 round thirteen (the developer, 2026-10-14): L011's bridge falls piece by piece behind the running cat.

@@ -39,8 +39,11 @@ namespace Parallax.Editor.Art
         {
             bool down = PointsDown(room, e);
             int side = PointsSide(room, e);
-            return BuildSpikes(artRoot, e.Name, trap, greybox, rises, down, side, rooms, config, layer, changes, (a0, a1) => BladeReach(room, e, down, side, a0, a1));
+            return BuildSpikes(artRoot, e.Name, trap, greybox, rises, down, side, rooms, config, layer, changes, (a0, a1) => BladeReach(room, e, down, side, a0, a1), Stout(room), (along, u) => SolidsAt(room, e, down, side, along, u));
         }
+
+        /// <summary>D-161: whether a room's level draws its spikes as stout steel blades.</summary>
+        static bool Stout(SoloRoomDefinition room) => Parallax.Editor.Levels.LevelLooks.For(Parallax.Editor.Levels.LevelLooks.LevelOf(room)).StoutSpikes;
 
         /// <summary>The developer (2026-10-16): no blade may show past the solid that hides it, or pierce one in front of it.
         /// How far a strip's blades may reach from its base (world units) before they'd leave a solid covering the strip (a
@@ -73,11 +76,11 @@ namespace Parallax.Editor.Art
 
         /// <summary>PAX-107 (D-124): a spiked hinge floor's face, its own spikes art (pointing out of the floor's top face, turned
         /// with it), beside the floor's solid art.</summary>
-        static string BuildSpikedFace(Transform artRoot, SoloRoomElement e, MovingTrap mover, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes) =>
+        static string BuildSpikedFace(Transform artRoot, SoloRoomDefinition room, SoloRoomElement e, MovingTrap mover, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes) =>
             ReadObject(mover, "spikes") is SpriteRenderer face && face != null
-                ? BuildSpikes(artRoot, e.Name + "_Spikes", mover, face, true, false, 0, rooms, config, layer, changes) : null;
+                ? BuildSpikes(artRoot, e.Name + "_Spikes", mover, face, true, false, 0, rooms, config, layer, changes, stout: Stout(room)) : null;
 
-        static string BuildSpikes(Transform artRoot, string name, RoomTrap trap, SpriteRenderer greybox, bool rises, bool pointsDown, int pointsSide, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes, System.Func<float, float, float> reachOver = null)
+        static string BuildSpikes(Transform artRoot, string name, RoomTrap trap, SpriteRenderer greybox, bool rises, bool pointsDown, int pointsSide, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes, System.Func<float, float, float> reachOver = null, bool stout = false, System.Func<float, float, string> solidsAt = null)
         {
             if (greybox == null || config.SpikeStrip == null) return null;
             Transform art = ArtObject(artRoot, name, greybox.transform.position, layer, changes);
@@ -90,15 +93,23 @@ namespace Parallax.Editor.Art
                 ("strip", config.SpikeStrip), ("trapMaterial", HazardMaterial(config)), ("pointsDown", pointsDown), ("pointsSide", pointsSide), ("rises", rises));
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
             SetupUtility.SetArray(presenter, "grit", grit.Cast<Object>().ToArray(), changes);
-            BuildBlades(art, presenter, name, greybox, pointsSide, config, layer, changes, reachOver);
+            BuildBlades(art, presenter, name, greybox, pointsDown, pointsSide, config, layer, changes, reachOver, stout, solidsAt);
             return art.name;
         }
 
         /// <summary>PAX-A18 (D-151): the strip's blades, one renderer each, laid out once (SpikeLayout, seeded by the element's
-        /// name) at the kit's one blade size; SpikeArt poses them every frame. Without painted blades: none (the tiled strip).</summary>
-        static void BuildBlades(Transform art, SpikeArt presenter, string name, SpriteRenderer greybox, int pointsSide, TrapArtConfig config, int layer, List<string> changes, System.Func<float, float, float> reachOver)
+        /// name) at the kit's one blade size; SpikeArt poses them every frame. Without painted blades: none (the tiled strip).
+        /// D-161: `stout` draws the steel blades StoutBladeScale wider and taller, at the standard blades' spacing, so they
+        /// overlap into one dense bed (the approved mock-up); the row is laid out on a strip shortened by the extra width, so
+        /// the end blades still stay inside it. D-161 amendment 1: a front blade whose lean (SpikeArt.BladeLean) would carry its
+        /// tip across the edge of a solid over the strip moves back by that lean, so its foot and tip stay on one side.</summary>
+        static void BuildBlades(Transform art, SpikeArt presenter, string name, SpriteRenderer greybox, bool pointsDown, int pointsSide, TrapArtConfig config, int layer, List<string> changes, System.Func<float, float, float> reachOver, bool stout, System.Func<float, float, string> solidsAt)
         {
-            Sprite[] sprites = config.SpikeBlades.Where(s => s != null).ToArray();
+            Sprite[] stoutSprites = config.SpikeBladesStout.Where(s => s != null).ToArray();
+            if (stout && stoutSprites.Length == 0) Debug.LogWarning($"TrapArtSetup: {name} asks for stout spikes but TrapArtConfig has no SpikeBladesStout; run PARALLAX/Art/Import Trap Kit. Drawing the standard blades.");
+            stout &= stoutSprites.Length > 0;
+            Sprite[] sprites = stout ? stoutSprites : config.SpikeBlades.Where(s => s != null).ToArray();
+            Vector2 stretch = stout ? new Vector2(Mathf.Max(1f, config.StoutBladeScale.x), Mathf.Max(1f, config.StoutBladeScale.y)) : Vector2.one;
             Vector2 box = pointsSide != 0 ? new Vector2(greybox.size.y, greybox.size.x) : greybox.size;
             float tallest = sprites.Length > 0 ? sprites.Max(s => s.bounds.size.y) : 0f;
             var blades = new List<SpriteRenderer>();
@@ -108,9 +119,16 @@ namespace Parallax.Editor.Art
             var back = new List<bool>();
             if (sprites.Length > 0 && tallest > 0f)
             {
-                (float k, _) = SpikeArt.BladeScale(box.y, config.BodyScale * (box.y > SpikeArt.MaxStripHeight ? 1f : config.SpikeHeightScale), tallest);
+                (float k, float rise) = SpikeArt.BladeScale(box.y, config.BodyScale * (box.y > SpikeArt.MaxStripHeight ? 1f : config.SpikeHeightScale), tallest);
                 float[] widths = sprites.Select(s => s.bounds.size.x * k).ToArray();
-                List<SpikeLayout.Blade> layout = SpikeLayout.Lay(box.x, widths, TrapArtMath.Seed(name, 0));
+                float extra = (stretch.x - 1f) * widths.Max();
+                List<SpikeLayout.Blade> layout = SpikeLayout.Lay(Mathf.Max(widths.Min(), box.x - extra), widths, TrapArtMath.Seed(name, 0));
+                for (int i = 0; solidsAt != null && i < layout.Count; i++)
+                {
+                    float half = layout[i].Width * stretch.x * 0.5f, cap = reachOver(layout[i].Along - half, layout[i].Along + half);
+                    float height = cap > 0f ? Mathf.Min(tallest * k * rise * stretch.y, cap) : tallest * k * rise * stretch.y;
+                    layout[i] = new SpikeLayout.Blade(layout[i].Variant, KeepTipBeside(layout[i].Along, i, name, height, pointsDown, pointsSide, box.x, solidsAt), layout[i].Width);
+                }
                 for (int i = 0; i < layout.Count; i++)
                 {
                     SpriteRenderer b = Child(art, "Blade_" + i, layer, changes);
@@ -118,7 +136,8 @@ namespace Parallax.Editor.Art
                     b.sortingOrder = greybox.sortingOrder; b.enabled = greybox.enabled;
                     blades.Add(b); variants.Add(layout[i].Variant); along.Add(layout[i].Along);
                     // Each blade's own reach, over its own span: only the blades under a low solid draw smaller.
-                    reaches.Add(reachOver != null ? reachOver(layout[i].Along - layout[i].Width * 0.5f, layout[i].Along + layout[i].Width * 0.5f) : 0f);
+                    float half = layout[i].Width * stretch.x * 0.5f;
+                    reaches.Add(reachOver != null ? reachOver(layout[i].Along - half, layout[i].Along + half) : 0f);
                     back.Add(false);
                 }
                 // The developer (2026-10-16, "Can we overlap them somehow?"): a back row, one blade between each two front ones,
@@ -128,7 +147,7 @@ namespace Parallax.Editor.Art
                     int vb = (int)(TrapArtMath.Hash01(TrapArtMath.Seed(name, 0), 2000 + i) * sprites.Length) % sprites.Length;
                     if (vb == layout[i].Variant || vb == layout[i + 1].Variant) vb = (vb + 1) % sprites.Length;
                     float at = (layout[i].Along + layout[i].Width * 0.5f + layout[i + 1].Along - layout[i + 1].Width * 0.5f) * 0.5f;
-                    float w = sprites[vb].bounds.size.x * k * SpikeArt.BackScale;
+                    float w = sprites[vb].bounds.size.x * k * stretch.x * SpikeArt.BackScale;
                     SpriteRenderer b = Child(art, "Blade_" + blades.Count, layer, changes);
                     b.sprite = sprites[vb]; b.sharedMaterial = HazardMaterial(config); b.drawMode = SpriteDrawMode.Simple;
                     // Same order as the front row, a hair further back (an order lower, it sorted among the outside masonry and
@@ -152,7 +171,35 @@ namespace Parallax.Editor.Art
             }
             so.FindProperty("bladeHeight").floatValue = tallest;
             so.FindProperty("bladeGrowth").floatValue = config.BodyScale * config.SpikeHeightScale;
+            so.FindProperty("bladeStretch").vector2Value = stretch;
             if (so.ApplyModifiedPropertiesWithoutUndo()) changes.Add("laid out " + name + "'s " + blades.Count + " blades");
+        }
+
+        /// <summary>D-161 amendment 1: where front blade `i`'s foot should stand so that its leaned tip (SpikeArt's lean, the
+        /// blade `height` tall) is in the same solids as its foot (`solidsAt`: the solids at a point `along` the strip, `u` out
+        /// from its base). When they differ, the blade moves back by its lean, the tip landing where the foot was. Kept inside
+        /// the strip.</summary>
+        static float KeepTipBeside(float along, int i, string name, float height, bool pointsDown, int pointsSide, float length, System.Func<float, float, string> solidsAt)
+        {
+            const float FootLift = 0.02f;   // where TrapArtSizeTests looks for the foot
+            float lean = TrapArtMath.HashSigned(TrapArtMath.Seed(name, 0), 1300 + i) * SpikeArt.BladeLean;
+            Vector2 outward = pointsSide != 0 ? new Vector2(pointsSide, 0f) : new Vector2(0f, pointsDown ? -1f : 1f), across = pointsSide != 0 ? Vector2.up : Vector2.right;
+            Vector2 tip = Quaternion.Euler(0f, 0f, lean) * outward * height;
+            float shift = Vector2.Dot(tip, across);
+            if (solidsAt(along, FootLift) == solidsAt(along + shift, Vector2.Dot(tip, outward))) return along;
+            return Mathf.Clamp(along - shift, -length * 0.5f, length * 0.5f);
+        }
+
+        /// <summary>The names of the solids (SoloRoomSkin.Solids, other than the strip itself) at a point `along` strip `e`
+        /// from its centre and `u` out from its base, sorted and joined; empty for none.</summary>
+        internal static string SolidsAt(SoloRoomDefinition room, SoloRoomElement e, bool pointsDown, int pointsSide, float along, float u)
+        {
+            var strip = new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size);
+            Vector2 outward = pointsSide != 0 ? new Vector2(pointsSide, 0f) : new Vector2(0f, pointsDown ? -1f : 1f);
+            Vector2 across = pointsSide != 0 ? Vector2.up : Vector2.right;
+            Vector2 baseCentre = strip.center - outward * (Mathf.Abs(Vector2.Dot(strip.size, outward)) * 0.5f);
+            Vector2 p = baseCentre + across * along + outward * u;
+            return string.Join(",", SoloRoomSkin.Solids(room).Where(s => s.Name != e.Name && s.Rect.Contains(p)).Select(s => s.Name).OrderBy(n => n));
         }
 
         /// <summary>Spikes hang from a ceiling (point down) when a fixed element's underside meets their top and none meets

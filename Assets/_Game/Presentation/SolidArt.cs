@@ -54,8 +54,8 @@ namespace Parallax.Presentation
         protected override void CollectBodies(List<Body> into)
         {
             into.Add(new Body(skin, greyboxBody));
-            if (plate != null) into.Add(new Body(plate, greyboxBody));
-            if (knuckle != null) into.Add(new Body(knuckle, greyboxBody));
+            if (plate != null) into.Add(new Body(plate, greyboxBody, fromFire: true));
+            if (knuckle != null) into.Add(new Body(knuckle, greyboxBody, fromFire: true));
         }
 
         protected override void CollectEffects(List<Effect> into)

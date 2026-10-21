@@ -14,9 +14,7 @@ namespace Parallax.Editor.Setup
         // redesign; the list stays for any later one, which needs the developer's approval by name.
         public static readonly IReadOnlyDictionary<string, string> SurfaceCoverageExemptions = new Dictionary<string, string>
         {
-            // D-111 (approved by the developer, 2026-10-04): the cat steps onto the floor between the walls before Block_1's
-            // trigger; it shrinks only 30 ticks after the walls set off, so the part before the trigger betrays nothing early.
-            ["L001/Squeeze"] = "D-111: shrinks after the walls land; the strip before Block_1's trigger is harmless until then",
+            // D-111's L001/Squeeze went with D-159's redesign of L001.
         };
 
         // A betraying surface's danger is its top strip: the element's width, one cat-collider height tall, on its

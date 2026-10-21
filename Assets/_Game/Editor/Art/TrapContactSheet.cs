@@ -165,7 +165,7 @@ namespace Parallax.Editor.Art
             {
                 ("DEATH BY SPIKES - L004 T1", "L004", "T1:"), ("DEATH BY CRUSH - L008 T1", "L008", "T1:"),
                 ("DEATH BY ARROW - L015 T3", "L015", "T3 ["), ("DEATH BY SPEAR - L015 T10", "L015", "T10"),
-                ("DEATH BY LIGHTNING - L015 T1", "L015", "T1 ["), ("DEATH BY FALL - L001 T1", "L001", "T1:"),
+                ("DEATH BY LIGHTNING - L015 T1", "L015", "T1 ["), ("DEATH BY FALL - L001 T5", "L001", "T5:"),
             })
             {
                 var death = new Row { Title = title, Level = level, Trap = Death, Route = route };

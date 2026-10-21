@@ -56,7 +56,7 @@ namespace Parallax.Tests.EditMode
                                 {
                                     SpriteRenderer b = spikes.Blades[i];
                                     if (spikes.Reached(i)) { reached.Add($"{id} {art.name}/{b.name} ({Mathf.Abs(b.transform.lossyScale.x):F2})"); continue; }
-                                    if (b != null && b.sprite != null) Note(spikes.IsBack(i) ? "spike back-row blade scale" : "spike blade scale", $"{id} {art.name}", new Vector2(Mathf.Abs(b.transform.lossyScale.x), 0f));
+                                    if (b != null && b.sprite != null) Note((spikes.IsBack(i) ? "spike back-row blade scale" : "spike blade scale") + (spikes.BladeStretch.x > 1f ? " (stout, D-161)" : ""), $"{id} {art.name}", new Vector2(Mathf.Abs(b.transform.lossyScale.x), 0f));
                                 }
                                 break;
                             }

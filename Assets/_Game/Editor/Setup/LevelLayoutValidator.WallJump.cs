@@ -22,9 +22,7 @@ namespace Parallax.Editor.Setup
         // (a)'s named exemptions ("level/trap" -> reason), each approved by the developer by name.
         public static readonly IReadOnlyDictionary<string, string> WallJumpDoorExemptions = new Dictionary<string, string>
         {
-            // D-111 (approved by the developer, 2026-10-04): L001's shelf, the way over Spikes_1, is reached only by the climb
-            // out between the falling walls; that climb is the level's route, not a shortcut.
-            ["L001/Spikes_1"] = "D-111: the climb between the walls is the route onto the shelf over the spikes",
+            // D-111's L001/Spikes_1 went with D-159's redesign of L001.
         };
 
         public static List<string> ValidateWallJumpShortcuts(string levelId, SoloRoomDefinition room)

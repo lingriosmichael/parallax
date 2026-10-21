@@ -34,6 +34,9 @@ namespace Parallax.Editor.Levels
             public Piece[] Pieces = new Piece[0];
             /// <summary>Overrides the grade's sun: (x, y) in the view at mid travel, and its size in units; zero = the grade's.</summary>
             public Vector3 Sun;
+            /// <summary>D-161: the level's spikes draw as stout steel blades with red tips (TrapArtConfig.SpikeBladesStout). Every
+            /// level since amendment 1 (the developer, 2026-10-21); false keeps D-151's painted blades.</summary>
+            public bool StoutSpikes = true;
         }
 
         public const string DefaultGrade = "Afternoon";

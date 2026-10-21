@@ -4,71 +4,56 @@ using static Parallax.Editor.Routes.R;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-059 (D-085): level 2's anatomy. T1 is the bait (touch its trigger, step back, let Block_1 land); T2 punishes
-    // going on straight after it (wait for Block_2); T3 punishes waiting (don't stop on the ledge); T4 is jumped on S1;
-    // T5 is the door backing away over a section of S1 that isn't there (jump it). The stair behind the start and the
-    // high ledge on S1 are the dead ends. Every release that sets up a landing or a take-off spot is a timed step, so its
-    // window of release ticks is measured (>= 12, PAX-059: a release is mid-air control, and no landing may need precision).
-    // D-112: the end is a ferry crossing: wait on the dock for Ferry to come home, drop onto it, ride it out, and jump up to
-    // the door from its far end (the jump is timed, so its window is measured).
+    // D-160: level 2's routes ("Backwards"). Route moves are stick input (D-087 (7)): from Invert on, Hold(Right) walks the cat
+    // west and Hold(Left) east. The solution runs west into Invert, presses the other way at once and jumps Spikes_1 ahead of
+    // Hinge_1, walks into Flip_U1, jumps CC_1 on the ceiling, stops while Lift_1 goes up and down, jumps Pop_C over the shaft and
+    // falls up it; east along the upper ceiling ahead of Push_2, over Spikes_C2, into Flip_D2; then east ahead of Hinge_W, over
+    // Pop_2 and Crumble, to the door. Every betrayal is a way a run meets a trap: stopping, walking on, or pressing the way the
+    // cat went before Invert.
     static class L002Routes
     {
+        // At least `ticks` room ticks since the element last fired.
+        static RouteCondition Since(string element, int ticks) => new($"{element} +{ticks}", v =>
+        {
+            int i = v.Result.Elements.IndexOf(element);
+            return i >= 0 && v.Last.FireTick[i] >= 0 && v.Last.RoomLifeTick - v.Last.FireTick[i] >= ticks;
+        });
+
         public static RoomRoutes Build()
         {
             var solution = new Route("L002 solution",
-                // The bait: into Block_1's trigger and straight back out.
-                Hold(Left), Until(XAtMost(23.4f)),
-                Hold(Right).Timed(TimedMode.Hesitate), Until(XAtLeast(24f)), Release(), Until(Still()), Until(Stopped("Block_1")),
-                // PAX-102: Block_1 is 1.6 u wide now; the hop lands on it, and a second hop comes down short of Block_2's place.
-                Hold(Left), Until(XAtMost(22.5f)), Jump(), Until(Airborne()), Until(Grounded()),
-                Jump(), Until(Airborne()), Until(XAtMost(19.2f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Ground_2")),
-                // Wait for Block_2, then hop it with a run-up.
-                Until(Still()), Until(Stopped("Block_2")),
-                Hold(Right).Timed(TimedMode.Hesitate), Until(XAtLeast(19.1f)), Hold(Left), Until(XAtMost(18.6f)), Jump(), Until(GroundedOn("Ground_2")),
-                Until(XAtMost(14.1f)), Jump(), Until(XAtMost(11.3f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Ledge")),
-                // Straight on off the ledge.
-                Hold(Left), Jump(), Until(GroundedOn("Ground_1")),
-                // The tower.
-                Until(XAtMost(5.4f)), Jump(), Until(XAtMost(3.4f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Tread_A")), Until(Still()),
-                Hold(Left), Until(XAtMost(2.6f)), Release().Timed(TimedMode.Shift), Until(Still()), Hold(Left), Jump(), Until(GroundedOn("Tread_B")), Release(), Until(Still()),
-                Hold(Right), Jump(), Until(GroundedOn("Tread_C")), Release(), Until(Still()),
-                Hold(Left), Until(XAtMost(2.7f)), Release().Timed(TimedMode.Shift), Until(Still()), Hold(Right), Jump(), Until(GroundedOn("S1_A")),
-                // PAX-102: stop short of Spikes_4, hop them onto the strip before Block_3's hole, hop the three holes, and jump the
-                // section that isn't there to the door.
-                Release(), Until(Still()), Hold(Right), Jump(), Until(XAtLeast(9.2f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("S1_A")),
-                Until(Still()), Hold(Right), Jump(), Until(XAtLeast(12.2f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("S1_A2")), Hold(Right),
-                Until(XAtLeast(15.6f)), Jump(), Until(XAtLeast(18.1f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("S1_A3")),
-                Until(Still()), Hold(Right), Until(XAtLeast(19.4f)), Jump(), Until(XAtLeast(22f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("S1_A4")),
-                Release(), Until(Still()),
-                // D-112: the ferry crossing.
-                Until(Moving("Ferry")), Until(Home("Ferry")),
-                Hold(Right), Until(XAtLeast(24.2f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Ferry")), Until(Stopped("Ferry")),
-                Hold(Right), Jump().Timed(TimedMode.Shift), Until(RoomComplete()));
+                // West into Invert; from here the stick is backwards. Jump Spikes_1 ahead of Hinge_1, into Flip_U1.
+                Hold(Left), Until(Fired("Invert")), Hold(Right), Until(XAtMost(24.6f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
+                // On the ceiling: jump CC_1, stop where the jump lands while Lift_1 goes up and down, jump Pop_C and fall up the shaft.
+                Until(GravityUp()), Until(GroundedOn("SA_2")), Until(XAtMost(15.4f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(XAtMost(12f)), Until(Grounded()),
+                Release(), Until(Still()), Until(Fired("Lift_1")), Until(Since("Lift_1", 52)),
+                Hold(Right), Until(Fired("Pop_C")), Jump().Timed(TimedMode.Shift), Until(YAtLeast(10f)), Until(GroundedOn("Roof_A")),
+                // The upper ceiling, east: ahead of Push_2, over Spikes_C2, into Flip_D2.
+                Hold(Left), Until(XAtLeast(7.4f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(GroundedOn("Roof_B")),
+                Until(GravityDown()), Until(GroundedOn("SA_2")),
+                // Ahead of Hinge_W: jump Pop_2 as it springs, jump Crumble, to the door.
+                Until(Fired("Pop_2")), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
+                Until(XAtLeast(24f)), Jump().Timed(TimedMode.Shift), Until(RoomComplete()));
 
             return new RoomRoutes(solution,
-                new Betrayal("T1: Block_1 comes down on a cat that runs on from the start", "Block_1", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Hold(Left)", "run on", Until(Dead()))),
-                new Betrayal("T2: Block_2 comes down on a cat that hopped Block_1 and ran on", "Block_2", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Grounded)", "run on after the hop", Until(Dead()))),
-                new Betrayal("T3: Block_3 comes down on a cat that stops on the ledge", "Block_3", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Ledge))", "stop on the ledge", Release(), Until(Dead()))),
-                new Betrayal("T4: Spikes_4 rise under a cat that runs along S1", "Spikes_4", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(S1_A))", "run on", Hold(Right), Until(Dead()))),
-                new Betrayal("T5: a cat that jumps after the door overshoots the ferry onto Spikes_5b", "Spikes_5b", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(S1_A4))", "jump after the door", Hold(Right), Jump(), Until(Dead())), revealedBy: "Door"),
-                new Betrayal("T6: a cat that steps off the dock while the ferry is away falls onto Spikes_5", "Spikes_5", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Home(Ferry))", "step off while it's away", Until(Moving("Ferry")), Until(Stopped("Ferry")), Hold(Right), Until(Dead())), revealedBy: "Ferry"),
-                new Betrayal("T7: Stone, the slab in the gap, is a fake; a cat that hops onto it falls onto Spikes_5", "Spikes_5", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Home(Ferry))", "hop onto the slab", Hold(Right), Jump(), Until(XAtLeast(25.6f)), Release(), Until(Dead())), revealedBy: "Stone"),
-                new Betrayal("Dead end: the stair's top step where the ferry docks drops the cat onto Spikes_5b", "Spikes_5b", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Stopped(Ferry))", "step onto the stair's top step", Hold(Right), Until(Airborne()), Release(), Until(Dead())), revealedBy: "Tread_3"),
-                new Betrayal("Dead end: the stair up to the door", "Pit9_Hazard", DeathCause.Hazard,
-                    new Route("stair", Hold(Right), Until(XAtLeast(27.2f)), Jump(), Until(GroundedOn("Tread_1")), Jump(), Until(Dead())), revealedBy: "Tread_2"),
-                new Betrayal("Dead end: the high ledge on S1 gives way onto spikes", "Spikes_6", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(S1_A2))", "the high ledge",
-                        Release(), Until(Still()), Hold(Left), Until(XAtMost(12.6f)), Release(), Until(Still()),
-                        Hold(Right), Jump(), Until(XAtLeast(13.6f)), Release(), Until(GroundedOn("Step_1")), Until(Still()),
-                        Hold(Right), Jump(), Until(GroundedOn("Ledge_H")), Until(XAtLeast(19f)), Release(), Until(Dead()))));
+                new Betrayal("T1: Hinge_1 shoves a cat that stops past Invert onto Spikes_1", "Spikes_1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Fired(Invert))", "stop", Release(), Until(Dead())), revealedBy: "Hinge_1"),
+                new Betrayal("T2: a cat that keeps pressing the way it went turns back into Hinge_1, which shoves it onto Spikes_1", "Spikes_1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Fired(Invert))", "keep pressing", Until(Dead())), revealedBy: "Hinge_1"),
+                new Betrayal("T3: CC_1 gives way under a cat that walks on along the ceiling", "Spikes_CC1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(SA_2))", "walk on", Until(Dead())), revealedBy: "CC_1"),
+                new Betrayal("T4: Lift_1 crushes a cat that walks on where the jump over CC_1 lands", "Lift_1", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(X<=12)", "walk on", Until(Grounded()), Until(Dead()))),
+                new Betrayal("T5: Pop_C springs out of the ceiling under a cat that walks on", "Pop_C", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Fired(Pop_C))", "walk on into Pop_C", Until(Dead()))),
+                new Betrayal("T6: Push_2 shoves a cat that stops short of Spikes_C2 onto them", "Spikes_C2", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Roof_A))", "stop", Hold(Left), Until(XAtLeast(6.4f)), Release(), Until(Dead())), revealedBy: "Push_2"),
+                new Betrayal("T7: Hinge_W catches a cat that stops on the upper floor", "Hinge_W", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GravityDown)", "stop", Until(Grounded()), Release(), Until(Dead()))),
+                new Betrayal("T8: Pop_2 springs up under a cat that runs on", "Pop_2", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Fired(Pop_2))", "run on into Pop_2", Until(Dead()))),
+                new Betrayal("T9: Crumble gives way under a cat that runs on", "Spikes_Cr", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Fired(Pop_2))", "run on onto Crumble", Jump(), Until(Airborne()), Until(Grounded()), Until(Dead())), revealedBy: "Crumble"));
         }
     }
 }

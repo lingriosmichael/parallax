@@ -17,7 +17,7 @@ namespace Parallax.Tests.EditMode
 
         // id, plain left to right, climbs, descends, doubles back (heads away from the door first).
         static readonly (string id, bool plain, bool climb, bool descend, bool doublesBack)[] Shapes = {
-            ("L001", true, false, false, false),
+            ("L001", false, false, true, false),   // D-159: "Run!" loops back under its start
             ("L002", false, true, false, true),
             ("L003", false, true, false, false),
             ("L004", false, true, false, true),

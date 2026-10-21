@@ -50,6 +50,20 @@ MonoBehaviour:
   - {fileID: 21300000, guid: bc624599bb77047b7b5fa2654de72488, type: 3}
   - {fileID: 21300000, guid: ed6332a67f3f0492ab7c7720b3b34875, type: 3}
   - {fileID: 21300000, guid: 2bca339a8dd7146a7b60d87bafdbb6fd, type: 3}
+  SpikeBladesStout:
+  - {fileID: 21300000, guid: 181ab6f7d6f1041579ced02cce0f5eac, type: 3}
+  - {fileID: 21300000, guid: 322a6e50c40b043288c91a2e140389c6, type: 3}
+  - {fileID: 21300000, guid: 03577f3feb7574e0ab9632a09c045245, type: 3}
+  - {fileID: 21300000, guid: ca5d9e4858a9242619cab2f21d696f6e, type: 3}
+  - {fileID: 21300000, guid: 51ef85d55e3f143b6853970855f53bdc, type: 3}
+  - {fileID: 21300000, guid: 7a1ea7d22fbdb4e02a38e8f61f317ea7, type: 3}
+  - {fileID: 21300000, guid: c4add1a7749af41718aa6ef215fd4d3b, type: 3}
+  - {fileID: 21300000, guid: 256d4fa27d12841b3817539b89d1efd4, type: 3}
+  - {fileID: 21300000, guid: 497c84999bd4a4fa389f2e1800ffb5b8, type: 3}
+  - {fileID: 21300000, guid: fec0b6eae27764f629aded084a319eac, type: 3}
+  - {fileID: 21300000, guid: e9a89219adcc543f184d110301c4d2c8, type: 3}
+  - {fileID: 21300000, guid: d6421f6dbf179440ebbaf4b6dd53fb35, type: 3}
+  StoutBladeScale: {x: 1.6, y: 1.25}
   SlamPlate: {fileID: 21300000, guid: 04b240e4aeedc498b9c4e295c293d471, type: 3}
   HingeKnuckle: {fileID: 21300000, guid: 3de11f71a6922435b8bb1929214650f3, type: 3}
   Cracks:

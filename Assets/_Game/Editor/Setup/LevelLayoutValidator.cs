@@ -80,9 +80,18 @@ namespace Parallax.Editor.Setup
             SoloRoomElement? retreatOpt = room.Elements.Where(e => e.Kind == SoloRoomElementKind.DoorRetreat).Cast<SoloRoomElement?>().FirstOrDefault();
             if (retreatOpt.HasValue) { Rect moved = door; moved.position += retreatOpt.Value.Settings.Offset; poses.Add(("its retreated pose", moved)); }
             Rect[] solids = room.Elements.Where(IsFixedSolid).Select(e => Box(e, Vector2.zero)).ToArray();
-            foreach ((string name, Rect box) in poses)
-                if (!solids.Any(r => Mathf.Abs(r.yMax - box.yMin) < eps && r.xMin <= box.xMin + eps && r.xMax >= box.xMax - eps))
-                    errors.Add($"{levelId}: the door at {name} {Describe(box)} doesn't stand on a fixed solid (D-106).");
+            // D-159: a door may ride a lift: a Solid mover under it at its authored pose, which moves by the retreat's own offset,
+            // so it is under the door at the retreated pose too.
+            Rect[] lifts = room.Elements.Where(e => e.Kind == SoloRoomElementKind.MovingTrap && e.Settings.MovingKind == MovingTrapKind.Solid
+                && retreatOpt.HasValue && (e.Settings.Offset - retreatOpt.Value.Settings.Offset).sqrMagnitude < eps).Select(e => Box(e, Vector2.zero)).ToArray();
+            for (int i = 0; i < poses.Count; i++)
+            {
+                (string name, Rect box) = poses[i];
+                Vector2 shift = i == 0 ? Vector2.zero : retreatOpt.Value.Settings.Offset;
+                bool OnTop(Rect r) => Mathf.Abs(r.yMax - box.yMin) < eps && r.xMin <= box.xMin + eps && r.xMax >= box.xMax - eps;
+                if (!solids.Any(OnTop) && !lifts.Any(l => { Rect m = l; m.position += shift; return OnTop(m); }))
+                    errors.Add($"{levelId}: the door at {name} {Describe(box)} doesn't stand on a fixed solid or a lift that carries it (D-106, D-159).");
+            }
             return errors;
         }
 

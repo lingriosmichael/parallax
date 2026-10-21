@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8a14c69a6d0f4823a794fc236b1249b, type: 3}
+  m_Name: TitleScreenConfig
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Levels.TitleScreenConfig
+  coverFade: 1.4
+  wordmarkStart: 0.9
+  trackingSeconds: 2.2
+  trackingFrom: 1.1
+  trackingTo: 0.42
+  ruleStart: 2.3
+  taglineStart: 2.7
+  menuStart: 3.3
+  fade: 0.8
+  inputLock: 0.2
+  driftRange: 2.5
+  driftPeriod: 48
+  tagline: Every room is lying.
+  idleFps: 7
+  fidgetFps: 12
+  fidgetEvery: 6

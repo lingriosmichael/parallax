@@ -127,6 +127,114 @@
       "tiled": false
     },
     {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_10_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_10.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_11_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_11.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_4_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_4.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_5_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_5.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_6_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_6.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_7_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_7.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_8_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_8.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_9_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_9.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher_n.png",
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher.png",
       "pivotX": 0.5,
@@ -887,6 +995,270 @@
       ],
       "sources": [
         "Art_Source/Traps_ChatGPT/PILOT-01_spike_blades_iron_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_0": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_0.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        38,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_0.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_1": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_1.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        47,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_10": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_10_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_10.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        49,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_10.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_11": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_11_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_11.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        43,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_11.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_2": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_2.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        32,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_3": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_3_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_3.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        40,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_4": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_4_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_4.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        40,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_4.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_5": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_5_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_5.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        39,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_5.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_6": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_6_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_6.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        36,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_6.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_7": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_7_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_7.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        42,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_7.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_8": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_8_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_8.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        45,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_8.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_steel_9": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_9_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_9.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        41,
+        148
+      ],
+      "sources": [
+        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_9.png"
       ],
       "tiled": false
     },

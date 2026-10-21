@@ -17,7 +17,10 @@ namespace Parallax.Presentation
         public readonly struct Body
         {
             public readonly SpriteRenderer Art, Greybox;
-            public Body(SpriteRenderer art, SpriteRenderer greybox) { Art = art; Greybox = greybox; }
+            /// <summary>PAX-109 (D-153 amendment 5): a fitting (a slam's plate, a hinge floor's knuckle), drawn with its grey-box
+            /// only from the trap's fire on; at rest the element is the stone it is disguised as.</summary>
+            public readonly bool FromFire;
+            public Body(SpriteRenderer art, SpriteRenderer greybox, bool fromFire = false) { Art = art; Greybox = greybox; FromFire = fromFire; }
         }
 
         public readonly struct Effect

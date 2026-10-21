@@ -60,7 +60,7 @@ namespace Parallax.Editor.Levels
                 new SoloRoomElement(SoloRoomElementKind.Hazard,"Pit_Foot",new Vector2(3.8f,-2.85f),new Vector2(2.4f,.3f),hazardRole:SoloRoomHazardRole.OpeningBottom),
                 // PAX-107 round eight: the ground ends at the Riser (x 17.5-20.5, below).
                 E(SoloRoomElementKind.Floor,"Ground",(11.25f,-2f),(12.5f,4f)),
-                E(SoloRoomElementKind.Wall,"G_East",(21f,1.925f+h*.5f),(1f,11.85f+h)),
+                E(SoloRoomElementKind.Wall,"G_East",(21f,1.775f+h*.5f),(1f,11.55f+h)),   // 2026-10-19: up to the deeper gallery (10.45)
                 // Core_W (x 5-6, from y 1.5): PAX-107 round eight (the developer: "Move the very first lance higher") raises its
                 // foot 0.3 and Spear_1 0.2 (its top 1.3: the jump off it to Spear_2 then tops out 0.04 under Spear_3's lane). Its
                 // east face is mossy from y 2 to 6, the way down from the Column. Its top (from y 7.95, where the Crossing's
@@ -99,7 +99,10 @@ namespace Parallax.Editor.Levels
                 // thirteen: in three parts, Gallery_W (x 6-12, on Hang), the bridge (x 12-17.5, Bridge_1-5 below) and Gallery
                 // (x 17.5-21.5, on G_East: the Riser's crush partner).
                 E(SoloRoomElementKind.Floor,"Gallery_W",(9f,8.1f+h),(6f,.5f)),
-                E(SoloRoomElementKind.Floor,"Gallery",(19.5f,8.1f+h),(4f,.5f)),
+                // 2026-10-19 (the developer: "this gap in level 011 looks super weird. Fill in the tiles properly"): the gallery
+                // is 0.8 u deep here, down to where the Riser stops (10.45), so the risen pillar meets stone, not a strip of sky.
+                // Its walked top is unchanged (11.25).
+                E(SoloRoomElementKind.Floor,"Gallery",(19.5f,7.95f+h),(4f,.8f)),
                 E(SoloRoomElementKind.Floor,"Tunnel_Floor",(22.5f,2.175f+h*.5f),(2f,12.35f+h)),
                 E(SoloRoomElementKind.Wall,"Curb_M",(20.65f,8.65f+h),(.5f,.6f)),
                 // The east shaft (x 23.5-28, floor 9.8) with the Dip at its west end (0.7 deep), and the tower east of it.
