@@ -4801,3 +4801,66 @@ the hold's end at 4:3, 16:9 and 20:9. No dead ends (D-155), no precision section
 layout, kit, route, section, wall-jump and camera rule with no exemptions (D-093's band-2 counts apply to levels 11-20 only).
 (6) **Look.** The default Golden Ruins look until PAX-A20's biome switch and the developer's Obsidian paintings exist (D-163,
 D-164 (5)).
+
+### D-167 · 2026-10-23 · Proposed (D-163's third level; layout and traps only, art later)
+
+**Decision:** level 23 is "Ferryman" (`L023Layout`, `L023Routes`): **ride across**. One room, 32 u wide, three storeys of spike
+lakes 4.5 u tall on 2 u slabs, walked east, west, east, crossed on moving platforms that betray the rider and joined by lifts.
+Solution 1037 ticks (20.7 s), in three checkpoint sections (311, 365, 361 ticks); each later gate lies across its lift's shaft.
+(1) **Docks** (storey 1, east): the cat starts on **Pier_0**, which gives way 30 ticks after its first touch: board Ferry_1 (a
+shuttle) at once, ride it out and jump to Isle_1 at its far end. **Ferry_2** sets off when the cat steps on and **stalls** in
+mid-lake, 2 u short of Isle_2, where Slam_2 comes down on it: jump before it does. **Lift_U** carries the cat up; a cat that steps
+into its well while it's up is crushed when it comes down.
+(2) **Gallery** (storey 2, west): **Sink_3** sinks onto Lake_3's spikes 10 ticks after the cat lands on it: jump straight on.
+Ride_4 shuttles across Lake_4; Lift_U2 carries the cat up.
+(3) **Crown** (storey 3, east): Ride_5a and Ride_5b shuttle toward each other across Lake_5 and wait at their far ends 1.5 u apart:
+ride 5a out, hop onto 5b, ride it home. Hinge_F, spiked, chases (jump Spikes_5); Slam_F (stop short, hop onto it); the door.
+(4) **Timing.** Every lift and ride is phased so it gets home just as a cat on the solution arrives, and waits there long enough to
+board from rest (D-056's 12-tick slack); the cat stands still only while it rides.
+(5) **Rules.** 9 distinct killers, all in sequence, 10 betrayal routes, all Dies with lead ≥ 6. The storey-2 and storey-3 lake beds
+are the slab's own stone (floors, so each storey's triggers have a ceiling); storey 1's lakes are pits. No dead ends, no
+precision sections, no grip walls, existing trap kinds only. It passes every layout, kit, route, section and camera rule with no
+exemptions.
+(6) **Look.** Golden Ruins until PAX-A20 (D-163, D-164 (5)).
+
+### D-168 · 2026-10-23 · Proposed (D-163's fourth level; layout and traps only, art later)
+
+**Decision:** level 24 is "Ceiling Town" (`L024Layout`, `L024Routes`): **live upside down**. One room, 32 u wide, three corridors
+4.5 u tall on 2 u slabs (L016's), their ceilings walked east, west, east over spiked streets; getting right side up is the trap
+until the end. Solution 935 ticks (18.7 s), in three checkpoint sections (392, 273, 270 ticks); each later gate lies across the
+shaft the cat falls up through, and both later sections start on their ceilings.
+(1) **Town** (corridor 1's ceiling, east): the cat spawns gravity down in Flip_U0 and rises through Inv_0, so it starts on the
+ceiling with left and right swapped (the room still starts with gravity down, D-091); the swap ends as it rises up the shaft (an
+end box, inside D-087's 25-500 ticks). **Spikes_R1** come and go on the ceiling; the troll, **Flip_H1** (L016's Flip_H turned
+over), hidden at the bottom of a jump over them, sets a cat that jumps them right side up onto Street_1a: wait and walk through.
+CC_1 gives way into a spiked recess (jump it); Lift_1 rises out of the street into the ceiling (stop, let it go up and down);
+over Kerb_C1, then Arrow_1 fires along the ceiling at the hanging cat's height without stopping (jump the shots, down and back);
+up the shaft.
+(2) **Gallery** (corridor 2's ceiling, west): Piston_2 rises into the ceiling on its beat (wait); Pop_C2 springs out of the ceiling
+ahead (jump it); CC_2 gives way under a cat that stops on it; up the shaft.
+(3) **Crown** (corridor 3): on the roof's underside Push_3 shoves the cat at Spikes_C3 (jump them at once, L016's); Flip_D3 sets it
+right side up at last; on the floor Hinge_F, spiked, chases (jump Spikes_5); Slam_F (stop short, hop onto it); the door.
+(4) **Rules.** 11 distinct killers, 10 in sequence, 11 betrayal routes, all Dies with lead ≥ 6; every timed window ≥ 12. No dead
+ends, no precision sections, no grip walls, existing trap kinds only; passes every layout, kit, route, section and camera rule
+with no exemptions.
+(5) **Look.** Golden Ruins until PAX-A20 (D-163, D-164 (5)).
+
+### D-169 · 2026-10-23 · Proposed (D-163's fifth level; layout and traps only, art later)
+
+**Decision:** level 25 is "Rhythm" (`L025Layout`, `L025Routes`): **move on the beat**. Every piston, slam, launcher and lift keeps
+one 90-tick beat (the lift a beat and a half), so the room pulses and the cat goes in the gaps. One room, 32 u wide, three storeys
+4.5 u apart on 1 u slabs (L020's, so G_1's launch reaches the next storey), walked east, west, east. Solution 769 ticks (15.4 s), in
+three checkpoint sections (182, 320, 267 ticks); each later gate lies across the hole or shaft the cat rises through.
+(1) **Pistons** (storey 1, east): Piston_A, B and C rise into the slab a third of a beat apart, a wave: set off as A comes down and
+run behind it. G_1, on the Plinth, launches the cat up the hole on the beat; steer west onto storey 2.
+(2) **Slams** (storey 2, west): Slam_2a and Slam_2b pound the floor half a beat apart: go through the gaps. Lift_2 carries the cat
+up; a cat that steps into its well while it's up is crushed when it comes down.
+(3) **Drums** (storey 3, east): G_3 blows down out of the roof over Spikes_3 on the beat (wait it out, then jump them); Arrow_3 fires
+along the floor from behind a beat apart without stopping (jump each shot); over Kerb_3, and Slam_D pounds in front of the door:
+through on the off-beat. A new ending (not D-164-D-168's hinge, spikes and slam).
+(4) **Timing.** Each element's place in the beat is set so a cat on the solution arrives as its gap opens; the longest wait is 41
+ticks, riding the lift.
+(5) **Rules.** 9 distinct killers, 8 in sequence, 9 betrayal routes, all Dies with lead ≥ 6; every timed window ≥ 12. No dead ends,
+no precision sections, no grip walls, existing trap kinds only; passes every layout, kit, route, section and camera rule with no
+exemptions.
+(6) **Look.** Golden Ruins until PAX-A20 (D-163, D-164 (5)).

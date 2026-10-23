@@ -137,6 +137,21 @@ namespace Parallax.Tests.EditMode
         [TestCase("L022", 930, new[] { 16, 42, 47, 14, 38, 14, 30 },
             new[] { "Hinge_0=7", "Slam_1=6", "Collapse_1=13", "Lift_2=8", "Punch_1=6", "Hinge_2=14", "Collapse_2=13", "Slam_2=6", "Punch_2=6", "Hinge_F=11", "Slam_F=6", "Collapse_3=12", "Pop_F=9" },
             new string[0])]
+        // D-167: L023 "Ferryman": three storeys of spike lakes crossed on platforms that betray the rider (Pier_0 gives way, Ferry_2
+        // stalls under Slam_2, Sink_3 sinks), lifts between them, two shuttles to hop between, Hinge_F chasing and Slam_F.
+        [TestCase("L023", 1037, new[] { 14 },
+            new[] { "Pier_0=17", "Ferry_1=75", "Ferry_2=59", "Slam_2=6", "Lift_U=128", "Sink_3=6", "Ride_4=455", "Ride_5a=695", "Hinge_F=14", "Slam_F=6" },
+            new string[0])]
+        // D-168: L024 "Ceiling Town": three corridors walked on their ceilings, inverted at first; the hidden Flip_H1 under the jump
+        // over Spikes_R1, CC_1, Lift_1, Arrow_1 along the ceiling; Piston_2, Pop_C2, CC_2; Push_3, Flip_D3, Hinge_F, Slam_F.
+        [TestCase("L024", 935, new[] { 30, 40, 14, 51, 14, 15, 14 },
+            new[] { "Cat.Gravity=72", "Spikes_R1=8", "CC_1=15", "Lift_1=8", "Arrow_1=10", "Piston_2=9", "Pop_C2=9", "CC_2=11", "Push_3=18", "Hinge_F=14", "Slam_F=6" },
+            new string[0])]
+        // D-169: L025 "Rhythm": everything on one 90-tick beat; the piston wave, G_1's launch, two slams half a beat apart, Lift_2;
+        // G_3 over Spikes_3, Arrow_3 from behind, Slam_D in front of the door.
+        [TestCase("L025", 769, new[] { 42, 51, 14, 26, 51 },
+            new[] { "Piston_A=9", "Piston_B=9", "Piston_C=9", "Slam_2a=7", "Slam_2b=7", "Lift_2=74", "G_3=595", "Arrow_3=10", "Slam_D=8" },
+            new string[0])]
         // A level's whole route measurement runs inside its case, over NUnit's default 180 s for the larger levels (L014).
         [Timeout(600000)]
         public void RouteResults_AreAsBuilt(string id, int solutionTicks, int[] windows, string[] leads, string[] recoveries)
