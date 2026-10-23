@@ -22,7 +22,7 @@ namespace Parallax.Tests.EditMode
     //    grown by (BodyScale - 1) of its size on each side (D-101);
     //  - an effect is drawn only while the event it shows is happening, read from trap state (a crumble after its floor is
     //    gone, a glint in the arrow's tell, splinters after it stopped, the geyser's tell in its tell and its burst while
-    //    erupting, a block's landing dust once it has landed, its heap of rubble from then on (instead of its skin), a mover's dust while it moves, a door's scrape while it moves,
+    //    erupting, its steam fading for GeyserFadeTicks after the eruption (D-162), a block's landing dust once it has landed, its heap of rubble from then on (instead of its skin), a mover's dust while it moves, a door's scrape while it moves,
     //    a pulse, flare or snap within its length of the fire; TrapArtMath holds the lengths);
     //  - a death effect is drawn only in the hold, and only the effect of what killed the cat (§3 rule 6);
     //  - the arrow's glint and the geyser's tell are on for exactly their declared window;
@@ -292,6 +292,11 @@ namespace Parallax.Tests.EditMode
                         case "impact": allowed = ArrowFired(art) && s >= (int)Private(trap, "tellTicks") + ArrowMath.FlightTicks((float)Private(trap, "travel"), (float)Private(trap, "unitsPerTick")); break;
                         case "tell": anyTell = true; allowed = trap is GeyserTrap g && g.Phase == GeyserPhase.Tell; break;
                         case "burst": allowed = trap is GeyserTrap g2 && g2.Phase == GeyserPhase.Erupt; break;
+                        // D-162: the steam dying away, for its length from the end of the eruption.
+                        case "fade":
+                            int ended = trap is GeyserTrap ? (int)Private(trap, "tellTicks") + (int)Private(trap, "eruptTicks") : int.MaxValue;
+                            allowed = trap is GeyserTrap g3 && g3.Phase == GeyserPhase.Idle && s >= ended && s < ended + TrapArtMath.GeyserFadeTicks;
+                            break;
                         case "reveal": allowed = ArrowFired(art); break;
                         case "grit": allowed = s >= 0 && s < 12 && Shown(art.Bodies[0].Greybox); break;
                         // From its release until it has lain still for the crack's fade.

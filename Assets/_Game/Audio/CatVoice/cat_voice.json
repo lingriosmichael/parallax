@@ -1,0 +1,128 @@
+{
+ "rate": 44100,
+ "roles": {
+  "Mew": [
+   {
+    "path": "Mew_00.wav",
+    "seconds": 0.592,
+    "sha1": "09fd6104e9fb3d596b70c8d8382361a978d9abc3"
+   },
+   {
+    "path": "Mew_01.wav",
+    "seconds": 0.592,
+    "sha1": "532fa4e58d0a89ea92db8f03e7becbf239da813a"
+   },
+   {
+    "path": "Mew_02.wav",
+    "seconds": 0.592,
+    "sha1": "0f6ecd79c3fa4e6345f93e68419a5052548bc021"
+   }
+  ],
+  "MewLow": [
+   {
+    "path": "MewLow_00.wav",
+    "seconds": 0.708,
+    "sha1": "ac670fd28edc50648d008b80806566a2fe083ae7"
+   },
+   {
+    "path": "MewLow_01.wav",
+    "seconds": 0.708,
+    "sha1": "e283fcfe35aba461004b5ec08845012cb9838156"
+   }
+  ],
+  "Mrrow": [
+   {
+    "path": "Mrrow_00.wav",
+    "seconds": 1.12,
+    "sha1": "98f93b23845604614444378a7c1a5d09521bdfe4"
+   },
+   {
+    "path": "Mrrow_01.wav",
+    "seconds": 1.12,
+    "sha1": "333dfafceec0c17436a4950a7b2e95b2022eed89"
+   }
+  ],
+  "Chirp": [
+   {
+    "path": "Chirp_00.wav",
+    "seconds": 0.218,
+    "sha1": "a7be42bdc80165c58abf7fdcde2495b977ce798a"
+   },
+   {
+    "path": "Chirp_01.wav",
+    "seconds": 0.218,
+    "sha1": "ac53d4b8f0adee9bdf762d69d6c758d601b32eb8"
+   },
+   {
+    "path": "Chirp_02.wav",
+    "seconds": 0.218,
+    "sha1": "ae2dce9115cd1ae76060224aeffd21cd8863fc7c"
+   }
+  ],
+  "Mrp": [
+   {
+    "path": "Mrp_00.wav",
+    "seconds": 0.273,
+    "sha1": "9f018615c03e79d3e1ee7bf45db1ce3f6e8012f4"
+   },
+   {
+    "path": "Mrp_01.wav",
+    "seconds": 0.273,
+    "sha1": "38a6fe05037db26871b6677adbb29a8cac1042d1"
+   },
+   {
+    "path": "Mrp_02.wav",
+    "seconds": 0.273,
+    "sha1": "4fcca367a0214d8244e2b54a7b14f4b793791a39"
+   }
+  ],
+  "Mrf": [
+   {
+    "path": "Mrf_00.wav",
+    "seconds": 0.273,
+    "sha1": "6be7fed5afe4b8dc2642bc58cd3d9f837b977896"
+   },
+   {
+    "path": "Mrf_01.wav",
+    "seconds": 0.273,
+    "sha1": "1a9e9e2cead901979f7864d4ae65385e506d0081"
+   }
+  ],
+  "Trill": [
+   {
+    "path": "Trill_00.wav",
+    "seconds": 0.264,
+    "sha1": "5606ad63eff64a050355dba3d23521153dc5721c"
+   },
+   {
+    "path": "Trill_01.wav",
+    "seconds": 0.264,
+    "sha1": "3a9ba3639103077107418f5598715d721f7432e5"
+   }
+  ],
+  "Purr": [
+   {
+    "path": "Purr_00.wav",
+    "seconds": 2.6,
+    "sha1": "aca5cfd89992db49e43c596fa78cc824227a1b2c"
+   }
+  ],
+  "Death": [
+   {
+    "path": "Death_00.wav",
+    "seconds": 0.55,
+    "sha1": "6f355b67ebb9006e4b503e570fc6d776d996beb3"
+   },
+   {
+    "path": "Death_01.wav",
+    "seconds": 0.55,
+    "sha1": "d400d991871f3a7c3a6343fcb19d21b90a5c0a18"
+   },
+   {
+    "path": "Death_02.wav",
+    "seconds": 0.55,
+    "sha1": "e2dda0c4ac871657b4bd82fe093c8fa54df58ac9"
+   }
+  ]
+ }
+}

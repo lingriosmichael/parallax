@@ -48,6 +48,8 @@ namespace Parallax.Core.Presentation
         public const int LandDustTicks = 24;
         /// <summary>A moving solid's dust puff (its leading edge while it moves) and a shrinker's chips.</summary>
         public const int SolidDustTicks = 18;
+        /// <summary>D-162: a geyser's steam dying away, from the end of its eruption (Tools/Art/geyser_steam.py's FADE).</summary>
+        public const int GeyserFadeTicks = 22;
 
         /// <summary>A stable 32-bit seed (FNV-1a) from an element's name and an event count.</summary>
         public static uint Seed(string name, int eventCount)

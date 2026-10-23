@@ -9,7 +9,8 @@ namespace Parallax.Gameplay.Audio
 {
     /// <summary>PAX-064 (D-158): turns a level's events into cues. Every trap's Fired; the start of a death hold (by what
     /// killed, PAX-V07's death kinds), or the death itself when there is no hold; the respawn; level complete; and the solo
-    /// cat's jumps and landings; and (2026-10-20, "Storms needs to sound like thunder") every storm cloud's strike. Read-only: it subscribes and polls, and never writes gameplay state. It runs after
+    /// cat's jumps and landings; and (2026-10-20, "Storms needs to sound like thunder") every storm cloud's strike; and (D-165) the
+    /// cat meowing to itself while it stands still (CatVoice.IdleDue). Read-only: it subscribes and polls, and never writes gameplay state. It runs after
     /// ObserverSet's tick (execution order 1000), so it sees each tick's JumpedThisStep and grounding.</summary>
     [DefaultExecutionOrder(1000)]
     [DisallowMultipleComponent]
@@ -31,6 +32,8 @@ namespace Parallax.Gameplay.Audio
         CatRespawn respawn;
         bool holdHeard;
         int airborne;
+        int still;
+        Vector2 lastAt;
 
         void OnEnable()
         {
@@ -64,12 +67,14 @@ namespace Parallax.Gameplay.Audio
             cat = null;
             holdHeard = false;
             airborne = 0;
+            still = 0;
         }
 
         void FixedUpdate()
         {
             if (death.IsHolding)
             {
+                still = 0;
                 if (!holdHeard)
                 {
                     holdHeard = true;
@@ -90,6 +95,16 @@ namespace Parallax.Gameplay.Audio
                 if (airborne >= landAfterTicks) gameAudio.Play(airborne >= hardLandTicks ? AudioCue.HardLand : AudioCue.Land, CatX());
                 airborne = 0;
             }
+            HearIdle();
+        }
+
+        // D-165: standing on the ground without moving (a carried cat moves) counts up; CatVoice says when it meows.
+        void HearIdle()
+        {
+            Vector2 at = cat.transform.position;
+            still = cat.IsGrounded && (at - lastAt).sqrMagnitude < 1e-6f ? still + 1 : 0;
+            lastAt = at;
+            if (CatVoice.IdleDue(still)) gameAudio.Play(AudioCue.Idle, at.x);
         }
 
         // A strike's first tick plays thunder where the cloud is (its phase is set in this tick's room step, before this runs).
@@ -122,6 +137,7 @@ namespace Parallax.Gameplay.Audio
         void OnRespawned()
         {
             airborne = 0;
+            still = 0;
             if (!rooms.LevelComplete) gameAudio.Play(AudioCue.Respawn, CatX());
         }
 

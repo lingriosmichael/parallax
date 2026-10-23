@@ -4695,3 +4695,109 @@ setup menu runs. Setting `StoutSpikes = false` on a level's look brings back D-1
 reach caps and the hitboxes are as in (1)–(4). One addition: a front blade whose lean would carry its tip across the edge of a solid
 over its strip moves back by its lean, so its foot and its tip are on the same side of that solid (L019 Thorns_F, at the edge of
 Fake_1, broke the no-art-through-covers rule with the stout layout).
+
+### D-162 · 2026-10-22 · Accepted (the developer, on the geyser mock-ups: "the art for the geyser air is also ugly and undeserving for a prmium game"; on round 2: "I like the 2D thermal Vent, so use this for all geyser vents from now on")
+
+**Decision:** every geyser's air is the "2D thermal vent" steam, replacing PAX-A13's water column, droplets, burst and spray (PAX-A19).
+(1) **Art.** `Tools/Art/geyser_steam.py` renders the steam as one sprite per tick, at 80 px per unit, deterministically
+(`--check` fails if a re-run would change a byte), into `Assets/_Game/Art/Geyser/{Up,Down}/` with its manifest `geyser_steam.json`.
+The steam is a small volumetric render: particles from the vent whose positions are formulas of their age, broken up by advected
+noise, sunlit from the upper left with self-shadowing, and drawn with alpha = 1 − exp(−density). The vent glows orange through
+the tell and the eruption and warms the steam's underside. A vent in a ceiling has its own frames: its jet fires down, and its
+steam rises back and spreads along the ceiling.
+(2) **Phases, from ticks only.** Tell (25 frames): hissing wisps and the glow. Eruption (40 frames): the dense jet in the launch
+column plus the plume round it, which rolls over at the top and spills along the floor. Then the steam dies away for
+`TrapArtMath.GeyserFadeTicks` (22) ticks after the eruption. A tell or eruption of another length stretches its frames. The
+death hold freezes it and a checkpoint rewind restores it exactly, because every frame is a function of `TicksSinceFire`.
+(3) **Body and effects.** The column's body is the jet inside the column, drawn at the column art's box (1.1 × 1.5 u) and never
+outside it. The plume (burst group), the tell's wisps (tell group) and the fade (a new fade group, with its own parity rule) are
+effects. The jet and the plume split one density field, so drawn together their coverage is exactly the whole frame's, with no seam.
+(4) **Drawing.** The steam draws unlit (the hazards' material, PAX-V08), because its light is rendered into it; under a level's
+2D lights the glow washed out to white. The vent keeps the kit's carved vent, which warms through the tell as before.
+(5) **Budget.** 254 sprites, 4.8 M px, in their own Sprite Atlas V2 (`GeyserSteam.spriteatlasv2`, pages of at most 2048,
+compressed), beside the trap kit's one atlas. `PARALLAX/Art/Import Trap Kit` imports them and fills `TrapArtConfig.GeyserSteamUp`
+and `GeyserSteamDown`. The old water-column sprites stay in the kit, unused by geysers.
+(6) **Not in it.** The heat shimmer over the vent in the mock-up video. It needs the 2D renderer's camera sorting-layer texture
+(a renderer setting) and a distortion shader, which is a separate decision.
+
+### D-163 · 2026-10-22 · Accepted (the developer: "How about we create 10 more levels you know the formula. each level needs to feel new"; on the ten concepts: "Good. lets continue use the obsidian environment for 21-50"; on the Reality B conflict: "Use it; B changes later" and "Placeholder Obsidian")
+
+**Decision:** levels 21–30 are built next, one at a time, and L021–L050 wear the Obsidian Void environment.
+(1) **The ten levels**, each with its own headline idea, in the L014/L016 style (compact storeys 4–5 u apart, a moving threat
+every few steps of the normal path, immediate action, a chase at the end, solid stone wherever the cat doesn't play), using the
+existing trap kit only (no new trap kinds unless the developer approves one):
+L021 Ignition (thermal vents up a shaft while the floor collapses vent by vent) · L022 Wall Runner (grip-wall chimneys between
+side slams) · L023 Ferryman (moving platforms over spikes that stop, reverse or drop on the jump) · L024 Ceiling Town (starts on
+the ceiling with inverted controls; getting right side up is the trap) · L025 Rhythm (launchers, pistons and lifts on one beat) ·
+L026 Liar's Temple (fake platforms, a fake door, a betraying checkpoint, a retreating door) · L027 Updraft (geysers fling the cat
+between snapping vines) · L028 Mirror Lanes (flip orbs with mirrored traps on floor and ceiling) · L029 Stormfront (the storm
+strikes ahead, herding the cat across falling bridges) · L030 Meltdown (a checkpointed escape as the level falls apart).
+Each level gets its own decision entry, routes and validator checks, and the developer play-tests in batches.
+(2) **Environment.** L021–L050 use Obsidian Void (obsidian, glass, grids, cyan edge light, void, monoliths). This supersedes
+D-151's ranges for those levels (Ember Night 21–40, Sky Isles from 41); the other biomes take later ranges. Until the premium
+paintings from `Docs/Art/ObsidianVoid_PROMPTS.md` exist, the levels wear the existing placeholder Obsidian set
+(`Art_Source/Environment/ObsidianVoid/B_*`).
+(3) **Reality B.** `00_VISION.md` gives Obsidian Void to Reality B in the co-op update. Reality B gets a new look when co-op is
+built. The frozen co-op code and its sandbox are unchanged.
+
+### D-164 · 2026-10-22 · Proposed (D-163's first level; awaiting the developer's play-test)
+
+**Decision:** level 21 is "Ignition" (`L021Layout`, `L021Routes`): **ride the vents up**. One room, 32 u wide, in three
+checkpoint sections, solution 734 ticks (14.7 s).
+(1) **Ground** (walked east). The cat starts on a five-tile bridge over a spike chasm that falls away tile by tile behind it
+from its first step (each tile 15 ticks after the one before, a little slower than a run; L001's idea). G_T, a vent in the
+ground under Spikes_T, throws a cat that crosses it mid-eruption into the spikes. Slam_1 comes down out of the stone ahead
+(stop short, hop it). Arrow_1 shoots along the ground from the Plinth non-stop (hop Kerb_1 between shots). Collapse_P gives
+way under a cat that steps on it (jump straight onto the Plinth).
+(2) **Shaft.** Three vents erupt one after another, 60 ticks apart, every 120 ticks: V1 on the Plinth throws the cat up
+onto Crumb_2, which gives way 16 ticks after a touch, so it goes straight on to V2, which throws it onto Crumb_3, which gives
+way too, on to V3, which throws it onto the Lip. Spikes_Sh lines the shaft's floor.
+(3) **Crown** (walked west). Hinge_F, spiked, stands up behind the cat and chases it west at a little under a run. G_FD, a
+vent in the roof with a 2 u column on the shaft's clock, is still blowing down over Spikes_FD (wait it out with the wall
+coming, then jump). Slam_F comes down out of the roof ahead (stop short, hop onto it). Two crumbles give way over the Briar
+(jump them). Pop_F springs up by the door (jump it).
+(4) **Rules.** 11 distinct killers, 10 in sequence, 12 betrayal routes, all Dies with lead ≥ 6, every killer on screen by the
+hold's end at 4:3, 16:9 and 20:9. No dead ends (D-155), no grip walls, no precision sections. The bridge is exempt from the
+falling-block floor rule the same way as L011's (`LevelLayoutValidator.Band1`). Existing trap kinds only.
+(5) **Look.** Until PAX-A20's biome switch exists, L021 builds in the default Golden Ruins look; D-163's Obsidian Void applies
+once that ticket lands.
+
+### D-165 · 2026-10-22 · Accepted (PAX-110; the developer, on round 3's reels R and S: "Lets go with Audio S")
+
+**Decision:** the cat's voice is reel S, a code resynthesis fitted to CC0 meows, layered over the synthesized cues.
+(1) **Rendered offline by code.** `Tools/Audio/cat_voice.py` renders it from fitted tables (`Tools/Audio/cat_voice_presets.json`:
+F0, level, voicing, harmonic and breath envelopes, trill, and the purr's spectrum) into `Assets/_Game/Audio/CatVoice/`. It's
+deterministic and contains no recorded audio, so D-158's "no recorded clips or sound licences" still holds. What changes is that
+the game now ships these generated sounds as WAV files instead of synthesizing them at run time; the rest of the sound stays
+D-158's run-time synthesis. The tables were fitted to BigSoundBank recordings (Joseph Sardin, CC0 1.0: no obligations; credit
+optional).
+(2) **Which cues.** Respawn gets a mew; level complete a "mrrow" and a purr under the chime; one jump in four a chirp or a "mrp",
+alternating; the wall jump a "mrp"; the hard landing a low "mrf"; the gravity flip a chirp; the inverter a trill; every death
+reel S's thud with a short, muffled yelp ("sound like a cat, but no so obvious"), with the cause's own accent under it. **Idle**
+is new (an appended cue): a soft meow after 6 s standing still, then every 18 s.
+(3) **The formant voice is gone** from every synthesized cue (the developer: "too cartoony").
+(4) **Variants.** Each role has two or three variants (other seeds, small pitch steps), played in turn, plus the existing pitch
+walk. Variant 0 is reel S's sound.
+
+### D-166 · 2026-10-22 · Proposed (D-163's second level; layout and traps only, art later: the developer, "do the layout first of the traps and we add the art once I made all of them")
+
+**Decision:** level 22 is "Wall Runner" (`L022Layout`, `L022Routes`): **climb between the punches**. One room, 32 u wide, three
+corridors 4.5 u tall stacked on 2 u stone slabs (L016's), walked east, west, east, joined by two mossy chimneys. Solution 930
+ticks (18.6 s), in three checkpoint sections (356, 315, 259 ticks); each later section's gate lies across its chimney's shaft near the top.
+(1) **The punches** (the level's idea). Each chimney is a 1.75 u shaft between two grip walls (L016's). Halfway up, a stone block
+(Punch_1, Punch_2) sits in a recess in one wall and punches 2 u across the shaft on a beat (out over 10 ticks, held 12, back over
+12, every 90; Punch_2 half a beat after Punch_1). It crushes a cat at its height against the far wall's **anvil**, bare stone
+flush with the moss above it, so the wall at the punch's height is not grip (D-114: moss means grip). The answer: wait at the foot
+and climb as the punch pulls back. The punches are existing kit (a periodic solid mover that pushes, with a crush partner).
+(2) **Works** (corridor 1, east): Hinge_0 stands up behind the start (L020's; jump Spikes_0 at once); Slam_1 comes down out of the
+slab ahead (stop short, hop it); Collapse_1 over Pit_1 (jump it); Lift_2 shoots up into the slab (stop, let it go up and down);
+chimney 1 and Punch_1.
+(3) **Gallery** (corridor 2, west): Hinge_2 stands up behind and shoves a cat that stops onto Spikes_2 (jump them); Collapse_2
+over Briar_2 (jump it); Slam_2 (stop short, hop it); chimney 2 and Punch_2.
+(4) **Crown** (corridor 3, east): Hinge_F, spiked, stands up behind and chases (jump Spikes_3); Slam_F out of the roof (stop
+short, hop onto it); Collapse_3 over Briar_3 (jump it); Pop_F by the door (jump it).
+(5) **Rules.** 13 distinct killers, all 13 in sequence, 13 betrayal routes, all Dies with lead ≥ 6; every killer on screen by
+the hold's end at 4:3, 16:9 and 20:9. No dead ends (D-155), no precision sections, existing trap kinds only. It passes every
+layout, kit, route, section, wall-jump and camera rule with no exemptions (D-093's band-2 counts apply to levels 11-20 only).
+(6) **Look.** The default Golden Ruins look until PAX-A20's biome switch and the developer's Obsidian paintings exist (D-163,
+D-164 (5)).

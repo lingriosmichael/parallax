@@ -30,6 +30,8 @@ namespace Parallax.Core
         TrapVine,
         TrapOther,
         TrapStormStrike,
+        // D-165: the cat meowing to itself while it stands still (voice only, CatVoice).
+        Idle,
     }
 
     /// <summary>PAX-064: the mixer group a cue plays through; each has its own volume.</summary>

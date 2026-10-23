@@ -14,7 +14,8 @@ namespace Parallax.Editor.Setup
     /// <summary>PAX-064 (D-158). Idempotent: makes the AudioCueBank asset if it's missing, then gives _LevelTemplate, Title and
     /// LevelSelect a root "GameAudio" (GameAudio, plus LevelAudioEvents wired to the RoomManager, RoomDeath and ObserverSet in
     /// a level), saving each scene it changes. Rebuild All Levels then carries the template's into every Level_NNN. Like
-    /// Rebuild All, it opens those scenes itself, so it refuses while the open scene has unsaved changes.</summary>
+    /// Rebuild All, it opens those scenes itself, so it refuses while the open scene has unsaved changes. D-165: it also fills the
+    /// bank's cat voice (CatVoiceImport).</summary>
     public static class AudioSetup
     {
         public const string RootName = "GameAudio";
@@ -29,7 +30,7 @@ namespace Parallax.Editor.Setup
             string originalPath = active.path;
 
             var changes = new List<string>();
-            EnsureBank(changes);
+            CatVoiceImport.Import(EnsureBank(changes), changes);   // D-165
             foreach (string path in new[] { TemplatePath, TitleSetup.ScenePath, LevelSelectPath })
             {
                 if (AssetDatabase.LoadAssetAtPath<Object>(path) == null) { changes.Add(path + " doesn't exist, skipped"); continue; }

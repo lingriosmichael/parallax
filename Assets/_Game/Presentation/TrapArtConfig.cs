@@ -19,6 +19,10 @@ namespace Parallax.Presentation
         [Header("Geyser (TRAP-03, T04)")]
         public Sprite GeyserVent;
         public Sprite[] GeyserColumnFrames = new Sprite[0];
+        [Tooltip("D-162: the thermal-vent steam for an upward geyser, one sprite per tick (Tools/Art/geyser_steam.py).")]
+        public GeyserSteamFrames GeyserSteamUp = new();
+        [Tooltip("D-162: the same for a vent in a ceiling: its jet fires down and its steam rises back.")]
+        public GeyserSteamFrames GeyserSteamDown = new();
         [Header("Effects (T06)")]
         public Sprite[] Dust = new Sprite[0];
         public Sprite[] Spray = new Sprite[0];
@@ -76,7 +80,22 @@ namespace Parallax.Presentation
         [Min(0)] public int DeathPuffs = 8;
 
         public bool HasArrow => ArrowLauncher != null && Arrow != null;
-        public bool HasGeyser => GeyserVent != null && GeyserColumnFrames.Length > 0;
+        public bool HasGeyser => GeyserVent != null && GeyserSteamUp.Complete && GeyserSteamDown.Complete;
         public bool IsPlaceholder(Sprite s) => s != null && System.Array.IndexOf(Placeholders, s.name) >= 0;
+        public GeyserSteamFrames GeyserSteam(Parallax.Core.GeyserDirection direction) => direction == Parallax.Core.GeyserDirection.Down ? GeyserSteamDown : GeyserSteamUp;
+    }
+
+    /// <summary>D-162: one direction's geyser steam, a sprite per tick, each pivoted on the vent's mouth: the tell's wisps
+    /// (from the fire), the jet inside the launch column (the column's body, 1.1 x 1.5 u) and the plume round it (both from the
+    /// eruption's start), and the steam dying away (from the eruption's end).</summary>
+    [System.Serializable]
+    public sealed class GeyserSteamFrames
+    {
+        public Sprite[] Tell = new Sprite[0];
+        public Sprite[] Core = new Sprite[0];
+        public Sprite[] Plume = new Sprite[0];
+        public Sprite[] Fade = new Sprite[0];
+
+        public bool Complete => Tell.Length > 0 && Core.Length > 0 && Plume.Length == Core.Length && Fade.Length > 0;
     }
 }

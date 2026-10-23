@@ -6,30 +6,31 @@ using UnityEngine;
 
 namespace Parallax.Presentation
 {
-    /// <summary>PAX-A13: a geyser. The carved vent (TRAP-03) always, flipped for a vent in a ceiling; through the tell,
-    /// droplets bubble at the mouth; while erupting, the water column (T04) exactly as big as the gameplay column, its
-    /// texture scrolling with the ticks, a burst at the mouth for its first ticks and spray at the column's far end. The
-    /// tell and the burst are code effects over the kit's spray (T06): AutoSprite's animations of the vent came back with a
-    /// person in them (style gate, 2026-09-29).</summary>
+    /// <summary>PAX-A13, D-162: a geyser. The carved vent (TRAP-03) always, flipped for a vent in a ceiling, warming through the
+    /// tell and the eruption; over it the thermal-vent steam (Tools/Art/geyser_steam.py), one pre-rendered sprite per tick,
+    /// each pivoted on the vent's mouth: the tell's hissing wisps and the vent's glow; while erupting, the dense jet inside the
+    /// launch column (the column's body, exactly the column art's box) and the plume round it; then the steam dying away for
+    /// TrapArtMath.GeyserFadeTicks. A vent in a ceiling has its own frames: its jet fires down and its steam rises back.</summary>
     public sealed class GeyserArt : TrapArt
     {
-        const int TellCycle = 12, BurstTicks = 14, SprayLife = 16;
+        /// <summary>The column height the frames were rendered for (GeyserMath's default).</summary>
+        const float FramesColumnHeight = GeyserMath.DefaultColumnHeight;
 
         [SerializeField] GeyserTrap trap;
         [SerializeField] SpriteRenderer ventArt, greyboxVent;
         [SerializeField] SpriteRenderer columnArt, greyboxColumn;
         [SerializeField] Sprite ventSprite;
-        [SerializeField] Sprite[] columnFrames = new Sprite[0];
         [SerializeField] Material trapMaterial;
         [SerializeField] Vector2 ventSize;
-        [SerializeField] SpriteRenderer[] tellDrops = new SpriteRenderer[0];
-        [Tooltip("The tell's warm glow at the mouth (layer 05: vents may glow).")]
-        [SerializeField] SpriteRenderer tellGlow;
-        [Tooltip("Steam rising from the mouth through the tell (TRAP-12; §12 R9).")]
-        [SerializeField] SpriteRenderer[] steam = new SpriteRenderer[0];
-        [SerializeField] SpriteRenderer[] burst = new SpriteRenderer[0];
-        [SerializeField] SpriteRenderer[] spray = new SpriteRenderer[0];
+        [Tooltip("D-162: the tell's wisps and glow (tell group).")]
+        [SerializeField] SpriteRenderer tellSteam;
+        [Tooltip("D-162: the eruption's plume round the column (burst group).")]
+        [SerializeField] SpriteRenderer plume;
+        [Tooltip("D-162: the steam dying away after the eruption (fade group).")]
+        [SerializeField] SpriteRenderer fade;
+        [SerializeField] Sprite[] tellFrames = new Sprite[0], coreFrames = new Sprite[0], plumeFrames = new Sprite[0], fadeFrames = new Sprite[0];
         [SerializeField] int tellTicks;
+        [SerializeField] int eruptTicks = GeyserMath.DefaultEruptTicks;
         [SerializeField] GeyserDirection direction;
 
         public override RoomTrap Trap => trap;
@@ -44,11 +45,9 @@ namespace Parallax.Presentation
 
         protected override void CollectEffects(List<Effect> into)
         {
-            into.Add(new Effect("tell", tellGlow));
-            foreach (SpriteRenderer s in steam) into.Add(new Effect("tell", s));
-            foreach (SpriteRenderer s in tellDrops) into.Add(new Effect("tell", s));
-            foreach (SpriteRenderer s in burst) into.Add(new Effect("burst", s));
-            foreach (SpriteRenderer s in spray) into.Add(new Effect("burst", s));
+            into.Add(new Effect("tell", tellSteam));
+            into.Add(new Effect("burst", plume));
+            into.Add(new Effect("fade", fade));
         }
 
         protected override void Render()
@@ -63,73 +62,46 @@ namespace Parallax.Presentation
                 ventArt.color = Color.Lerp(Color.white, new Color(1f, 0.62f, 0.3f, 1f), warm);
             }
 
-            int intoErupt = s - tellTicks;
-            if (Mirror(columnArt, greyboxColumn) && columnFrames.Length > 0)
+            Vector2 mouth = greyboxVent != null ? (Vector2)greyboxVent.transform.position + Push * (greyboxVent.size.y * 0.5f) : (Vector2)transform.position;
+            // A column longer or shorter than the frames' scales the steam with it (every level's is 1.5 u).
+            float k = greyboxColumn != null ? greyboxColumn.size.y / FramesColumnHeight : 1f;
+            int intoErupt = s - tellTicks, afterErupt = intoErupt - eruptTicks;
+
+            bool telling = phase == GeyserPhase.Tell && s >= 0;
+            Show(tellSteam, telling, telling ? Frame(tellFrames, s, tellTicks) : null, mouth, k);
+
+            bool erupting = phase == GeyserPhase.Erupt && intoErupt >= 0;
+            Show(plume, erupting, erupting ? Frame(plumeFrames, intoErupt, eruptTicks) : null, mouth, k);
+            if (Mirror(columnArt, greyboxColumn) && coreFrames.Length > 0)
             {
-                // Rows roll down as the frame index grows, so an upward jet plays the frames backwards.
-                int k = Mathf.Max(0, intoErupt) % columnFrames.Length;
-                columnArt.sprite = columnFrames[(columnFrames.Length - k) % columnFrames.Length];
-                columnArt.flipY = direction == GeyserDirection.Down;
-                columnArt.size = new Vector2(greyboxColumn.size.x * bodyScale, greyboxColumn.size.y);   // D-101: wider, never longer
+                // The body: the jet inside the column, drawn at the column art's box (D-101: wider, never longer), from the mouth.
+                columnArt.sprite = Frame(coreFrames, Mathf.Max(0, intoErupt), eruptTicks);
+                columnArt.drawMode = SpriteDrawMode.Simple;
+                columnArt.flipY = false;
+                columnArt.transform.position = new Vector3(mouth.x, mouth.y, columnArt.transform.position.z);
+                Vector2 native = columnArt.sprite != null ? (Vector2)columnArt.sprite.bounds.size : Vector2.one;
+                columnArt.transform.localScale = new Vector3(greyboxColumn.size.x * bodyScale / Mathf.Max(native.x, 1e-4f), greyboxColumn.size.y / Mathf.Max(native.y, 1e-4f), 1f);
             }
 
-            Vector2 push = Push;
-            Vector2 mouth = greyboxVent != null ? (Vector2)greyboxVent.transform.position + push * (greyboxVent.size.y * 0.5f) : (Vector2)transform.position;
-            uint seed = TrapArtMath.Seed(SeedName, trap.LatestFireTick);
-
-            // The tell's steam: wisps rising from the mouth and fading, staggered through the tell.
-            for (int i = 0; i < steam.Length; i++)
-            {
-                bool telling = phase == GeyserPhase.Tell && s >= 0;
-                float u = telling ? Mathf.Repeat((s + i * 7f) / 20f, 1f) : 0f;
-                float x = (i - (steam.Length - 1) * 0.5f) * 0.22f;
-                Place(steam[i], telling, mouth + new Vector2(x, 0f) + push * (0.15f + 0.5f * u), 0.55f + 0.35f * u, telling ? 0.75f * Mathf.Sin(u * Mathf.PI) + 0.05f : 0f);
-                if (telling && direction == GeyserDirection.Down) steam[i].flipY = true;
-            }
-
-            // The tell: a warm glow pulsing at the mouth, and droplets popping out of it, staggered so one always shows.
-            if (tellGlow != null)
-            {
-                bool telling = phase == GeyserPhase.Tell && s >= 0;
-                float pulse = telling ? 0.75f + 0.25f * Mathf.Sin(s * 0.7f) : 0f;
-                // 2026-10-18 visual review (L013: "a flat, unshaded, saturated orange blob ... reads as spilled paint"): a soft
-                // glow at half strength, not a flat pool 2.4 vents wide (the steam and the warming vent carry the tell too).
-                Place(tellGlow, telling, mouth, 1f, pulse * 0.5f);
-                if (telling) tellGlow.transform.localScale = new Vector3(1.5f * pulse, 0.8f * pulse, 1f);
-            }
-            for (int i = 0; i < tellDrops.Length; i++)
-            {
-                SpriteRenderer r = tellDrops[i];
-                if (r == null) continue;
-                bool on = phase == GeyserPhase.Tell && s >= 0;
-                int t = s + i * (TellCycle / Mathf.Max(1, tellDrops.Length));
-                PuffPose p = on ? TrapArtMath.Puff(seed, 300 + i * 31 + t / TellCycle, t % TellCycle, TellCycle, 0.22f) : default;
-                Place(r, p.Visible, mouth + new Vector2((i - (tellDrops.Length - 1) * 0.5f) * 0.18f + p.Offset.x * 0.4f, 0f) + push * (p.Offset.y * 0.7f), 0.55f * p.Scale, p.Alpha);
-            }
-
-            // The burst: spray thrown out of the mouth as it starts.
-            for (int i = 0; i < burst.Length; i++)
-            {
-                SpriteRenderer r = burst[i];
-                if (r == null) continue;
-                PuffPose p = phase == GeyserPhase.Erupt ? TrapArtMath.Puff(seed, 400 + i, intoErupt, BurstTicks, 0.6f) : default;
-                float side = i % 2 == 0 ? -1f : 1f;
-                Place(r, p.Visible, mouth + new Vector2(side * Mathf.Abs(p.Offset.x) * 0.9f, 0f) + push * (p.Offset.y * 0.5f), 0.55f * p.Scale, p.Alpha);
-            }
-
-            // The spray at the column's far end, cycling while it erupts.
-            Vector2 top = greyboxColumn != null ? (Vector2)greyboxColumn.transform.position + push * (greyboxColumn.size.y * 0.5f) : mouth;
-            for (int i = 0; i < spray.Length; i++)
-            {
-                SpriteRenderer r = spray[i];
-                if (r == null) continue;
-                int t = intoErupt + i * (SprayLife / Mathf.Max(1, spray.Length));
-                PuffPose p = phase == GeyserPhase.Erupt && intoErupt >= 0 ? TrapArtMath.Puff(seed, 500 + i * 37 + t / SprayLife, t % SprayLife, SprayLife, 0.75f) : default;
-                // §12 R9: larger and denser at the top: the spray fans out and falls back around the column's end.
-                Place(r, p.Visible, top + new Vector2(p.Offset.x * 1.1f, 0f) + push * (p.Offset.y * 0.5f), 0.95f * p.Scale, Mathf.Min(1f, p.Alpha * 1.2f));
-            }
+            bool fading = phase == GeyserPhase.Idle && s >= 0 && afterErupt >= 0 && afterErupt < TrapArtMath.GeyserFadeTicks && fadeFrames.Length > 0;
+            Show(fade, fading, fading ? fadeFrames[Mathf.Min(afterErupt, fadeFrames.Length - 1)] : null, mouth, k);
         }
 
+        /// <summary>The frame for tick `t` of a `length`-tick event; frames made for another length are stretched over it.</summary>
+        static Sprite Frame(Sprite[] frames, int t, int length)
+        {
+            if (frames.Length == 0) return null;
+            int i = length == frames.Length || length <= 1 ? t : Mathf.RoundToInt(t * (frames.Length - 1) / (float)(length - 1));
+            return frames[Mathf.Clamp(i, 0, frames.Length - 1)];
+        }
+
+        static void Show(SpriteRenderer r, bool visible, Sprite sprite, Vector2 mouth, float scale)
+        {
+            if (r == null) return;
+            visible &= sprite != null;
+            if (visible) r.sprite = sprite;
+            Place(r, visible, mouth, scale, 1f);
+        }
 
         void FitVent(SpriteRenderer r, Sprite sprite, Vector2 box)
         {

@@ -1,0 +1,1786 @@
+{
+ "ppu": 80,
+ "tell": 25,
+ "erupt": 40,
+ "fade": 22,
+ "entries": [
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_00.png",
+   "pivotX": 0.5,
+   "pivotY": 0.09524,
+   "ppu": 80,
+   "sha1": "ecacf0bba3ce9c2b0c858d13fb089543791b741a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_01.png",
+   "pivotX": 0.5,
+   "pivotY": 0.09524,
+   "ppu": 80,
+   "sha1": "348bb8090fbc6fbd573dc280f02e0a5b7a3b9a4a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_02.png",
+   "pivotX": 0.5,
+   "pivotY": 0.09524,
+   "ppu": 80,
+   "sha1": "1e681f26d4dca2dbea39754df4b50e5529801b0d"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_03.png",
+   "pivotX": 0.5,
+   "pivotY": 0.09375,
+   "ppu": 80,
+   "sha1": "10abc1958e73dadeab57d9dd35de00d600bd3ac6"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_04.png",
+   "pivotX": 0.5,
+   "pivotY": 0.09231,
+   "ppu": 80,
+   "sha1": "bc3c3fa9c38b0147b558514e994f88bcebb890d9"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_05.png",
+   "pivotX": 0.5,
+   "pivotY": 0.09091,
+   "ppu": 80,
+   "sha1": "dc13b9bd2f721e55650d9c76fd098f260fb96dec"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_06.png",
+   "pivotX": 0.5,
+   "pivotY": 0.09091,
+   "ppu": 80,
+   "sha1": "2e7491d57725fb720fb8a3e0417aa824caf6231c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_07.png",
+   "pivotX": 0.5,
+   "pivotY": 0.09091,
+   "ppu": 80,
+   "sha1": "0e520d83eb9370bbe15405ba5db96755e087cdaa"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_08.png",
+   "pivotX": 0.5,
+   "pivotY": 0.15068,
+   "ppu": 80,
+   "sha1": "3f9c96458010840ca5a29db7e8472bab8fcf1b0a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_09.png",
+   "pivotX": 0.5,
+   "pivotY": 0.08696,
+   "ppu": 80,
+   "sha1": "0ff7b68dd2f6972ea72977d96bdad20c9d1e9ac1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_10.png",
+   "pivotX": 0.5,
+   "pivotY": 0.08824,
+   "ppu": 80,
+   "sha1": "2d69e8f544873dd7275fd128e4a15205fe984941"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_11.png",
+   "pivotX": 0.5,
+   "pivotY": 0.08571,
+   "ppu": 80,
+   "sha1": "061d3f78696556b3e10f751f7777dedca9086c2c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_12.png",
+   "pivotX": 0.5,
+   "pivotY": 0.09589,
+   "ppu": 80,
+   "sha1": "e36e864c66edebcf6f50a0f4bd2482831b46a06b"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_13.png",
+   "pivotX": 0.5,
+   "pivotY": 0.08451,
+   "ppu": 80,
+   "sha1": "17ba80610818dfd7f8df68d0d06b8787b4bf0a9b"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_14.png",
+   "pivotX": 0.5,
+   "pivotY": 0.09589,
+   "ppu": 80,
+   "sha1": "3badcc865452e52ff9b24b2c2a0ca00816689c29"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_15.png",
+   "pivotX": 0.5,
+   "pivotY": 0.13924,
+   "ppu": 80,
+   "sha1": "fa6a23177182b9f0e4a7d10dcf5429980fd4b834"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_16.png",
+   "pivotX": 0.5,
+   "pivotY": 0.10256,
+   "ppu": 80,
+   "sha1": "cbded9653968d1ffc36f5f45cd4695b066b6e995"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_17.png",
+   "pivotX": 0.5,
+   "pivotY": 0.07692,
+   "ppu": 80,
+   "sha1": "42ef2b5c6f03a2ad6aab55e4a8b908ad14609dcd"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_18.png",
+   "pivotX": 0.5,
+   "pivotY": 0.08642,
+   "ppu": 80,
+   "sha1": "471f926010b6b73253ffd995978428bc2dd89c19"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_19.png",
+   "pivotX": 0.5,
+   "pivotY": 0.08537,
+   "ppu": 80,
+   "sha1": "dfc8d252d722d94b154f24ddfa98af01520d3083"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_20.png",
+   "pivotX": 0.5,
+   "pivotY": 0.11494,
+   "ppu": 80,
+   "sha1": "6c4fd594fa109dc7a54ebda23b31318476b2aaaa"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_21.png",
+   "pivotX": 0.5,
+   "pivotY": 0.07059,
+   "ppu": 80,
+   "sha1": "f9993c3c55fdc9774eaeffd216636a0227a13f16"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_22.png",
+   "pivotX": 0.5,
+   "pivotY": 0.06897,
+   "ppu": 80,
+   "sha1": "16c689644be148a416807b45e88326dadd8439c8"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_23.png",
+   "pivotX": 0.5,
+   "pivotY": 0.10753,
+   "ppu": 80,
+   "sha1": "da52c607c9d3585eb4a37d6cde81a56550404961"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/tell_24.png",
+   "pivotX": 0.5,
+   "pivotY": 0.06593,
+   "ppu": 80,
+   "sha1": "ab5841071928319b4ec568cd1a1653c610ee0985"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_00.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "6475e22ee158a959aaad8c1686a3b11f6d601a07"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_00.png",
+   "pivotX": 0.5,
+   "pivotY": 0.10714,
+   "ppu": 80,
+   "sha1": "14bd7f7f61f9eaea4ffbcc4fddd01f89ec990d68"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_01.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "717b70e2b15e32a2360176d924354509ba98d9b8"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_01.png",
+   "pivotX": 0.5,
+   "pivotY": 0.12791,
+   "ppu": 80,
+   "sha1": "bc84de99cc9f6357b940031a21150b222155dd87"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_02.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "fd0f6b52c3115a5dd784071a51576b12383c9248"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_02.png",
+   "pivotX": 0.5,
+   "pivotY": 0.11765,
+   "ppu": 80,
+   "sha1": "3d522e0c3c6db3dc9ba6f62fb8ffbedb269358af"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_03.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "81c335995458ee15aaf2af2e3c9498a57fa2ac46"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_03.png",
+   "pivotX": 0.5,
+   "pivotY": 0.08955,
+   "ppu": 80,
+   "sha1": "b872a2f15c0ba0fa3efa598d6f18a70fa572e90a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_04.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "0a49403851848a5ee0c1c55bedda7cdf642c5c6c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_04.png",
+   "pivotX": 0.5,
+   "pivotY": 0.08824,
+   "ppu": 80,
+   "sha1": "6c8646217ea029468c850ab221fdea050af4f676"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_05.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "c187b67f0755dc5bf3c7522285cafb6d4eb7df68"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_05.png",
+   "pivotX": 0.50442,
+   "pivotY": 0.08696,
+   "ppu": 80,
+   "sha1": "4a6b17808939ea9cee83ed123c1c8ffd48962a86"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_06.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "ec645119151fa25f544fe8b45273c07f9bca8fd8"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_06.png",
+   "pivotX": 0.552,
+   "pivotY": 0.07273,
+   "ppu": 80,
+   "sha1": "c06f4aaacaece3d8a72a27d3f2b0493ce227adab"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_07.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "37844d98bf5ad3ff96fadee30f857e577062608b"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_07.png",
+   "pivotX": 0.51825,
+   "pivotY": 0.07514,
+   "ppu": 80,
+   "sha1": "a6128405136ba97a3029cb609dd1ed980b291591"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_08.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "26a3854a38bfe216a8d2cde3c86f232afe1d4a56"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_08.png",
+   "pivotX": 0.51079,
+   "pivotY": 0.07386,
+   "ppu": 80,
+   "sha1": "811452c9fb206d446dcce8bb25a7365e661e0003"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_09.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "2898fe881107ca485be6425cd613a124d7427fd4"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_09.png",
+   "pivotX": 0.50725,
+   "pivotY": 0.06818,
+   "ppu": 80,
+   "sha1": "b7e12479a56192311de41e57bfa05330b9000c98"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_10.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "eb1e2c2e1381c47821c25ad446b4b2a79a760edb"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_10.png",
+   "pivotX": 0.51079,
+   "pivotY": 0.06742,
+   "ppu": 80,
+   "sha1": "a7a3582da0b8f16f0da721a76458a75e9f176bf1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_11.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "a82ecd95e6a2401ae6a1ef38a0b992b2610d773a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_11.png",
+   "pivotX": 0.51799,
+   "pivotY": 0.06145,
+   "ppu": 80,
+   "sha1": "186655210c181bf43a40f2a8114cb3dd9a4f5b50"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_12.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "9f60034874657262d717b05c9dd88e32f584f564"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_12.png",
+   "pivotX": 0.51064,
+   "pivotY": 0.05556,
+   "ppu": 80,
+   "sha1": "8ffd55e5a68d8a33b79d255c9f4c99ef6efbd4ca"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_13.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "5b03929366908dec0c45d91f0b9891ae894e8165"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_13.png",
+   "pivotX": 0.49324,
+   "pivotY": 0.05495,
+   "ppu": 80,
+   "sha1": "3508c1de36c445b1643a66c301ee16d0591da064"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_14.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "c2543de9da97f4ae4f2752b355dda3c4c748a80a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_14.png",
+   "pivotX": 0.49007,
+   "pivotY": 0.04945,
+   "ppu": 80,
+   "sha1": "230f77a33a81aec7ad652705c1f18d275ffc6f3d"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_15.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "fb15018d921d384f72ad8cfddb358e4162a25215"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_15.png",
+   "pivotX": 0.48701,
+   "pivotY": 0.04891,
+   "ppu": 80,
+   "sha1": "2cbf8e99b9df6d1c63ef21f9c01dec325e5d8215"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_16.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "c5349612227b3d4638ce163895872e4b7c9f6bfa"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_16.png",
+   "pivotX": 0.48408,
+   "pivotY": 0.04865,
+   "ppu": 80,
+   "sha1": "e65223d9ffbf69c0dc15ce9a0e5de84e99dcfc05"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_17.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "8c6dec510e3c42a5a88b3ae255fae2f224bc2067"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_17.png",
+   "pivotX": 0.48447,
+   "pivotY": 0.04839,
+   "ppu": 80,
+   "sha1": "5372dfc950c2dadcc2b5c933ce5f37e7c78a0b78"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_18.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "3e7755f82a4627a46fca2069d9bf656baafc3e2d"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_18.png",
+   "pivotX": 0.48466,
+   "pivotY": 0.05376,
+   "ppu": 80,
+   "sha1": "ab609e2dccbec9b63cb48001b5010221c97f4650"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_19.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "d910d73f067990a03d75ac5960020a87f453a249"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_19.png",
+   "pivotX": 0.48193,
+   "pivotY": 0.06383,
+   "ppu": 80,
+   "sha1": "69ce0a983441e03eca91f8ec17fc0f764451a88a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_20.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "0d2786746c53ed7df65c183d8db2c9b16ab6047a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_20.png",
+   "pivotX": 0.48214,
+   "pivotY": 0.06316,
+   "ppu": 80,
+   "sha1": "6c1f75d3e0411cf68c20ec69d70c70aab941cb69"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_21.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "cd225c331896992f8271008c1b90bb231752a6cf"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_21.png",
+   "pivotX": 0.47929,
+   "pivotY": 0.06593,
+   "ppu": 80,
+   "sha1": "b505e53a8ef90d7170be4aa28250a6d3a7146960"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_22.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "81cf00b1a92169b8c118477fe5fc484a44d5bf8d"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_22.png",
+   "pivotX": 0.47647,
+   "pivotY": 0.06011,
+   "ppu": 80,
+   "sha1": "ed371e81425b8b5cca458b05b974df8c732734c7"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_23.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "4ab73762971555226e2620ec7fda8951586b3942"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_23.png",
+   "pivotX": 0.47674,
+   "pivotY": 0.05946,
+   "ppu": 80,
+   "sha1": "e7c5d0aa17c38445c4e293a8dfcfb7adf1c6fffd"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_24.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "496df23e7df40b85e329cf5e9aa99f442041e940"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_24.png",
+   "pivotX": 0.47399,
+   "pivotY": 0.05405,
+   "ppu": 80,
+   "sha1": "fd5f01e1a4d568d5f9e527548608857db5e13ab2"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_25.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "ea64efe26440ffccb5db9b0e1a4c7a1ed51520ec"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_25.png",
+   "pivotX": 0.47126,
+   "pivotY": 0.04865,
+   "ppu": 80,
+   "sha1": "29f2907eea9f5a8e4f4f0dda49c68cd423b7dbd1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_26.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "041f65cc3400987d772371245f17e8e32d73400b"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_26.png",
+   "pivotX": 0.47126,
+   "pivotY": 0.05,
+   "ppu": 80,
+   "sha1": "2d30d9c6ddde74a6db3c2ae4c618d63d0bb67f23"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_27.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "b8d2384f5413c5d6f617627920dab3b19b8823d5"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_27.png",
+   "pivotX": 0.46821,
+   "pivotY": 0.05464,
+   "ppu": 80,
+   "sha1": "aad40e68b1d2ea190dbec8436d43cf2ddcf42b87"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_28.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "cd1254bba1a427207f8f9c7b985540e7a7d3381b"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_28.png",
+   "pivotX": 0.46552,
+   "pivotY": 0.05405,
+   "ppu": 80,
+   "sha1": "a3971561516c01db6088a39fffdb2878334abaef"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_29.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "98894cba1ff97b7852c88117664020c0922a2fc6"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_29.png",
+   "pivotX": 0.46243,
+   "pivotY": 0.05376,
+   "ppu": 80,
+   "sha1": "36328c10c288f78d11e2dcd29bd6788b766c687a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_30.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "4c9942c489ff47da7e3e8ba457c78ac89ac4fc19"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_30.png",
+   "pivotX": 0.46243,
+   "pivotY": 0.0582,
+   "ppu": 80,
+   "sha1": "ffc53b36e9abce0c36b4b4198c1e53e5f4631341"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_31.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "161cd28b1dc58e4928d4b204beb3cf5a7c6eda4d"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_31.png",
+   "pivotX": 0.4593,
+   "pivotY": 0.05759,
+   "ppu": 80,
+   "sha1": "f830bdcf75ee01720f178962258ea1f7aee438d7"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_32.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "f8b89c648568fa02ccbc80f6bfeeaca5d21fa1a2"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_32.png",
+   "pivotX": 0.45238,
+   "pivotY": 0.08122,
+   "ppu": 80,
+   "sha1": "9a92b729266974f7c86f2621da079d36926c0551"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_33.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "bc25ebe1a71af39f5202920bf2b930e9978cf6a9"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_33.png",
+   "pivotX": 0.43902,
+   "pivotY": 0.09406,
+   "ppu": 80,
+   "sha1": "c98604846e5e0737c8a806e5be09d2825dc0e519"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_34.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "2083a55a297c5afc283cd30260f5da937c178550"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_34.png",
+   "pivotX": 0.44242,
+   "pivotY": 0.09756,
+   "ppu": 80,
+   "sha1": "d83c4cc7d888ad134baa65cc12f7597ecabd8be7"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_35.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "5a16ed238fbaa3489f473af314df960104880eb6"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_35.png",
+   "pivotX": 0.44242,
+   "pivotY": 0.09709,
+   "ppu": 80,
+   "sha1": "b22310ec800c55825c30fa500c9e5fc0c6eb44c0"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_36.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "25ba7074d15fe8271959d4b101a4dfa279e97bda"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_36.png",
+   "pivotX": 0.44242,
+   "pivotY": 0.10048,
+   "ppu": 80,
+   "sha1": "c56c8ea53bdcdd74cb300ee466cde0b55d2d6173"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_37.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "5c5ca246f9910d123ec553e024f885aa921d7f8a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_37.png",
+   "pivotX": 0.44848,
+   "pivotY": 0.09953,
+   "ppu": 80,
+   "sha1": "710ca8476593dc08a3ea58915655418f809bdc9a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_38.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "70ad6065a01fc016aff19b8af8368ff01823bbf6"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_38.png",
+   "pivotX": 0.45181,
+   "pivotY": 0.09859,
+   "ppu": 80,
+   "sha1": "91a02ceb4b8be4b5d106c7c6950576d59f652337"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/core_39.png",
+   "pivotX": 0.5,
+   "pivotY": 0.0,
+   "ppu": 80,
+   "sha1": "5c0fc42046b093115d6a9ba42f51b80cc1359bc7"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/plume_39.png",
+   "pivotX": 0.45509,
+   "pivotY": 0.09767,
+   "ppu": 80,
+   "sha1": "3d24bac7975dd9f08d64c613fac92749c4fd8463"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_00.png",
+   "pivotX": 0.46429,
+   "pivotY": 0.09302,
+   "ppu": 80,
+   "sha1": "4f3e4d30ef699578bfdcb51f433293cbeb4ee6e0"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_01.png",
+   "pivotX": 0.46429,
+   "pivotY": 0.09217,
+   "ppu": 80,
+   "sha1": "4214d8d065ced4a04b47c0464ab15d131d7ff0f1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_02.png",
+   "pivotX": 0.47024,
+   "pivotY": 0.1,
+   "ppu": 80,
+   "sha1": "1fa50fde02d91302cf5e631b6ddc4959c64c8335"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_03.png",
+   "pivotX": 0.47337,
+   "pivotY": 0.10455,
+   "ppu": 80,
+   "sha1": "76d11567ae6d46332543479c4776663975fcd39e"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_04.png",
+   "pivotX": 0.47929,
+   "pivotY": 0.11917,
+   "ppu": 80,
+   "sha1": "ec6ca1bd50f7823c87e280890cc7e344a469233b"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_05.png",
+   "pivotX": 0.48235,
+   "pivotY": 0.11856,
+   "ppu": 80,
+   "sha1": "486356cb8c7e7c2a6f0de363b7b3ceac121cf47c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_06.png",
+   "pivotX": 0.48521,
+   "pivotY": 0.11735,
+   "ppu": 80,
+   "sha1": "efe10d3eeae78d64046a5bbbab4fe2f465584832"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_07.png",
+   "pivotX": 0.4881,
+   "pivotY": 0.11675,
+   "ppu": 80,
+   "sha1": "9be0aeaf39a8257c56cbb24f624779f0209e0b37"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_08.png",
+   "pivotX": 0.4881,
+   "pivotY": 0.11558,
+   "ppu": 80,
+   "sha1": "2d490307a88f204b579f6a8a751cd446eb897f16"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_09.png",
+   "pivotX": 0.49102,
+   "pivotY": 0.11443,
+   "ppu": 80,
+   "sha1": "4de4c95b08709f2b4261462a67597b0e9567356d"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_10.png",
+   "pivotX": 0.49701,
+   "pivotY": 0.11386,
+   "ppu": 80,
+   "sha1": "e1daa0e0b59df0b1fec0e3382a597479be3b2020"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_11.png",
+   "pivotX": 0.50299,
+   "pivotY": 0.10396,
+   "ppu": 80,
+   "sha1": "4651211751697d00852c1daf57df3ce9c7d70246"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_12.png",
+   "pivotX": 0.50602,
+   "pivotY": 0.10101,
+   "ppu": 80,
+   "sha1": "4f79939274151d3b73fd0c01b5e314755865b87d"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_13.png",
+   "pivotX": 0.50303,
+   "pivotY": 0.0989,
+   "ppu": 80,
+   "sha1": "69386bbef5bbf56e48ccb9bf774ccb2e6f217cf7"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_14.png",
+   "pivotX": 0.5061,
+   "pivotY": 0.0929,
+   "ppu": 80,
+   "sha1": "21191534e6db3d2c2472cb8f84ca4e6413ea6aac"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_15.png",
+   "pivotX": 0.50307,
+   "pivotY": 0.08242,
+   "ppu": 80,
+   "sha1": "a1428c46a605b86dc4ddfd17bdb61d2b71a3faa7"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_16.png",
+   "pivotX": 0.50932,
+   "pivotY": 0.0765,
+   "ppu": 80,
+   "sha1": "d781bd79b57c5fc2b37f6e3576ebf9f646afba06"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_17.png",
+   "pivotX": 0.50943,
+   "pivotY": 0.06593,
+   "ppu": 80,
+   "sha1": "398653ab284c2f196b27152cf84cc8aa0cdb2730"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_18.png",
+   "pivotX": 0.50955,
+   "pivotY": 0.10417,
+   "ppu": 80,
+   "sha1": "a94b4e0254705e632bfdf9a5cb4ebddb2654af3a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_19.png",
+   "pivotX": 0.54483,
+   "pivotY": 0.09524,
+   "ppu": 80,
+   "sha1": "3d64c499177373197485473bc271778b2e3a0bb2"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_20.png",
+   "pivotX": 0.54225,
+   "pivotY": 0.09357,
+   "ppu": 80,
+   "sha1": "0078fa6c5d087cc96fd5dfc5131d51b33c815559"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Up/fade_21.png",
+   "pivotX": 0.85227,
+   "pivotY": 0.01899,
+   "ppu": 80,
+   "sha1": "59b208b1b7fd3054dfcd6c4fe1ca1356bcb816a7"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_00.png",
+   "pivotX": 0.5,
+   "pivotY": 0.90476,
+   "ppu": 80,
+   "sha1": "773ed6614897df05cb5a84be7a0340c77149b507"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_01.png",
+   "pivotX": 0.5,
+   "pivotY": 0.87692,
+   "ppu": 80,
+   "sha1": "79fc92b6de53cca60cdf85a6a2226e82be6d6dc8"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_02.png",
+   "pivotX": 0.5,
+   "pivotY": 0.86364,
+   "ppu": 80,
+   "sha1": "d4b9c27a3a74825b51ca786a685ce49c4468536c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_03.png",
+   "pivotX": 0.5,
+   "pivotY": 0.89231,
+   "ppu": 80,
+   "sha1": "c97d3660a44015018bbe87537e986088d3308fc1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_04.png",
+   "pivotX": 0.5,
+   "pivotY": 0.89394,
+   "ppu": 80,
+   "sha1": "1f621151108f19b5ed2d0f784374d91c77fe2a1c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_05.png",
+   "pivotX": 0.5,
+   "pivotY": 0.90909,
+   "ppu": 80,
+   "sha1": "b1ca3ababe9cee43378f85aa959f90b2756738ce"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_06.png",
+   "pivotX": 0.5,
+   "pivotY": 0.90909,
+   "ppu": 80,
+   "sha1": "2094d92609d81cc73955aadd5f3216c5ca053fc1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_07.png",
+   "pivotX": 0.5,
+   "pivotY": 0.90909,
+   "ppu": 80,
+   "sha1": "5b62dbbaa28234bcdab4db8caa4b986852c84138"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_08.png",
+   "pivotX": 0.5,
+   "pivotY": 0.84932,
+   "ppu": 80,
+   "sha1": "cd7d8b748ab919b21fbbd7755e5624eab170035c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_09.png",
+   "pivotX": 0.5,
+   "pivotY": 0.91304,
+   "ppu": 80,
+   "sha1": "3fb6789dce0242d4e854e589e8003f4838e1ada1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_10.png",
+   "pivotX": 0.5,
+   "pivotY": 0.91176,
+   "ppu": 80,
+   "sha1": "7da611cba15127a2a1d79ecf4cfe42ace2ecbed8"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_11.png",
+   "pivotX": 0.5,
+   "pivotY": 0.91429,
+   "ppu": 80,
+   "sha1": "a96c0efe7b84e4b2e934395b89c3826c0ac035d0"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_12.png",
+   "pivotX": 0.5,
+   "pivotY": 0.91667,
+   "ppu": 80,
+   "sha1": "deb0ad94205815eafb5870653623a5aa7ae475cb"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_13.png",
+   "pivotX": 0.5,
+   "pivotY": 0.90411,
+   "ppu": 80,
+   "sha1": "7ed4f1ea13d072374ff4cf745a93d990490e6613"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_14.png",
+   "pivotX": 0.5,
+   "pivotY": 0.90789,
+   "ppu": 80,
+   "sha1": "d42722df74b50e66a673377591b7442adcf027cd"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_15.png",
+   "pivotX": 0.5,
+   "pivotY": 0.8625,
+   "ppu": 80,
+   "sha1": "62e325c1746708938eafc2a8bf2107d05cef17f2"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_16.png",
+   "pivotX": 0.5,
+   "pivotY": 0.90789,
+   "ppu": 80,
+   "sha1": "e9e2ce183632a36e4ae83680a41d3d209ac6e0d6"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_17.png",
+   "pivotX": 0.5,
+   "pivotY": 0.91781,
+   "ppu": 80,
+   "sha1": "f05fa605b07987eced44b209b05508f37c669622"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_18.png",
+   "pivotX": 0.5,
+   "pivotY": 0.90667,
+   "ppu": 80,
+   "sha1": "50789ec0abfcad691c756560d7cbbff23af3358f"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_19.png",
+   "pivotX": 0.5,
+   "pivotY": 0.89873,
+   "ppu": 80,
+   "sha1": "5bd344815752b813d6a59e66cf7914a5afcc583e"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_20.png",
+   "pivotX": 0.5,
+   "pivotY": 0.86585,
+   "ppu": 80,
+   "sha1": "03289017f959a1504984522cffe0fa1359b10219"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_21.png",
+   "pivotX": 0.5,
+   "pivotY": 0.92,
+   "ppu": 80,
+   "sha1": "534881ef3438685d01278884bcb028161b2f9426"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_22.png",
+   "pivotX": 0.5,
+   "pivotY": 0.89873,
+   "ppu": 80,
+   "sha1": "f3af2fb8c1afb4cc915166dbe159834a8726f564"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_23.png",
+   "pivotX": 0.5,
+   "pivotY": 0.88095,
+   "ppu": 80,
+   "sha1": "dcaf2fd140f0de90dd870215961d30f1e1f80ae6"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/tell_24.png",
+   "pivotX": 0.5,
+   "pivotY": 0.92405,
+   "ppu": 80,
+   "sha1": "02470d0e62f25419c27b9944c83989b29ceef00f"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_00.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "21aac878655e043f17170dce73dc51700900b9b1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_00.png",
+   "pivotX": 0.5,
+   "pivotY": 0.86207,
+   "ppu": 80,
+   "sha1": "ce41491aa7ea80669062c9fdac860b6b48cb3a2a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_01.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "7a330dc6068a4bd94e488ce2a926aa12eb2b7976"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_01.png",
+   "pivotX": 0.5,
+   "pivotY": 0.81522,
+   "ppu": 80,
+   "sha1": "0da06d45be195335045eb261539a038e50d202d5"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_02.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "0155fcb3e0d270fee6edee6a9be47a70a1a59dc9"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_02.png",
+   "pivotX": 0.5,
+   "pivotY": 0.85981,
+   "ppu": 80,
+   "sha1": "8da6852b6e819de5b15bd2c9ba3019c02d575550"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_03.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "c37f7af610b99f28ef03a3e96df1c257d47cbead"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_03.png",
+   "pivotX": 0.5,
+   "pivotY": 0.91176,
+   "ppu": 80,
+   "sha1": "3b937df16a59bfa890e6596b6c2a903a3f7b7bdb"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_04.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "1a430152017a981ba7db22e9f9ee35794df3141a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_04.png",
+   "pivotX": 0.5,
+   "pivotY": 0.89262,
+   "ppu": 80,
+   "sha1": "70d9e7cf668c951724ddbf794ba26bc83e8b9d8a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_05.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "69d8e05b9f52b1952fcd94b3b17b016f8ae38a6e"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_05.png",
+   "pivotX": 0.52137,
+   "pivotY": 0.91304,
+   "ppu": 80,
+   "sha1": "7962b3889f1f5baaa3e6b3c5b04a6cb04f64742c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_06.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "28a5c13369bfb12247b2473490f782faeb09ac7c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_06.png",
+   "pivotX": 0.51163,
+   "pivotY": 0.93333,
+   "ppu": 80,
+   "sha1": "b88dd3fba4e7a50110eab1f1f27ceba6f968f385"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_07.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "a0ce2cfab81883bb81d6376800b8408255d770a1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_07.png",
+   "pivotX": 0.47794,
+   "pivotY": 0.93642,
+   "ppu": 80,
+   "sha1": "844ba5b9d8067e250ae0ffda746ea0f0186b02bf"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_08.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "0d7960c543439d49d6bf1bf380a8e5c458801bd1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_08.png",
+   "pivotX": 0.48175,
+   "pivotY": 0.93143,
+   "ppu": 80,
+   "sha1": "d3379872da3938ea3ed4f6a51b68136010de4a7b"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_09.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "bb37008e9f5335c7ae55b79d8dc444973a95b22f"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_09.png",
+   "pivotX": 0.49275,
+   "pivotY": 0.9235,
+   "ppu": 80,
+   "sha1": "bdd0eb1e91f75345f4885a80e35e166618033285"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_10.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "c5c7a5c0e37a806a3699fb483406960e3c2b04f5"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_10.png",
+   "pivotX": 0.5,
+   "pivotY": 0.91848,
+   "ppu": 80,
+   "sha1": "9974a051660b6f451d2b7715e3fe126ff8f9821f"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_11.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "573e62d8df270864914199ee37775984c453e894"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_11.png",
+   "pivotX": 0.51095,
+   "pivotY": 0.91304,
+   "ppu": 80,
+   "sha1": "30fe63ef0734b18214365e165b7112ba367e34ea"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_12.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "243ef1c7830542deeee8500fc28a13e5dfedf763"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_12.png",
+   "pivotX": 0.51852,
+   "pivotY": 0.90217,
+   "ppu": 80,
+   "sha1": "6ecd7b694ae954317ccd0825032870a4c87393f7"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_13.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "578bfd031b286faf2396fa4c2e52310612118a0d"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_13.png",
+   "pivotX": 0.51449,
+   "pivotY": 0.90338,
+   "ppu": 80,
+   "sha1": "a531c270edfeb40e08cbf0d38f7d6f12460ca702"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_14.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "ad05c376eab79efbb3dfe7fcefffb8900da0fae4"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_14.png",
+   "pivotX": 0.5,
+   "pivotY": 0.89904,
+   "ppu": 80,
+   "sha1": "dcd756ace654c02b9343f42bf091e782f5637a16"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_15.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "21941cbe0f2233cb73501a5a3746febe6362571c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_15.png",
+   "pivotX": 0.48026,
+   "pivotY": 0.88995,
+   "ppu": 80,
+   "sha1": "728b7b4564143d16f8784715cdb2b7fefa7862b8"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_16.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "aab69bb03b6df530a60988d77438d8dd956f4956"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_16.png",
+   "pivotX": 0.47742,
+   "pivotY": 0.88571,
+   "ppu": 80,
+   "sha1": "77fa7d726d0296b7e29ccd57becda75803dcb4d5"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_17.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "151bd9fd2a64c095d7abde17d15930810b7fe623"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_17.png",
+   "pivotX": 0.47468,
+   "pivotY": 0.88095,
+   "ppu": 80,
+   "sha1": "a397f473bc1ea1e8f8709c8a1b854b689b66f3ea"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_18.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "9acf12d0f0923e734667e5a9038977ee2562f025"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_18.png",
+   "pivotX": 0.475,
+   "pivotY": 0.87619,
+   "ppu": 80,
+   "sha1": "044d4a7a0608714522658e2d92f003968c430f23"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_19.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "a37b8ed8e7d6112416ca6a3d71965cf7b4aced7b"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_19.png",
+   "pivotX": 0.46914,
+   "pivotY": 0.87081,
+   "ppu": 80,
+   "sha1": "b6be419de14be3a7102227cb3ea05dfcc0ce935d"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_20.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "9a8a3e9bc526a388655527bfcc21d40ab95fd187"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_20.png",
+   "pivotX": 0.46626,
+   "pivotY": 0.86603,
+   "ppu": 80,
+   "sha1": "f8ca9d01027348735acef029bcdb584372fd8a40"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_21.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "0832b8184d7a4905ab92982c3cb6a26bc150e328"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_21.png",
+   "pivotX": 0.46341,
+   "pivotY": 0.86124,
+   "ppu": 80,
+   "sha1": "c5644175cc48657c4e87e7517f3a8805794d3fa5"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_22.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "14c71c25917d5df91ad271ec9578e51b265f61d7"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_22.png",
+   "pivotX": 0.46061,
+   "pivotY": 0.85577,
+   "ppu": 80,
+   "sha1": "2e960085f182700a179dbc5cee5a824d5f54b673"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_23.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "8a915cadb9b99a0422dc88b84e035665ce2f4e7f"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_23.png",
+   "pivotX": 0.45732,
+   "pivotY": 0.85024,
+   "ppu": 80,
+   "sha1": "cda7ad7fc55501eedad0b4b920ad96c40d2de868"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_24.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "d48fdc04254fcecf8d758d8dedf4bcb57caf4b75"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_24.png",
+   "pivotX": 0.45062,
+   "pivotY": 0.84466,
+   "ppu": 80,
+   "sha1": "e3cff3be4fdcae683030c98347041841a8656c40"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_25.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "62d915a17a3643bfa154d114295a9e457263e5ec"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_25.png",
+   "pivotX": 0.4375,
+   "pivotY": 0.83902,
+   "ppu": 80,
+   "sha1": "ce2f085ab64907856468a2937f3007b27dacf124"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_26.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "4d695df525914a36ae7e04515c55660357e8f1f7"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_26.png",
+   "pivotX": 0.4375,
+   "pivotY": 0.83333,
+   "ppu": 80,
+   "sha1": "2dd7c950cdae8e9dc504c9462ff52f0fefd13a7a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_27.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "1264ac7199e40f35dd822449e0bb23760c8f94a0"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_27.png",
+   "pivotX": 0.4375,
+   "pivotY": 0.84343,
+   "ppu": 80,
+   "sha1": "68b91eb96a13b5680884fd0d5910092457d065a1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_28.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "8434835e737a885f5e36b2911cb1f8748aca7ec4"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_28.png",
+   "pivotX": 0.4375,
+   "pivotY": 0.83756,
+   "ppu": 80,
+   "sha1": "2d470033441b4e6fa44a61930784673d6ca81445"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_29.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "fcd9c7846ee8318e5c9dea89a5699561b1415b1c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_29.png",
+   "pivotX": 0.44099,
+   "pivotY": 0.83163,
+   "ppu": 80,
+   "sha1": "4509c986950f9170854f008b1e9fb0d8c965e52a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_30.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "c0138f992d9e726a8ab94c2262d5b660f383922c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_30.png",
+   "pivotX": 0.44375,
+   "pivotY": 0.82653,
+   "ppu": 80,
+   "sha1": "886fa90792a37763918c4dc4b0b1d1026cad089c"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_31.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "a0003e4607bd0f99eaa7928149b61a2e5fa300f8"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_31.png",
+   "pivotX": 0.44375,
+   "pivotY": 0.82051,
+   "ppu": 80,
+   "sha1": "63fb9bf106e336c7d970eb3fc51cae458aa3731e"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_32.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "fd2fff14baf9a752b54137e9d487f69320eb07d9"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_32.png",
+   "pivotX": 0.45062,
+   "pivotY": 0.81959,
+   "ppu": 80,
+   "sha1": "2216b8b976e30f64fc141cef6666ffe167299a08"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_33.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "a060bf27d30a5f36858a33e2c536b08f58a83c6a"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_33.png",
+   "pivotX": 0.45732,
+   "pivotY": 0.81443,
+   "ppu": 80,
+   "sha1": "908ec340c48225747a7d478d0e54db9b611b7044"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_34.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "9a08fa9355a8e99a96f758424917f0e8944aac01"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_34.png",
+   "pivotX": 0.46341,
+   "pivotY": 0.80928,
+   "ppu": 80,
+   "sha1": "2543872fcdb872838adf56fc0bdbb4b95b8f3b95"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_35.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "93b7707301589c57f9bf6f15bf5afb55b67d0df5"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_35.png",
+   "pivotX": 0.46667,
+   "pivotY": 0.82243,
+   "ppu": 80,
+   "sha1": "6195ad23d4868844e787d9a996a2fd9285d3cbdc"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_36.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "a226d06b1f36312731186a60e2e3f22d6a063577"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_36.png",
+   "pivotX": 0.46988,
+   "pivotY": 0.8169,
+   "ppu": 80,
+   "sha1": "c9f7c74c3cff1c5e0e6fd9760ff9827638eee1d1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_37.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "c80ac0f1c4f685507d4547d84d8e1f97484e574d"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_37.png",
+   "pivotX": 0.4759,
+   "pivotY": 0.81604,
+   "ppu": 80,
+   "sha1": "b7e7ee2aacffa5c65289857b02140c6196c35781"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_38.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "9fa206acc6a1134e144e7290308904c1d1845667"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_38.png",
+   "pivotX": 0.47904,
+   "pivotY": 0.81132,
+   "ppu": 80,
+   "sha1": "7cd04ac9031c50826c515b87731241ad3d9ae6a1"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/core_39.png",
+   "pivotX": 0.5,
+   "pivotY": 1.0,
+   "ppu": 80,
+   "sha1": "cc8781440c4390cd7afe1105033a7efeab077f39"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/plume_39.png",
+   "pivotX": 0.48214,
+   "pivotY": 0.80569,
+   "ppu": 80,
+   "sha1": "9e573e8ec7d3a2caa395b568948e8ee2760b3731"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_00.png",
+   "pivotX": 0.49412,
+   "pivotY": 0.80095,
+   "ppu": 80,
+   "sha1": "ca7d1b2543f234d102873dc82f280765b1afb113"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_01.png",
+   "pivotX": 0.49412,
+   "pivotY": 0.79904,
+   "ppu": 80,
+   "sha1": "537c1a14aacbdb16a4983771dbc0c712dcc07187"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_02.png",
+   "pivotX": 0.5,
+   "pivotY": 0.79327,
+   "ppu": 80,
+   "sha1": "bee5d8657febf5d758a53be495c7e9f7702ea564"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_03.png",
+   "pivotX": 0.50296,
+   "pivotY": 0.79126,
+   "ppu": 80,
+   "sha1": "afbd59505af9d1169297fd1c4bb86367f7de4d02"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_04.png",
+   "pivotX": 0.50296,
+   "pivotY": 0.78922,
+   "ppu": 80,
+   "sha1": "3ec84d97a24fdaeca0691b289b60c636696a4b71"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_05.png",
+   "pivotX": 0.50595,
+   "pivotY": 0.78713,
+   "ppu": 80,
+   "sha1": "a9c0a5bf0512c8a91657a75d84a435b3e6012041"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_06.png",
+   "pivotX": 0.50296,
+   "pivotY": 0.82632,
+   "ppu": 80,
+   "sha1": "4fb90aa4051abf51fbf7e36ff2af646f3295ebfd"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_07.png",
+   "pivotX": 0.50296,
+   "pivotY": 0.82888,
+   "ppu": 80,
+   "sha1": "6a0ebe60b0615c86701ccad1c34d39c838d2b989"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_08.png",
+   "pivotX": 0.50595,
+   "pivotY": 0.8453,
+   "ppu": 80,
+   "sha1": "2c7be17ee5def786dbc4cd12b3cd83227d8659db"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_09.png",
+   "pivotX": 0.50595,
+   "pivotY": 0.84444,
+   "ppu": 80,
+   "sha1": "950f336a9e1058b94ecbd37412e16f914ff53819"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_10.png",
+   "pivotX": 0.50595,
+   "pivotY": 0.83799,
+   "ppu": 80,
+   "sha1": "07d8b7cfe8f0c61638c82bc09e7e625c798bae4f"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_11.png",
+   "pivotX": 0.50602,
+   "pivotY": 0.83146,
+   "ppu": 80,
+   "sha1": "8fa2de52526dab46ff145a361d1ba26128c0f889"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_12.png",
+   "pivotX": 0.50909,
+   "pivotY": 0.82486,
+   "ppu": 80,
+   "sha1": "e3c24ab24951e65b7b4891624607f0d8f6f2c6ad"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_13.png",
+   "pivotX": 0.5092,
+   "pivotY": 0.81356,
+   "ppu": 80,
+   "sha1": "72e23ffd26f319818a349980cd2e55227b313b5e"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_14.png",
+   "pivotX": 0.5092,
+   "pivotY": 0.80226,
+   "ppu": 80,
+   "sha1": "8fb9fc957992e1630ccb83494f28bebfa93b3dea"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_15.png",
+   "pivotX": 0.50932,
+   "pivotY": 0.79545,
+   "ppu": 80,
+   "sha1": "787dc9a02752f478e869df35ba519571028694e0"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_16.png",
+   "pivotX": 0.50625,
+   "pivotY": 0.78286,
+   "ppu": 80,
+   "sha1": "38eb0f47beacab5c496c545c043d2d55d6c10fd0"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_17.png",
+   "pivotX": 0.50955,
+   "pivotY": 0.77586,
+   "ppu": 80,
+   "sha1": "9d6d38531acc251e82dc387b9b61a31edd892c94"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_18.png",
+   "pivotX": 0.51634,
+   "pivotY": 0.76879,
+   "ppu": 80,
+   "sha1": "8ba95795a6aab3f1dc4e2895b60cc358d1e40c5d"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_19.png",
+   "pivotX": 0.50993,
+   "pivotY": 0.76331,
+   "ppu": 80,
+   "sha1": "3573af3920ae430d1dc1a757be1e8f5ca0705593"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_20.png",
+   "pivotX": 0.50336,
+   "pivotY": 0.72414,
+   "ppu": 80,
+   "sha1": "4c3967307ca83d95e946ce5b2d7e9d347363a1df"
+  },
+  {
+   "path": "Assets/_Game/Art/Geyser/Down/fade_21.png",
+   "pivotX": 0.50685,
+   "pivotY": 0.38983,
+   "ppu": 80,
+   "sha1": "f56955176720469b237bf2a0195ee398210ea237"
+  }
+ ]
+}

@@ -11,7 +11,8 @@ namespace Parallax.Gameplay.Audio
     /// <summary>PAX-064 (D-158): a scene's sound. Synthesizes every cue once on Awake (or uses the bank's recording), loops the
     /// ambient bed, plays cues through a small pool of voices, and clicks for every button in the scene. Presentation only:
     /// nothing in gameplay reads it, and removing it changes no test. One per scene (Title, LevelSelect, every level via
-    /// _LevelTemplate), placed by PARALLAX/Setup/Audio (PAX-064); not a singleton.</summary>
+    /// _LevelTemplate), placed by PARALLAX/Setup/Audio (PAX-064); not a singleton. D-165: a cue's cat voice (CatVoice, the bank's
+    /// clips) starts with it on other voices, delayed, panned and faded the same way.</summary>
     [DisallowMultipleComponent]
     public sealed class GameAudio : MonoBehaviour
     {
@@ -32,12 +33,15 @@ namespace Parallax.Gameplay.Audio
 
         readonly Dictionary<AudioCue, AudioClip> clips = new Dictionary<AudioCue, AudioClip>();
         readonly CueLimiter limiter = new CueLimiter();
+        // D-165: how often each cue has started (jumps are voiced by count), and each voice role's next variant.
+        readonly int[] cueStarts = new int[System.Enum.GetValues(typeof(AudioCue)).Length];
+        readonly int[] voiceTurns = new int[System.Enum.GetValues(typeof(CatVoiceRole)).Length];
         AudioSource[] pool;
         AudioSource bed;
         LevelPause pause;
         Transform listener;
         float bedStart;
-        int plays;
+        int plays, nextVoice;
 
         public AudioCueBank Bank => bank;
         public int Plays => plays;
@@ -73,7 +77,11 @@ namespace Parallax.Gameplay.Audio
         /// muted, out of earshot, already sounding as often as it may, or started too recently. Returns whether it started.</summary>
         public bool Play(AudioCue cue, float? worldX = null, float? worldY = null)
         {
-            if (!enabled || pool == null || !clips.TryGetValue(cue, out AudioClip clip) || clip == null) return false;
+            if (!enabled || pool == null) return false;
+            clips.TryGetValue(cue, out AudioClip clip);
+            VoiceLayer[] voice = CatVoice.For(cue, cueStarts[(int)cue]);
+            float voiceLength = VoiceLength(voice);
+            if (clip == null && voiceLength <= 0f) return false;
             float distance = 1f;
             if (worldX.HasValue && listener != null)
             {
@@ -89,16 +97,43 @@ namespace Parallax.Gameplay.Audio
                 if (o.Volume > 0f) trim = o.Volume;
             }
             float pitch = AudioCues.PitchFor(plays, cue == AudioCue.LevelComplete || cue == AudioCue.UiTap ? 0f : pitchWalk);
-            if (!limiter.TryStart((int)cue, Time.unscaledTime, clip.length / pitch, spec.MaxVoices, spec.MinGap)) return false;
+            float length = Mathf.Max(clip != null ? clip.length : 0f, voiceLength);
+            if (!limiter.TryStart((int)cue, Time.unscaledTime, length / pitch, spec.MaxVoices, spec.MinGap)) return false;
 
-            AudioSource voice = FreeVoice();
-            voice.clip = clip;
-            voice.pitch = pitch;
-            voice.volume = spec.Volume * trim * distance * bank.VolumeOf(spec.Channel);
-            voice.panStereo = worldX.HasValue && listener != null ? Mathf.Clamp((worldX.Value - listener.position.x) / panWidth, -0.6f, 0.6f) : 0f;
-            voice.Play();
+            float pan = worldX.HasValue && listener != null ? Mathf.Clamp((worldX.Value - listener.position.x) / panWidth, -0.6f, 0.6f) : 0f;
+            if (clip != null) StartSound(clip, 0f, pitch, spec.Volume * trim * distance * bank.VolumeOf(spec.Channel), pan);
+            // D-165: the cat's voice, at its own mastered level, on the cue's channel.
+            foreach (VoiceLayer layer in voice)
+            {
+                AudioClip sound = bank.VoiceClip(layer.Role, voiceTurns[(int)layer.Role]++);
+                if (sound != null) StartSound(sound, layer.Delay, pitch, layer.Volume * trim * distance * bank.VolumeOf(spec.Channel), pan);
+            }
+            cueStarts[(int)cue]++;
             plays++;
             return true;
+        }
+
+        void StartSound(AudioClip clip, float delay, float pitch, float volume, float pan)
+        {
+            AudioSource source = FreeVoice();
+            source.clip = clip;
+            source.pitch = pitch;
+            source.volume = volume;
+            source.panStereo = pan;
+            if (delay > 0f) source.PlayDelayed(delay);
+            else source.Play();
+        }
+
+        // How long the voice runs (its last sound's end), or 0 when it has none or the bank has no clips for it.
+        float VoiceLength(VoiceLayer[] voice)
+        {
+            float end = 0f;
+            foreach (VoiceLayer layer in voice)
+            {
+                AudioClip sound = bank.VoiceClip(layer.Role, voiceTurns[(int)layer.Role]);
+                if (sound != null) end = Mathf.Max(end, layer.Delay + sound.length);
+            }
+            return end;
         }
 
         /// <summary>A button click. It plays on a short-lived voice that outlives this scene, since most buttons load another.</summary>
@@ -126,6 +161,7 @@ namespace Parallax.Gameplay.Audio
         {
             foreach (AudioCue cue in System.Enum.GetValues(typeof(AudioCue)))
             {
+                if (CatVoice.IsVoiceOnly(cue)) continue;
                 if (bank.TryGetOverride(cue, out AudioCueBank.Override o) && o.Clip != null) { clips[cue] = o.Clip; continue; }
                 float[] samples = SfxSynth.Render(SfxPresets.For(cue), SfxRate);
                 if (samples.Length == 0) { Debug.LogWarning("GameAudio: cue " + cue + " rendered no samples; it stays silent.", this); continue; }
@@ -168,14 +204,21 @@ namespace Parallax.Gameplay.Audio
             return source;
         }
 
-        // A free voice, else the one closest to finishing.
+        // A free voice, else the one closest to finishing. Free voices are taken in turn (D-165), so a cue and its voice, started
+        // together, never land on the same source.
         AudioSource FreeVoice()
         {
+            for (int k = 0; k < pool.Length; k++)
+            {
+                AudioSource free = pool[(nextVoice + k) % pool.Length];
+                if (free.isPlaying) continue;
+                nextVoice = (nextVoice + k + 1) % pool.Length;
+                return free;
+            }
             AudioSource best = pool[0];
             float bestLeft = float.MaxValue;
             foreach (AudioSource s in pool)
             {
-                if (!s.isPlaying) return s;
                 float left = s.clip != null ? (s.clip.length - s.time) / Mathf.Max(0.01f, s.pitch) : 0f;
                 if (left < bestLeft) { bestLeft = left; best = s; }
             }

@@ -16,6 +16,7 @@ namespace Parallax.Tests.EditMode
         {
             foreach (AudioCue cue in AllCues())
             {
+                if (CatVoice.IsVoiceOnly(cue)) { Assert.AreEqual(0, SfxPresets.For(cue).Layers.Length, cue + " is voice only"); continue; }
                 SfxRecipe recipe = SfxPresets.For(cue);
                 float[] s = SfxSynth.Render(recipe, Rate);
                 Assert.Greater(s.Length, Rate / 50, cue + " is at least 20 ms long");
@@ -89,11 +90,14 @@ namespace Parallax.Tests.EditMode
         [Test]
         public void TheCatsVoice_IsInTheCatCues()
         {
-            // 2026-10-20 ("I prefer more cat sounds than environment sounds"): deaths, respawn, flips and the finish carry a voice
-            // (a formant layer), and the room's own sounds sit under the cat's.
+            // 2026-10-20 ("I prefer more cat sounds than environment sounds"): deaths, respawn, flips and the finish carry a voice,
+            // and the room's own sounds sit under the cat's. D-165: the voice is CatVoice's (reel S), and the formant voice that
+            // was "too cartoony" is gone from every cue.
             foreach (AudioCue cue in new[] { AudioCue.DeathDefault, AudioCue.DeathPit, AudioCue.DeathSpiked, AudioCue.DeathCrushed, AudioCue.DeathZapped,
                 AudioCue.DeathArrow, AudioCue.Respawn, AudioCue.LevelComplete, AudioCue.TrapFlip, AudioCue.TrapInverter, AudioCue.HardLand, AudioCue.WallJump })
-                Assert.IsTrue(Array.Exists(SfxPresets.For(cue).Layers, l => l.FormantFrom > 0f), cue + " has the cat's voice");
+                Assert.Greater(CatVoice.For(cue, 0).Length, 0, cue + " has the cat's voice");
+            foreach (AudioCue cue in AllCues())
+                Assert.IsFalse(Array.Exists(SfxPresets.For(cue).Layers, l => l.FormantFrom > 0f), cue + " has no formant voice left");
             Assert.Greater(SfxPresets.Spec(AudioCue.DeathSpiked).Volume, SfxPresets.Spec(AudioCue.TrapMover).Volume);
             CueSpec arrow = SfxPresets.Spec(AudioCue.TrapArrow);
             Assert.AreEqual(1, arrow.MaxVoices, "one arrow sound at a time");

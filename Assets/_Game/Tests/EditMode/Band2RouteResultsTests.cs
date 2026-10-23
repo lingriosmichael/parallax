@@ -126,6 +126,17 @@ namespace Parallax.Tests.EditMode
             new[] { "Hinge_0=7", "Lift_1=8", "Bridge_1=17", "Arrow_Lo=10", "Spikes_A=7", "Cat.Inverted=28", "Spikes_N=16", "Slam_2=7", "CC_2=8", "Cat.Inverted=214",
                 "V_3=34", "Cat.Inverted=373", "Cloud=74", "Arrow_Hi=10", "Hinge_F=24", "Slam_Fa=6", "Spikes_F=26", "Spikes_D=25" },
             new string[0])]
+        // D-164: L021 "Ignition" (levels 21-30's first): the start bridge falls behind the cat, G_T under Spikes_T, Slam_1, Arrow_1,
+        // Collapse_P; three vents up the shaft, each landing a crumble; the Crown with Hinge_F chasing, G_FD over Spikes_FD, Slam_F,
+        // the crumbles over the Briar and Pop_F.
+        [TestCase("L021", 734, new[] { 36, 31, 25, 25, 28, 21, 27 },
+            new[] { "Bridge_1=29", "G_T=46", "Slam_1=6", "Arrow_1=10", "Collapse_P=12", "Crumb_2=82", "Crumb_3=40", "Hinge_F=21", "G_FD=547", "Slam_F=6", "Crumble_F=14", "Pop_F=6" },
+            new string[0])]
+        // D-166: L022 "Wall Runner": three corridors joined by two mossy chimneys, a stone punch across each on a beat; Hinge_0,
+        // Slam_1, Collapse_1, Lift_2; Hinge_2, Collapse_2, Slam_2; Hinge_F chasing, Slam_F, Collapse_3 and Pop_F.
+        [TestCase("L022", 930, new[] { 16, 42, 47, 14, 38, 14, 30 },
+            new[] { "Hinge_0=7", "Slam_1=6", "Collapse_1=13", "Lift_2=8", "Punch_1=6", "Hinge_2=14", "Collapse_2=13", "Slam_2=6", "Punch_2=6", "Hinge_F=11", "Slam_F=6", "Collapse_3=12", "Pop_F=9" },
+            new string[0])]
         // A level's whole route measurement runs inside its case, over NUnit's default 180 s for the larger levels (L014).
         [Timeout(600000)]
         public void RouteResults_AreAsBuilt(string id, int solutionTicks, int[] windows, string[] leads, string[] recoveries)

@@ -191,6 +191,7 @@ namespace Parallax.Editor.Art
         static string BuildGeyser(Transform artRoot, SoloRoomElement e, GeyserTrap trap, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
         {
             GeyserSettings g = e.Settings.Geyser.Resolved;
+            GeyserSteamFrames steam = config.GeyserSteam(g.Direction);
             SpriteRenderer greyVent = trap.Vent, greyColumn = trap.Column;
             Transform art = ArtObject(artRoot, e.Name, trap.transform.position, layer, changes);
             GeyserArt presenter = SetupUtility.Ensure<GeyserArt>(art.gameObject, changes);
@@ -199,32 +200,38 @@ namespace Parallax.Editor.Art
             vent.sprite = config.GeyserVent; vent.sharedMaterial = config.TrapMaterial; vent.drawMode = SpriteDrawMode.Simple;
             vent.sortingOrder = greyVent.sortingOrder;
 
+            // D-162: the column's body is the steam jet inside it, a frame per tick (GeyserArt sizes it to the column art's box).
+            // The steam's sunlight, shadow and the vent's glow are rendered into it, so it draws unlit: under a level's 2D
+            // lights the glow washed out to white.
+            Material steamMaterial = HazardMaterial(config);
             SpriteRenderer column = Child(art, "Column", layer, changes);
-            column.sprite = config.GeyserColumnFrames[0]; column.sharedMaterial = config.TrapMaterial;
-            column.drawMode = SpriteDrawMode.Tiled; column.tileMode = SpriteTileMode.Continuous;
-            column.size = greyColumn != null ? greyColumn.size : new Vector2(g.ColumnWidth, g.ColumnHeight);
-            column.transform.localScale = Vector3.one;
+            column.sprite = steam.Core[0]; column.sharedMaterial = steamMaterial;
+            column.drawMode = SpriteDrawMode.Simple; column.color = Color.white;
             column.sortingOrder = greyColumn != null ? greyColumn.sortingOrder : greyVent.sortingOrder;
             column.enabled = false;
 
             int effects = Mathf.Max(vent.sortingOrder, column.sortingOrder) + EffectOrder;
-            SpriteRenderer tellGlow = Child(art, "TellGlow", layer, changes);
-            tellGlow.sprite = config.Dust.Length > 0 ? config.Dust[0] : config.Glint; tellGlow.sharedMaterial = config.TrapMaterial; tellGlow.drawMode = SpriteDrawMode.Simple;
-            tellGlow.sortingOrder = effects; tellGlow.enabled = false; tellGlow.color = new Color(1f, 0.62f, 0.3f, 1f);
-            SpriteRenderer[] tell = Effects(art, "Tell", config.TellDrops, config.Spray, config.TrapMaterial, effects, layer, changes);
-            SpriteRenderer[] steam = Effects(art, "Steam", config.SteamWisps, config.Steam, config.TrapMaterial, effects, layer, changes);
-            SpriteRenderer[] burst = Effects(art, "Burst", config.BurstPuffs, config.Spray, config.TrapMaterial, effects, layer, changes);
-            SpriteRenderer[] spray = Effects(art, "Spray", config.SprayPuffs, config.Spray, config.TrapMaterial, effects, layer, changes);
+            SpriteRenderer Steam(string name, Sprite first)
+            {
+                SpriteRenderer r = Child(art, name, layer, changes);
+                r.sprite = first; r.sharedMaterial = steamMaterial; r.drawMode = SpriteDrawMode.Simple;
+                r.sortingOrder = effects; r.enabled = false; r.color = Color.white;
+                return r;
+            }
+            SpriteRenderer tell = Steam("TellSteam", steam.Tell[0]), plume = Steam("Plume", steam.Plume[0]), fade = Steam("Fade", steam.Fade[0]);
+            // The water-jet art before D-162: the tell's glow, droplets and wisps, the burst and the spray.
+            RemoveChild(art, "TellGlow", changes);
+            foreach (string prefix in new[] { "Tell_", "Steam_", "Burst_", "Spray_" }) RemoveExtra(art, prefix, 0, changes);
 
             TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", e.Name), ("ventArt", vent), ("greyboxVent", greyVent),
                 ("columnArt", column), ("greyboxColumn", greyColumn), ("ventSprite", config.GeyserVent), ("trapMaterial", config.TrapMaterial),
-                ("ventSize", e.Size), ("tellTicks", g.TellTicks), ("direction", (int)g.Direction), ("tellGlow", tellGlow));
-            SetupUtility.SetArray(presenter, "columnFrames", config.GeyserColumnFrames.Cast<Object>().ToArray(), changes);
+                ("ventSize", e.Size), ("tellTicks", g.TellTicks), ("eruptTicks", g.EruptTicks), ("direction", (int)g.Direction),
+                ("tellSteam", tell), ("plume", plume), ("fade", fade));
+            SetupUtility.SetArray(presenter, "tellFrames", steam.Tell.Cast<Object>().ToArray(), changes);
+            SetupUtility.SetArray(presenter, "coreFrames", steam.Core.Cast<Object>().ToArray(), changes);
+            SetupUtility.SetArray(presenter, "plumeFrames", steam.Plume.Cast<Object>().ToArray(), changes);
+            SetupUtility.SetArray(presenter, "fadeFrames", steam.Fade.Cast<Object>().ToArray(), changes);
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greyVent, greyColumn }, changes);
-            SetupUtility.SetArray(presenter, "tellDrops", tell.Cast<Object>().ToArray(), changes);
-            SetupUtility.SetArray(presenter, "steam", steam.Cast<Object>().ToArray(), changes);
-            SetupUtility.SetArray(presenter, "burst", burst.Cast<Object>().ToArray(), changes);
-            SetupUtility.SetArray(presenter, "spray", spray.Cast<Object>().ToArray(), changes);
             presenter.Apply();
             return art.name;
         }

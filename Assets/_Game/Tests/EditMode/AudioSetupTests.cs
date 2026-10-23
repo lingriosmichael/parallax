@@ -79,7 +79,9 @@ namespace Parallax.Tests.EditMode
             GameAudio gameAudio = root.GetComponent<GameAudio>();
             typeof(GameAudio).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(gameAudio, null);
             var clips = (Dictionary<AudioCue, AudioClip>)typeof(GameAudio).GetField("clips", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(gameAudio);
-            Assert.AreEqual(System.Enum.GetValues(typeof(AudioCue)).Length, clips.Count, "every cue has a clip");
+            int synthesized = 0;
+            foreach (AudioCue cue in System.Enum.GetValues(typeof(AudioCue))) if (!CatVoice.IsVoiceOnly(cue)) synthesized++;
+            Assert.AreEqual(synthesized, clips.Count, "every cue but the voice-only ones (D-165) has a clip");
             Assert.IsTrue(gameAudio.Play(AudioCue.TrapSpikes, 0f));
             Assert.IsFalse(gameAudio.Play(AudioCue.TrapSpikes, 0f), "the same cue again at once is held off (MinGap)");
             Assert.AreEqual(1, gameAudio.Plays);

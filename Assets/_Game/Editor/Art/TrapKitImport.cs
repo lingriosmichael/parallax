@@ -23,6 +23,10 @@ namespace Parallax.Editor.Art
         const string ShaderName = "Parallax/2D/Sprite-Lit-Flip";
         const string WorldTileMaterialPath = Folder + "/TrapArtWorldTile.mat";
         const int MaxAtlas = 2048;
+        // D-162: the geyser's steam, a sprite per tick (Tools/Art/geyser_steam.py), in its own atlas beside the kit's.
+        public const string SteamFolder = "Assets/_Game/Art/Geyser";
+        const string SteamManifestPath = SteamFolder + "/geyser_steam.json";
+        const string SteamAtlasPath = SteamFolder + "/GeyserSteam.spriteatlasv2";
 
         [System.Serializable] class Entry { public string path; public float pivotX, pivotY; public bool tiled; public string normal; public string placeholder; public float ppu; }
         const int KitVersion = 2;
@@ -41,9 +45,15 @@ namespace Parallax.Editor.Art
             // PAX-A18: each sprite at its own pixels per unit (the pilot set's bodies are made at 256).
             foreach (Entry e in manifest.entries) ImportSprite(e.path, new Vector2(e.pivotX, e.pivotY), e.tiled, string.IsNullOrEmpty(e.normal) ? null : e.normal, e.ppu > 0f ? e.ppu : manifest.ppu, changes);
 
+            // D-162: the geyser's steam.
+            Manifest steam = File.Exists(SteamManifestPath) ? JsonUtility.FromJson<Manifest>(File.ReadAllText(SteamManifestPath)) : null;
+            if (steam?.entries == null || steam.entries.Length == 0) Debug.LogError($"Import Trap Kit: no geyser steam in {SteamManifestPath}; run Tools/Art/geyser_steam.py first (geysers build grey-box only without it).");
+            else foreach (Entry e in steam.entries) ImportSprite(e.path, new Vector2(e.pivotX, e.pivotY), false, null, e.ppu > 0f ? e.ppu : steam.ppu, changes);
+
             Material material = EnsureMaterial(MaterialPath, ShaderName, "TrapArt", changes);
             Material worldTile = EnsureMaterial(WorldTileMaterialPath, Parallax.Presentation.HostSkin.WorldTileShader, "TrapArtWorldTile", changes);
-            EnsureAtlas(changes);
+            EnsureAtlas(AtlasPath, new[] { Folder + "/Bodies", Folder + "/Effects" }, changes);
+            if (steam?.entries != null) EnsureAtlas(SteamAtlasPath, new[] { SteamFolder + "/Up", SteamFolder + "/Down" }, changes);
             EnsureConfig(material, worldTile, manifest, changes);
             AssetDatabase.SaveAssets();
             Debug.Log($"Import Trap Kit: {manifest.entries.Length} sprites; {(changes.Count == 0 ? "no changes" : string.Join("; ", changes))}");
@@ -117,19 +127,19 @@ namespace Parallax.Editor.Art
             return material;
         }
 
-        static void EnsureAtlas(List<string> changes)
+        static void EnsureAtlas(string atlasPath, string[] folderPaths, List<string> changes)
         {
-            Object[] folders = { AssetDatabase.LoadAssetAtPath<DefaultAsset>(Folder + "/Bodies"), AssetDatabase.LoadAssetAtPath<DefaultAsset>(Folder + "/Effects") };
-            if (AssetDatabase.LoadMainAssetAtPath(AtlasPath) == null)
+            Object[] folders = folderPaths.Select(AssetDatabase.LoadAssetAtPath<DefaultAsset>).ToArray();
+            if (AssetDatabase.LoadMainAssetAtPath(atlasPath) == null)
             {
                 var asset = new SpriteAtlasAsset();
                 asset.Add(folders);
-                SpriteAtlasAsset.Save(asset, AtlasPath);
-                AssetDatabase.ImportAsset(AtlasPath);
-                changes.Add("created " + AtlasPath);
+                SpriteAtlasAsset.Save(asset, atlasPath);
+                AssetDatabase.ImportAsset(atlasPath);
+                changes.Add("created " + atlasPath);
             }
-            var importer = AssetImporter.GetAtPath(AtlasPath) as SpriteAtlasImporter;
-            if (importer == null) { Debug.LogError("Import Trap Kit: " + AtlasPath + " isn't a Sprite Atlas V2."); return; }
+            var importer = AssetImporter.GetAtPath(atlasPath) as SpriteAtlasImporter;
+            if (importer == null) { Debug.LogError("Import Trap Kit: " + atlasPath + " isn't a Sprite Atlas V2."); return; }
             bool dirty = false;
             TextureImporterPlatformSettings platform = importer.GetPlatformSettings("DefaultTexturePlatform");
             if (platform.maxTextureSize != MaxAtlas) { platform.maxTextureSize = MaxAtlas; importer.SetPlatformSettings(platform); dirty = true; }
@@ -147,7 +157,7 @@ namespace Parallax.Editor.Art
             }
             if (!dirty) return;
             importer.SaveAndReimport();
-            changes.Add("configured the trap atlas");
+            changes.Add("configured " + Path.GetFileName(atlasPath));
         }
 
         static void EnsureConfig(Material material, Material worldTile, Manifest manifest, List<string> changes)
@@ -179,6 +189,15 @@ namespace Parallax.Editor.Art
             Ref("Glint", S("Effects/glint"));
             Ref("GeyserVent", S("Bodies/TRAP-03_geyser_vent"));
             Refs("GeyserColumnFrames", Many("geyser_column_"));
+            // D-162: per direction, the frames in tick order (NN = ticks since the event; names sort as numbers).
+            foreach (string dir in new[] { "Up", "Down" })
+                foreach ((string field, string prefix) in new[] { ("Tell", "tell_"), ("Core", "core_"), ("Plume", "plume_"), ("Fade", "fade_") })
+                {
+                    Sprite[] frames = AssetDatabase.FindAssets("t:Sprite", new[] { $"{SteamFolder}/{dir}" }).Select(AssetDatabase.GUIDToAssetPath)
+                        .Where(p => Path.GetFileName(p).StartsWith(prefix)).OrderBy(p => p, System.StringComparer.Ordinal)
+                        .Select(p => AssetDatabase.LoadAssetAtPath<Sprite>(p)).ToArray();
+                    Refs($"GeyserSteam{dir}.{field}", frames);
+                }
             Refs("Dust", Many("dust_"));
             Refs("Spray", Many("spray_"));
             Ref("SpikeStrip", S("Bodies/TRAP-04_spike_strip"));
