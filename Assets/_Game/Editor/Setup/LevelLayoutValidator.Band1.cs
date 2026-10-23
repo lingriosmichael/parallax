@@ -147,6 +147,8 @@ namespace Parallax.Editor.Setup
                 if (levelId == "L011" && block.Name.StartsWith("Bridge_")) continue;
                 // D-164 (L021 "Ignition", 2026-10-22): the start bridge falls away tile by tile behind the cat from its first step (L001's).
                 if (levelId == "L021" && block.Name.StartsWith("Bridge_")) continue;
+                // D-174 (L029 "Stormfront", 2026-10-23): each storey's bridge falls away tile by tile behind the cat (L021's).
+                if (levelId == "L029" && block.Name.StartsWith("Bridge")) continue;
                 // D-085 amendment (PAX-102): a block that is a section of a split slab (a real hole once it falls) passes when the
                 // floor is drawn as one surface across it: a floor on each side, touching it, with the same top and bottom, and no
                 // exposed side edge where they meet (the skin draws side faces and end caps on exposed edges only: a seam).

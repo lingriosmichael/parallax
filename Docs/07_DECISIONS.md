@@ -4864,3 +4864,154 @@ ticks, riding the lift.
 no precision sections, no grip walls, existing trap kinds only; passes every layout, kit, route, section and camera rule with no
 exemptions.
 (6) **Look.** Golden Ruins until PAX-A20 (D-163, D-164 (5)).
+
+### D-170 · 2026-10-23 · Proposed (D-163's sixth level; layout and traps only, art later)
+
+**Decision:** level 26 is "Liar's Temple" (`L026Layout`, `L026Routes`): **don't trust it**. Stone that isn't there, a door that
+leaves, a checkpoint that turns on the cat. One room, 32 u wide, three storeys 4.5 u apart on 1 u slabs (L025's frame), walked east,
+west, east. Solution 838 ticks (16.8 s), in three checkpoint sections (264, 315, 259 ticks).
+(1) **Hall** (storey 1, east): the ground past the start runs on as Fake_0 to a small gap: jump it. The spike lake has a big stepping
+stone (Stone_a) with a smaller one either side, and both smaller ones are fakes (Fake_a, Fake_b): long-jump onto Stone_a and off
+it. Pop_1 springs out of the ground ahead; Slam_1 pounds on a 90-tick beat. The door is in sight at the end of the hall, and as the
+cat comes within x 25.2 it rides its lift (Lift_D) up the shaft to storey 3's floor, where the lift fills slab B's hole: the door
+the cat ran at isn't the way out yet. G_1 launches the cat up after it. The room's one `DoorRetreat` (D-159's door on a lift)
+serves both "the fake door" and "the retreating door" of D-163's concept: the kit allows one retreat per room (every validator
+reads the first), and a decoy door that never completes would be a new element kind, not built without the developer's approval.
+(2) **Shrine** (storey 2, west): the checkpoint lies. Slam_S, over the shrine, comes down 55 ticks after the cat comes onto it, and
+again while it stays (Rearm): a cat that rests at the checkpoint, or stands there after a respawn, is crushed. The respawned cat
+still has more than D-091's 50 ticks. Hinge_2 stands up behind a cat that has passed it and shoves one that stops onto Fake_2b;
+Fake_2a is the next stride but one. Slam_2 pounds on the beat; Lift_2 carries the cat up.
+(3) **Crown** (storey 3, east): the storm cloud chases from the lift. Fake_3a and Fake_3b lie over Fake_2a and Fake_2b, which lie
+over Fake_a and Fake_b: the same two 2 u strides of stone are lies on every storey, so a cat that falls through one drops into the
+lake (a cat that keeps running while it falls can drift onto solid ground below and climb back up). Pop_3 springs ahead; Slam_D
+comes down in front of the door and stays (stop short, hop onto it); the door stands at the west edge of its lift, so the cat
+touches it from the stone (crossing the stone-to-lift seam made two replays differ by 0.0003 u).
+(4) **Fakes are 2 u wide** on the upper storeys: a running cat crosses a narrower gap without falling (D-133's walkable pits).
+(5) **Rules.** 11 distinct killers, all in sequence; 16 betrayal routes, all Dies with lead ≥ 6, and the door's ride Recovers;
+every timed window ≥ 15. No precision sections, no grip walls, existing trap kinds only; passes every layout, kit, route,
+section and camera rule with no exemptions.
+(6) **Look.** Golden Ruins until PAX-A20 (D-163, D-164 (5)). The upper fakes show a thinner underside than the slab around them,
+which a sharp player can read; the paintings may keep or hide that tell.
+
+### D-171 · 2026-10-23 · Proposed (D-163's seventh level; layout and traps only, art later)
+
+**Decision:** level 27 is "Updraft" (`L027Layout`, `L027Routes`): **ride the air**. Every vine snaps soon after the cat takes
+it, and the vents are what carry the cat from one to the next. One room, 32 u wide, three storeys 5.5 u apart on 1 u slabs,
+walked east, west, east. Solution 876 ticks (17.5 s), in three checkpoint sections (293, 260, 323 ticks).
+(1) **Lake** (storey 1, east): V1 and V2 hang over the spike lake and snap 45 ticks after the cat first touches each. Pier_G stands
+in the lake, 1 u below the walk line, with G_1 in it. G_1's eruption flings a cat that steers east all the way to V3; a plain
+jump from the pier falls short. A cat that rides it straight up meets Spikes_G under slab A. V3 snaps too: leap off it onto the
+ground. G_2, with a 3 u column, throws the cat up slab A's hole to storey 2.
+(2) **Gallery** (storey 2, west): Slam_2 pounds on a 90-tick beat (through in the gap). V4 is the only way over the spike bed,
+and it snaps. At the west end, V_S hangs in the shaft up to storey 3 and snaps 28 ticks after a touch. That is too soon to
+climb it from a jump (a cat that tries falls onto Spikes_S). G_3 throws the cat high up it instead: steer west, or meet Spikes_C3.
+Catch V_S near its top and leap east onto storey 3.
+(3) **Crown** (storey 3, east): V5-V8 hang from the roof over the spike bed, each snapping after the cat takes it. GD_C, a vent
+in the roof between V6 and V7, blows down on the beat with a 3 u column through every leap between them. Wait on V6, which holds
+80 ticks, for it to stop, then leap. Pop_3 springs ahead. G_D (a 1 u column, so the cat stays under the roof) throws the cat up
+onto the door's ledge, 2.5 u up.
+(4) **Vents set the pace.** Every vent is on the 90-tick beat and phased so the cat arrives in its quiet part and waits a few
+ticks through the tell. A cat that arrives mid-eruption is launched at once, and the spikes over G_1 and G_3 punish a straight
+ride. Those spikes are only the vent's width, so a cat that starts steering late still clears them.
+(5) **Rules.** 9 distinct killers, 7 in sequence; 14 betrayal routes, all Dies with lead ≥ 7, one revealed by each snap vine
+(D-089). Every timed window ≥ 13. Existing trap kinds only; no precision sections, no grip walls, no dead ends (D-155). Passes
+every layout, kit, route, section and camera rule with no exemptions.
+(6) **Look.** Golden Ruins until PAX-A20 (D-163, D-164 (5)). V_S's top ends in open air above storey 3 (as L014's climbing
+vines do); the paintings may give it something to hang from.
+
+### D-172 · 2026-10-23 · Proposed (the developer: "maybe instead we can start obsidian levels after level 30 to not erase or get rid of work already done. We continue with goldnruins until level 30"; trap choices made in planning the same day)
+
+**Decision:** Obsidian Void starts at L031 and gets its own trap set; L021–L030 stay Golden Ruins.
+(1) **Ranges.** Golden Ruins covers L001–L030. Obsidian Void covers L031–L060 (D-163's 30-level span, moved up by ten). This amends
+D-163 (2) and D-151's ranges. L021–L030 keep the current kit and the Golden Ruins look; L021–L027 are unchanged, and L028–L030 get
+built as D-163 planned. Obsidian's world is ancient technology (obsidian, circuit lines, cyan light), so storms, arrows, lances
+and spike pits don't belong in it.
+(2) **Same mechanics, new look.** These keep their behaviour and every rule; only their art changes, through a per-biome trap-art set
+chosen by level range (with PAX-A20's biome switch):
+- a spike strip becomes an energy field, and a pit's spikes a laser grid at the bottom of the void;
+- pop-up spikes become floor emitters that flick on;
+- the storm cloud becomes a **security drone** that fires a vertical laser;
+- a fake platform becomes a **hologram**;
+- a crumble becomes glass that shatters, and a shrinking floor hard-light that retracts;
+- a falling block becomes a monolith slab, and slams, pistons, lifts and hinges become obsidian machinery;
+- a geyser becomes a gravity vent, and a vine a light tether (OV-18) that flickers out when it snaps;
+- a grip wall becomes a lit circuit panel (the same full-height rule as D-114's moss);
+- gravity flips and inverters become ring glyphs, and the door retreat's gate slides on its rail.
+(3) **New behaviour, approved for tickets.** Each one gets its own ticket, validator and runtime tests and a Trap Lab room before
+any level uses it:
+- **Laser beam turret** (replaces arrows): a beam mode on the arrow lane. A thin, harmless warning ray covers the lane for the
+  tell (≥ 6 ticks, D-078), then the whole lane is lethal for the beam's ticks, then it's off.
+- **Hard-light bar** (replaces the lance): D-086's spear path (fires once, sticks, its bar becomes solid) with the warning ray.
+- **Pulse gate**: a fixed laser barrier that turns on and off on a beat, with a warning flicker before each "on".
+- **Sweeping scanner**: a vertical beam that slides along a track and back on the moving-trap timing.
+(4) **Props.** OV-20 (strands), OV-21 (clumps), OV-22 (banners) and OV-23 (rubble) come from the ruins idea. Tech props replace
+them where the developer agrees: emitter pylons, conduits, holo-glyph panels, broken drones, crystal clusters. Obsidian's trap
+art is painted after the tickets fix each trap's shape.
+(5) **Prompts and colour (2026-10-23).** `Docs/Art/ObsidianVoid_PROMPTS.md` describes the world as an ancient high-technology
+civilisation, has v2 prompts for OV-20 to OV-23 (tech props) and makes OV-31 a grip panel. `Docs/Art/ObsidianVoid_TRAP_PROMPTS.md`
+(OT-01 to OT-17) covers every trap body. Crimson (D-108's danger colour) is the colour of every deadly beam and field; cyan is
+the world's safe light. Nothing safe is red, and nothing deadly is cyan.
+
+### D-173 · 2026-10-23 · Proposed (D-163's eighth level; layout and traps only; Golden Ruins, D-172)
+
+**Decision:** level 28 is "Mirror Lanes" (`L028Layout`, `L028Routes`): **the other side**. Each corridor is its own reflection
+turned upside down. The cat walks the first half on one face, a flip orb in the middle throws it onto the other face, and the
+second half holds the same traps again, mirrored onto that face and met in the reverse order. L016's frame: three corridors 4.5 u
+high on 2 u slabs, walked east, west, east. Solution 942 ticks (18.8 s), in three checkpoint sections (305, 324, 313 ticks).
+(1) **Mirror** (corridor 1, floor first):
+- On the floor: Pop_F1 springs up (jump it); Slam_F1 comes down ahead and stays (stop short, hop it); Collapse_F1 gives way over
+  Pit_C1 (jump it).
+- Flip_U1 throws the cat onto the ceiling, where the same three come back mirrored: CC_C1 gives way into a spiked recess;
+  Piston_C1 rises out of the floor into the ceiling and stays (the ceiling-walker's slam); Pop_C1 springs out of the ceiling.
+- A hole in slab A lets the cat fall up into corridor 2.
+(2) **Arrows** (corridor 2, ceiling first): Arrow_M2, in the west jamb, shoots along whichever face the cat is on (D-123's
+mirrored lane), on a 220-tick cadence. One shot meets the cat on the ceiling and the next on the floor, each on open ground: jump
+it. Pop_C2 on the ceiling and its mirror Pop_F2 on the floor sit either side of Flip_D2. Flip_U3 throws the cat up the shaft.
+(3) **Crown** (corridor 3, ceiling first): Pop_C3, Slam_C3 (rising out of the floor into the roof) and CC_C3 on the ceiling;
+Flip_D3 drops the cat to the floor, where Collapse_F3, Slam_F3 and Pop_F3 mirror them on the way to the door.
+(4) **Honest spikes** cover the face the cat isn't meant to walk (the ceiling over each first half, the floor under each second
+half), each strip the other's reflection. The mirror is approximate where the cat needs walking room between jumps.
+(5) **Rules.** 15 distinct killers, all 15 in sequence, 16 betrayal routes, all Dies with lead ≥ 6; every timed window ≥ 13.
+Passes every layout, kit, route, section and camera rule. Existing trap kinds only, no grip walls, no precision sections.
+
+### D-174 · 2026-10-23 · Proposed (D-163's ninth level; layout and traps only; Golden Ruins, D-172)
+
+**Decision:** level 29 is "Stormfront" (`L029Layout`, `L029Routes`): **read the sky**. One storm cloud follows the cat through the
+whole room, storey to storey, and every storey has a bridge that won't hold a cat that stops. Three storeys 5.5 u apart on 1 u
+slabs, walked east, west, east. Solution 868 ticks (17.4 s), in three checkpoint sections (306, 305, 257 ticks).
+(1) **Bridge** (storey 1, east):
+- The cloud starts over the far end of the storey and wakes as the cat sets off.
+- The bridge over the chasm falls tile by tile from the cat's first step on it (L021's bridge).
+- The cloud strikes the far bank just as the cat gets there. A cat that stops on the bridge goes down with it; one that runs on
+  off the bridge is struck. The way through: stop on the bank, let the strike land ahead, go on.
+- Pop_1 springs out of the ground; Lift_1 carries the cat up.
+(2) **Gallery** (storey 2, west): the cloud comes up after the cat and chases it from behind (a room has one cloud, D-090, so the
+strike-ahead of D-163's concept happens on storey 1). Bridge 2 is five crumbling planks over a spike bed, each giving way 14 ticks
+after a touch. Pop_2 springs; Slam_2 pounds on the beat (wait for the gap with the storm coming); Lift_2 carries the cat up.
+(3) **Crown** (storey 3, east): the storm chases over Bridge 3's planks; Slam_D comes down in front of the door and stays.
+(4) **The bridge exemption.** Storey 1's bridge tiles hang in the open until they fall, like L001's, L011's and L021's.
+`ValidateBand1Tells` gets L029's named exemption (`Bridge*` blocks), as D-164 gave L021. The upper bridges are crumbling planks
+over Floor beds, because falling blocks there failed the trigger-coverage and kill-pose checks.
+(5) **Rules.** 8 distinct killers, 7 in sequence, 10 betrayal routes, all Dies with lead ≥ 7. Every timed window ≥ 14. The lifts
+are phased so the cat steps on as they come home. Passes every layout, kit, route, section and camera rule.
+
+### D-175 · 2026-10-23 · Proposed (D-163's tenth level and Golden Ruins' last, D-172; layout and traps only)
+
+**Decision:** level 30 is "Meltdown" (`L030Layout`, `L030Routes`): **get out**. The temple comes down around the cat, storey by
+storey, and every storey has something falling in behind it. A checkpointed escape: three storeys 5.5 u apart on 1 u slabs, walked
+east, west, east, climbing to the door at the top. Solution 825 ticks (16.5 s), in three checkpoint sections (283, 283, 259 ticks).
+(1) **Cave-in** (storey 1, east):
+- The ceiling falls in rock by rock behind the running cat. Each of the five rocks (slab A's underside, x 3.5-11) drops 14 ticks
+  after the cat comes under it and lands just behind a cat that keeps running, so a cat that stops is crushed.
+- Pop_1 springs out of the ground (jump it); Collapse_1 gives way over a 1 u pit (jump it).
+- Slam_1 pounds on the beat (wait for the gap), and G_1 throws the cat up its hole to storey 2.
+(2) **Roots** (storey 2, west): Slam_2 pounds on the beat. Past it Hinge_2 stands up behind the cat and pushes a cat that stops at
+the edge onto the spike field. V1-V3 hang over the field, each snapping 45 ticks after the cat takes it. Lift_2 carries the cat up.
+(3) **Collapse** (storey 3, east): Hinge_3, spiked, stands up behind the cat as it sets off and slides 17.3 u after it, a little
+slower than a run, the whole length of the storey. On the way: Pop_3 (jump it) and Collapse_3 over a spike bed (jump it). Slam_D
+comes down in front of the door and stays (stop short, hop onto it), and Pop_D springs on the last step (jump it).
+(4) **Kit only.** Everything is from the existing kit (falling blocks, hidden spikes, collapses, slams, a geyser, hinge floors,
+snap vines, a lift). No validator exemption: the rocks sit flush in slab A's underside and leave a hole when they fall (D-131).
+(5) **Rules.** 11 distinct killers, all 11 in sequence, 14 betrayal routes, all Dies with lead ≥ 6. Every timed window ≥ 12. The
+slams, G_1 and Lift_2 are phased to the cat's arrival, so the longest wait is 27 ticks (on G_1 through its tell). Passes every
+layout, kit, route, section and camera rule.

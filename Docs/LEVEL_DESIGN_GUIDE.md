@@ -238,7 +238,7 @@ The content model for levels 11–50: **one new kit element per theme, explored 
 The planned kit elements (`claude/KIT-5-9_levels11plus_mechanics.md`): spear (KIT-5), inverter (KIT-6), geyser (KIT-7), vines (KIT-8), storm cloud (KIT-9). Later candidates from the research: moving pit, door as a platform, fake exit, springs, slippery floor, wraparound. For each new element, draft its five-room theme using P1–P5 before building the kit ticket, so the kit is built for the levels it has to serve.
 ## 9 · Band 2 (levels 11–20), from PAX-060
 
-The brief is `Docs/Design/L011-L020_concepts.md` (approved 2026-09-26). On top of everything above:
+The brief was `Docs/Design/L011-L020_concepts.md` (approved 2026-09-26; removed 2026-10-23 once the levels were built, still in git history). On top of everything above:
 - **One verb per level.** Each level is solved by its own way of thinking; a solution that fits another level's verb is a redesign.
 - **Longer, in sections.** 30–50 s once known, split into 2–3 checkpoint sections (D-091), each ≤ 20 s, aiming for ≤ 15 s. Put the checkpoint *after* the lesson, not before it, so a death replays the part you haven't learned yet. The cat must survive 1 s standing at every checkpoint.
 - **A chaos moment per level:** ≥ 5 elements changing within about a second, as one fixed chain with an idea behind it (a crossfire that becomes a staircase, a room that rearranges itself). Chaos is choreography, never randomness.

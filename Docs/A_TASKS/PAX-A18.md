@@ -16,6 +16,8 @@
 > - Ends, slabs and undersides are no longer painted: the W3 code cuts them from each fill.
 > - **D-151 (the developer, 2026-10-16):**
 >   - Biomes go by level range: L021–L040 are Ember Night, L041–L060 are Sky Isles, and so on. L001–L020 keep today's look.
+>     **Superseded by D-163 and D-172 (2026-10-23):** L001–L030 are Golden Ruins and L031–L060 Obsidian Void; the other biomes
+>     take later ranges.
 >   - W1 and the gauntlet loop are paused.
 >   - **Now:** W2 only. The painted traps (`Art_Source/Traps_ChatGPT/PILOT-*`) go into L001–L020, each kind at one fixed
 >     size everywhere.

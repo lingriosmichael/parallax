@@ -34,6 +34,11 @@ namespace Parallax.Editor.Levels
             ["L023"] = L023Routes.Build(),
             ["L024"] = L024Routes.Build(),
             ["L025"] = L025Routes.Build(),
+            ["L026"] = L026Routes.Build(),
+            ["L027"] = L027Routes.Build(),
+            ["L028"] = L028Routes.Build(),
+            ["L029"] = L029Routes.Build(),
+            ["L030"] = L030Routes.Build(),
         };
 
         public static bool TryGet(string id, out RoomRoutes routes) => ById.TryGetValue(id, out routes);

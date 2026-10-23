@@ -152,6 +152,31 @@ namespace Parallax.Tests.EditMode
         [TestCase("L025", 769, new[] { 42, 51, 14, 26, 51 },
             new[] { "Piston_A=9", "Piston_B=9", "Piston_C=9", "Slam_2a=7", "Slam_2b=7", "Lift_2=74", "G_3=595", "Arrow_3=10", "Slam_D=8" },
             new string[0])]
+        // D-170: L026 "Liar's Temple": fake ground, fake stepping stones and fake floor columns on every storey; the door rides its
+        // lift up the shaft; Slam_S betrays a cat resting at the checkpoint; Hinge_2, the slams, Lift_2; the cloud chases to Slam_D.
+        [TestCase("L026", 838, new[] { 27, 23, 19, 15, 51, 28, 28, 51, 28, 33, 15 },
+            new[] { "Fake_0=26", "Fake_a=10", "Fake_b=10", "Pop_1=7", "Slam_1=7", "Slam_S=6", "Hinge_2=48", "Fake_2b=41", "Fake_2a=40", "Slam_2=7", "Lift_2=74", "Fake_3a=51", "Cloud=184", "Fake_3b=51", "Pop_3=7", "Slam_D=6" },
+            new[] { "Door visible t203, complete t838" })]
+        // D-171: L027 "Updraft": snap vines everywhere, vents between them; G_1 flings the cat across the lake to V3, G_2 up the hole,
+        // G_3 high up V_S (too quick to climb from a jump), V5-V8 under the roof with GD_C blowing down between V6 and V7, G_D to the door.
+        [TestCase("L027", 876, new[] { 19, 15, 15, 15, 26, 40, 21, 21, 14, 13, 26, 26, 23, 24, 14, 26 },
+            new[] { "V1=28", "V2=28", "G_1=139", "V3=22", "Slam_2=7", "V4=17", "G_3=490", "V_S=33", "V5=18", "V6=23", "GD_C=663", "V7=23", "V8=23", "Pop_3=8" },
+            new string[0])]
+        // D-173: L028 "Mirror Lanes": each corridor is its own upside-down reflection; a flip orb in its middle swaps faces and the
+        // same traps come back mirrored (pops, slams and risers, collapses); Arrow_M2 shoots along whichever face the cat is on.
+        [TestCase("L028", 942, new[] { 13, 15, 17, 16, 13, 15, 14, 16, 13, 18, 17, 17 },
+            new[] { "Pop_F1=7", "Slam_F1=6", "Collapse_F1=12", "CC_C1=15", "Piston_C1=8", "Pop_C1=8", "Arrow_M2=10", "Pop_C2=7", "Pop_F2=7", "Pop_C3=7", "Slam_C3=8", "CC_C3=13", "Collapse_F3=12", "Slam_F3=6", "Pop_F3=8" },
+            new string[0])]
+        // D-174: L029 "Stormfront": one storm cloud follows the cat through the room; on storey 1 it starts ahead and strikes the far
+        // bank of the falling bridge, on storeys 2 and 3 it chases the cat over crumbling planks; Pop_1, Pop_2, Slam_2, Slam_D.
+        [TestCase("L029", 868, new[] { 32, 14, 15, 45 },
+            new[] { "Bridge1_1=47", "Cloud=127", "Pop_1=7", "Cloud=524", "Plank2_3=8", "Pop_2=7", "Slam_2=7", "Cloud=824", "Plank3_3=13", "Slam_D=7" },
+            new string[0])]
+        // D-175: L030 "Meltdown": the temple comes down behind the cat; storey 1's ceiling falls in rock by rock, storey 2's Hinge_2
+        // pushes it onto the spike field under three snapping vines, storey 3's spiked Hinge_3 slides after it to Slam_D and the door.
+        [TestCase("L030", 825, new[] { 15, 27, 51, 51, 12, 31, 26, 26, 14, 40, 13 },
+            new[] { "Rock_2=10", "Pop_1=7", "Collapse_1=13", "Slam_1=7", "Slam_2=7", "Hinge_2=6", "V1=15", "V2=22", "V3=20", "Hinge_3=32", "Pop_3=8", "Collapse_3=8", "Slam_D=7", "Pop_D=8" },
+            new string[0])]
         // A level's whole route measurement runs inside its case, over NUnit's default 180 s for the larger levels (L014).
         [Timeout(600000)]
         public void RouteResults_AreAsBuilt(string id, int solutionTicks, int[] windows, string[] leads, string[] recoveries)

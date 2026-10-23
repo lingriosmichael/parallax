@@ -15,7 +15,7 @@ namespace Parallax.Tests.EditMode
     // - no foot slide on planted frames (foot_slide: 3 phone px plus one 60 fps frame of travel per plant);
     // - the presenter's state matches the motor's on every frame (state_vs_motor: every rule);
     // - every death hold reaches the death clip's held frame within the hold (hold_timing).
-    // Thresholds and rules: Docs/V_TASKS/PAX-V07_gauntlet/HARNESS.md.
+    // Thresholds and rules: Docs/V_TASKS/PAX-V07_gauntlet/HARNESS.md (removed 2026-10-23; in git history).
     public sealed class CatAnimationCheckTests
     {
         static readonly string[] Ground =

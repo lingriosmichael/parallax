@@ -34,6 +34,11 @@ namespace Parallax.Editor.Levels
             ["L023"] = new(1.8f, 1.5f),
             ["L024"] = new(1.8f, 1.5f),
             ["L025"] = new(1.8f, 1.5f),
+            ["L026"] = new(1.8f, 1.5f),
+            ["L027"] = new(1.8f, 1.5f),
+            ["L028"] = new(1.8f, 1.5f),
+            ["L029"] = new(1.8f, 1.5f),
+            ["L030"] = new(1.8f, 1.5f),
             // Trap Lab rooms (validation only: the sandbox's own camera doesn't read this table).
             ["TrapLab3"] = new(1.5f), ["TrapLab6"] = new(1.5f), ["TrapLab12"] = new(1.5f),
         };
