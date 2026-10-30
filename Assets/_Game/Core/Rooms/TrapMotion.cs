@@ -30,12 +30,14 @@ namespace Parallax.Core
         /// <summary>PAX-107 (D-140): a solid moving down from `from` to `to` lands on the cat when the cat's box overlaps the
         /// region it sweeps this step (any overlap at its sides; at its top, more than `skin`, so a cat riding it is clear).
         /// Physics alone pushes such a cat out sideways (flung, from a corner) or onto its top instead of pinning it, so the
-        /// crush test never saw it.</summary>
+        /// crush test never saw it. D-211 (the developer: "Running into a moving wall shouldnt kill me"): only a cat under it,
+        /// its top no higher than the solid's bottom was (plus `skin`); a cat beside its body, walking into its side, is clear.</summary>
         public static bool SlamsOnto(Bounds catBounds, Bounds from, Bounds to, float skin)
         {
             float minX = Mathf.Min(from.min.x, to.min.x), maxX = Mathf.Max(from.max.x, to.max.x);
             float minY = Mathf.Min(from.min.y, to.min.y), maxY = Mathf.Max(from.max.y, to.max.y) - skin;
             if (minX >= maxX || minY >= maxY) return false;
+            if (catBounds.max.y > from.min.y + skin) return false;
             return catBounds.min.x < maxX && catBounds.max.x > minX && catBounds.min.y < maxY && catBounds.max.y > minY;
         }
         // 2D only: Bounds.Expand would also shrink z, and 2D bounds have zero depth, so the

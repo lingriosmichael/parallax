@@ -252,11 +252,14 @@ namespace Parallax.Editor.Setup
             foreach (SoloRoomElement e in room.Elements)
             {
                 if (e.Kind != SoloRoomElementKind.MovingTrap || e.Settings.MovingKind != MovingTrapKind.Solid || e.Settings.Floor.Motion != SurfaceMotion.Carry) continue;
-                Vector2 offset = e.Settings.Offset;
+                // PAX-114 (D-187): a glitch wall carries nobody across a jump; a path mover rides to its farthest point.
+                if (e.Settings.Path.Glitch && e.Settings.Path.HasPoints) continue;
+                Vector2 offset = e.Settings.Path.HasPoints ? e.Settings.Path.Points.OrderByDescending(p => p.sqrMagnitude).First() : e.Settings.Offset;
                 if (offset.sqrMagnitude < Epsilon * Epsilon) continue;
                 Rect start = Box(e), end = start;
                 end.position += offset;
-                Rect sweep = Rect.MinMaxRect(Mathf.Min(start.xMin, end.xMin), Mathf.Min(start.yMax, end.yMax), Mathf.Max(start.xMax, end.xMax), Mathf.Max(start.yMax, end.yMax) + catHeight);
+                Rect span = LevelLayoutValidator.MoverSweep(start, e);
+                Rect sweep = Rect.MinMaxRect(span.xMin, Mathf.Min(start.yMax, end.yMax), span.xMax, span.yMax + catHeight);
                 bool returns = e.Settings.RepeatMode == TrapRepeatMode.Periodic || e.Settings.ReturnTicks > 0;
                 foreach (Piece p in pieces.Where(p => !p.Up && !p.Vine && p.Mover == null && Mathf.Abs(p.Y - start.yMax) < Epsilon && p.XMin >= start.xMin - Epsilon && p.XMax <= start.xMax + Epsilon))
                 { p.Mover = e.Name; p.MoverSweep = sweep; p.MoverReturns = returns; }

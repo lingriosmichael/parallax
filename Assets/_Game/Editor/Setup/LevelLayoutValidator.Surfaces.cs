@@ -85,8 +85,10 @@ namespace Parallax.Editor.Setup
             // D-119: a hinge floor never gives way under a cat on it: it swings up behind one past it (its trigger), and the wall
             // that pushes is its betrayal.
             if (e.Settings.Floor.Hinges) return false;
-            // The moved pose covers the strip's x span only when it doesn't move sideways.
-            return e.Settings.Offset.y < 0f || !Mathf.Approximately(e.Settings.Offset.x, 0f);
+            // PAX-115 (D-187): a flip platform turns its spiked face up under a cat on it.
+            if (e.Settings.Floor.Flips) return true;
+            // The moved pose covers the strip's x span only when it doesn't move sideways (PAX-114: at any point of a path).
+            return MoverPoints(e).Any(p => p.y < 0f || !Mathf.Approximately(p.x, 0f));
         }
 
         static bool IsSelfCovered(SoloRoomElement e) =>

@@ -148,7 +148,7 @@ namespace Parallax.Editor.Setup
             return (minY, maxY);
         }
 
-        static bool IsGameplayElement(SoloRoomElement e) => e.Kind == SoloRoomElementKind.ShrinkingFloor || e.Kind == SoloRoomElementKind.Door || e.Kind == SoloRoomElementKind.Hazard || e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.HiddenSpikes || e.Kind == SoloRoomElementKind.FallingBlock || e.Kind == SoloRoomElementKind.GravityFlip || e.Kind == SoloRoomElementKind.DoorRetreat || e.Kind == SoloRoomElementKind.MovingTrap || e.Kind == SoloRoomElementKind.Checkpoint || e.Kind == SoloRoomElementKind.FakePlatform;
+        static bool IsGameplayElement(SoloRoomElement e) => e.Kind == SoloRoomElementKind.ShrinkingFloor || e.Kind == SoloRoomElementKind.Door || e.Kind == SoloRoomElementKind.Hazard || e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.HiddenSpikes || e.Kind == SoloRoomElementKind.FallingBlock || e.Kind == SoloRoomElementKind.GravityFlip || e.Kind == SoloRoomElementKind.DoorRetreat || e.Kind == SoloRoomElementKind.MovingTrap || e.Kind == SoloRoomElementKind.Checkpoint || e.Kind == SoloRoomElementKind.FakePlatform || e.Kind == SoloRoomElementKind.PulseGate;
 
         // D-058: the checkpoint and door also sit inside the baked bounds (ComputeRoomBounds
         // with RoomSafetyConfig's default margin) — the same volume RoomManager checks at
@@ -192,6 +192,7 @@ namespace Parallax.Editor.Setup
             {
                 case SoloRoomElementKind.Hazard:
                 case SoloRoomElementKind.HiddenSpikes:
+                case SoloRoomElementKind.PulseGate:   // PAX-112 (D-176): its whole box, as if always on
                     yield return Box(e, origin);
                     break;
                 case SoloRoomElementKind.FallingBlock:
@@ -203,12 +204,14 @@ namespace Parallax.Editor.Setup
                     break;
                 }
                 case SoloRoomElementKind.MovingTrap when e.Settings.MovingKind == MovingTrapKind.Hazard:
-                {
-                    Rect primary = Box(e, origin);
-                    Rect moved = primary; moved.position += e.Settings.Offset;
-                    yield return Envelope(primary, moved);
+                    yield return MoverSweep(Box(e, origin), e);   // PAX-114: the whole path
                     break;
-                }
+                case SoloRoomElementKind.MovingTrap when e.Settings.Floor.Flips:
+                    yield return MovingFloorSettings.FlipDisc(Box(e, origin));   // PAX-115: the disc its spiked face turns through
+                    break;
+                case SoloRoomElementKind.Spinner:
+                    yield return SpinnerDisc(e, origin);   // PAX-116: the disc its arms turn through
+                    break;
             }
         }
 

@@ -115,18 +115,22 @@ namespace Parallax.Tests.EditMode
             Assert.IsTrue(TryStep(s, Right), "no lock");
         }
 
+        // D-218: the kick lasts until a landing, a latch or EndKick, and the stick reads 0 through it either way.
         [Test]
-        public void TheMoveLock_LastsItsTicks_AgainstTheFaceJustLeft()
+        public void TheKick_LastsUntilALandingOrALatch_AndIgnoresTheStick()
         {
             WallClingState s = Clinging(Right);
             s.WallJump(8);
             Assert.AreEqual(1, s.MoveLockSide);
-            for (int i = 0; i < 8; i++) Assert.IsTrue(s.ConsumeMoveLock(), $"step {i + 1} after the wall jump");
-            Assert.IsFalse(s.ConsumeMoveLock(), "the ninth");
-            Assert.AreEqual(0, s.MoveLock);
-            Assert.AreEqual(0f, WallClingState.LockedMove(1f, 1), "toward the right face: ignored");
-            Assert.AreEqual(-1f, WallClingState.LockedMove(-1f, 1), "away: kept");
-            Assert.AreEqual(1f, WallClingState.LockedMove(1f, -1), "away from a left face: kept");
+            for (int i = 0; i < 100; i++) Assert.IsTrue(s.ConsumeMoveLock(), $"step {i + 1} after the wall jump");
+            Assert.AreEqual(0f, WallClingState.LockedMove(1f, 1), "toward the face just left: ignored");
+            Assert.AreEqual(0f, WallClingState.LockedMove(-1f, 1), "away: ignored too");
+            s.Landed();
+            Assert.IsFalse(s.ConsumeMoveLock(), "landed: the kick is over");
+            s = Clinging(Right);
+            s.WallJump(8);
+            s.EndKick();
+            Assert.IsFalse(s.ConsumeMoveLock(), "taken (a vine, a launch): the kick is over");
         }
 
         [Test]

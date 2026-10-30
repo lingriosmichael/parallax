@@ -31,6 +31,8 @@ namespace Parallax.Tests.EditMode
         [Test] public void SlamsOnto_ACatBesideIt_IsClear() => Assert.IsFalse(TrapMotion.SlamsOnto(Box(12.0f, 2.6f, 13.0f, 3.16f), SlabFrom, SlabTo, .04f));
         [Test] public void SlamsOnto_ACatBelowItsReach_IsClear() => Assert.IsFalse(TrapMotion.SlamsOnto(Box(13.5f, 2.0f, 14.5f, 2.56f), SlabFrom, SlabTo, .04f));
         [Test] public void SlamsOnto_ARiderOnItsTop_IsClear() => Assert.IsFalse(TrapMotion.SlamsOnto(Box(13.5f, 4f, 14.5f, 4.56f), SlabFrom, SlabTo, .04f));
+        // D-211: a cat level with its body, pressed into its side as it comes down, isn't under it.
+        [Test] public void SlamsOnto_ACatWalkingIntoItsSide_IsClear() => Assert.IsFalse(TrapMotion.SlamsOnto(Box(12.01f, 3.5f, 13.01f, 4.06f), SlabFrom, SlabTo, .04f));
 
         [Test] public void PushOut_Right_MovesTheCatFlush() => Assert.AreEqual(.25f, MovingFloorMath.PushOut(5.25f, 5f, 1), 1e-6f);
         [Test] public void PushOut_Right_NotYetReached_IsZero() => Assert.AreEqual(0f, MovingFloorMath.PushOut(4.9f, 5f, 1));

@@ -2,56 +2,95 @@ using System.Linq;
 using Parallax.Core;
 using Parallax.Editor.Routes;
 using static Parallax.Editor.Routes.R;
+using static Parallax.Editor.Levels.L021Layout;
 
 namespace Parallax.Editor.Levels
 {
-    // D-164: level 21's routes. Waits are on the layout's clocks: the vents' eruptions (tell 25, erupt 40), an element's fire
-    // tick or pose. Betrayals branch off the solution's own steps.
+    // D-200: level 21's routes, on the layout's clocks: the pendulums' and Eye's beats, Stone_C's appearances, the vents' eruptions.
+    // Betrayals branch off the solution's own steps.
     static class L021Routes
     {
-        // At least `ticks` room ticks since the element last fired.
-        static RouteCondition Since(string element, int ticks) => new($"{element} +{ticks}", v =>
+        // Ticks since the element last fired between `from` and `to`.
+        static RouteCondition Window(string element, int from, int to) => new($"{element} +{from}..{to}", v =>
         {
             int i = v.Result.Elements.IndexOf(element);
-            return i >= 0 && v.Last.FireTick[i] >= 0 && v.Last.RoomLifeTick - v.Last.FireTick[i] >= ticks;
+            if (i < 0 || v.Last.FireTick[i] < 0) return false;
+            int since = v.Last.RoomLifeTick - v.Last.FireTick[i];
+            return since >= from && since <= to;
         });
+        static RouteCondition Beat(int period, int tick) => new($"beat {tick}/{period}", v => ((v.Last.RoomLifeTick - tick) % period + period) % period == 0);
 
-        // ---- Ground, walked east ----
-        // Off at once over the falling bridge; stop short of G_T.
-        static RouteStep[] Start() => new[] {
-            Hold(Right), Until(XAtLeast(8.6f)), Release(), Until(Still()),
-        };
-        // Wait out G_T's eruption; cross under Spikes_T and stop short of Slam_1, which comes down as the cat comes.
-        static RouteStep[] Vent() => new[] {
-            Until(Fired("G_T")), Until(Since("G_T", 66)), Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(12.3f)), Release(), Until(Still()),
-        };
-        // Hop Slam_1 once it has landed and on over Kerb_1 between Arrow_1's shots; jump from the ground's end onto the Plinth.
-        static RouteStep[] SlamHop() => new[] {
-            Until(Fired("Slam_1")), Until(Stopped("Slam_1")), Hold(Right), Jump(), Until(Airborne()), Until(Grounded()),
-            Until(XAtLeast(15.6f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(XAtLeast(19.4f)), Jump(), Until(Airborne()), Until(Grounded()), Until(XAtLeast(23.1f)), Release(), Until(Still()),
-        };
-
-        // ---- Shaft ----
-        // Onto V1 as it erupts (its tell starts as the cat lands on the Plinth); ride it, steer east onto Crumb_2 once above Ledge_2, straight on to V2; ride it, steer west
-        // onto Crumb_3, straight on to V3; ride it, steer west onto the Lip.
-        static RouteStep[] Shaft() => new[] {
-            Hold(Right), Until(XAtLeast(24.5f)), Release(),
-            Until(YAtLeast(L021Layout.L2Top + .3f)), Hold(Right).Timed(TimedMode.Shift), Until(Grounded()), Until(XAtLeast(28f)), Release(), Until(Still()),
-            Until(YAtLeast(L021Layout.L3Top + .3f)), Hold(Left).Timed(TimedMode.Shift), Until(Grounded()), Until(XAtMost(23.5f)), Release(), Until(Still()),
-            Until(YAtLeast(L021Layout.ST + .2f)), Hold(Left).Timed(TimedMode.Shift), Until(Grounded()),
+        // The beats the solution goes on (tuned against the dumps).
+        // A pendulum's rod is high (over a walking cat) from 0.083 to 0.417 of its period and back; the solution goes as it rises.
+        const int SwingAGo = 25, SwingBGo = 15, SpinGo = 0, SafeGo = 55, LieGo = 205;
+        // D-203: each turret watches the whole of its floor, on its own beat (EyePeriod). Under a steep beam the cat steps aside as
+        // the turret locks and back once it has fired; under a low one it jumps 8 ticks before it fires (a later jump hasn't risen
+        // out of the beam); or the solution is already moving, or in the air, as it fires.
+        static RouteCondition Locks(int phase) => Beat(EyePeriod, phase + EyeAim);
+        static RouteCondition Shot(int phase) => Beat(EyePeriod, phase + EyeShot - 8);
+        static RouteCondition Fired(int phase) => Beat(EyePeriod, phase + EyeShot + EyeFire);
+        static RouteStep[] Dodge(int phase) => new[] { Until(Shot(phase)), Jump(), Until(Airborne()), Until(Grounded()), Until(Still()) };
+        // Aside `away` (Left -1 / Right +1) to `outX` as the turret locks; back to `backX` once it has fired.
+        static RouteStep[] Aside(int phase, int away, float outX, float backX) => new[] {
+            Until(Locks(phase)), Hold(away), Until(away < 0 ? XAtMost(outX) : XAtLeast(outX)), Release(),
+            Until(Fired(phase)), Hold(-away), Until(away < 0 ? XAtLeast(backX) : XAtMost(backX)), Release(), Until(Still()),
         };
 
-        // ---- Crown, walked west ----
-        // Hinge_F stands up behind; wait out G_FD's eruption short of Spikes_FD and jump them (landing sets Slam_F off ahead);
-        // hop onto Slam_F once it's down and off it, jump the crumbles and Pop_F, into the door.
-        static RouteStep[] Crown() => new[] {
-            Until(XAtMost(19.1f)), Release(), Until(Still()), Until(Since("G_FD", 66)),
-            Hold(Left).Timed(TimedMode.Shift), Jump(), Until(Airborne()), Until(Grounded()), Release(), Until(Still()),
-            Until(Fired("Slam_F")), Until(Stopped("Slam_F")), Hold(Left), Jump(), Until(Airborne()), Until(Grounded()),
-            Until(XAtMost(10.2f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(XAtMost(5.3f)), Jump(), Until(Airborne()), Until(Grounded()), Until(RoomComplete()),
+        // ---- Ground ----
+        // Onto V1 and up; steer east onto storey A.
+        static RouteStep[] Ground() => new[] {
+            Hold(Right), Until(XAtLeast(V1X)), Release(), Until(YAtLeast(A + .3f)), Hold(Right).Timed(TimedMode.Shift), Until(Grounded()),
         };
+        // ---- Storey A, walked east ----
+        // Stop short of the Gap, under Eye_A, and step aside from it twice; over the Gap and on under Swing_A while it's swung out
+        // (Eye_A fires as the cat runs, and misses); onto V2 and up, steering west onto storey B.
+        static readonly RouteStep[] AWait = { Until(XAtLeast(15.8f)), Release(), Until(Still()) };
+        static RouteStep[] AAside() => Aside(EyeAPhase, Left, 15.2f, 15.8f);
+        static readonly RouteStep[] AGo = {
+            Until(Beat(SwingAPeriod, SwingAGo - 45)), Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(16.6f)), Jump(), Until(Airborne()), Until(Grounded()),
+            Until(XAtLeast(V2X - .3f)), Release(), Until(Still()), Until(YAtLeast(B + .3f)), Hold(Left).Timed(TimedMode.Shift), Until(Grounded()),
+        };
+        static RouteStep[] StoreyA() => Cat(AWait, AAside(), AAside(), AGo);
+        // ---- Storey B, walked west ----
+        // Over Eye_B's beam; under Swing_B while it's swung out (Eye_B fires as the cat walks, and misses) and over Spikes_B; aside
+        // from Eye_B, nearly overhead, where the cat lands; from there under Spin_B's arm while it's up; onto V3 and up, steering east.
+        static readonly RouteStep[] BWait = { Until(XAtMost(20.6f)), Release(), Until(Still()) };
+        static readonly RouteStep[] BGo = {
+            Until(Beat(SwingBPeriod, SwingBGo)), Hold(Left).Timed(TimedMode.Shift), Until(XAtMost(13.7f)), Jump(), Until(Airborne()), Until(Grounded()),
+            Until(XAtMost(9.9f)), Release(), Until(Still()),
+        };
+        // Aside east as Eye_B locks; it goes on from there once Eye_B has fired.
+        static readonly RouteStep[] BAside = { Until(Locks(EyeBPhase)), Hold(Right), Until(XAtLeast(10.4f)), Release(), Until(Fired(EyeBPhase)) };
+        static readonly RouteStep[] BSpin = {
+            Until(Beat(120, SpinGo)), Hold(Left).Timed(TimedMode.Shift), Until(XAtMost(V3X + .3f)), Release(), Until(Still()),
+            Until(YAtLeast(C + .3f)), Hold(Right).Timed(TimedMode.Shift), Until(Grounded()),
+        };
+        static RouteStep[] StoreyB() => Cat(BWait, Dodge(EyeBPhase), BGo, BAside, BSpin);
+        // ---- Storey C, walked east ----
+        // Over Eye_C's beam; onto Stone_C as it appears and off it before it goes (Eye_C fires as the cat jumps off it); under the
+        // top storey until the eruption GD leaves alone, going before Eye_C fires; over Spikes_V4 onto V4 and up, steering west.
+        static readonly RouteStep[] CWait = { Until(XAtLeast(15.8f)), Release(), Until(Still()) };
+        static readonly RouteStep[] CStone = {
+            Until(Window("Stone_C", 0, 2)), Hold(Right), Jump(), Until(XAtLeast(18.4f)), Release(), Until(Grounded()),
+        };
+        static readonly RouteStep[] COff = {
+            Hold(Right), Until(XAtLeast(19.4f)), Jump(), Until(Airborne()), Until(XAtLeast(21.6f)), Release(), Until(Grounded()),
+            Hold(Right), Until(XAtLeast(23.4f)), Release(), Until(Still()),
+        };
+        static readonly RouteStep[] CGo = {
+            Until(Beat(GDPeriod, SafeGo)), Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(24.4f)), Jump(), Until(XAtLeast(V4X - .3f)), Release(), Until(Grounded()),
+            Until(YAtLeast(C + .3f)), Hold(Left).Timed(TimedMode.Shift), Until(Grounded()),
+        };
+        static RouteStep[] StoreyC() => Cat(CWait, Dodge(EyeCPhase), CStone, COff, CGo);
+        // ---- Top, walked west ----
+        // Ahead of the falling floor onto Ferry (Eye fires as the cat runs under it, and misses); jumping Eye's beam twice on Ferry;
+        // off it onto T_W, into the door.
+        static readonly RouteStep[] TFerry = { Until(XAtMost(10.3f)), Release(), Until(Still()) };
+        static RouteStep[] Top() => Cat(
+            TFerry,
+            new[] { Until(Shot(EyePhase)), Jump(), Until(Airborne()), Until(Grounded()) },
+            new[] { Until(Shot(EyePhase)), Jump(), Until(Airborne()), Until(Grounded()) },
+            new[] { Until(Stopped("Ferry")), Hold(Left), Until(RoomComplete()) });
 
         static RouteStep[] Cat(params RouteStep[][] parts) => parts.SelectMany(p => p).ToArray();
         // The solution's steps before part `part`'s step `index`, then these.
@@ -60,39 +99,40 @@ namespace Parallax.Editor.Levels
 
         public static RoomRoutes Build()
         {
-            RouteStep[][] parts = { Start(), Vent(), SlamHop(), Shaft(), Crown() };
-            const int Off = 0, Geyser = 1, Hop = 2, Climb = 3, End = 4;
+            RouteStep[][] parts = { Ground(), StoreyA(), StoreyB(), StoreyC(), Top() };
+            const int SA = 1, SB = 2, SC = 3, Tp = 4;
             var solution = new Route("L021 solution", Cat(parts));
-            Route B(string name, int part, int index, params RouteStep[] then) => new(name, Branch(parts, part, index, then));
+            Route Br(string name, int part, int index, params RouteStep[] then) => new(name, Branch(parts, part, index, then));
 
+            int dodge = Dodge(0).Length;
             return new RoomRoutes(solution,
-                // Ground.
-                new Betrayal("T1 [NW]: a cat that waits at the start goes down with the bridge onto PitW's spikes", "PitW_Hazard", DeathCause.Hazard,
-                    B("wait on the bridge", Off, 0, Hold(Right), Until(XAtLeast(2f)), Release(), Until(Dead())), revealedBy: "Bridge_1"),
-                new Betrayal("T2 [W]: a cat that crosses G_T while it erupts is thrown into Spikes_T", "Spikes_T", DeathCause.Hazard,
-                    B("cross at once", Geyser, 1, Hold(Right), Until(Dead())), revealedBy: "G_T"),
-                new Betrayal("T3 [SS]: a cat that runs on under Slam_1 is crushed", "Slam_1", DeathCause.Hazard,
-                    B("run on", Geyser, 3, Until(Dead()))),
-                new Betrayal("T4 [J]: a cat that walks on along the ground past Kerb_1 meets Arrow_1", "Arrow_1", DeathCause.Hazard,
-                    B("stop in the lane", Hop, 10, Release(), Until(Dead()))),
-                new Betrayal("T5 [J]: a cat that walks onto Collapse_P falls into PitP", "PitP", DeathCause.Hazard,
-                    B("walk on", Hop, 11, Until(Dead())), revealedBy: "Collapse_P"),
-                // Shaft.
-                new Betrayal("T6 [NW]: a cat that stops on Crumb_2 falls onto Spikes_Sh", "Spikes_Sh", DeathCause.Hazard,
-                    B("stop", Climb, 6, Release(), Until(Dead())), revealedBy: "Crumb_2"),
-                new Betrayal("T7 [LW]: a cat that stops on Crumb_3 falls down the shaft onto Spikes_Sh", "Spikes_Sh", DeathCause.Hazard,
-                    B("stop", Climb, 12, Release(), Until(Dead())), revealedBy: "Crumb_3"),
-                // Crown.
-                new Betrayal("T8 [OL]: a cat that keeps waiting short of Spikes_FD is caught by Hinge_F", "Hinge_F", DeathCause.Hazard,
-                    B("wait on", End, 3, Until(Dead())), revealedBy: "Hinge_F"),
-                new Betrayal("T12 [NJ]: a cat that jumps Spikes_FD while G_FD erupts is blown down onto them", "Spikes_FD", DeathCause.Hazard,
-                    B("jump at once", End, 3, Hold(Left), Jump(), Until(Dead())), revealedBy: "G_FD"),
-                new Betrayal("T9 [SS]: a cat that runs on under Slam_F is crushed", "Slam_F", DeathCause.Hazard,
-                    B("run on", End, 8, Hold(Left), Until(Dead()))),
-                new Betrayal("T10 [J]: a cat that walks onto Crumble_F and Crumble_G falls into the Briar", "Briar", DeathCause.Hazard,
-                    B("walk on", End, 16, Until(Dead())), revealedBy: "Crumble_F"),
-                new Betrayal("T11 [J]: a cat that walks on by the door meets Pop_F", "Pop_F", DeathCause.Hazard,
-                    B("walk on", End, 20, Until(Dead()))));
+                // Storey A.
+                new Betrayal("T1 [NW]: a cat that stands in Eye_A's sight as it fires is shot", "Eye_A", DeathCause.Hazard,
+                    Br("stand", SA, AWait.Length, Until(Dead()))),
+                new Betrayal("T2 [W]: a cat that walks on under Swing_A is struck", "Swing_A", DeathCause.Hazard,
+                    Br("go late", SA, AWait.Length + 2 * AAside().Length, Until(Beat(SwingAPeriod, SwingAGo + 6)), Hold(Right), Until(XAtLeast(16.6f)), Jump(), Until(Dead()))),
+                // Storey B.
+                new Betrayal("T3 [NW]: a cat that stands in Eye_B's sight as it fires is shot", "Eye_B", DeathCause.Hazard,
+                    Br("stand", SB, BWait.Length, Until(Dead()))),
+                new Betrayal("T4 [W]: a cat that walks on under Swing_B is struck", "Swing_B", DeathCause.Hazard,
+                    Br("go late", SB, BWait.Length + dodge, Until(Beat(SwingBPeriod, SwingBGo + 125)), Hold(Left), Until(XAtMost(13.7f)), Jump(), Until(Dead()))),
+                new Betrayal("T5 [W]: a cat that walks on under Spin_B is struck", "Spin_B", DeathCause.Hazard,
+                    Br("go now", SB, BWait.Length + dodge + BGo.Length, Hold(Left), Until(Dead()))),
+                // Storey C.
+                new Betrayal("T6 [NW]: a cat that stays on Stone_C falls onto Spikes_C as it goes", "Spikes_C", DeathCause.Hazard,
+                    Br("stay", SC, CWait.Length + dodge + CStone.Length, Until(Shot(EyeCPhase)), Jump(), Until(Airborne()), Until(Grounded()), Until(Dead())),
+                    revealedBy: "Stone_C"),
+                new Betrayal("T7 [LIE]: a cat that rides the V4 eruption GD blows on is blown down onto Spikes_V4", "Spikes_V4", DeathCause.Hazard,
+                    Br("ride it", SC, CWait.Length + dodge + CStone.Length + COff.Length, Cat(Dodge(EyeCPhase), Dodge(EyeCPhase), new[] {
+                        Until(Beat(GDPeriod, LieGo)), Hold(Right), Until(XAtLeast(24.4f)), Jump(), Until(XAtLeast(V4X - .3f)), Release(), Until(Grounded()),
+                        Until(YAtLeast(C + .3f)), Hold(Left), Until(Dead()) })), revealedBy: "GD"),
+                new Betrayal("T8 [NW]: a cat that stops on the walk under Eye_C is shot", "Eye_C", DeathCause.Hazard,
+                    Br("stop", SC, 0, Until(XAtLeast(10f)), Release(), Until(Dead()))),
+                // Top.
+                new Betrayal("T9 [NW]: a cat that stops on the falling floor goes down with it into the trench", "Trench_Spikes", DeathCause.Hazard,
+                    Br("stop", Tp, 0, Until(XAtMost(20f)), Release(), Until(Dead())), revealedBy: "Bridge_1"),
+                new Betrayal("T10 [NW]: a cat that stands still on Ferry is shot by Eye", "Eye", DeathCause.Hazard,
+                    Br("stand", Tp, TFerry.Length, Until(Dead()))));
         }
     }
 }

@@ -359,6 +359,19 @@ namespace Parallax.Editor.Art
             // PAX-107: L011's Riser (rises 10.45 u over 88 ticks from room tick 14): the cat stands on it, no input, until just
             // before the gallery. A rising floor isn't ground (D-115), but the cat is shown standing on it.
             yield return new CaptureScenario { Name = "carry_rise_down", Description = "L011: stand still on the Riser as it rises", Room = _ => LevelLayouts.ById["L011"], StartX = null, Steps = _ => new List<CaptureStep> { new Hold(0f, 1.7f, "ride the Riser up") } };
+            // D-254 (the developer, L030: "Its still sliding ... do some screenshots of moving left and right while on the platform"):
+            // onto Lift_H (x 4-8, 3 u/s east once stood on), then walk and run both ways on it as it rides.
+            yield return new CaptureScenario
+            {
+                Name = "carry_walk_l030_down", Description = "L030: walk and run left and right on Lift_H as it rides east", Room = _ => LevelLayouts.ById["L030"], StartX = null,
+                Steps = _ => new List<CaptureStep>
+                {
+                    new Until(0.4f, XAtLeast(6f), 2f, "walk onto Lift_H"), new Until(0f, Still, 1f, "stop"), new Hold(0f, 0.6f, "stand: the lift sets off") { Cut = true },
+                    new Hold(0.4f, 0.4f, "walk right (with the lift)") { Cut = true }, new Hold(-0.4f, 0.8f, "walk left (against it)") { Cut = true },
+                    new Hold(0.4f, 0.4f, "walk right") { Cut = true }, new Hold(0f, 0.4f, "stand"),
+                    new Hold(1f, 0.2f, "run right") { Cut = true }, new Hold(-1f, 0.4f, "run left") { Cut = true }, new Hold(0f, 0.5f, "stand"),
+                },
+            };
             yield return new CaptureScenario { Name = "death_spiked_down", Description = "Trap Lab room 0: walk into the hidden spikes (Spiked)", Room = _ => TrapLabLayout.Rooms[0], StartX = 3f, ExpectDeath = true, Steps = _ => DieThenMove("walk into the spikes", 0.4f) };
             // Room 1: standing between FixedPillar (right edge x 22.5) and the Crusher's trigger (x 21.8-24.8): it slides 3 u left.
             yield return new CaptureScenario { Name = "death_crushed_down", Description = "Trap Lab room 1: the crusher pins the cat against the pillar (Crushed)", Room = _ => TrapLabLayout.Rooms[1], StartX = 23.4f, ExpectDeath = true, Steps = _ => DieThenMove("stand in the crusher's path", 0f) };

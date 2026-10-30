@@ -33,7 +33,10 @@ namespace Parallax.Editor.Levels
             ["L022"] = new(1.8f, 1.5f),
             ["L023"] = new(1.8f, 1.5f),
             ["L024"] = new(1.8f, 1.5f),
-            ["L025"] = new(1.8f, 1.5f),
+            // D-212, D-213 (the developer: "you cannot see much of surrounding you are just hoping to fall on the right one", then
+            // "The level is too zoomed in … Zoom out only for this level for now"): L025's camera is 1x (16 u tall, the widest) and
+            // aims 1 u under the cat instead of 1.5 u over it, showing about 9 u below the cat (was about 2.9).
+            ["L025"] = new(1f, -1f),
             ["L026"] = new(1.8f, 1.5f),
             ["L027"] = new(1.8f, 1.5f),
             ["L028"] = new(1.8f, 1.5f),

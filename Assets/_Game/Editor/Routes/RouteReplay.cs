@@ -162,6 +162,8 @@ namespace Parallax.Editor.Routes
             public FallingBlockTrap Block; public Vector2 BlockLanded;
             public MovingTrap Moving; public bool MovingHazard; public float MovingStep, CrushDepth; public Collider2D PushPartner;
             public bool SpikedFace;   // PAX-107 (D-124): a spiked hinge floor (a touch kills once it stands)
+            public SpinnerTrap Spinner;   // PAX-116 (D-187)
+            public TurretTrap Turret;     // PAX-121 (D-197)
             public ArrowTrap Arrow; public int ArrowTell;
             public InverterTrap Inverter;
             public StormCloudTrap StormCloud;   // PAX-088 (D-090)
@@ -302,12 +304,17 @@ namespace Parallax.Editor.Routes
                 if (e.Moving != null)
                 {
                     e.MovingHazard = (MovingTrapKind)Get(e.Moving, "kind") == MovingTrapKind.Hazard;
-                    e.MovingStep = ((Vector2)Get(e.Moving, "offset")).magnitude / Mathf.Max(1, (int)Get(e.Moving, "moveTicks"));
+                    // PAX-114 (D-187): a path mover's step is its path's length over its move (a glitch wall's jumps are its own kills).
+                    Vector2[] path = Get(e.Moving, "path") as Vector2[];
+                    float travel = path != null && path.Length > 0 ? TrapPath.Length(path) : ((Vector2)Get(e.Moving, "offset")).magnitude;
+                    e.MovingStep = travel / Mathf.Max(1, (int)Get(e.Moving, "moveTicks"));
                     float depth = (float)Get(e.Moving, "crushDepth");
                     e.CrushDepth = depth > 0f ? depth : ((CrushConfig)Get(e.Moving, "crushConfig")).DefaultCrushDepth;
                     e.PushPartner = Get(e.Moving, "crushPartner") as Collider2D;   // PAX-093; PAX-107 (D-123): any mover's partner crushes
                     e.SpikedFace = Get(e.Moving, "spikes") is SpriteRenderer face && face != null;
                 }
+                e.Spinner = go.GetComponent<SpinnerTrap>();
+                e.Turret = go.GetComponent<TurretTrap>();
                 e.Arrow = go.GetComponent<ArrowTrap>();
                 e.Inverter = go.GetComponent<InverterTrap>();
                 e.StormCloud = go.GetComponent<StormCloudTrap>();
@@ -451,6 +458,12 @@ namespace Parallax.Editor.Routes
                 {
                     bool match = false;
                     if (e.Hazard != null && e.Hazard.enabled && e.Hazard.Armed && e.Box != null) match = Overlaps(e.Box.bounds);
+                    // PAX-114/115 (D-187): a flip's spiked face or a glitch wall's arrival killed on this step (its own record).
+                    else if (e.Moving != null && e.Moving.OwnKill) match = true;
+                    // PAX-116 (D-187): a spinner's arm test on its pose this tick.
+                    else if (e.Spinner != null) match = e.Spinner.ArmHits();
+                    // PAX-121 (D-197): a turret's beam test on its pose this tick.
+                    else if (e.Turret != null) match = e.Turret.BeamHits();
                     else if (e.Block != null && e.Trap.LatestFireTick >= 0 && e.Box != null
                         && (e.Block.GetComponent<Rigidbody2D>().position - e.BlockLanded).sqrMagnitude > 1e-8f)
                     { Bounds shrunk = e.Box.bounds; shrunk.Expand(-.04f); match = Overlaps(shrunk); }

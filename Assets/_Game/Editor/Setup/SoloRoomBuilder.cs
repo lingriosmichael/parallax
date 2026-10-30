@@ -28,6 +28,9 @@ namespace Parallax.Editor.Setup
 
         static readonly Color Ground = new(.72f, .52f, .28f, 1f);
         static readonly Color Red = new(.85f, .12f, .10f, 1f);
+        // PAX-111 (D-177): the warning ray's placeholder look: a faint thin red line.
+        static readonly Color RayRed = new(.95f, .2f, .25f, .55f);
+        const float RayThickness = .05f;
         static readonly Color Purple = new(.55f, .22f, .75f, .38f);
         // PAX-074 (D-078): an honest arrow launcher (the trap kit's block grey) and the arrow itself.
         static readonly Color LauncherGrey = new(.20f, .20f, .23f, 1f);
@@ -101,7 +104,8 @@ namespace Parallax.Editor.Setup
                 Include(pos, e.Size);
                 if (e.SecondarySize != Vector2.zero) Include(room.Origin + e.SecondaryPosition, e.SecondarySize);
 
-                if (e.Kind == SoloRoomElementKind.MovingTrap) Include(pos + e.Settings.Offset, e.Size);
+                if (e.Kind == SoloRoomElementKind.MovingTrap) foreach (Vector2 p in LevelLayoutValidator.MoverPoints(e)) Include(pos + p, e.Size);   // PAX-114: every point
+                if (e.Kind == SoloRoomElementKind.Spinner) Include(pos, Vector2.one * 2f * e.Settings.Spinner.ArmLength);   // PAX-116: its disc
                 if (e.Kind == SoloRoomElementKind.FallingBlock)
                 {
                     Vector2 direction = e.Settings.Direction == FallingBlockDirection.Up ? Vector2.up : Vector2.down;
@@ -330,7 +334,12 @@ namespace Parallax.Editor.Setup
             Vector2 position = room.Origin + e.Position;
             switch (e.Kind)
             {
-                case SoloRoomElementKind.Floor: case SoloRoomElementKind.Ceiling: case SoloRoomElementKind.Wall: case SoloRoomElementKind.PitBottom: BuildGeometry(parent, root, e.Name, position, e.Size, changes); break;
+                case SoloRoomElementKind.Floor: case SoloRoomElementKind.Ceiling: case SoloRoomElementKind.Wall: case SoloRoomElementKind.PitBottom:
+                    BuildGeometry(parent, root, e.Name, position, e.Size, changes);
+                    break;
+                case SoloRoomElementKind.Plate: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildPlateCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, changes), e.Settings, parent, changes); break;   // PAX-119 (D-197)
+                case SoloRoomElementKind.Portal: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildPortalCore(parent, root, e.Name, position, e.Size, e.SecondaryPosition - e.Position, e.SecondarySize, room.Id, rooms, death, observers, e.Settings, changes), e.Settings, parent, changes); break;   // PAX-120 (D-197)
+                case SoloRoomElementKind.Turret: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildTurretCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings.Turret, changes), e.Settings, parent, changes); break;   // PAX-121 (D-197)
                 // PAX-105 (D-110 amendment 2): a Wall whose collider carries the GripSurface marker (the only face a cat can grab).
                 case SoloRoomElementKind.GripWall:
                     BuildGeometry(parent, root, e.Name, position, e.Size, changes);
@@ -359,10 +368,12 @@ namespace Parallax.Editor.Setup
                 case SoloRoomElementKind.FakePlatform: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildFakePlatformCore(parent, root, e.Name, position, e.Size, GeometryColor, room.Id, rooms, death, observers, TrapFloorSortingOrder, changes), TrapKitSetup.FakePlatformSettings, parent, changes); break;
                 case SoloRoomElementKind.Arrow: TrapKitSetup.ConfigureTiming(BuildArrow(parent, root, room, e, rooms, death, observers, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.Inverter: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildInverterCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes, e.Position), e.Settings, parent, changes); break;
+                case SoloRoomElementKind.PulseGate: TrapKitSetup.ConfigurePulseGateTiming(TrapKitSetup.BuildPulseGateCore(parent, root, e.Name, position, e.Size, Red, room.Id, rooms, death, observers, e.Settings.Gate, -2, changes), e.Settings, parent, changes); break;   // PAX-112 (D-176)
                 case SoloRoomElementKind.Geyser: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildGeyserCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings.Geyser, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.Vine: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildClimbVineCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.ShrinkingFloor: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildShrinkingFloorCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, TrapFloorSortingOrder, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.StormCloud: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildStormCloudCore(parent, root, room, e, rooms, death, observers, changes), e.Settings, parent, changes); break;
+                case SoloRoomElementKind.Spinner: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildSpinnerCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;   // PAX-116 (D-187)
                 case SoloRoomElementKind.MovingTrap: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildMovingTrapCore(parent, root, e.Name, position, e.Size, e.Settings.MovingKind == MovingTrapKind.Hazard ? Red : Ground, room.Id, rooms, death, observers, e.SecondaryPosition - e.Position, e.SecondarySize, e.Settings, AssetDatabase.LoadAssetAtPath<CrushConfig>("Assets/_Game/Data/CrushConfig_Default.asset"), -2, changes), e.Settings, parent, changes); break;
             }
         }
@@ -384,12 +395,26 @@ namespace Parallax.Editor.Setup
             // D-156: a vertical lane leaves the middle of the launcher's bottom (or top) face.
             Vector2 mouth = lane.Vertical ? new(0f, lane.LaneY - e.Position.y) : new(sign * e.Size.x * .5f, lane.LaneY - e.Position.y);
             Transform arrow = SetupUtility.EnsureChild(launcher, lane.Spear ? e.Name + "_Shaft" : "Arrow", root.gameObject.layer, changes);
-            SetupUtility.SetLocalPosition(arrow, ArrowMath.Centre(mouth, ArrowMath.Direction(lane.Direction, lane.AngleDegrees), lane.Length, 0f), changes);
+            // PAX-111 (D-177): a beam's arrow child is the whole lane, from the mouth to where a tip would stop.
+            float beamLength = LevelLayoutValidator.ArrowTravel(e) + lane.Length;
+            Vector2 fire = ArrowMath.Direction(lane.Direction, lane.AngleDegrees);
+            SetupUtility.SetLocalPosition(arrow, lane.Beam ? ArrowMath.Centre(mouth, fire, beamLength, 0f) : ArrowMath.Centre(mouth, fire, lane.Length, 0f), changes);
             // PAX-099 (D-106): an angled arrow's box is turned (ArrowTrap sets the same rotation on Awake).
             Quaternion turn = Quaternion.Euler(0f, 0f, ArrowMath.BoxAngle(lane.Direction, lane.AngleDegrees));
             if (arrow.localRotation != turn) { arrow.localRotation = turn; changes.Add($"turned {arrow.name} to {lane.AngleDegrees:0} degrees"); }
-            SpriteRenderer arrowVisual = SetupUtility.SetVisual(arrow.gameObject, root, new Vector2(lane.Length, lane.Thickness), Red, changes);
+            SpriteRenderer arrowVisual = SetupUtility.SetVisual(arrow.gameObject, root, new Vector2(lane.Beam ? beamLength : lane.Length, lane.Thickness), Red, changes);
             SetSortingOrder(arrowVisual, 0, changes);
+            // PAX-111 (D-177): the warning ray, a thin line over the whole lane through the tell (a beam, or a hard-light bar).
+            SpriteRenderer rayVisual = null;
+            if (lane.WarningRay)
+            {
+                Transform ray = SetupUtility.EnsureChild(launcher, "Ray", root.gameObject.layer, changes);
+                SetupUtility.SetLocalPosition(ray, ArrowMath.Centre(mouth, fire, beamLength, 0f), changes);
+                if (ray.localRotation != turn) { ray.localRotation = turn; changes.Add($"turned {e.Name}.Ray"); }
+                rayVisual = SetupUtility.SetVisual(ray.gameObject, root, new Vector2(beamLength, RayThickness), RayRed, changes);
+                SetSortingOrder(rayVisual, 0, changes);
+                if (rayVisual != null && rayVisual.enabled) { rayVisual.enabled = false; changes.Add("hid " + e.Name + ".Ray"); }
+            }
             BoxCollider2D shaft = lane.Spear ? BuildShaft(arrow, new Vector2(lane.Length, lane.Thickness), changes) : null;
 
             bool overlap = e.Settings.TriggerSource == TrapTriggerSource.Overlap && e.Settings.RepeatMode != TrapRepeatMode.Periodic;
@@ -400,7 +425,8 @@ namespace Parallax.Editor.Setup
                 ("launcher", launcherVisual), ("arrow", arrowVisual), ("direction", (int)lane.Direction), ("angleDegrees", lane.AngleDegrees), ("mouth", mouth),
                 ("travel", LevelLayoutValidator.ArrowTravel(e)), ("arrowLength", lane.Length), ("arrowThickness", lane.Thickness),
                 ("unitsPerTick", lane.UnitsPerTick), ("tellTicks", lane.TellTicks), ("delayTicks", e.Settings.DelayTicks),
-                ("spear", lane.Spear), ("shaft", shaft), ("mirrorWithGravity", lane.MirrorWithGravity), ("mirrorShift", lane.MirrorShift));
+                ("spear", lane.Spear), ("shaft", shaft), ("mirrorWithGravity", lane.MirrorWithGravity), ("mirrorShift", lane.MirrorShift),
+                ("beam", lane.Beam), ("beamTicks", lane.BeamTicks), ("beamLength", beamLength), ("ray", rayVisual));
             WriteColor(trap, "honestColor", LauncherGrey, changes);
             return trap;
         }

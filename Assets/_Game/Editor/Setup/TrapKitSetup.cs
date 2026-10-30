@@ -134,6 +134,11 @@ namespace Parallax.Editor.Setup
                     case float number when !Mathf.Approximately(property.floatValue, number): property.floatValue = number; changed = true; break;
                     case bool boolean when property.boolValue != boolean: property.boolValue = boolean; changed = true; break;
                     case Vector2 vector when property.vector2Value != vector: property.vector2Value = vector; changed = true; break;
+                    // PAX-114 (D-187): a path's points.
+                    case Vector2[] points when property.isArray && !SameVectors(property, points):
+                        property.arraySize = points.Length;
+                        for (int i = 0; i < points.Length; i++) property.GetArrayElementAtIndex(i).vector2Value = points[i];
+                        changed = true; break;
                     case string text when property.propertyType == SerializedPropertyType.String && property.stringValue != text: property.stringValue = text; changed = true; break;   // PAX-A13
                 }
             }
@@ -141,6 +146,13 @@ namespace Parallax.Editor.Setup
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(target);
             changes.Add("configured " + target.name);
+        }
+
+        static bool SameVectors(SerializedProperty array, Vector2[] points)
+        {
+            if (array.arraySize != points.Length) return false;
+            for (int i = 0; i < points.Length; i++) if (array.GetArrayElementAtIndex(i).vector2Value != points[i]) return false;
+            return true;
         }
     }
 }

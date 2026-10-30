@@ -24,7 +24,10 @@ namespace Parallax.Editor.Setup
             : ArrowMath.Travel(ArrowMouthX(e), e.Settings.Arrow.LaneEndX, e.Settings.Arrow.Length, e.Settings.Arrow.AngleDegrees);
         internal static int ArrowFlightTicks(SoloRoomElement e) => ArrowMath.FlightTicks(ArrowTravel(e), e.Settings.Arrow.UnitsPerTick);
         // Tell plus every lethal tick: the arrow is stopped (harmless) from this many ticks after its fire.
-        internal static int ArrowStopTick(SoloRoomElement e) => e.Settings.Arrow.TellTicks + ArrowFlightTicks(e) + 1;
+        // PAX-111 (D-177): a beam is dark from tell + beam.
+        internal static int ArrowStopTick(SoloRoomElement e) => e.Settings.Arrow.Beam
+            ? ArrowMath.BeamStopTick(e.Settings.Arrow.TellTicks, e.Settings.Arrow.BeamTicks)
+            : e.Settings.Arrow.TellTicks + ArrowFlightTicks(e) + 1;
 
         // The lane box: from the mouth to the lane end, LaneY +/- Thickness / 2, in origin + room-local space. PAX-099
         // (D-106): for an angled lane, the axis-aligned box around the turned lane (ArrowLaneCorners).
@@ -90,9 +93,39 @@ namespace Parallax.Editor.Setup
         {
             var errors = new List<string>();
             foreach (SoloRoomElement e in room.Elements.Where(IsArrow))
-                if (e.Settings.Arrow.TellTicks < RevealLeadTicks)
-                    errors.Add($"{levelId}: {e.Name} tell {e.Settings.Arrow.TellTicks} is below {RevealLeadTicks} ticks (D-057).");
+            {
+                ArrowLane lane = e.Settings.Arrow;
+                if (lane.TellTicks < RevealLeadTicks)
+                    errors.Add($"{levelId}: {e.Name} tell {lane.TellTicks} is below {RevealLeadTicks} ticks (D-057).");
+                // PAX-111 (D-177): a beam's warning ray is its tell, so a beam is never disguised, and it is lethal at least a tick.
+                if (lane.Beam && lane.Disguised) errors.Add($"{levelId}: {e.Name} is a beam and disguised; its warning ray is its tell (D-177).");
+                if (lane.Beam && lane.BeamTicks < 1) errors.Add($"{levelId}: {e.Name} is a beam that is never lethal (beam ticks {lane.BeamTicks}, D-177).");
+                if (lane.Beam && lane.Spear) errors.Add($"{levelId}: {e.Name} is both a beam and a spear (D-177).");
+            }
             return errors;
+        }
+
+        /// <summary>D-078's tunnelling cap for this arrow (ValidateArrowSpeed's).</summary>
+        internal static float ArrowSpeedCap(SoloRoomElement e)
+        {
+            CatMotorConfig config = Config();
+            if (config == null) return 0f;
+            float vertical = Mathf.Max(JumpMath.SpeedForHeight(config.JumpHeight, GravityStrength()), config.MaxFallSpeed) * TickTime.SecondsPerTick;
+            return ArrowMath.MaxUnitsPerTick(e.Settings.Arrow.Length, config.ColliderSize, config.MaxSpeed * TickTime.SecondsPerTick, vertical, e.Settings.Arrow.AngleDegrees);
+        }
+
+        // D-188 (amends D-078's limit): a lane may cross a mover's swept path when the cat it carries still can't pass through the
+        // arrow between ticks: the arrow's speed is within the cap less twice the mover's fastest speed (the cap's own margin for
+        // the cat's run, doubled the same way). A push wall, a hinge, a flip, a glitch wall (they shift the cat at once) and a
+        // collapsing floor (it drops it) never qualify.
+        static bool SlowEnoughToCross(SoloRoomElement arrow, SoloRoomElement s)
+        {
+            if (s.Kind != SoloRoomElementKind.MovingTrap) return false;
+            SoloRoomTrapSettings k = s.Settings;
+            if (k.Floor.Pushes || k.Floor.Hinges || k.Floor.Flips || (k.Path.HasPoints && k.Path.Glitch)) return false;
+            float travel = k.Path.HasPoints ? TrapPath.Length(k.Path.Points) : k.Offset.magnitude;
+            int fastest = Mathf.Max(1, k.ReturnTicks > 0 ? Mathf.Min(k.MoveTicks, k.ReturnTicks) : k.MoveTicks);
+            return arrow.Settings.Arrow.UnitsPerTick <= ArrowSpeedCap(arrow) - 2f * travel / fastest + 1e-4f;
         }
 
         // No pass-through between ticks: v <= Length + (collider width - height) - 2 x run per tick. PAX-099 (D-106): an angled
@@ -152,8 +185,8 @@ namespace Parallax.Editor.Setup
                     bool movingSolid = s.Kind == SoloRoomElementKind.MovingTrap && s.Settings.MovingKind == MovingTrapKind.Solid;
                     if (!movingSolid && s.Kind != SoloRoomElementKind.CollapsingFloor) continue;
                     Rect swept = Box(s, Vector2.zero);
-                    if (movingSolid) { Rect moved = swept; moved.position += s.Settings.Offset; swept = Envelope(swept, moved); }
-                    if (swept.Overlaps(laneBox)) errors.Add($"{levelId}: {e.Name} lane {Describe(laneBox)} crosses {s.Name}'s swept path; a pushed cat breaks the speed cap.");
+                    if (movingSolid) swept = MoverSweep(swept, s);   // PAX-114: every pose of a path
+                    if (swept.Overlaps(laneBox) && !SlowEnoughToCross(e, s)) errors.Add($"{levelId}: {e.Name} lane {Describe(laneBox)} crosses {s.Name}'s swept path; a pushed cat breaks the speed cap.");
                 }
 
                 CheckFrame(levelId, e.Name + " launcher", launcherBox, room.Width, minY, maxY, errors);
@@ -195,8 +228,8 @@ namespace Parallax.Editor.Setup
                 bool movingSolid = s.Kind == SoloRoomElementKind.MovingTrap && s.Settings.MovingKind == MovingTrapKind.Solid;
                 if (!movingSolid && s.Kind != SoloRoomElementKind.CollapsingFloor) continue;
                 Rect swept = Box(s, Vector2.zero);
-                if (movingSolid) { Rect moved = swept; moved.position += s.Settings.Offset; swept = Envelope(swept, moved); }
-                if (QuadOverlapsRect(ArrowLaneCorners(e, Vector2.zero, 0f), swept)) errors.Add($"{levelId}: {e.Name} lane {Describe(laneBox)} crosses {s.Name}'s swept path; a pushed cat breaks the speed cap.");
+                if (movingSolid) swept = MoverSweep(swept, s);   // PAX-114: every pose of a path
+                if (QuadOverlapsRect(ArrowLaneCorners(e, Vector2.zero, 0f), swept) && !SlowEnoughToCross(e, s)) errors.Add($"{levelId}: {e.Name} lane {Describe(laneBox)} crosses {s.Name}'s swept path; a pushed cat breaks the speed cap.");
             }
             // The frame takes the trimmed lane: the untrimmed corners dip into the end face by design.
             Rect framed = Rect.MinMaxRect(trimmed.Min(p => p.x), trimmed.Min(p => p.y), trimmed.Max(p => p.x), trimmed.Max(p => p.y));
@@ -249,7 +282,9 @@ namespace Parallax.Editor.Setup
         // D-113 (the developer, 2026-10-05): L003's S1 arrows fly non-stop and are jumped, not waited out; the solution's jumps
         // keep their 12-tick windows (the route validator).
         // PAX-107 (D-123): L009's launchers along S1_A, jumped while the cat waits out F1 and at the chasm's edge.
-        static readonly string[] JumpedArrows = { "L003/Arrow_L", "L003/Arrow_R", "L005/Arrow_A", "L009/Arrow_W1", "L009/Arrow_W2" };
+        // D-257: L030's lake arrows fly along the lake (a cat rides with them, never walks across), jumped or ridden clear of.
+        static readonly string[] JumpedArrows = { "L003/Arrow_L", "L003/Arrow_R", "L005/Arrow_A", "L009/Arrow_W1", "L009/Arrow_W2",
+            "L030/Arrow_W1", "L030/Arrow_E1", "L030/Arrow_W2", "L030/Arrow_E2", "L030/Arrow_W3", "L030/Arrow_E3", "L030/Arrow_W4" };
 
         // D-056 (1): a Periodic arrow's window from its stop to the next fire (the next tell counts as
         // unsafe) clears a from-rest crossing of the lane by PeriodicSlackTicks.

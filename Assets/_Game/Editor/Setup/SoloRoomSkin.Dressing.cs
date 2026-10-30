@@ -261,8 +261,11 @@ namespace Parallax.Editor.Setup
 
         /// <summary>D-103: what tufts avoid (they draw behind the stone and every trap): the door and the checkpoints.</summary>
         public static List<Rect> TuftKeepOut(SoloRoomDefinition room) =>
-            room.Elements.Where(x => x.Kind is SoloRoomElementKind.Door or SoloRoomElementKind.Checkpoint)
-                .Select(x => Grow(new Rect(room.Origin + x.Position - x.Size * 0.5f, x.Size), 0.6f)).ToList();
+            room.Elements.Where(x => x.Kind is SoloRoomElementKind.Door or SoloRoomElementKind.Checkpoint or SoloRoomElementKind.Portal)
+                .Select(x => Grow(new Rect(room.Origin + x.Position - x.Size * 0.5f, x.Size), 0.6f))
+                // D-199: a portal's exit arch too.
+                .Concat(room.Elements.Where(x => x.Kind == SoloRoomElementKind.Portal)
+                    .Select(x => Grow(new Rect(room.Origin + x.SecondaryPosition - x.SecondarySize * 0.5f, x.SecondarySize), 0.6f))).ToList();
 
         static List<Rect> KeepOut(SoloRoomDefinition room, bool triggers, bool skipHidden = false, bool lanes = true)
         {
@@ -275,7 +278,7 @@ namespace Parallax.Editor.Setup
                 switch (e.Kind)
                 {
                     case SoloRoomElementKind.Hazard: case SoloRoomElementKind.HiddenSpikes: case SoloRoomElementKind.GravityFlip:
-                    case SoloRoomElementKind.Inverter: case SoloRoomElementKind.Geyser: case SoloRoomElementKind.StormCloud:
+                    case SoloRoomElementKind.Inverter: case SoloRoomElementKind.Geyser: case SoloRoomElementKind.StormCloud: case SoloRoomElementKind.PulseGate:
                         list.Add(Grow(new Rect(p - e.Size * 0.5f, e.Size), 0.5f)); break;
                     case SoloRoomElementKind.Checkpoint:
                         list.Add(Grow(new Rect(p + new Vector2(-0.5f, 0f), new Vector2(1f, 1.5f)), 0.5f)); break;
@@ -288,6 +291,11 @@ namespace Parallax.Editor.Setup
                             list.Add(Grow(new Rect(door.position + retreat.Settings.Offset, door.size), 1f));
                         break;
                     }
+                    case SoloRoomElementKind.Portal:
+                        // D-199: both of a portal's arches, as wide a berth as the door's.
+                        list.Add(Grow(new Rect(p - e.Size * 0.5f, e.Size), 1f));
+                        list.Add(Grow(new Rect(room.Origin + e.SecondaryPosition - e.SecondarySize * 0.5f, e.SecondarySize), 1f));
+                        break;
                     case SoloRoomElementKind.Arrow when e.Settings.Arrow.IsConfigured && e.Settings.Arrow.AngleDegrees != 0f:
                     {
                         // PAX-107 (the developer: "In level 4 there is a patch of moss missing making the wall jump

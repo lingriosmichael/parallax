@@ -8,163 +8,167 @@ using static Parallax.Editor.Levels.LevelElementFactory;
 
 namespace Parallax.Editor.Levels
 {
-    // D-174: level 29, "Stormfront" (D-163's ninth; Golden Ruins, D-172). The verb is READ THE SKY: one storm cloud follows the
-    // cat through the whole room, storey to storey, and every storey has a bridge that won't hold a cat that stops. On storey 1
-    // the cloud starts ahead and strikes ahead, so the cat is herded between a strike in front and a bridge falling behind; on
-    // the upper storeys it comes up after the cat and drives it over crumbling planks from behind (a room has one cloud, D-090).
-    // Three storeys 5.5 u apart on 1 u slabs, walked east, west, east.
-    //  - Bridge (section 0, storey 1, walked east): the cloud starts ahead and wakes as the cat sets off. The bridge over the
-    //    chasm falls tile by tile from the cat's first step on it, and the cloud strikes the far bank as the cat gets there: stop
-    //    on the bank, not on the bridge, let it strike, go on. Pop_1 springs out of the ground (jump it); Lift_1 carries the cat
-    //    up.
-    //  - Gallery (section 1, storey 2, walked west): the cloud comes up after the cat and chases it from behind, onto Bridge 2,
-    //    crumbling planks over a spike bed (don't stop on them). Pop_2 springs out of the floor (jump it), Slam_2 pounds on the
-    //    beat (wait for the gap with the storm coming); Lift_2 carries the cat up.
-    //  - Crown (section 2, storey 3, walked east): the storm chases over Bridge 3's planks, then Slam_D comes down in front of the
-    //    door and stays (stop short, hop onto it, into the door).
+    // D-244 (replaces D-182/D-190/D-241/D-243; the developer, 2026-10-28: "FUlly redesign it. I think the idea is no longer fun. The
+    // problem I see is that you fail once and go down you can immediately see what is below the other open gaps. So one death solves
+    // a full floor. I think the spikes need to be hidden", then the concept "Trapdoor tower"): level 29, "Trapdoor Tower". Ten floors
+    // in a tower 32 wide, the ground and the door under them. Every floor has three or four ways down that look the same: one is the
+    // way on, the others dead ends, a certain death (D-224). Under each dead end the floor below hides spikes that spring only for a
+    // cat falling from it (their trigger is the air under that slot, out of a jump's reach from the floor below), so the floor below
+    // looks the same everywhere and a death shows only the one slot that killed. The camera shows ~2.9 below the cat: a floor's ways
+    // down can't be seen into from above.
+    //  - A slot is an open gap, or (on floors 2, 5 and 8) a stretch of floor that looks solid and crumbles under the cat.
+    //  - The way on is sometimes a far wall's slot, sometimes a middle one (D-246). A slot's hidden spikes reach a running fall's drift past it (Drift), and no other slot of its floor is within a
+    //    drift of the way on (a cat falling through the way on never springs them).
+    //  - The ground: walk west to the door (D-246; it was at the east end). D-245 (the developer: "no checkpoints making it incredibly hard. And a trap right before
+    //    the end where the door is"): no checkpoints (a death starts the tower again from the top), and Door_Trap, the ground just
+    //    before the door, looks solid and crumbles into a spike pit under a running cat: jump it.
     static class L029Layout
     {
-        // The storeys' walk lines (room-local y); each slab under the next storey is 1 u of stone, the roof 2 over 5 u of air.
-        internal const float S1 = 0f, S2 = 5.5f, S3 = 11f, RoofU = 16f, RoofTop = 18f, Base = -4f, LakeBed = -3f;
-        // The bridges: five tiles each, the first BridgeDelay ticks after the cat steps on, each next one BridgeStep later.
-        internal const int BridgeCount = 5, BridgeDelay = 10, BridgeStep = 15, PlankDelay = 14;
-        internal const float TileWidth = 1.3f, B1X = 9.5f, B2X = 18f, B3X = 7f;
-        // The cloud: wake, first charge after the wake, then one every period (tell 25, strike 6).
-        internal const int FirstStrike = 100, StrikePeriod = 100;
-        // The lifts and Slam_2's beat (room ticks).
-        internal const int LiftPeriod = 135, Lift1Phase = 10, Lift2Phase = 45, LiftMove = 30, LiftHold = 15, Beat = 90, Slam2 = 47;
+        internal const float Top = 55f, Step = 5.5f, Ground = 0f, Base = -3f, Width = 32f, SlotW = 1.5f, Drift = 3.6f;
+        internal static float FloorY(int i) => Top - Step * i;
+        internal static float Roof => Top + 4.5f;
+        // Each floor's slots (x0, SlotW wide), the way on, and the crumbling one (-1: none). Laid out by a search for: slots 2.5 apart
+        // or more, none under the previous way on's landing (its x ± Drift), the way on outside the other slots' landings above and
+        // a drift (+0.5) from every other slot of its floor.
+        // D-246 (the developer: "you just go through the middle options ... There is no safe path using the far left or far right
+        // opening"): re-laid so the way on is a far wall's slot on five floors (0, 2 and 8 west; 7 and 9 east) and a middle one on
+        // the rest, the nearest slot to the landing on three of them only.
+        internal static readonly (float[] slots, int way, int crumble)[] Floors = {
+            (new[] { 2f, 10f, 25.5f }, 0, -1),
+            (new[] { 11f, 19.5f, 29f }, 1, -1),
+            (new[] { .5f, 13f, 25.5f, 30f }, 0, 2),
+            (new[] { 8f, 19f, 30f }, 1, -1),
+            (new[] { .5f, 10f, 24.5f }, 2, -1),
+            (new[] { 1f, 5f, 10.5f, 16.5f }, 3, 0),
+            (new[] { 3f, 11f, 23.5f }, 2, -1),
+            (new[] { 9f, 13.5f, 30f }, 2, -1),
+            (new[] { .5f, 8f, 15.5f, 19.5f }, 0, 3),
+            (new[] { 13.5f, 22f, 28.5f }, 2, -1),
+        };
+        internal const float SpawnX = 18.5f, DoorX = 1.5f;   // D-246: the door at the west end (floor 9's way on lands at the east)
+        internal const int CrumbleDelay = 6;
+        // D-247 (the developer: "is there anything keeps the pressure on? Maybe we can the ceiling slowly shifting down? ... The
+        // ceiling falling should wait until you land"): each floor's ceiling, a plate CeilingThick thick flush under the floor above
+        // (the roof over floor 0), cut at that floor's slots, comes down once a cat lands (CeilingGrace after the start on floor 0,
+        // CeilingDelay on the rest) to CeilingGap over the floor, crushing a cat under it; floor 0's over CeilingTicksTop, floor 9's
+        // over CeilingTicksBottom, the floors between in step. Jumping stops halfway (under 2.2 of headroom).
+        internal const float CeilingThick = .5f, CeilingGap = .4f;
+        internal const int CeilingGrace = 50, CeilingDelay = 10, CeilingTicksTop = 310, CeilingTicksBottom = 200;   // D-250: a little faster (was 350/225)
+        // D-250 (the developer: "Make this part go faster"): a plug slides shut over PlugTicks, then comes down at the pieces' speed.
+        internal const int PlugTicks = 18;
+        // D-245: Door_Trap, over a spike pit (PitDepth deep) just before the door; it gives way DoorTrapDelay after a cat steps on.
+        internal const float PitX0 = 3.5f, PitX1 = 6f, PitDepth = 1.5f;   // D-246: was x 26-28.5
+        internal const int DoorTrapDelay = 3;
 
         public static SoloRoomDefinition Build()
         {
             var elements = new List<SoloRoomElement> {
-                E(SoloRoomElementKind.Wall,"Wall_L",(-.5f,(Base - 1f + RoofTop) * .5f),(1f,RoofTop - Base + 1f)),
-                E(SoloRoomElementKind.Wall,"Wall_R",(32.5f,(Base - 1f + RoofTop) * .5f),(1f,RoofTop - Base + 1f)),
-                E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(1.5f,S1),(0f,0f)),
-                E(SoloRoomElementKind.Door,"Door",(30.7f,S3 + .75f),(.6f,1.5f)),
+                E(SoloRoomElementKind.Wall,"Wall_L",(-.5f,(Base - 1f + Roof + 1f) * .5f),(1f,Roof + 1f - Base + 1f)),
+                E(SoloRoomElementKind.Wall,"Wall_R",(Width + .5f,(Base - 1f + Roof + 1f) * .5f),(1f,Roof + 1f - Base + 1f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(SpawnX,Top),(0f,0f)),
+                E(SoloRoomElementKind.Door,"Door",(DoorX,Ground + .75f),(.6f,1.5f)),
             };
-            float b1End = B1X + BridgeCount * TileWidth, b2End = B2X + BridgeCount * TileWidth, b3End = B3X + BridgeCount * TileWidth;
+            Block(elements, SoloRoomElementKind.Ceiling, "Roof", 0f, Width, Roof, Roof + 1f);
+            // The ground, with Door_Trap's pit before the door (D-245).
+            Block(elements, SoloRoomElementKind.Floor, "Ground_W", 0f, PitX0, Base, Ground);
+            Block(elements, SoloRoomElementKind.Floor, "Pit_Floor", PitX0, PitX1, Base, Ground - PitDepth);
+            elements.Add(E(SoloRoomElementKind.Hazard, "Pit_Spikes", ((PitX0 + PitX1) * .5f, Ground - PitDepth + .15f), (PitX1 - PitX0, .3f)));
+            Block(elements, SoloRoomElementKind.Floor, "Ground_E", PitX1, Width, Base, Ground);
+            elements.Add(E(SoloRoomElementKind.CollapsingFloor, "Door_Trap", ((PitX0 + PitX1) * .5f, Ground - .5f), (PitX1 - PitX0, 1f), ((PitX0 + PitX1) * .5f, Ground + .3f), (PitX1 - PitX0, .6f),
+                new SoloRoomTrapSettings(delayTicks: DoorTrapDelay)));
 
-            // ---- Storey 1's floor (y -4..0) ----
-            // Ground_0 to the chasm (x 9.5-16, the lake 3 u down); Ground_1 to Lift_1's seat (x 30.5-32).
-            Block(elements, SoloRoomElementKind.Floor, "Ground_0", 0f, B1X, Base, S1);
-            elements.Add(E(SoloRoomElementKind.PitBottom,"Pit_1_Bottom",((B1X + b1End) * .5f,(Base + LakeBed) * .5f),(b1End - B1X,LakeBed - Base)));
-            elements.Add(E(SoloRoomElementKind.Hazard,"Pit_1",((B1X + b1End) * .5f,LakeBed + .15f),(b1End - B1X,.3f)));
-            Block(elements, SoloRoomElementKind.Floor, "Ground_1", b1End, 30.5f, Base, S1);
-            Block(elements, SoloRoomElementKind.Floor, "Seat_L1", 30.5f, 32f, Base, S1 - .5f);
+            for (int i = 0; i < Floors.Length; i++)
+            {
+                var (slots, way, crumble) = Floors[i];
+                float y = FloorY(i), below = i + 1 < Floors.Length ? FloorY(i + 1) : Ground;
 
-            // ---- Slab A (y 4.5-5.5): storey 1's ceiling, storey 2's floor ----
-            // Lift_2's seat (x 1-2.5); Bed_2 (x 18-24.5), half the slab, under Bridge 2; the hole for Lift_1 (x 30.5-32).
-            Block(elements, SoloRoomElementKind.Floor, "SA_W", 0f, 1f, S2 - 1f, S2);
-            Block(elements, SoloRoomElementKind.Floor, "Seat_L2", 1f, 2.5f, S2 - 1f, S2 - .5f);
-            Block(elements, SoloRoomElementKind.Floor, "SA_0", 2.5f, B2X, S2 - 1f, S2);
-            Bed(elements, "Bed_2", "Spikes_2", B2X, b2End, S2);
-            Block(elements, SoloRoomElementKind.Floor, "SA_1", b2End, 30.5f, S2 - 1f, S2);
+                // The floor: stone between the slots; an open gap at each slot but the crumbling one.
+                float cursor = 0f; int n = 0;
+                foreach (float x0 in slots)
+                {
+                    if (x0 > cursor + .01f) Block(elements, SoloRoomElementKind.Floor, $"Floor_{i}_{n++}", cursor, x0, y - 1f, y);
+                    cursor = x0 + SlotW;
+                }
+                if (cursor < Width - .01f) Block(elements, SoloRoomElementKind.Floor, $"Floor_{i}_{n}", cursor, Width, y - 1f, y);
+                if (crumble >= 0)
+                {
+                    float cx = slots[crumble] + SlotW * .5f;
+                    elements.Add(E(SoloRoomElementKind.CollapsingFloor, $"Crumble_{i}", (cx, y - .5f), (SlotW, 1f), (cx, y + .3f), (SlotW, .6f),
+                        new SoloRoomTrapSettings(delayTicks: CrumbleDelay)));
+                }
 
-            // ---- Slab B (y 10-11): storey 2's ceiling, storey 3's floor ----
-            // The hole for Lift_2 (x 1-2.5); Cap_2 over Slam_2 (x 4-5.5); Bed_3 (x 7-13.5) under Bridge 3.
-            Block(elements, SoloRoomElementKind.Floor, "SB_W", 0f, 1f, S3 - 1f, S3);
-            Block(elements, SoloRoomElementKind.Floor, "SB_0", 2.5f, 4f, S3 - 1f, S3);
-            Block(elements, SoloRoomElementKind.Floor, "Cap_2", 4f, 5.5f, S3 - .5f, S3);
-            Block(elements, SoloRoomElementKind.Floor, "SB_0b", 5.5f, B3X, S3 - 1f, S3);
-            Bed(elements, "Bed_3", "Spikes_3", B3X, b3End, S3);
-            Block(elements, SoloRoomElementKind.Floor, "SB_1", b3End, 32f, S3 - 1f, S3);
+                // D-247: this floor's ceiling, in pieces between the slots of the floor above (none cut under the roof), sprung by a
+                // cat on this floor (its trigger: the floor's whole width, a unit over it).
+                // D-249 (the developer: "if i stand here in the gap it doesnt kill me"): each hole in it (under a slot of the floor
+                // above) is closed first by a Plug sliding out of the wider piece beside it (hidden inside it till then), over
+                // PlugTicks; then the pieces and the plugs come down together, one closed ceiling (the plug's path: across, then down,
+                // at the pieces' speed).
+                float ceiling = i == 0 ? Roof : FloorY(i - 1) - 1f;
+                float travel = ceiling - CeilingThick - (y + CeilingGap);
+                int ceilingTicks = Mathf.RoundToInt(Mathf.Lerp(CeilingTicksTop, CeilingTicksBottom, i / (Floors.Length - 1f)));
+                float[] over = i == 0 ? new float[0] : Floors[i - 1].slots;
+                int plugTicks = over.Length == 0 ? 0 : PlugTicks;
+                int sprung = i == 0 ? CeilingGrace : CeilingDelay;
+                var trigger = (pos: new Vector2(Width * .5f, y + .5f), size: new Vector2(Width, 1f));
+                float start = 0f; int c = 0;
+                foreach (float x1 in over.Append(Width))
+                {
+                    if (x1 > start + .01f)
+                        elements.Add(E(SoloRoomElementKind.MovingTrap, $"Ceiling_{i}_{c++}", ((start + x1) * .5f, ceiling - CeilingThick * .5f), (x1 - start, CeilingThick),
+                            (trigger.pos.x, trigger.pos.y), (trigger.size.x, trigger.size.y), new SoloRoomTrapSettings(
+                                new MovingFloorSettings(SurfaceMotion.Carry, slams: true),
+                                new SoloRoomTrapSettings(delayTicks: sprung + plugTicks, offset: new Vector2(0f, -travel), moveTicks: ceilingTicks,
+                                    holdTicks: 9999, movingKind: MovingTrapKind.Solid))));
+                    start = x1 + SlotW;
+                }
+                for (int h = 0; h < over.Length; h++)
+                {
+                    float x0 = over[h], left = x0 - (h > 0 ? over[h - 1] + SlotW : 0f), right = (h + 1 < over.Length ? over[h + 1] : Width) - (x0 + SlotW);
+                    float dir = right >= left ? -1f : 1f;   // out of the wider piece: from the right it slides west (-1)
+                    float home = dir < 0f ? x0 + SlotW * 1.5f : x0 - SlotW * .5f;
+                    elements.Add(E(SoloRoomElementKind.MovingTrap, $"Plug_{i}_{h}", (home, ceiling - CeilingThick * .5f), (SlotW, CeilingThick),
+                        (trigger.pos.x, trigger.pos.y), (trigger.size.x, trigger.size.y), new SoloRoomTrapSettings(
+                            new PathSettings(new[] { new Vector2(dir * SlotW, 0f), new Vector2(dir * SlotW, -travel) }, firstLegTicks: plugTicks),
+                            new(new MovingFloorSettings(SurfaceMotion.Carry, slams: true),
+                                new SoloRoomTrapSettings(delayTicks: sprung, moveTicks: plugTicks + ceilingTicks, holdTicks: 9999, movingKind: MovingTrapKind.Solid)))));
+                }
 
-            // ---- The roof (y 16-18): Slam_D is its bottom unit under Cap_D ----
-            Block(elements, SoloRoomElementKind.Ceiling, "Roof_A", 0f, 26.5f, RoofU, RoofTop);
-            Block(elements, SoloRoomElementKind.Ceiling, "Cap_D", 26.5f, 28f, RoofU + .75f, RoofTop);
-            Block(elements, SoloRoomElementKind.Ceiling, "Roof_B", 28f, 32f, RoofU, RoofTop);
+                // Each dead end: spikes hidden in the floor below over the slot's landing (its x ± Drift, less that floor's own slots),
+                // sprung by a cat in the air under the slot (from this floor's underside down to 2.4 over the floor below).
+                (float x0, float x1)[] belowSlots = i + 1 < Floors.Length ? Floors[i + 1].slots.Select(sx => (sx, sx + SlotW)).ToArray() : new[] { (PitX0, PitX1) };
+                for (int s = 0; s < slots.Length; s++)
+                {
+                    if (s == way) continue;
+                    float x0 = slots[s], top = y - 1f, bottom = below + 2.4f;
+                    Vector2 triggerPos = new(x0 + SlotW * .5f, (top + bottom) * .5f), triggerSize = new(SlotW, top - bottom);
+                    int k = 0;
+                    foreach (var (a, b) in Uncovered(Mathf.Max(.2f, x0 - Drift), Mathf.Min(Width - .2f, x0 + SlotW + Drift), belowSlots))
+                    {
+                        string name = $"Hidden_{i}_{s}_{k++}";
+                        elements.Add(E(SoloRoomElementKind.HiddenSpikes, name, ((a + b) * .5f, below + .15f), (b - a, .3f), (triggerPos.x, triggerPos.y), (triggerSize.x, triggerSize.y),
+                            new SoloRoomTrapSettings(revealDelayTicks: 0)));
+                    }
+                }
+            }
 
-            // ---------- The storm ----------
-            // The cloud starts over storey 1's far end and wakes as the cat sets off (its cut, x 2.8-3.2); it follows the cat at a
-            // little over half a run, rising and sinking with it from storey to storey (on storey 3 it stays clear of the door,
-            // west of x 28.5), and strikes FirstStrike ticks after the wake, then every StrikePeriod.
-            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(26.4f,S2 - 1.9f),(2f,.8f),(3f,(S1 + S2 - 1f) * .5f),(.4f,S2 - 1f - S1),
-                new SoloRoomTrapSettings(new StormCloudSettings(new[] {
-                        new StormFloor(-100f, S2 - 1.9f, 1.5f, 30.5f),
-                        new StormFloor(S2, S3 - 1.9f, 1.5f, 30.5f),
-                        new StormFloor(S3, RoofU - 1.9f, 1.5f, 28.5f) },
-                    followSpeed:.08f, firstStrikeDelay:FirstStrike, strikePeriod:StrikePeriod), new SoloRoomTrapSettings(delayTicks:0))));
-
-            // ---------- Bridge (storey 1) ----------
-            // Bridge 1 over the chasm, from the cat's first step on it (its trigger is the chasm, from the lake to slab A, L021's):
-            // each tile falls into the lake.
-            Bridge(elements, "Bridge1_", B1X, S1, S1 - LakeBed + .25f, ((B1X - .05f + b1End) * .5f, (LakeBed + S2 - 1f) * .5f), (b1End - B1X + .05f, S2 - 1f - LakeBed));
-            // Pop_1: spikes in the ground at x 26.2-27.4 spring up as the cat comes within 1.6 u of them: jump them.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Pop_1",(26.8f,S1 + .15f),(1.2f,.3f),(26f,(S1 + S2 - 1f) * .5f),(2.8f,S2 - 1f - S1),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            // Lift_1, on its seat by the east wall, up to storey 2 and back, every LiftPeriod.
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Lift_1",(31.25f,S1 - .25f),(1.5f,.5f),settings:Lift(S2 - S1, Lift1Phase)));
-
-            // ---------- Gallery (storey 2) ----------
-            // Bridge 2: crumbling planks over Bed_2, each giving way PlankDelay ticks after the cat first touches it.
-            Planks(elements, "Plank2_", B2X, S2);
-            // Pop_2: spikes in the floor at x 14-15.2 spring up as a cat walking west comes within 1.6 u of them: jump them.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Pop_2",(14.6f,S2 + .15f),(1.2f,.3f),(15.4f,(S2 + S3 - 1f) * .5f),(2.8f,S3 - 1f - S2),new SoloRoomTrapSettings(revealDelayTicks:6)));
-            // Slam_2, slab B's bottom unit at x 4-5.5, pounds the floor on the beat.
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Slam_2",(4.75f,S3 - .75f),(1.5f,.5f),settings:new SoloRoomTrapSettings(
-                new MovingFloorSettings(SurfaceMotion.Carry, crushPartner: "Cap_2", slams: true),
-                new SoloRoomTrapSettings(offset: new Vector2(0f, S2 - S3 + 1f), moveTicks: 8, holdTicks: 10, returnTicks: 15, repeatMode: TrapRepeatMode.Periodic,
-                    periodTicks: Beat, phaseTicks: Slam2, cooldownTicks: 33, movingKind: MovingTrapKind.Solid))));
-            // Lift_2, on its seat by the west wall (x 1-2.5), up to storey 3 and back, every LiftPeriod.
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Lift_2",(1.75f,S2 - .25f),(1.5f,.5f),settings:Lift(S3 - S2, Lift2Phase)));
-
-            // ---------- Crown (storey 3) ----------
-            // Bridge 3: crumbling planks over Bed_3.
-            Planks(elements, "Plank3_", B3X, S3);
-            // Slam_D, the roof's bottom unit at x 26.5-28, slams 5 u onto the floor 9 ticks after a cat walking east comes within x
-            // 25.1, and stays: stop short, hop onto it, into the door.
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Slam_D",(27.25f,RoofU + .375f),(1.5f,.75f),(27.5f,(S3 + RoofU + .75f) * .5f),(4.8f,RoofU + .75f - S3),new SoloRoomTrapSettings(
-                new MovingFloorSettings(SurfaceMotion.Carry,slams:true),
-                new SoloRoomTrapSettings(delayTicks:9,offset:new Vector2(0f,S3 - RoofU),moveTicks:8,holdTicks:600,movingKind:MovingTrapKind.Solid))));
-
-            var sections = new[] {
-                CheckpointSection.Start("Bridge", new Vector2(1.5f, S1), Names("Bridge1_").Concat(new[] { "Cloud", "Pop_1", "Lift_1" }).ToArray()),
-                new CheckpointSection("Gallery", new Vector2(28.5f, S2), new Rect(30.5f, S2 - .6f, 1.5f, .2f), Names("Plank2_").Concat(new[] { "Pop_2", "Slam_2", "Lift_2" }).ToArray()),
-                new CheckpointSection("Crown", new Vector2(4f, S3), new Rect(1f, S3 - .6f, 1.5f, .2f), Names("Plank3_").Concat(new[] { "Slam_D" }).ToArray()),
-            };
-            return new SoloRoomDefinition(0, 0f, 32f, elements.ToArray(), System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>(), null, null, null, sections);
+            // D-245: no checkpoint sections.
+            return new SoloRoomDefinition(0, 0f, Width, elements.ToArray(), System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>(), null, null, null, null);
         }
 
-        static string[] Names(string prefix) => Enumerable.Range(1, BridgeCount).Select(i => prefix + i).ToArray();
+        // The parts of a to b not over any of `gaps`.
+        static IEnumerable<(float a, float b)> Uncovered(float a, float b, (float x0, float x1)[] gaps)
+        {
+            float cursor = a;
+            foreach (var (x0, x1) in gaps.OrderBy(g => g.x0))
+            {
+                if (x1 <= cursor || x0 >= b) continue;
+                if (x0 > cursor + .05f) yield return (cursor, x0);
+                cursor = Mathf.Max(cursor, x1);
+            }
+            if (b > cursor + .05f) yield return (cursor, b);
+        }
 
         static void Block(List<SoloRoomElement> e, SoloRoomElementKind kind, string name, float x0, float x1, float y0, float y1) =>
             e.Add(E(kind, name, ((x0 + x1) * .5f, (y0 + y1) * .5f), (x1 - x0, y1 - y0)));
-
-        // A spike bed in a slab under a bridge (x0-x1): the slab's lower half (a floor, so the storeys stay apart) and the spikes on it.
-        static void Bed(List<SoloRoomElement> e, string bed, string spikes, float x0, float x1, float walk)
-        {
-            e.Add(E(SoloRoomElementKind.Floor, bed, ((x0 + x1) * .5f, walk - .75f), (x1 - x0, .5f)));
-            e.Add(E(SoloRoomElementKind.Hazard, spikes, ((x0 + x1) * .5f, walk - .35f), (x1 - x0, .3f)));
-        }
-
-        // A bridge of BridgeCount tiles from x0 at the walk line (from its east end when fromEast): the first falls BridgeDelay ticks
-        // after the cat steps into its trigger, each next BridgeStep after the one before, `travel` down at 0.25 u a tick (each ends with
-        // its top under the spikes' tips), so the bridge falls away behind a cat that keeps moving (L021's).
-        static void Bridge(List<SoloRoomElement> e, string prefix, float x0, float walk, float travel, (float, float) cut, (float, float) cutSize)
-        {
-            for (int k = 0; k < BridgeCount; k++)
-            {
-                float cx = x0 + (k + .5f) * TileWidth;
-                e.Add(k == 0
-                    ? E(SoloRoomElementKind.FallingBlock, prefix + (k + 1), (cx, walk - .25f), (TileWidth, .5f), cut, cutSize,
-                        new SoloRoomTrapSettings(delayTicks: BridgeDelay, unitsPerTick: .25f, travelDistance: travel))
-                    : E(SoloRoomElementKind.FallingBlock, prefix + (k + 1), (cx, walk - .25f), (TileWidth, .5f),
-                        settings: new SoloRoomTrapSettings(delayTicks: BridgeStep, unitsPerTick: .25f, travelDistance: travel, triggerSource: TrapTriggerSource.Chain, chainSource: prefix + k)));
-            }
-        }
-
-        // A bridge of BridgeCount crumbling planks from x0 at the walk line, over a spike bed: each gives way PlankDelay ticks after
-        // the cat first touches it, so a cat that stops on the bridge goes down onto the spikes.
-        static void Planks(List<SoloRoomElement> e, string prefix, float x0, float walk)
-        {
-            for (int k = 0; k < BridgeCount; k++)
-                e.Add(E(SoloRoomElementKind.CollapsingFloor, prefix + (k + 1), (x0 + (k + .5f) * TileWidth, walk - .25f), (TileWidth, .5f),
-                    settings: new SoloRoomTrapSettings(delayTicks: PlankDelay)));
-        }
-
-        // A lift rising `rise` and back every LiftPeriod from its phase (over LiftMove each way, LiftHold at the top).
-        static SoloRoomTrapSettings Lift(float rise, int phase) =>
-            new(new MovingFloorSettings(SurfaceMotion.Carry),
-                new SoloRoomTrapSettings(offset: new Vector2(0f, rise), moveTicks: LiftMove, holdTicks: LiftHold, returnTicks: LiftMove, repeatMode: TrapRepeatMode.Periodic,
-                    periodTicks: LiftPeriod, phaseTicks: phase, cooldownTicks: 2 * LiftMove + LiftHold, movingKind: MovingTrapKind.Solid));
     }
 }

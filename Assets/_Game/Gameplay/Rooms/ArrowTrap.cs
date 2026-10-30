@@ -15,7 +15,11 @@ namespace Parallax.Gameplay.Rooms
     /// and kill box turn with it, and it is harmless and non-solid once stopped.
     /// PAX-107 (D-123): with mirrorWithGravity, each shot takes the lane the cat's gravity picks as it fires: the authored one
     /// with gravity down, the launcher moved up by mirrorShift (its mirror across the room) with gravity up. A shot in flight
-    /// keeps its lane.</summary>
+    /// keeps its lane.
+    /// PAX-111 (D-177): with `beam` set it is a laser turret: no arrow flies. The `arrow` child is the whole lane (beamLength
+    /// along it, from the mouth); through the tell only `ray`, a thin line over the same lane, shows (harmless); then the lane
+    /// is lethal and drawn for beamTicks; then both are dark until the next fire. A spear with `ray` set (the hard-light bar)
+    /// shows the ray through its tell and flies as before.</summary>
     public sealed class ArrowTrap : RoomTrap
     {
         [SerializeField] ObserverSet observers;
@@ -39,6 +43,13 @@ namespace Parallax.Gameplay.Rooms
         [SerializeField] bool mirrorWithGravity;
         [Tooltip("PAX-107 (D-123): how far up the launcher moves for a mirrored shot (local units).")]
         [SerializeField] float mirrorShift;
+        [Tooltip("PAX-111 (D-177): a laser beam over the whole lane instead of a flying arrow.")]
+        [SerializeField] bool beam;
+        [SerializeField] int beamTicks;
+        [Tooltip("PAX-111 (D-177): the beam's length along the lane, from the mouth (the arrow child is placed at its middle).")]
+        [SerializeField] float beamLength;
+        [Tooltip("PAX-111 (D-177): the thin warning ray over the lane, shown through the tell (a beam, or a hard-light bar). Null for none.")]
+        [SerializeField] SpriteRenderer ray;
 
         ContactFilter2D filter; readonly Collider2D[] results = new Collider2D[8];
         int flightTicks; Color unfiredColor;
@@ -67,9 +78,7 @@ namespace Parallax.Gameplay.Rooms
             if (StepTiming(trigger != null && IsLocalHumanOverlapping(trigger, observers, filter, results, out _)) && mirrorWithGravity) SetLane(CatGravityUp());
             if (!IsTimingEffectActive) return;
             int s = RoomLifeTick - LatestFireTick;
-            arrow.transform.localPosition = LocalPose(s);
-            arrow.enabled = true;
-            launcher.color = honestColor;
+            ShowShot(s);
             if (TryGetKillBox(out Bounds pose) && IsLocalHumanOverlapping(pose, KillAngle, observers, filter, results, out _)) { Death.Kill(Reality.Id, DeathCause.Hazard, this); return; }
             if (spear && s >= ArrowMath.StuckCheckTick(tellTicks, flightTicks) && !shaft.enabled) shaft.enabled = true;
         }
@@ -84,6 +93,12 @@ namespace Parallax.Gameplay.Rooms
             if (!enabled || !IsTimingEffectActive) return false;
             int s = RoomLifeTick - LatestFireTick;
             bool stuckCheck = spear && s == ArrowMath.StuckCheckTick(tellTicks, flightTicks);
+            if (beam)
+            {
+                if (!ArrowMath.IsBeamLethal(s, tellTicks, beamTicks)) return false;
+                box = new Bounds(arrow.transform.position, new Vector3(beamLength, arrowThickness));
+                return true;
+            }
             if (!stuckCheck && !ArrowMath.IsLethal(s, tellTicks, flightTicks)) return false;
             float shrink = stuckCheck ? 2f * ArrowMath.StuckShrink : 0f;
             box = new Bounds(transform.TransformPoint(LocalPose(s)), new Vector3(arrowLength - shrink, arrowThickness - shrink));
@@ -93,7 +108,27 @@ namespace Parallax.Gameplay.Rooms
         /// <summary>PAX-099 (D-106): the kill box's rotation in degrees, 0 for a level arrow.</summary>
         public float KillAngle => ArrowMath.BoxAngle(direction, angleDegrees);
 
-        Vector2 LocalPose(int s) => angleDegrees == 0f
+        // PAX-111 (D-177): this tick's look from s (ticks since the fire): a beam's ray then lane, or the flying arrow (and a
+        // hard-light bar's ray through its tell).
+        void ShowShot(int s)
+        {
+            launcher.color = honestColor;
+            if (beam)
+            {
+                ArrowBeamPhase phase = ArrowMath.BeamPhase(s, tellTicks, beamTicks);
+                if (ray != null) ray.enabled = phase == ArrowBeamPhase.Tell;
+                arrow.enabled = phase == ArrowBeamPhase.Beam;
+                return;
+            }
+            if (ray != null) ray.enabled = ArrowMath.IsTell(s, tellTicks);
+            arrow.transform.localPosition = LocalPose(s);
+            arrow.enabled = true;
+        }
+
+        // A beam's lane centre (local): the mouth plus half the beam along the fire direction.
+        Vector2 BeamCentre => ArrowMath.Centre(mouth, ArrowMath.Direction(direction, angleDegrees), beamLength, 0f);
+
+        Vector2 LocalPose(int s) => beam ? BeamCentre : angleDegrees == 0f
             ? new(ArrowMath.CentreX(mouth.x, direction, arrowLength, ArrowMath.Offset(s, tellTicks, unitsPerTick, travel)), mouth.y)
             : ArrowMath.Centre(mouth, ArrowMath.Direction(direction, angleDegrees), arrowLength, ArrowMath.Offset(s, tellTicks, unitsPerTick, travel));
 
@@ -114,6 +149,7 @@ namespace Parallax.Gameplay.Rooms
         {
             if (arrow == null || launcher == null) return;
             arrow.enabled = false;
+            if (ray != null) ray.enabled = false;
             arrow.transform.localPosition = LocalPose(0);
             launcher.color = unfiredColor;
             if (shaft != null) shaft.enabled = false;
@@ -127,9 +163,7 @@ namespace Parallax.Gameplay.Rooms
             if (mirrorWithGravity) SetLane(snapshot.ExtraInt == 1);
             if (!enabled || !IsTimingEffectActive) { ShowUnfired(); return; }
             int s = roomTick - LatestFireTick;
-            arrow.transform.localPosition = LocalPose(s);
-            arrow.enabled = true;
-            launcher.color = honestColor;
+            ShowShot(s);
             if (shaft != null) shaft.enabled = spear && s >= ArrowMath.StuckCheckTick(tellTicks, flightTicks);
         }
 

@@ -75,10 +75,14 @@ namespace Parallax.Editor.Art
         }
 
         /// <summary>PAX-107 (D-124): a spiked hinge floor's face, its own spikes art (pointing out of the floor's top face, turned
-        /// with it), beside the floor's solid art.</summary>
-        static string BuildSpikedFace(Transform artRoot, SoloRoomDefinition room, SoloRoomElement e, MovingTrap mover, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes) =>
-            ReadObject(mover, "spikes") is SpriteRenderer face && face != null
-                ? BuildSpikes(artRoot, e.Name + "_Spikes", mover, face, true, false, 0, rooms, config, layer, changes, stout: Stout(room)) : null;
+        /// with it), beside the floor's solid art. D-251 (the developer: spikes under platforms in L021-L030 "are inverted"): a flip
+        /// platform's or a spiked slam's face is its underside (shown always), so its spikes point down, out of it.</summary>
+        static string BuildSpikedFace(Transform artRoot, SoloRoomDefinition room, SoloRoomElement e, MovingTrap mover, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
+        {
+            if (!(ReadObject(mover, "spikes") is SpriteRenderer face) || face == null) return null;
+            bool down = face.transform.localPosition.y < 0f;
+            return BuildSpikes(artRoot, e.Name + "_Spikes", mover, face, !down, down, 0, rooms, config, layer, changes, stout: Stout(room));
+        }
 
         static string BuildSpikes(Transform artRoot, string name, RoomTrap trap, SpriteRenderer greybox, bool rises, bool pointsDown, int pointsSide, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes, System.Func<float, float, float> reachOver = null, bool stout = false, System.Func<float, float, string> solidsAt = null)
         {
@@ -214,10 +218,14 @@ namespace Parallax.Editor.Art
                 if (h.Kind == SoloRoomElementKind.MovingTrap && h.Settings.MovingKind == MovingTrapKind.Solid && h.Settings.Offset.y > 0f
                     && Mathf.Abs(h.Settings.Offset.x) < 1e-3f && new Rect(h.Position - h.Size * 0.5f, h.Size).Contains(box.center))
                     return true;
+            // D-251 (the developer: spikes under platforms in L021-L030 "are inverted"): a solid platform that moves, crumbles,
+            // falls or shrinks hosts a strip as a fixed one does (it was only a fixed element, so a strip hung under one pointed up).
+            static bool Platform(SoloRoomElement h) => h.Kind is SoloRoomElementKind.CollapsingFloor or SoloRoomElementKind.FallingBlock or SoloRoomElementKind.ShrinkingFloor
+                || (h.Kind == SoloRoomElementKind.MovingTrap && h.Settings.MovingKind == MovingTrapKind.Solid);
             bool above = false, below = false;
             foreach (SoloRoomElement h in room.Elements)
             {
-                if (!Fixed(h.Kind)) continue;
+                if (h.Name == e.Name || (!Fixed(h.Kind) && !Platform(h))) continue;
                 var r = new Rect(h.Position - h.Size * 0.5f, h.Size);
                 bool xOverlap = r.xMin < box.xMax - 1e-3f && r.xMax > box.xMin + 1e-3f;
                 if (!xOverlap) continue;

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Parallax.Core;
 using Parallax.Editor.Routes;
@@ -5,89 +6,82 @@ using static Parallax.Editor.Routes.R;
 
 namespace Parallax.Editor.Levels
 {
-    // D-167: level 23's routes. A ride is boarded by its beat (a few ticks after it gets home) and left by its pose (moving, stopped).
-    // Betrayals branch off the solution's own steps.
+    // D-206: level 23's routes ("Ferryman"). Each platform the cat stands on sets off under it, so most waits are "until it has
+    // arrived"; the presses keep their own beat. Hops land where they're aimed by letting go of the stick in the air. Betrayals
+    // branch off the solution's own steps.
     static class L023Routes
     {
-        // A shuttle (or lift) has been home `ticks` ticks: it leaves at `phase`, out over `move`, waits `hold`, back over `move`.
-        static RouteCondition HomeFor(int period, int phase, int move, int hold, int ticks) => Beat(period, phase + 2 * move + hold + ticks);
-        // The room tick is `tick` past a multiple of `period`.
+        const int D = L023Layout.TriggerDelay, PP = L023Layout.PressPeriod;
         static RouteCondition Beat(int period, int tick) => new($"beat {tick}/{period}", v => ((v.Last.RoomLifeTick - tick) % period + period) % period == 0);
+        // `ticks` after the element's latest fire (a triggered platform's fire is its trigger plus TriggerDelay, when it starts to move).
+        static RouteCondition Since(string element, int ticks) => new($"{element} +{ticks}", v =>
+        {
+            int i = v.Result.Elements.IndexOf(element);
+            return i >= 0 && v.Last.FireTick[i] >= 0 && v.Last.RoomLifeTick - v.Last.FireTick[i] >= ticks;
+        });
+        static RouteStep[] Hop(float at) => new[] { Hold(Right), Jump(), Until(XAtLeast(at)), Release(), Until(Grounded()) };
+        // Walk east to `x`, stop, and wait to stand still there.
+        static RouteStep[] WalkTo(float x) => new[] { Hold(Right), Until(XAtLeast(x)), Release(), Until(Still()) };
+        // Stand on `platform` until it has run its `move`.
+        static RouteStep Ride(string platform, UnityEngine.Vector2[] path) => Until(Since(platform, L023Layout.Ticks(path) + 2));
 
-        // ---- Docks, storey 1, walked east ----
-        // Off Pier_0 onto Ferry_1 at once; ride it out and jump to Isle_1 at its far end. Onto Ferry_2 and stand; once it has
-        // stalled, jump to Isle_2. Wait for Lift_U at home, step on, ride it up.
-        static RouteStep[] Docks() => new[] {
-            Hold(Right), Until(XAtLeast(4.3f)), Release(), Until(Still()),
-            Until(Beat(L023Layout.Ferry1Period, L023Layout.Ferry1Phase + L023Layout.Ferry1Move)), Hold(Right), Jump(), Until(Airborne()), Until(Grounded()),
-            Until(XAtLeast(16.5f)), Release(), Until(Still()),
-            Until(Fired("Ferry_2")), Until(Moving("Ferry_2")), Until(Stopped("Ferry_2")), Hold(Right), Jump(), Until(Airborne()), Until(Grounded()),
-            Until(XAtLeast(27.8f)), Release(), Until(Still()),
-            Until(HomeFor(L023Layout.LiftPeriod, L023Layout.LiftUPhase, L023Layout.LiftMove, L023Layout.LiftHold, 3)), Hold(Right), Until(XAtLeast(29.2f)), Release(), Until(Still()),
-            Until(Moving("Lift_U")), Until(Stopped("Lift_U")),
-        };
+        static RouteStep[] Lake() => new RouteStep[][] {
+            // Over Climb (resting flush with the shore) down onto Lift; up; onto Glide; down.
+            new[] { Hold(Right), Until(XAtLeast(3.4f)), Jump(), Until(XAtLeast(8.3f)), Release(), Until(Grounded()), Until(Still()), Ride("Lift", L023Layout.LiftPath) },
+            WalkTo(11.5f), new[] { Ride("Glide", L023Layout.GlidePath) },
+            // Onto Ferry so it carries the cat under Press_1 while the press is up; along to V.
+            new[] { Until(Beat(PP, L023Layout.Press1Phase + FerryBoard)), Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(22f)), Release(), Until(Still()), Ride("Ferry", L023Layout.FerryPath) },
+            WalkTo(35.5f),
+            // Down V; walk off onto the Rock at its bottom.
+            new[] { Until(Since("V", L023Layout.Ticks(new[] { L023Layout.VPath[0] }) - 9)), Hold(Right), Until(XAtLeast(42f)), Release(), Until(Still()) },
+            // Elevator up; Arc down; Stair down; Rocket up.
+            WalkTo(44.5f), new[] { Ride("Elevator", L023Layout.ElevatorPath) }, WalkTo(47f), new[] { Ride("Arc", L023Layout.ArcPath) },
+            WalkTo(59.5f), new[] { Ride("Stair", L023Layout.StairPath) }, WalkTo(68f), new[] { Ride("Rocket", L023Layout.RocketPath) },
+            // Onto Glide_2 so it carries the cat under Press_2 while the press is up; down to Zig.
+            new[] { Until(Beat(PP, L023Layout.Press2Phase + Glide2Board)), Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(70.5f)), Release(), Until(Still()), Ride("Glide_2", L023Layout.Glide2Path) },
+            WalkTo(89f), new[] { Ride("Zig", L023Layout.ZigPath) },
+            // Onto Loop; east and up; off onto the east shore as it tops its rise.
+            WalkTo(100.5f), new[] { Until(Since("Loop", LoopTop - 6)), Hold(Right), Until(XAtLeast(107.2f)), Release(), Until(Still()) },
+        }.SelectMany(p => p).ToArray();
 
-        // ---- Gallery, storey 2, walked west ----
-        // Off the lift and along Dock_2; jump onto Sink_3 and straight on to Isle_3. Wait for Ride_4 at home, step on, ride it out
-        // and step off onto Dock_3. Wait for Lift_U2 at home, step on, ride it up.
-        static RouteStep[] Gallery() => new[] {
-            Hold(Left), Until(XAtMost(20.4f)), Jump(), Until(Airborne()), Until(Grounded()), Jump(), Until(Airborne()), Until(Grounded()),
-            Until(XAtMost(10f)), Release(), Until(Still()),
-            Until(HomeFor(L023Layout.Ride4Period, L023Layout.Ride4Phase, L023Layout.RideMove, 20, 3)), Hold(Left), Until(XAtMost(8.4f)), Release(), Until(Still()),
-            Until(Moving("Ride_4")), Until(Stopped("Ride_4")), Hold(Left), Until(XAtMost(2.6f)), Release(), Until(Still()),
-            Until(HomeFor(L023Layout.LiftPeriod, L023Layout.LiftU2Phase, L023Layout.LiftMove, L023Layout.LiftHold, 3)), Hold(Left), Until(XAtMost(.9f)), Release(), Until(Still()),
-            Until(Moving("Lift_U2")), Until(Stopped("Lift_U2")),
-        };
+        // Ticks into Press_1's / Press_2's beat that the cat sets off for Ferry / Glide_2.
+        const int FerryBoard = 25, Glide2Board = 40;
+        // Loop tops its rise (east 3, then up 2.5) this long after it sets off.
+        static readonly int LoopTop = L023Layout.Ticks(new[] { L023Layout.LoopPath[0], L023Layout.LoopPath[1] });
 
-        // ---- Crown, storey 3, walked east ----
-        // Wait for Ride_5a at home, step on, ride it out; hop onto Ride_5b and ride it home. Jump Spikes_5 ahead of Hinge_F; stop
-        // short of Slam_F and hop onto it; the door.
-        static RouteStep[] Crown() => new[] {
-            Hold(Right), Until(XAtLeast(5.5f)), Release(), Until(Still()),
-            Until(HomeFor(L023Layout.RidePeriod, L023Layout.Ride5aPhase, L023Layout.RideMove, 30, 3)), Hold(Right), Until(XAtLeast(7.6f)), Release(), Until(Still()),
-            Until(Moving("Ride_5a")), Until(Stopped("Ride_5a")), Hold(Right), Jump(), Until(Airborne()), For(20), Release(), Until(Grounded()), Until(Still()),
-            Until(HomeFor(L023Layout.RidePeriod, L023Layout.Ride5bPhase, L023Layout.RideMove, 40, 2)),
-            Hold(Right), Until(XAtLeast(20.6f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(XAtLeast(26f)), Release(), Until(Still()),
-            Until(Fired("Slam_F")), Until(Stopped("Slam_F")), Hold(Right), Jump(), Until(Airborne()), Until(Grounded()), Until(RoomComplete()),
-        };
+        static RouteStep[] ShoreSteps() => new[] { Hold(Right), Until(RoomComplete()) };
 
-        static RouteStep[] Cat(params RouteStep[][] parts) => parts.SelectMany(p => p).ToArray();
-        // The solution's steps before part `part`'s step `index`, then these.
         static RouteStep[] Branch(RouteStep[][] parts, int part, int index, params RouteStep[] then) =>
             parts.Take(part).SelectMany(p => p).Concat(parts[part].Take(index)).Concat(then).ToArray();
 
+        static int After(RouteStep[] part, string label, int n = 1)
+        {
+            for (int i = 0, seen = 0; i < part.Length; i++)
+                if (part[i].Label.StartsWith(label, StringComparison.Ordinal) && ++seen == n) return i + 1;
+            throw new InvalidOperationException($"L023Routes: no step {n} labelled '{label}'.");
+        }
+
         public static RoomRoutes Build()
         {
-            RouteStep[][] parts = { Docks(), Gallery(), Crown() };
-            const int D = 0, G = 1, C = 2;
-            var solution = new Route("L023 solution", Cat(parts));
+            RouteStep[][] parts = { Lake(), ShoreSteps() };
+            var solution = new Route("L023 solution", parts.SelectMany(p => p).ToArray());
             Route B(string name, int part, int index, params RouteStep[] then) => new(name, Branch(parts, part, index, then));
-
+            const int L = 0;
+            RouteStep[] lake = parts[L];
+            RouteStep[] Then(RouteStep[] steps, params RouteStep[] more) => steps.Concat(more).ToArray();
             return new RoomRoutes(solution,
-                // Docks.
-                new Betrayal("T1 [NW]: a cat that waits at the start goes down with Pier_0 into Lake_1", "Lake_1", DeathCause.Hazard,
-                    B("wait", D, 0, Until(Dead())), revealedBy: "Pier_0"),
-                new Betrayal("T2 [W]: a cat that jumps for Isle_1 before Ferry_1 gets there falls into Lake_1", "Lake_1", DeathCause.Hazard,
-                    B("jump early", D, 4, Until(Moving("Ferry_1")), For(10), Hold(Right), Jump(), Until(Dead())), revealedBy: "Ferry_1"),
-                new Betrayal("T3 [W]: a cat that jumps for Isle_2 while Ferry_2 is still on its way falls into Lake_2", "Lake_2", DeathCause.Hazard,
-                    B("jump early", D, 14, Hold(Right), Jump(), Until(Dead())), revealedBy: "Ferry_2"),
-                new Betrayal("T4 [NW]: a cat that waits on the stalled Ferry_2 is crushed by Slam_2", "Slam_2", DeathCause.Hazard,
-                    B("wait", D, 15, Until(Dead()))),
-                new Betrayal("T5 [W]: a cat that steps into Lift_U's well while it's up is crushed when it comes down", "Lift_U", DeathCause.Hazard,
-                    B("step in", D, 22, Until(Beat(L023Layout.LiftPeriod, L023Layout.LiftUPhase + L023Layout.LiftMove + 10)), Hold(Right), Until(Dead()))),
-                // Gallery.
-                new Betrayal("T6 [NW]: a cat that stops on Sink_3 sinks with it into Lake_3", "Lake_3", DeathCause.Hazard,
-                    B("stop", G, 5, Release(), Until(Dead())), revealedBy: "Sink_3"),
-                new Betrayal("T7 [W]: a cat that walks off Isle_3 while Ride_4 is away falls into Lake_4", "Lake_4", DeathCause.Hazard,
-                    B("walk on", G, 11, Until(Beat(L023Layout.Ride4Period, L023Layout.Ride4Phase + 10)), Hold(Left), Until(Dead())), revealedBy: "Ride_4"),
-                // Crown.
-                new Betrayal("T8 [W]: a cat that hops for Ride_5b before Ride_5a gets there falls into Lake_5", "Lake_5", DeathCause.Hazard,
-                    B("hop early", C, 9, Until(Moving("Ride_5a")), For(12), Hold(Right), Jump(), Until(Dead())), revealedBy: "Ride_5a"),
-                new Betrayal("T9 [NW]: a cat that stops short of Spikes_5 is caught by Hinge_F", "Hinge_F", DeathCause.Hazard,
-                    B("stop", C, 20, Until(XAtLeast(21f)), Release(), Until(Dead())), revealedBy: "Hinge_F"),
-                new Betrayal("T10 [SS]: a cat that runs on under Slam_F is crushed", "Slam_F", DeathCause.Hazard,
-                    B("run on", C, 25, Until(Dead()))));
+                new Betrayal("T1 [J]: a cat that walks onto Climb is carried up into Spikes_C", "Spikes_C", DeathCause.Hazard,
+                    B("onto Climb", L, 0, Then(WalkTo(5f), Until(Dead()))), revealedBy: "Climb"),
+                new Betrayal("T2 [J]: a cat that jumps up onto Skyway is carried under Spikes_H1", "Spikes_H1", DeathCause.Hazard,
+                    B("onto Skyway", L, After(lake, "Until(Lift +"), Until(Beat(L023Layout.Period(L023Layout.SkyPath, L023Layout.SkyHold), 125)), Hold(Right), Until(XAtLeast(9.2f)), Jump(), Until(XAtLeast(11.2f)), Release(), Until(Grounded()), Until(Dead())), revealedBy: "Skyway"),
+                new Betrayal("T3 [W]: a cat that boards Ferry on Press_1's slam is crushed", "Press_1", DeathCause.Hazard,
+                    B("board now", L, After(lake, "Until(Glide +"), Until(Beat(PP, L023Layout.Press1Phase + FerryBoard - 45)), Hold(Right), Until(XAtLeast(22f)), Release(), Until(Dead()))),
+                new Betrayal("T4 [J]: a cat that jumps up onto Hopper is carried up into Spikes_P", "Spikes_P", DeathCause.Hazard,
+                    B("onto Hopper", L, After(lake, "Until(Ferry +"), Hold(Right), Jump(), Until(XAtLeast(35f)), Release(), Until(Grounded()), Until(Dead())), revealedBy: "Hopper"),
+                new Betrayal("T5 [J]: a cat that jumps up onto Lambda is carried up into Spikes_L", "Spikes_L", DeathCause.Hazard,
+                    B("onto Lambda", L, After(lake, "Until(Glide_2 +"), Hold(Right), Jump(), Until(XAtLeast(88.6f)), Release(), Until(Grounded()), Until(Dead())), revealedBy: "Lambda"),
+                new Betrayal("T6 [W]: a cat that boards Glide_2 on Press_2's slam is crushed", "Press_2", DeathCause.Hazard,
+                    B("board now", L, After(lake, "Until(Rocket +"), Until(Beat(PP, L023Layout.Press2Phase + Glide2Board - 50)), Hold(Right), Until(XAtLeast(70.5f)), Release(), Until(Dead()))));
         }
     }
 }

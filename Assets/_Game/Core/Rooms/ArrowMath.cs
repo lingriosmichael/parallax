@@ -3,6 +3,7 @@ using UnityEngine;
 namespace Parallax.Core
 {
     public enum ArrowDirection { Right, Left }
+    public enum ArrowBeamPhase { Idle, Tell, Beam }
 
     /// <summary>PAX-074 (D-078): the arrow as a pure function of s, the ticks since its fire (s = 0
     /// is the fire tick). Tell for s in [0, T-1]: visible at the mouth, harmless. Lethal for s in
@@ -31,6 +32,19 @@ namespace Parallax.Core
         // Box2D's ~0.01 contact skin) is killed; otherwise the spear is harmless from then on.
         public const float StuckShrink = .02f;
         public static int StuckCheckTick(int tellTicks, int flightTicks) => tellTicks + flightTicks + 1;
+
+        // ---------- PAX-111 (D-177): beam mode ----------
+        // A beam shot is a function of s too: the tell for s in [0, T-1] (a thin warning ray over the whole lane, harmless), then
+        // the whole lane lethal for s in [T, T+B-1], B = beamTicks, then idle (dark) until the next fire.
+        public static ArrowBeamPhase BeamPhase(int s, int tellTicks, int beamTicks)
+        {
+            if (s < 0) return ArrowBeamPhase.Idle;
+            if (s < tellTicks) return ArrowBeamPhase.Tell;
+            return s < tellTicks + beamTicks ? ArrowBeamPhase.Beam : ArrowBeamPhase.Idle;
+        }
+        public static bool IsBeamLethal(int s, int tellTicks, int beamTicks) => BeamPhase(s, tellTicks, beamTicks) == ArrowBeamPhase.Beam;
+        // A beam is dark (harmless, its cooldown may end) from this many ticks after its fire.
+        public static int BeamStopTick(int tellTicks, int beamTicks) => tellTicks + beamTicks;
 
         public static float Offset(int s, int tellTicks, float unitsPerTick, float travel) => TrapMotion.Travel(s - tellTicks, unitsPerTick, travel);
 

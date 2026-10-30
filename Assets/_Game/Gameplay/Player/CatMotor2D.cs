@@ -329,9 +329,23 @@ namespace Parallax.Gameplay.Player
             Collider2D ground = BestGround(groundHits, count, down);
             bool touchingGround = ground != null;
 
-            IsGrounded = touchingGround && fall >= -0.01f;
+            IsGrounded = touchingGround && (fall >= -0.01f || RidesRisingFloor(ground, down, fall));
             GroundCollider = IsGrounded ? ground : null;
             GroundContact = ground;
         }
+
+        // D-207 (amends D-115's "a rising floor isn't ground"): a cat on a moving Solid that rose under it last room tick, rising
+        // no faster than the floor did (a jump is faster), stands on it: the floor carries it sideways and it can jump, so a cat
+        // standing still never slides off a platform climbing a diagonal.
+        bool RidesRisingFloor(Collider2D ground, Vector2 down, float fall)
+        {
+            MovingTrap floor = ground.GetComponent<MovingTrap>();
+            if (floor == null || !floor.IsSolid) return false;
+            float rise = -Vector2.Dot(floor.Displacement, down) / TickTime.SecondsPerTick;
+            return rise > 0f && -fall <= rise + RideSpeedMargin;
+        }
+
+        // D-207: how much faster than its floor (u/s) a riding cat may rise and still stand on it (physics' push overshoots a little).
+        const float RideSpeedMargin = .5f;
     }
 }

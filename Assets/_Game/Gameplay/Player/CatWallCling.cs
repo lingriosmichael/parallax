@@ -39,15 +39,16 @@ namespace Parallax.Gameplay.Player
         public int ClingSide => state.IsClinging ? state.Current.Side * (right.x < 0f ? -1 : 1) : 0;
         public bool WallJumpedThisStep { get; private set; }
         public Collider2D Face => state.IsClinging ? face : null;
-        /// <summary>The motor's normal path, once per step: true while the move lock after a wall jump lasts (one of its
-        /// steps used); then LockedMove applies and, with no Move left, the sideways speed is kept.</summary>
+        /// <summary>The motor's normal path, once per step: true while a wall jump's kick lasts (D-218 amendment 1: while the cat
+        /// rises, until the top of the jump, a landing, a latch or something else takes it); then LockedMove applies (the stick
+        /// reads 0) and the sideways speed is kept.</summary>
         public bool TakeMoveLockStep() => state.ConsumeMoveLock();
 
-        /// <summary>During the move lock, Move toward the face just left reads 0.</summary>
+        /// <summary>During the kick, the stick reads 0 (D-218).</summary>
         public float LockedMove(float move) => WallClingState.LockedMove(move, state.MoveLockSide);
 
-        /// <summary>A launch, a push, a moving face or a vine grab: lets go (the face is locked).</summary>
-        public void Release() => state.Release();
+        /// <summary>A launch, a push, a moving face or a vine grab: lets go (the face is locked) and ends a wall jump's kick (D-218).</summary>
+        public void Release() { state.Release(); state.EndKick(); }
 
         /// <summary>A death, room reset or respawn: nothing clung or locked.</summary>
         public void Clear()
@@ -68,9 +69,11 @@ namespace Parallax.Gameplay.Player
             if (collider == null) return false;
             if (grounded) { state.Landed(); seen.Clear(); SetFrame(down); return false; }
             // D-118: a gravity change while clinging lets go; the new frame is this step's.
-            if (down != this.down) { state.Release(); seen.Clear(); SetFrame(down); return false; }
+            if (down != this.down) { state.Release(); state.EndKick(); seen.Clear(); SetFrame(down); return false; }
 
             float fall = Vector2.Dot(body.linearVelocity, down);
+            // D-218 amendment 1: the kick ends at the top of the jump (the cat no longer rising); the stick steers again after it.
+            if (state.Kicking && fall >= 0f) state.EndKick();
             if (state.IsClinging)
             {
                 if (!StillOnFace()) { state.Release(); return false; }

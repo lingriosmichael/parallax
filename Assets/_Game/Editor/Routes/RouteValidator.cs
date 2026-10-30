@@ -250,6 +250,14 @@ namespace Parallax.Editor.Routes
 
         public const int SectionBudgetTicks = 1000;   // R5: enforced (20 s)
         public const int SectionTargetTicks = 750;    // R5: the design target (15 s); over it needs a sentence in the sketch
+        // D-206: sections the developer approved past SectionBudgetTicks, by "level/section", with their own budget.
+        public static readonly IReadOnlyDictionary<string, int> SectionBudgetExceptions = new Dictionary<string, int>
+        {
+            ["L023/Lake"] = 2000,   // D-206: "just one very very long lake", the cap raised for it (the developer, 2026-10-27)
+            ["L030/Ride"] = 2200,   // D-257: "no checkpoints" in L030's long lake; D-261: nor at the shaft (the developer, 2026-10-30)
+        };
+        static int SectionBudget(string levelId, string section) =>
+            SectionBudgetExceptions.TryGetValue(levelId + "/" + section, out int budget) ? budget : SectionBudgetTicks;
         public const int RespawnSafeTicks = 50;       // standing still at a checkpoint survives 1 s
         public const int RewindDelayTicks = 10;       // the second rewind-equality replay dies this much later
         public const int RewindRecordTicks = 100;     // and both are compared for this many ticks after the rewind
@@ -340,7 +348,8 @@ namespace Parallax.Editor.Routes
                 else { report.Errors.Add($"{levelId}: the solution doesn't complete, so section '{sections[i].Name}' has no time."); break; }
                 var timing = new SectionTiming { Section = sections[i].Name, FromTick = from, ToTick = to };
                 report.Timings.Add(timing);
-                if (timing.Ticks > SectionBudgetTicks) report.Errors.Add($"{levelId}: section '{sections[i].Name}' takes {timing.Ticks} ticks on the solution, over {SectionBudgetTicks} (D-091 R5).");
+                int budget = SectionBudget(levelId, sections[i].Name);
+                if (timing.Ticks > budget) report.Errors.Add($"{levelId}: section '{sections[i].Name}' takes {timing.Ticks} ticks on the solution, over {budget} (D-091 R5, D-206).");
                 from = to;
             }
 

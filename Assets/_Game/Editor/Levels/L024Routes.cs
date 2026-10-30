@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Parallax.Core;
 using Parallax.Editor.Routes;
@@ -5,93 +6,87 @@ using static Parallax.Editor.Routes.R;
 
 namespace Parallax.Editor.Levels
 {
-    // D-168: level 24's routes. Route moves are stick input: while Inv_0 holds (corridor 1), Hold(Left) walks the cat east
-    // (D-087 (7)); it ends as the cat rises through the shaft, so the same Hold(Left) then walks corridor 2 west.
+    // D-168 + D-196 + D-209: level 24's routes ("Ceiling Town", the braid). Route moves are stick input: while an inverter holds,
+    // Hold(Left) walks the cat east (D-087 (7)). Waits are on the room tick's beat (the pistons, the spinners). Betrayals branch
+    // off the solution's own steps.
     static class L024Routes
     {
-        // The room tick is `tick` past a multiple of `period`.
+        const int PP = L024Layout.PistonPeriod;
         static RouteCondition Beat(int period, int tick) => new($"beat {tick}/{period}", v => ((v.Last.RoomLifeTick - tick) % period + period) % period == 0);
-        // Arrow_1's latest shot in flight toward -x (after its tell, from its mouth), its tip within `d` of the cat's east side.
-        static RouteCondition ShotWithin(float d) => new($"Arrow_1 within {d}", v =>
-        {
-            int i = v.Result.Elements.IndexOf("Arrow_1");
-            if (i < 0 || v.Last.FireTick[i] < 0) return false;
-            int flying = v.Last.RoomLifeTick - v.Last.FireTick[i] - L024Layout.ArrowTell;
-            float tip = L024Layout.ArrowMouth - L024Layout.ArrowSpeed * flying, front = v.Last.X + .5f;
-            return flying >= 0 && tip > front && tip - front <= d;
-        });
+        static RouteCondition Inverted() => new("Inverted", v => v.Last.Signature[v.Result.Elements.IndexOf(CatInverted)] == 1);
+        static RouteCondition NotInverted() => new("NotInverted", v => v.Last.Signature[v.Result.Elements.IndexOf(CatInverted)] == 0);
+        // East (the stick's way, `dir`) to x, then stop.
+        static RouteStep[] To(int dir, float x) => new[] { Hold(dir), Until(XAtLeast(x)), Release(), Until(Still()) };
+        // On the beat, east (`dir`) to x, then stop.
+        static RouteStep[] OnBeat(int period, int tick, int dir, float x) => new[] { Until(Beat(period, tick)), Hold(dir).Timed(TimedMode.Shift), Until(XAtLeast(x)), Release(), Until(Still()) };
+        // On the beat, east into the next orb; land on the other face and stop.
+        static RouteStep[] Flip(int period, int tick, bool up) => new[] { Until(Beat(period, tick)), Hold(Right).Timed(TimedMode.Shift), Until(up ? GravityUp() : GravityDown()), Until(Grounded()), Release(), Until(Still()) };
 
-        // ---- Town, corridor 1's ceiling, walked east (inverted) ----
-        // Up onto the ceiling; stop short of Spikes_R1 and walk through while they're gone; jump CC_1; stop short of Lift_1, let
-        // it go up and down; over Kerb_C1; jump Arrow_1's shots; into the shaft and up it onto corridor 2's ceiling.
-        static RouteStep[] Town() => new[] {
-            Until(GravityUp()), Until(Grounded()),
-            Hold(Left), Until(XAtLeast(3.9f)), Release(), Until(Still()),
-            Until(Beat(L024Layout.RhythmPeriod, L024Layout.RhythmFrom + 2)), Hold(Left).Timed(TimedMode.Shift), Until(XAtLeast(11.2f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(XAtLeast(15.6f)), Release(), Until(Still()), Until(Moving("Lift_1")), Until(Home("Lift_1")),
-            Hold(Left), Until(XAtLeast(18.9f)), Jump(), Until(Airborne()), Until(Grounded()),
-            Until(ShotWithin(2f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(ShotWithin(2f)), Jump(), Until(Airborne()),
-            Until(YAtLeast(L024Layout.F2 + 1f)), Until(Grounded()),
-        };
+        static RouteStep[] Hall() => new RouteStep[][] {
+            // Lane 1 into Flip_U1; lane 2 on the ceiling: Inv_1 swaps the controls (hold Left); past Spin_1; past Piston_1 while it's
+            // down (Inv_1 ends past it: hold Right again); into Flip_D1.
+            new[] { Hold(Right), Until(GravityUp()), Until(Grounded()), Until(Inverted()), Hold(Left), Until(XAtLeast(10.6f)), Release(), Until(Still()) },
+            OnBeat(120, Spin1Go, Left, 16.6f),
+            new[] { Until(Beat(PP, Lane2Piston)), Hold(Left).Timed(TimedMode.Shift), Until(NotInverted()), Hold(Right), Until(GravityDown()), Release(), Until(Grounded()), Until(Still()) },
+            // Lane 3 on the floor: past Piston_2 while it's up, Spin_2, Piston_3; into Flip_U2.
+            To(Right, 23.6f), OnBeat(PP, Lane3Piston, Right, 27.2f), OnBeat(120, Spin2Go, Right, 32.6f), Flip(PP, Lane3Flip, true),
+            // Lane 4 on the ceiling: past Piston_4 while it's down, Spin_3; into Flip_D3.
+            To(Right, 41.6f), OnBeat(PP, Lane4Piston, Right, 45.2f), Flip(90, Spin3Go, false),
+            // Lane 5 on the floor: past Spin_5, Piston_5; into Flip_U5.
+            To(Right, 56f), OnBeat(90, Lane5Spin, Right, 62.6f), Flip(PP, Lane5Flip, true),
+            // Lane 6 on the ceiling: past Piston_6, Spin_6; into Flip_D6; Inv_F swaps the controls (hold Left); the door.
+            To(Right, 72.6f), OnBeat(PP, Lane6Piston, Right, 77.6f), Flip(100, Lane6Spin, false),
+            new[] { Hold(Right), Until(Inverted()), Hold(Left), Until(RoomComplete()) },
+        }.SelectMany(p => p).ToArray();
 
-        // ---- Gallery, corridor 2's ceiling, walked west ----
-        // Wait out Piston_2 and cross under it; jump Pop_C2; over CC_2 without stopping; into the shaft and up onto the roof.
-        static RouteStep[] Gallery() => new[] {
-            Hold(Left), Until(XAtMost(25.5f)), Release(), Until(Still()),
-            Until(Beat(L024Layout.PistonPeriod, L024Layout.PistonPhase + 42)), Hold(Left).Timed(TimedMode.Shift), Until(XAtMost(19.4f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(XAtMost(3f)), Release(), Until(YAtLeast(16f)), Until(Grounded()),
-        };
+        // The beats the cat sets off on (tuned against the solution's replay).
+        const int Spin1Go = 110, Lane2Piston = 23, Lane3Piston = 1, Spin2Go = 41, Lane3Flip = 159, Lane4Piston = 119, Spin3Go = 41, Lane5Spin = 76, Lane5Flip = 84,
+            Lane6Piston = 39, Lane6Spin = 71;
 
-        // ---- Crown, the roof's underside and corridor 3's floor, walked east ----
-        // Ahead of Push_3, over Spikes_C3, into Flip_D3; on the floor jump Spikes_5 ahead of Hinge_F; stop short of Slam_F and hop
-        // onto it; the door.
-        static RouteStep[] Crown() => new[] {
-            Hold(Right), Until(XAtLeast(7.4f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(GravityDown()), Until(Grounded()),
-            Until(XAtLeast(16.6f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(XAtLeast(22f)), Release(), Until(Still()),
-            Until(Fired("Slam_F")), Until(Stopped("Slam_F")), Hold(Right), Jump(), Until(Airborne()), Until(Grounded()), Until(RoomComplete()),
-        };
-
-        static RouteStep[] Cat(params RouteStep[][] parts) => parts.SelectMany(p => p).ToArray();
-        // The solution's steps before part `part`'s step `index`, then these.
         static RouteStep[] Branch(RouteStep[][] parts, int part, int index, params RouteStep[] then) =>
             parts.Take(part).SelectMany(p => p).Concat(parts[part].Take(index)).Concat(then).ToArray();
 
+        static int After(RouteStep[] part, string label, int n = 1)
+        {
+            for (int i = 0, seen = 0; i < part.Length; i++)
+                if (part[i].Label.StartsWith(label, StringComparison.Ordinal) && ++seen == n) return i + 1;
+            throw new InvalidOperationException($"L024Routes: no step {n} labelled '{label}'.");
+        }
+
         public static RoomRoutes Build()
         {
-            RouteStep[][] parts = { Town(), Gallery(), Crown() };
-            const int T = 0, G = 1, C = 2;
-            var solution = new Route("L024 solution", Cat(parts));
-            Route B(string name, int part, int index, params RouteStep[] then) => new(name, Branch(parts, part, index, then));
-
+            RouteStep[][] parts = { Hall() };
+            var solution = new Route("L024 solution", parts.SelectMany(p => p).ToArray());
+            Route B(string name, int index, params RouteStep[] then) => new(name, Branch(parts, 0, index, then));
+            RouteStep[] hall = parts[0];
+            int Stop(int n) => After(hall, "Until(Still)", n);
             return new RoomRoutes(solution,
-                // Town.
-                new Betrayal("T1 [NJ]: a cat that jumps Spikes_R1 meets the hidden Flip_H1 and drops onto Street_1a", "Street_1a", DeathCause.Hazard,
-                    B("jump them", T, 6, Hold(Left), Until(XAtLeast(4.2f)), Jump(), Until(Dead())), revealedBy: "Cat.Gravity"),
-                new Betrayal("T2 [W]: a cat that walks on while Spikes_R1 are out meets them", "Spikes_R1", DeathCause.Hazard,
-                    B("walk on", T, 6, Until(Beat(L024Layout.RhythmPeriod, L024Layout.RhythmFrom + L024Layout.RhythmDown + 2)), Hold(Left), Until(Dead())), revealedBy: "Spikes_R1"),
-                new Betrayal("T3 [J]: a cat that walks onto CC_1 falls up onto Spikes_CC1", "Spikes_CC1", DeathCause.Hazard,
-                    B("walk on", T, 9, Until(Dead())), revealedBy: "CC_1"),
-                new Betrayal("T4 [SS]: a cat that walks on over Lift_1 is crushed against SA_L", "Lift_1", DeathCause.Hazard,
-                    B("walk on", T, 13, Until(Dead()))),
-                new Betrayal("T5 [J]: a cat that doesn't jump Arrow_1's shot is hit", "Arrow_1", DeathCause.Hazard,
-                    B("walk on", T, 23, Until(Dead()))),
-                // Gallery.
-                new Betrayal("T6 [W]: a cat that crosses as Piston_2 rises is crushed against SB_P", "Piston_2", DeathCause.Hazard,
-                    B("cross now", G, 4, Until(Beat(L024Layout.PistonPeriod, L024Layout.PistonPhase - 12)), Hold(Left), Until(Dead()))),
-                new Betrayal("T7 [J]: a cat that walks on as Pop_C2 springs out of the ceiling meets it", "Pop_C2", DeathCause.Hazard,
-                    B("walk on", G, 7, Until(Dead()))),
-                new Betrayal("T8 [NW]: a cat that stops on CC_2 falls up onto Spikes_CC2", "Spikes_CC2", DeathCause.Hazard,
-                    B("stop", G, 10, Until(XAtMost(10f)), Release(), Until(Dead())), revealedBy: "CC_2"),
-                // Crown.
-                new Betrayal("T9 [NW]: a cat that stops short of Spikes_C3 is shoved onto them by Push_3", "Spikes_C3", DeathCause.Hazard,
-                    B("stop", C, 1, Until(XAtLeast(6.4f)), Release(), Until(Dead())), revealedBy: "Push_3"),
-                new Betrayal("T10 [NW]: a cat that stops short of Spikes_5 is caught by Hinge_F", "Hinge_F", DeathCause.Hazard,
-                    B("stop", C, 7, Until(XAtLeast(17f)), Release(), Until(Dead())), revealedBy: "Hinge_F"),
-                new Betrayal("T11 [SS]: a cat that runs on under Slam_F is crushed", "Slam_F", DeathCause.Hazard,
-                    B("run on", C, 12, Until(Dead()))));
+                new Betrayal("T1 [NW]: a cat that keeps holding right when Inv_1 swaps the controls walks back onto Spikes_C0", "Spikes_C0", DeathCause.Hazard,
+                    B("keep holding", After(hall, "Until(Inverted)"), Until(Dead())), revealedBy: CatInverted),
+                new Betrayal("T2 [W]: a cat that walks into Spin_1's arm is struck", "Spin_1", DeathCause.Hazard,
+                    B("go now", Stop(1), Until(Beat(120, Spin1Go - 40)), Hold(Left), Until(Dead()))),
+                new Betrayal("T3 [W]: a cat that goes as Piston_1 comes back up is crushed", "Piston_1", DeathCause.Hazard,
+                    B("go late", Stop(2), Until(Beat(PP, Lane2Piston + 55)), Hold(Left), Until(Dead()))),
+                new Betrayal("T4 [W]: a cat that goes as Piston_2 comes back down is crushed", "Piston_2", DeathCause.Hazard,
+                    B("go late", Stop(4), Until(Beat(PP, Lane3Piston + 55)), Hold(Right), Until(Dead()))),
+                new Betrayal("T5 [W]: a cat that walks into Spin_2's arm is struck", "Spin_2", DeathCause.Hazard,
+                    B("go now", Stop(5), Until(Beat(120, Spin2Go - 40)), Hold(Right), Until(Dead()))),
+                new Betrayal("T6 [W]: a cat that goes as Piston_3 comes back down is crushed", "Piston_3", DeathCause.Hazard,
+                    B("go late", Stop(6), Until(Beat(PP, Lane3Flip + 50)), Hold(Right), Until(Dead()))),
+                new Betrayal("T7 [W]: a cat that goes as Piston_4 comes back up is crushed", "Piston_4", DeathCause.Hazard,
+                    B("go late", Stop(8), Until(Beat(PP, Lane4Piston + 55)), Hold(Right), Until(Dead()))),
+                new Betrayal("T8 [W]: a cat that walks into Spin_3's arm is struck", "Spin_3", DeathCause.Hazard,
+                    B("go now", Stop(9), Until(Beat(90, Spin3Go + 45)), Hold(Right), Until(Dead()))),
+                new Betrayal("T9 [W]: a cat that walks into Spin_5's arm is struck", "Spin_5", DeathCause.Hazard,
+                    B("go now", Stop(11), Until(Beat(90, Lane5Spin + 45)), Hold(Right), Until(Dead()))),
+                new Betrayal("T10 [W]: a cat that goes as Piston_5 comes back down is crushed", "Piston_5", DeathCause.Hazard,
+                    B("go late", Stop(12), Until(Beat(PP, Lane5Flip + 50)), Hold(Right), Until(Dead()))),
+                new Betrayal("T11 [W]: a cat that goes as Piston_6 comes back up is crushed", "Piston_6", DeathCause.Hazard,
+                    B("go late", Stop(14), Until(Beat(PP, Lane6Piston + 58)), Hold(Right), Until(Dead()))),
+                new Betrayal("T12 [W]: a cat that walks into Spin_6's arm is struck", "Spin_6", DeathCause.Hazard,
+                    B("go now", Stop(15), Until(Beat(100, Lane6Spin - 30)), Hold(Right), Until(Dead()))),
+                new Betrayal("T13 [NW]: a cat that keeps holding right when Inv_F swaps the controls walks back onto Spikes_F6", "Spikes_F6", DeathCause.Hazard,
+                    B("keep holding", After(hall, "Until(Inverted)", 2), Until(Dead())), revealedBy: CatInverted));
         }
     }
 }

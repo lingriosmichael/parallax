@@ -39,6 +39,8 @@ namespace Parallax.Editor.Setup
             ["Temple"] = new[] { "ENV_MidRuins", "ENV_MidColonnade" },
             ["Waterfalls"] = new[] { "ENV_MidArch_1", "ENV_MidTowers" },
             ["FloatingIsles"] = new[] { "ENV_MidArch_0", "ENV_MidTowers" },
+            // D-232: nothing at mid distance, and no near tier (BuildTiers): the sky and the far skyline only.
+            ["Clear"] = new string[0],
         };
 
         /// <summary>Round 2: the developer's layered city (ENV-41) stands in the middle of the far skyline in these levels (day
@@ -156,7 +158,7 @@ namespace Parallax.Editor.Setup
                 // set the row's tops by hand.
                 bool handSet = UnderRowTop.TryGetValue(id ?? "", out float setTop);
                 if (handSet) lowestTop = setTop + 1f;
-                if (handSet || lowestTop - c.Frame.min.y >= UnderRowOpen)
+                if (set.Length > 0 && (handSet || lowestTop - c.Frame.min.y >= UnderRowOpen))   // D-232: "Clear" has no row
                 {
                     Color under = Color.Lerp(Color.white, p.Haze, Mathf.Clamp(p.FarHaze * 0.9f, 0.5f, 0.85f)); under.a = 1f;
                     float ux = from + span * (0.12f + 0.2f * R(id, 350));
@@ -224,7 +226,9 @@ namespace Parallax.Editor.Setup
                 }
             }
 
-            PitVoids(c);
+            // D-253 (the developer, of L030's chasm: "I also dont like this shaded area. Use the normal sky background"): a Clear
+            // level's pits show the sky, no recessed back wall.
+            if (k.Signature != "Clear") PitVoids(c);
             Lights(k);
         }
 

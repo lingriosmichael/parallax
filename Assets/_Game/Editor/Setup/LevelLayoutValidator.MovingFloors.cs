@@ -46,7 +46,7 @@ namespace Parallax.Editor.Setup
             foreach (SoloRoomElement e in solids)
             {
                 SoloRoomTrapSettings s = e.Settings;
-                if (explicitMotion && Mathf.Abs(s.Offset.x) > eps && s.Floor.Motion == SurfaceMotion.Legacy)
+                if (explicitMotion && MoverPoints(e).Any(p => Mathf.Abs(p.x) > eps) && s.Floor.Motion == SurfaceMotion.Legacy)
                     errors.Add($"{levelId}: {e.Name} moves sideways with SurfaceMotion Legacy; in level {ExplicitSurfaceMotionFromLevel}+ and {MovingFloorLabRoom} it declares Carry or Slip (D-095 Q1).");
                 int motion = s.MoveTicks + s.HoldTicks + s.ReturnTicks;
                 if (s.RepeatMode != TrapRepeatMode.Once && s.CooldownTicks < motion)
@@ -58,6 +58,8 @@ namespace Parallax.Editor.Setup
                 // PAX-107 (D-124): a mover that rises first sweeps an L, its rise and then its crossing, each checked on its own.
                 Rect corner = start; corner.position += new Vector2(0f, s.Offset.y);
                 Rect[] legs = s.Floor.RiseFirst ? new[] { Envelope(start, corner), Envelope(corner, end) } : new[] { Envelope(start, end) };
+                // PAX-114/115 (D-187): a path mover's legs and a flip platform's disc are ValidateNewMovers'.
+                if (s.Path.IsConfigured || s.Floor.Flips) legs = new Rect[0];
                 foreach (Rect swept in legs)
                 foreach (SoloRoomElement f in fixedSolids)
                     if (Overlap(swept, Box(f, Vector2.zero)) > eps || (s.Floor.Hinges && Overlap(Box(e, Vector2.zero), Box(f, Vector2.zero)) > eps))

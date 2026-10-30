@@ -28,16 +28,19 @@ namespace Parallax.Editor.Setup
                     if (source.Kind == SoloRoomElementKind.GravityFlip && source.Settings.RearmOnExit) { error = $"{e.Name}: rearm-on-exit GravityFlip cannot be a chain source."; return false; }
                     if (HasCycle(e.Name, byName)) { error = $"{e.Name}: chain cycle."; return false; }
                 }
+                if (e.Kind == SoloRoomElementKind.PulseGate && s.RepeatMode != TrapRepeatMode.Periodic) { error = $"{e.Name}: PulseGate is Periodic only."; return false; }   // PAX-112 (D-176)
                 if (e.Kind == SoloRoomElementKind.DoorRetreat && s.RepeatMode != TrapRepeatMode.Once) { error = $"{e.Name}: DoorRetreat is Once only."; return false; }
                 if ((e.Kind == SoloRoomElementKind.CollapsingFloor || e.Kind == SoloRoomElementKind.GravityFlip || e.Kind == SoloRoomElementKind.ShrinkingFloor) && s.RepeatMode == TrapRepeatMode.Periodic) { error = $"{e.Name}: this trap cannot be Periodic."; return false; }
                 if (s.RepeatMode == TrapRepeatMode.Periodic && s.CooldownTicks >= s.PeriodTicks) { error = $"{e.Name}: periodic cooldown must be below period."; return false; }
-                if (e.Kind == SoloRoomElementKind.MovingTrap && s.RepeatMode != TrapRepeatMode.Once && s.CooldownTicks < s.MoveTicks + s.HoldTicks + s.ReturnTicks) { error = $"{e.Name}: moving cooldown ends before motion."; return false; }
+                if (e.Kind == SoloRoomElementKind.MovingTrap && s.RepeatMode != TrapRepeatMode.Once && s.CooldownTicks < (s.Scan.IsConfigured ? s.Scan.WarnTicks : 0) + s.MoveTicks + s.HoldTicks + s.ReturnTicks) { error = $"{e.Name}: moving cooldown ends before motion."; return false; }
             }
             error = null; return true;
         }
         static int ChainDelay(SoloRoomElement e) => e.Kind == SoloRoomElementKind.HiddenSpikes ? e.Settings.RevealDelayTicks : e.Settings.DelayTicks;
         static bool IsTrap(SoloRoomElementKind kind) => kind == SoloRoomElementKind.CollapsingFloor || kind == SoloRoomElementKind.HiddenSpikes || kind == SoloRoomElementKind.FallingBlock || kind == SoloRoomElementKind.GravityFlip || kind == SoloRoomElementKind.DoorRetreat || kind == SoloRoomElementKind.MovingTrap || kind == SoloRoomElementKind.Arrow
-            || kind == SoloRoomElementKind.Inverter || kind == SoloRoomElementKind.Vine;   // PAX-089 B
+            || kind == SoloRoomElementKind.Inverter || kind == SoloRoomElementKind.Vine   // PAX-089 B
+            || kind == SoloRoomElementKind.PulseGate   // PAX-112 (D-176)
+            || kind == SoloRoomElementKind.Spinner || kind == SoloRoomElementKind.Plate || kind == SoloRoomElementKind.Portal || kind == SoloRoomElementKind.Turret;   // PAX-116, D-197
         static bool HasCycle(string start, Dictionary<string, SoloRoomElement> byName)
         {
             var seen = new HashSet<string>(); string current = start;

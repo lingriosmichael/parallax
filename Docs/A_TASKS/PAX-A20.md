@@ -1,6 +1,6 @@
 # PAX-A20 · Biome switch and the Obsidian Void trap set (D-163, D-172)
 
-**Status:** Draft 2026-10-23, waiting for the developer's approval. Not built.
+**Status:** Approved 2026-10-23 (the developer: "Well lets set up everything you need to start level 31+"). Built one at a time: PAX-112, PAX-111, PAX-113, then PAX-A20.
 **Phase 1 size:** Full (a per-level-range environment and trap-art selector touches the skin, the trap-art setup and every
 level's rebuild).
 **Decisions:** D-151 (biomes by level range), D-163 (2) as amended by D-172 (Golden Ruins L001–L030, Obsidian L031–L060).
@@ -59,3 +59,38 @@ art is chosen by biome.
 
 Paint the trap bodies and props from the prompts. Then run the import and trap-kit menus that Phase 1 names, run
 `Rebuild All Levels`, and save.
+
+## 6. Phase 1 trace (2026-10-23)
+
+**How a level gets its look today (Golden Ruins only).**
+- **Play layer:** `Tools/Art/env_kit.py` (+ `env_bumpy.py`, `env_tiers.py`, `env_v2.py`) cuts `Art_Source/Environment/GoldenRuins/ENV-*`
+  into 171 named slots (`ENV_Fill_A`, `ENV_Cap`, `ENV_Side*`, `ENV_Drape_*`, …) in `Assets/_Game/Art/RealityA/Environment/Kit/`
+  and `…/Backgrounds/Kit/`, with `env_kit.json` (sizes and alignment offsets). `EnvironmentKit` (Editor) reads that one folder;
+  `SoloRoomSkin*` draws every solid from those slot names.
+- **Background:** `EnvironmentStackSetup*` builds the layer stack from `LevelLookConfig` (grades) and `LevelLooks` (per-level
+  recipes naming `ENV_*` pieces). Unlisted levels use `LevelLooks.Default`.
+- **Trap art:** `TrapArtSetup*` dresses every trap from the one `TrapArtConfig` at `TrapArtSetup.ConfigPath`
+  (`Assets/_Game/Data/TrapArtConfig.asset`), filled by `PARALLAX/Art/Import Trap Kit` (`TrapKitImport`) from `Tools/Art/trap_*.py`
+  output. `SoloRoomSkin` also reads it (line ~399).
+
+**Plan (recommended): a biome is a folder and a config, chosen by level number.**
+1. **`BiomeTable`** (pure, `Parallax.Core` or Editor): Golden Ruins 1–30, Obsidian Void 31–60; one function `BiomeFor(levelId)`.
+   A table in code with a test, not a ScriptableObject: it changes only with a decision, and no `.asset` is needed (the ticket
+   asked for an asset; this is simpler and equally reviewable).
+2. **Environment kit per biome, same slot names.** `env_kit.py --biome obsidian` reads `Art_Source/Environment/ObsidianVoid/OV-*`
+   (numbered to mirror `ENV-*` on purpose) and writes the same slot names into `Assets/_Game/Art/ObsidianVoid/Environment/Kit/`
+   and `…/Backgrounds/Kit/`. `EnvironmentKit` gets a current biome (set by the builder before it skins a level); every
+   `SoloRoomSkin` slot lookup is unchanged. Crop constants tuned for the Golden Ruins paintings get Obsidian counterparts.
+   Dressing maps by role: drapes → OV-20 fixtures, moss and ferns → OV-21 tech props, banners → OV-22 holo-banners, rubble and
+   glyphs → OV-23 wreckage and circuit panels; vine → OV-18 tether; grip moss → OV-31 circuit panel.
+3. **Trap art per biome.** A second asset, `TrapArtConfig_Obsidian.asset`, the same class with three new fields for the new
+   bodies (pulse gate, beam and ray, scanner). `TrapArtSetup.ConfigFor(levelId)` replaces the fixed path; `Import Trap Kit` fills
+   both. `trap_kit.py --biome obsidian` cuts `Art_Source/Traps_Obsidian/OT-*`.
+4. **Looks.** `LevelLooks.DefaultObsidian` (a cold "Void" grade and OV sky, mist, far and mid pieces) for every L031+ level
+   until per-level recipes are written.
+5. **Golden Ruins is untouched:** every L001–L030 scene rebuilds byte-identical (checked on the batch clone).
+
+**Developer steps it will need:** run `Import Trap Kit` and the environment import menu (they create the Obsidian sprites'
+`.meta` files and the new config asset), then `Rebuild All Levels`, save, and commit.
+
+**Measured in Phase 2:** tile seams and sizes of each OV/OT slot, the phone-scale read of the new trap bodies.

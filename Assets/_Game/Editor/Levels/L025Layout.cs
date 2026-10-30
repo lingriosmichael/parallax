@@ -7,119 +7,150 @@ using static Parallax.Editor.Levels.LevelElementFactory;
 
 namespace Parallax.Editor.Levels
 {
-    // D-169: level 25, "Rhythm" (D-163's fifth). The verb is MOVE ON THE BEAT: every piston, slam, launcher and lift keeps one
-    // beat (Beat ticks, or one and a half), so the room pulses and the cat goes in the gaps. Three storeys 4.5 u apart on 1 u
-    // slabs (L020's), walked east, west, east.
-    //  - Pistons (section 0, storey 1, walked east): Piston_A, B and C rise into the slab one after another, a third of a beat
-    //    apart, a wave: set off as A comes down and run behind it. G_1, on the Plinth, launches the cat up the hole on the beat.
-    //  - Slams (section 1, storey 2, walked west): Slam_2a and Slam_2b pound the floor half a beat apart: go through in the gaps.
-    //    Lift_2 carries the cat up on its beat and a half.
-    //  - Drums (section 2, storey 3, walked east): G_3 blows down out of the roof over Spikes_3 on the beat (wait it out, then jump
-    //    them); Arrow_3 fires along the floor from behind, a beat apart, without stopping (jump each shot); over Kerb_3, and
-    //    Slam_D pounds in front of the door: through on the off-beat.
+    // D-213 (replaces D-169/D-195; the developer, 2026-10-28: of the spinners, "Lets remove these traps from level 25. Its been
+    // too many levels in a row wiht the same mechanics. Lets make the level longer, and use different traps, and mechanics that
+    // can kill you", then "follow the recommendation"): level 25, "Rhythm", rebuilt with none of L021-L024's movers (no spinners,
+    // pistons, pendulums or turrets). Down a broken slope, across a valley on vines, up a chimney to a door that won't wait.
+    //  - Descent (section 0): floating steps drop 13 u to a spike pit far below. Step_1 and Step_3 crumble soon after a cat lands;
+    //    Eye_D, a laser turret in the descent's roof (D-215: it tracks the cat, locks, fires), watches the whole slope; the obvious
+    //    hop from Step_3 is Fake_4, a step that isn't there; the real Step_4 is a long running jump further on.
+    //  - Valley (section 1): V1-V6 hang from the valley's roof over its spikes. V1 snaps VineFirst after a cat takes it, each next
+    //    VineWave after the one before, so a cat must keep leaping vine to vine; Eye_V, in the valley's roof, shoots at it on the
+    //    vines.
+    //  - Climb (section 2): along the valley's east floor to the chimney (D-214: no cloud); up the chimney by wall jumps between its
+    //    two mossy faces (D-216: no laser there); onto the ledge, where the door runs (D-219: the chase, below) (Retreat;
+    //    D-217: no laser there). D-215 (the developer: "Arrow and laser at time? No remove the arrows … not following the cat"):
+    //    no arrows, and every laser is a turret that follows the cat.
     static class L025Layout
     {
-        // The storeys' walk lines (room-local y); each slab under the next storey is 1 u of stone, the roof 2 over 4 u of air.
-        internal const float S1 = 0f, S2 = 4.5f, S3 = 9f, RoofU = 13f, RoofTop = 15f, Base = -2f;
-        // The beat, and each element's place in it (room ticks).
-        internal const int Beat = 90, PistonA = 0, PistonB = 33, PistonC = 66, G1Erupt = 70, Slam2a = 0, Slam2b = 45;
-        internal const int LiftPeriod = 135, LiftPhase = 72, LiftMove = 30, LiftHold = 15, G3Erupt = 43, SlamD = 66;
-        // Arrow_3: its tell and speed; it fires every Beat ticks once the cat comes onto storey 3.
-        internal const int ArrowTell = 10;
-        internal const float ArrowSpeed = .5f, ArrowMouth = 1f, ArrowLaneY = S3 + .3f;
+        internal const float Pit = 1f, Start = 20f, Base = -1f, RoofTop = 25f, Width = 134f;
+        // The steps: (name, x0, x1, top, crumbles).
+        internal static readonly (string name, float x0, float x1, float top, bool crumbles)[] Steps = {
+            ("Step_1", 6f, 9f, 17.5f, true), ("Step_2", 11f, 14f, 15f, false), ("Step_3", 16f, 19f, 12.5f, true),
+            ("Step_4", 24f, 27f, 9.5f, false), ("Step_5", 29f, 32f, 7f, false),
+        };
+        internal const int CrumbleDelay = 14;
+        // D-215: the laser turrets (as L021's, D-202/D-203): each aims EyeAim, locks EyeLock (its warning), fires EyeFire and rests
+        // EyeRest, every EyePeriod, over its own zone only.
+        internal const int EyeAim = 50, EyeLock = 12, EyeFire = 10, EyeRest = 33, EyePeriod = EyeAim + EyeLock + EyeFire + EyeRest;
+        // The valley: its roof's underside, the vines' x and their bottom, the snap wave, the rain's beat.
+        internal const float ValleyRoof = 12f, VineBottom = 5f, ValleyE = 51f, EastFloor = 4f, EastRoof = 9.5f;
+        internal static readonly float[] VineX = { 34.5f, 37.3f, 40.1f, 42.9f, 45.7f, 48.5f };
+        internal const int VineFirst = 70, VineWave = 45;
+        // The chimney: its west face (Pillar_W's moss) and east face (Wall_E's), its bottom under Pillar_W, the ledge on top.
+        internal const float ChimneyW = 66f, ChimneyE = 68f, PillarFoot = 6f, Ledge = 15f, ChimneyRoof = 18.5f;
+        // D-219 (the developer: "make the last strip super long, and have the player chase the door … the floor starts moving up
+        // towards the ceiling to kill the cat and there is a specific combination of running, jumping stopping and running and then
+        // jumping again to get to the exit"): the door runs DoorSlide east over DoorMove once a cat passes x RetreatX, a little
+        // faster than a cat runs, and stops at the strip's end behind the last rising section. A door slides in one straight line.
+        internal const float DoorX = 75f, RetreatX = 73.5f, DoorSlide = 53f;
+        internal const int DoorMove = 380;
+        // The strip's rising floor sections (D-219), each 0.5 thick and flush with the ledge, rising into Roof_Ledge (their crush
+        // partner) until less than a cat is left: (name, x0, x1, delay after the trigger, ticks to rise, its trigger's x0-x1 or the
+        // section itself, periodic beat (0: once a cat sets it off) and phase). A cat running flat out leaves each long one about 15
+        // ticks before it would be crushed.
+        internal static readonly (string name, float x0, float x1, int delay, int rise, float t0, float t1, int period, int phase)[] Risers = {
+            ("Rise_Run1", 78f, 86f, 12, 80, 78f, 86f, 0, 0),        // run: it rises under a cat, slowly; only a cat that keeps running is off it in time
+            ("Rise_Jump1", 90f, 92.5f, 2, 10, 90f, 92.5f, 0, 0),    // jump: touched, it slams up at once; jump clean over it
+            ("Rise_Wait", 96f, 98f, 0, 15, 0f, 0f, 120, 0),        // stop: it rises and falls on its beat; wait short of it, cross while it's down
+            ("Rise_Run2", 100f, 110f, 10, 95, 100f, 110f, 0, 0),     // run again, a longer stretch
+            ("Rise_Jump2", 125f, 127f, 0, 8, 123f, 125f, 0, 0),     // jump: it slams up as a cat comes near it; over it, into the door
+        };
 
         public static SoloRoomDefinition Build()
         {
             var elements = new List<SoloRoomElement> {
-                E(SoloRoomElementKind.Wall,"Wall_L",(-.5f,(Base - 1f + RoofTop) * .5f),(1f,RoofTop - Base + 1f)),
-                E(SoloRoomElementKind.Wall,"Wall_R",(32.5f,(Base - 1f + RoofTop) * .5f),(1f,RoofTop - Base + 1f)),
-                E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(1.5f,S1),(0f,0f)),
-                E(SoloRoomElementKind.Door,"Door",(30.9f,S3 + .75f),(.6f,1.5f)),
+                E(SoloRoomElementKind.Wall,"Wall_L",(-.5f,(Base - 1f + RoofTop + 1f) * .5f),(1f,RoofTop + 1f - Base + 1f)),
+                E(SoloRoomElementKind.Wall,"Wall_R",(Width + .5f,(Base - 1f + RoofTop + 1f) * .5f),(1f,RoofTop + 1f - Base + 1f)),
+                E(SoloRoomElementKind.Checkpoint,"Checkpoint_0",(2f,Start),(0f,0f)),
+                E(SoloRoomElementKind.Door,"Door",(DoorX,Ledge + .75f),(.6f,1.5f)),
             };
 
-            // ---- Storey 1's floor (y -2..0): the pistons are its top unit, each on a seat; the Plinth (x 17.5-19.5, top 0.5) ----
-            Block(elements, SoloRoomElementKind.Floor, "Ground_0", 0f, 5f, Base, S1);
-            Block(elements, SoloRoomElementKind.Floor, "Seat_A", 5f, 6.5f, Base, S1 - 1f);
-            Block(elements, SoloRoomElementKind.Floor, "Ground_1", 6.5f, 9f, Base, S1);
-            Block(elements, SoloRoomElementKind.Floor, "Seat_B", 9f, 10.5f, Base, S1 - 1f);
-            Block(elements, SoloRoomElementKind.Floor, "Ground_2", 10.5f, 13f, Base, S1);
-            Block(elements, SoloRoomElementKind.Floor, "Seat_C", 13f, 14.5f, Base, S1 - 1f);
-            Block(elements, SoloRoomElementKind.Floor, "Ground_3", 14.5f, 17.5f, Base, S1);
-            Block(elements, SoloRoomElementKind.Floor, "Plinth", 17.5f, 19.5f, Base, S1 + .5f);
-            // The east block (x 19.5-32): solid stone from storey 1's floor up to storey 2's ceiling, where the cat never goes.
-            Block(elements, SoloRoomElementKind.Wall, "Block_E", 19.5f, 32f, Base, S3 - 1f);
+            // ---- The roofs: high over the descent, the valley's lower (the vines hang from it), the east floor's lower still (the
+            // cloud under it), the chimney's and the ledge's ----
+            Block(elements, SoloRoomElementKind.Ceiling, "Roof_Descent", 0f, 32f, RoofTop - 1f, RoofTop);
+            Block(elements, SoloRoomElementKind.Ceiling, "Roof_Valley", 32f, ValleyE, ValleyRoof, RoofTop);
+            Block(elements, SoloRoomElementKind.Ceiling, "Roof_East", ValleyE, 64.75f, EastRoof, RoofTop);
+            Block(elements, SoloRoomElementKind.Ceiling, "Roof_Ledge", 64.75f, Width, ChimneyRoof, RoofTop);
 
-            // ---- Slab A (y 3.5-4.5): storey 1's ceiling, storey 2's floor ----
-            // Lift_2's seat (x 1-2.5); each piston's crush partner over it; the hole over the Plinth (x 17.5-19.5).
-            Block(elements, SoloRoomElementKind.Floor, "SA_W", 0f, 1f, S2 - 1f, S2);
-            Block(elements, SoloRoomElementKind.Floor, "Seat_L2", 1f, 2.5f, S2 - 1f, S2 - .5f);
-            Block(elements, SoloRoomElementKind.Floor, "SA_0", 2.5f, 5f, S2 - 1f, S2);
-            Block(elements, SoloRoomElementKind.Floor, "SA_A", 5f, 6.5f, S2 - 1f, S2);
-            Block(elements, SoloRoomElementKind.Floor, "SA_1", 6.5f, 9f, S2 - 1f, S2);
-            Block(elements, SoloRoomElementKind.Floor, "SA_B", 9f, 10.5f, S2 - 1f, S2);
-            Block(elements, SoloRoomElementKind.Floor, "SA_2", 10.5f, 13f, S2 - 1f, S2);
-            Block(elements, SoloRoomElementKind.Floor, "SA_C", 13f, 14.5f, S2 - 1f, S2);
-            Block(elements, SoloRoomElementKind.Floor, "SA_3", 14.5f, 17.5f, S2 - 1f, S2);
+            // ---- The ground: the start ledge, the spike pit under the slope and the valley, the east floor and the ledge ----
+            Block(elements, SoloRoomElementKind.Floor, "Start", 0f, 4f, Base, Start);
+            Block(elements, SoloRoomElementKind.Floor, "Pit_Floor", 4f, ValleyE, Base, Pit);
+            Spikes(elements, "Pit", 4f, ValleyE, Pit);
+            Block(elements, SoloRoomElementKind.Floor, "East_Floor", ValleyE, ChimneyE, Base, EastFloor);
+            Block(elements, SoloRoomElementKind.Floor, "Wall_E", ChimneyE + .25f, 70f, EastFloor, Ledge);
+            // The ledge (D-219: the strip, x 70 to the room's end), cut where each rising section sits (a seat under it).
+            float cursor = 70f;
+            foreach (var r in Risers)
+            {
+                Block(elements, SoloRoomElementKind.Floor, "Ledge_" + r.name, cursor, r.x0, Base, Ledge);
+                Block(elements, SoloRoomElementKind.Floor, r.name + "_Seat", r.x0, r.x1, Base, Ledge - .5f);
+                cursor = r.x1;
+            }
+            Block(elements, SoloRoomElementKind.Floor, "Ledge_End", cursor, Width, Base, Ledge);
+            Block(elements, SoloRoomElementKind.Floor, "Wall_E_Foot", ChimneyE, 70f, Base, EastFloor);
 
-            // ---- Slab B (y 8-9): storey 2's ceiling, storey 3's floor ----
-            // Lift_2's shaft (x 1-2.5); the slams are its bottom unit under caps.
-            Block(elements, SoloRoomElementKind.Floor, "SB_W", 0f, 1f, S3 - 1f, S3);
-            Block(elements, SoloRoomElementKind.Floor, "SB_0", 2.5f, 7f, S3 - 1f, S3);
-            Block(elements, SoloRoomElementKind.Floor, "Cap_2b", 7f, 8.5f, S3 - .5f, S3);
-            Block(elements, SoloRoomElementKind.Floor, "SB_1", 8.5f, 13f, S3 - 1f, S3);
-            Block(elements, SoloRoomElementKind.Floor, "Cap_2a", 13f, 14.5f, S3 - .5f, S3);
-            Block(elements, SoloRoomElementKind.Floor, "SB_2", 14.5f, 32f, S3 - 1f, S3);
-            // Storey 3's west jamb (x 0-1), Arrow_3's host; Kerb_3, where its lane ends.
-            Block(elements, SoloRoomElementKind.Wall, "Jamb_W", 0f, 1f, S3, RoofU);
-            Block(elements, SoloRoomElementKind.Wall, "Kerb_3", 22.5f, 23f, S3, S3 + .6f);
-            Spikes(elements, "Spikes_3", 6f, 7.2f, S3);
+            // ---------- Descent ----------
+            foreach (var (name, x0, x1, top, crumbles) in Steps)
+            {
+                if (crumbles) elements.Add(E(SoloRoomElementKind.CollapsingFloor, name, ((x0 + x1) * .5f, top - .5f), (x1 - x0, 1f), settings: new SoloRoomTrapSettings(delayTicks: CrumbleDelay)));
+                else Block(elements, SoloRoomElementKind.Floor, name, x0, x1, top - 1f, top);
+            }
+            // Fake_4: the step at the obvious hop from Step_3, which isn't there.
+            elements.Add(E(SoloRoomElementKind.FakePlatform, "Fake_4", (21.5f, 9.5f), (2f, 1f)));
+            // Eye_D (D-215, was Laser_2 and Laser_5): in the descent's roof, over the whole slope.
+            Turret(elements, "Eye_D", 18f, RoofTop - 1f, new Rect(4f, Pit, 28f, RoofTop - 1f - Pit), 0);
 
-            // ---- The roof (y 13-15): Slam_D is its bottom unit under Cap_D ----
-            Block(elements, SoloRoomElementKind.Ceiling, "Roof_A", 0f, 27.5f, RoofU, RoofTop);
-            Block(elements, SoloRoomElementKind.Ceiling, "Cap_D", 27.5f, 29f, RoofU + .75f, RoofTop);
-            Block(elements, SoloRoomElementKind.Ceiling, "Roof_B", 29f, 32f, RoofU, RoofTop);
+            // ---------- Valley ----------
+            for (int i = 0; i < VineX.Length; i++)
+            {
+                var snap = i == 0 ? new SoloRoomTrapSettings(delayTicks: VineFirst) : new SoloRoomTrapSettings(delayTicks: VineWave, revealDelayTicks: VineWave, triggerSource: TrapTriggerSource.Chain, chainSource: "V" + i);
+                elements.Add(E(SoloRoomElementKind.Vine, "V" + (i + 1), (VineX[i], (ValleyRoof + VineBottom) * .5f), (.6f, ValleyRoof - VineBottom), settings: snap));
+            }
+            // Eye_V (D-215, was Rain_1-3, arrows): in the valley's roof, over the vines.
+            Turret(elements, "Eye_V", 41.5f, ValleyRoof, new Rect(32f, Pit, ValleyE - 32f, ValleyRoof - Pit), 35);
 
-            // ---------- Pistons (storey 1) ----------
-            // Each rises 3.5 u into the slab over it (its crush partner) on its third of the beat: up over 8 ticks, 20 there, down
-            // over 12.
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Piston_A",(5.75f,S1 - .5f),(1.5f,1f),settings:Piston("SA_A", PistonA)));
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Piston_B",(9.75f,S1 - .5f),(1.5f,1f),settings:Piston("SA_B", PistonB)));
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Piston_C",(13.75f,S1 - .5f),(1.5f,1f),settings:Piston("SA_C", PistonC)));
-            // G_1, in the Plinth, launches the cat up the hole onto storey 2 on the beat.
-            elements.Add(E(SoloRoomElementKind.Geyser,"G_1",(18.5f,S1 + .35f),(1f,.3f),settings:Geyser(Beat, G1Erupt)));
-
-            // ---------- Slams (storey 2) ----------
-            // Each comes down 3.5 u onto the floor (over 8 ticks, 10 there, back over 15) on its half of the beat.
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Slam_2a",(13.75f,S3 - .75f),(1.5f,.5f),settings:Slam("Cap_2a", S2 - S3 + 1f, Slam2a)));
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Slam_2b",(7.75f,S3 - .75f),(1.5f,.5f),settings:Slam("Cap_2b", S2 - S3 + 1f, Slam2b)));
-            // Lift_2, on its seat by the west wall (x 1-2.5), up 4.5 u to storey 3's floor and back, every LiftPeriod.
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Lift_2",(1.75f,S2 - .25f),(1.5f,.5f),settings:new SoloRoomTrapSettings(
-                new MovingFloorSettings(SurfaceMotion.Carry),
-                new SoloRoomTrapSettings(offset:new Vector2(0f,S3 - S2),moveTicks:LiftMove,holdTicks:LiftHold,returnTicks:LiftMove,repeatMode:TrapRepeatMode.Periodic,
-                    periodTicks:LiftPeriod,phaseTicks:LiftPhase,cooldownTicks:2 * LiftMove + LiftHold,movingKind:MovingTrapKind.Solid))));
-
-            // ---------- Drums (storey 3) ----------
-            // Arrow_3, in Jamb_W, fires east along the floor at shin height to Kerb_3 from the moment the cat walks past x 11, every
-            // Beat ticks, non-stop: jump each shot as it comes up behind.
-            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_3",(.75f,ArrowLaneY),(.5f,.25f),(11f,(S3 + RoofU) * .5f),(.4f,RoofU - S3),new SoloRoomTrapSettings(
-                new ArrowLane(ArrowDirection.Right,ArrowLaneY,22.5f,unitsPerTick:ArrowSpeed,tellTicks:ArrowTell),
-                new SoloRoomTrapSettings(delayTicks:1,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:Beat - 1))));
-            // G_3, a vent in the roof at x 6.1-7.1, blows down 2 u over Spikes_3 on the beat: a cat that jumps them while it blows is
-            // pushed onto them.
-            elements.Add(E(SoloRoomElementKind.Geyser,"G_3",(6.6f,RoofU + .15f),(1f,.3f),settings:Geyser(Beat, G3Erupt, GeyserDirection.Down, 2f)));
-            // Slam_D, the roof's bottom unit at x 27.5-29, pounds the floor in front of the door on its half of the beat (down 4 u over
-            // 8 ticks, 10 there, back over 15): through on the off-beat.
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Slam_D",(28.25f,RoofU + .375f),(1.5f,.75f),settings:Slam("Cap_D", S3 - RoofU, SlamD)));
+            // ---------- Climb ----------
+            // The chimney (x 66-68): Pillar_W hangs from the roof down to PillarFoot (the cat walks in under it), mossy on its east face;
+            // Wall_E rises from the floor to the ledge, mossy on its west face (its top band plain, to climb over).
+            Block(elements, SoloRoomElementKind.Wall, "Pillar_W", 64.75f, ChimneyW - .25f, PillarFoot, ChimneyRoof);
+            elements.Add(E(SoloRoomElementKind.GripWall, "Pillar_Moss", (ChimneyW - .125f, (PillarFoot + ChimneyRoof) * .5f), (.25f, ChimneyRoof - PillarFoot)));
+            elements.Add(E(SoloRoomElementKind.GripWall, "Wall_Moss", (ChimneyE + .125f, (EastFloor + Ledge - .5f) * .5f), (.25f, Ledge - .5f - EastFloor)));
+            elements.Add(E(SoloRoomElementKind.Wall, "Wall_E_Hi", (ChimneyE + .125f, Ledge - .25f), (.25f, .5f)));
+            // D-216 (the developer: "Remove the laser in this section it is impossible to pass"): no turret over the chimney.
+            // The door runs DoorSlide east along the strip as a cat comes within RetreatX (D-217: no laser over the ledge; D-219: the
+            // chase).
+            elements.Add(E(SoloRoomElementKind.DoorRetreat, "Retreat", (RetreatX, Ledge + 1.5f), (.4f, 3f), settings: new SoloRoomTrapSettings(moveTicks: DoorMove, offset: new Vector2(DoorSlide, 0f))));
+            // The rising floor sections (D-219).
+            float crush = ChimneyRoof - Ledge - .4f;   // up until 0.4 is left under the roof: less than a cat
+            foreach (var r in Risers)
+            {
+                float x = (r.x0 + r.x1) * .5f;
+                var floor = new MovingFloorSettings(SurfaceMotion.Carry, crushPartner: "Roof_Ledge");
+                var timing = r.period > 0
+                    ? new SoloRoomTrapSettings(offset: new Vector2(0f, crush), moveTicks: r.rise, holdTicks: 30, returnTicks: r.rise, repeatMode: TrapRepeatMode.Periodic,
+                        periodTicks: r.period, phaseTicks: r.phase, cooldownTicks: 2 * r.rise + 30, movingKind: MovingTrapKind.Solid)
+                    : new SoloRoomTrapSettings(delayTicks: r.delay, offset: new Vector2(0f, crush), moveTicks: r.rise, holdTicks: 60, returnTicks: 60, repeatMode: TrapRepeatMode.Rearm,
+                        cooldownTicks: r.rise + 60 + 60, movingKind: MovingTrapKind.Solid);
+                elements.Add(r.period > 0
+                    ? E(SoloRoomElementKind.MovingTrap, r.name, (x, Ledge - .25f), (r.x1 - r.x0, .5f), settings: new SoloRoomTrapSettings(floor, timing))
+                    : E(SoloRoomElementKind.MovingTrap, r.name, (x, Ledge - .25f), (r.x1 - r.x0, .5f), ((r.t0 + r.t1) * .5f, Ledge + .3f), (r.t1 - r.t0, .6f), new SoloRoomTrapSettings(floor, timing)));
+            }
 
             var sections = new[] {
-                CheckpointSection.Start("Pistons", new Vector2(1.5f, S1), new[] { "Piston_A", "Piston_B", "Piston_C", "G_1" }),
-                new CheckpointSection("Slams", new Vector2(16f, S2), new Rect(17.5f, S2 - .6f, 2f, .2f),
-                    new[] { "Slam_2a", "Slam_2b", "Lift_2" }),
-                new CheckpointSection("Drums", new Vector2(3.5f, S3), new Rect(1f, S3 - .6f, 1.5f, .2f),
-                    new[] { "Arrow_3", "G_3", "Slam_D" }),
+                CheckpointSection.Start("Descent", new Vector2(2f, Start), new[] { "Step_1", "Step_3", "Fake_4", "Eye_D" }),
+                new CheckpointSection("Valley", new Vector2(30.5f, 7f), new Rect(29.3f, 7f, .3f, 1.5f), new[] { "V1", "V2", "V3", "V4", "V5", "V6", "Eye_V" }),
+                new CheckpointSection("Climb", new Vector2(53f, EastFloor), new Rect(52.2f, EastFloor, .3f, EastRoof - EastFloor), new[] { "Retreat", "Rise_Run1", "Rise_Jump1", "Rise_Wait", "Rise_Run2", "Rise_Jump2" }),
             };
-            return new SoloRoomDefinition(0, 0f, 32f, elements.ToArray(), System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>(), null, null, null, sections);
+            return new SoloRoomDefinition(0, 0f, Width, elements.ToArray(), System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>(), null, null, null, sections);
         }
+
+        // D-215: a laser turret hung from a roof's underside `under` at x (its muzzle just below), ceiling-mounted: it tracks a cat
+        // below it, in sight and inside `zone` (room coordinates), locks, and fires along the locked line (as L021's).
+        static void Turret(List<SoloRoomElement> e, string name, float x, float under, Rect zone, int phase) =>
+            e.Add(E(SoloRoomElementKind.Turret, name, (x, under - .15f), (.6f, .6f), settings: new SoloRoomTrapSettings(
+                new TurretSettings(EyeAim, EyeLock, EyeFire, ceilingMount: true, aimZone: new Rect(zone.x - x, zone.y - (under - .15f), zone.width, zone.height)),
+                new SoloRoomTrapSettings(repeatMode: TrapRepeatMode.Periodic, periodTicks: EyePeriod, phaseTicks: phase, cooldownTicks: EyeAim + EyeLock + EyeFire))));
 
         static void Block(List<SoloRoomElement> e, SoloRoomElementKind kind, string name, float x0, float x1, float y0, float y1) =>
             e.Add(E(kind, name, ((x0 + x1) * .5f, (y0 + y1) * .5f), (x1 - x0, y1 - y0)));
@@ -127,25 +158,5 @@ namespace Parallax.Editor.Levels
         // An honest spike strip on a floor's top.
         static void Spikes(List<SoloRoomElement> e, string name, float x0, float x1, float face) =>
             e.Add(E(SoloRoomElementKind.Hazard, name, ((x0 + x1) * .5f, face + .15f), (x1 - x0, .3f)));
-
-        // A piston rising 3.5 u into `partner` on the beat, leaving home at room tick `phase`.
-        static SoloRoomTrapSettings Piston(string partner, int phase) =>
-            new(new MovingFloorSettings(SurfaceMotion.Carry, crushPartner: partner),
-                new SoloRoomTrapSettings(offset: new Vector2(0f, S2 - 1f - S1), moveTicks: 8, holdTicks: 20, returnTicks: 12, repeatMode: TrapRepeatMode.Periodic,
-                    periodTicks: Beat, phaseTicks: phase, cooldownTicks: 40, movingKind: MovingTrapKind.Solid));
-
-        // A slam pounding `dy` down on the beat (over 8 ticks, 10 there) and back up into `cap` (its crush partner, over 15), leaving
-        // home at room tick `phase`.
-        static SoloRoomTrapSettings Slam(string cap, float dy, int phase) =>
-            new(new MovingFloorSettings(SurfaceMotion.Carry, crushPartner: cap, slams: true),
-                new SoloRoomTrapSettings(offset: new Vector2(0f, dy), moveTicks: 8, holdTicks: 10, returnTicks: 15, repeatMode: TrapRepeatMode.Periodic,
-                    periodTicks: Beat, phaseTicks: phase, cooldownTicks: 33, movingKind: MovingTrapKind.Solid));
-
-        // A geyser (defaults: tell 25, erupt 40) whose eruption starts at room tick `erupt`, and every `period` ticks.
-        static SoloRoomTrapSettings Geyser(int period, int erupt, GeyserDirection direction = GeyserDirection.Up, float column = GeyserMath.DefaultColumnHeight) =>
-            new(new GeyserSettings(direction, columnHeight: column), new SoloRoomTrapSettings(repeatMode: TrapRepeatMode.Periodic, periodTicks: period,
-                phaseTicks: Mod(erupt - GeyserMath.DefaultTellTicks, period)));
-
-        static int Mod(int a, int m) => ((a % m) + m) % m;
     }
 }

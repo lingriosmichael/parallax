@@ -126,56 +126,55 @@ namespace Parallax.Tests.EditMode
             new[] { "Hinge_0=7", "Lift_1=8", "Bridge_1=17", "Arrow_Lo=10", "Spikes_A=7", "Cat.Inverted=28", "Spikes_N=16", "Slam_2=7", "CC_2=8", "Cat.Inverted=214",
                 "V_3=34", "Cat.Inverted=373", "Cloud=74", "Arrow_Hi=10", "Hinge_F=24", "Slam_Fa=6", "Spikes_F=26", "Spikes_D=25" },
             new string[0])]
-        // D-164: L021 "Ignition" (levels 21-30's first): the start bridge falls behind the cat, G_T under Spikes_T, Slam_1, Arrow_1,
-        // Collapse_P; three vents up the shaft, each landing a crumble; the Crown with Hinge_F chasing, G_FD over Spikes_FD, Slam_F,
-        // the crumbles over the Briar and Pop_F.
-        [TestCase("L021", 734, new[] { 36, 31, 25, 25, 28, 21, 27 },
-            new[] { "Bridge_1=29", "G_T=46", "Slam_1=6", "Arrow_1=10", "Collapse_P=12", "Crumb_2=82", "Crumb_3=40", "Hinge_F=21", "G_FD=547", "Slam_F=6", "Crumble_F=14", "Pop_F=6" },
+        // D-200-D-203: L021 "Vent Tower": four storeys 5.5 apart climbed on vents, each with a ceiling turret (Eye_A, Eye_B, Eye_C);
+        // Swing_A, Swing_B and Spin_B; Stone_C, a phase platform over Spikes_C; V4 under GD, the lie, watched by Eye; the falling
+        // bridge over the trench and Ferry under Eye.
+        [TestCase("L021", 1721, new[] { 28, 34, 27, 33, 14, 28, 30, 19 },
+            new[] { "Eye_A=62", "Swing_A=450", "Eye_B=62", "Swing_B=678", "Spin_B=807", "Stone_C=1213", "GD=1251", "Eye_C=62", "Bridge_1=12", "Eye=62" },
             new string[0])]
-        // D-166: L022 "Wall Runner": three corridors joined by two mossy chimneys, a stone punch across each on a beat; Hinge_0,
-        // Slam_1, Collapse_1, Lift_2; Hinge_2, Collapse_2, Slam_2; Hinge_F chasing, Slam_F, Collapse_3 and Pop_F.
-        [TestCase("L022", 930, new[] { 16, 42, 47, 14, 38, 14, 30 },
-            new[] { "Hinge_0=7", "Slam_1=6", "Collapse_1=13", "Lift_2=8", "Punch_1=6", "Hinge_2=14", "Collapse_2=13", "Slam_2=6", "Punch_2=6", "Hinge_F=11", "Slam_F=6", "Collapse_3=12", "Pop_F=9" },
+        // D-192, D-204: L022 "Clockwork Ridge": Spin_1/Spin_2 over the plain; the Step_1-3 phase stair under Eye_S; the Flip_1-3
+        // descent under Swing_1/Swing_2; Spin_V, Plate_V calling Lift_P (a slam into its slot), Swing_C on the cliff; the clock tower's
+        // Cog_1/Cog_2 loops round the pillar under Hand.
+        [TestCase("L022", 1453, new[] { 48, 30, 40, 26 },
+            new[] { "Spin_1=130", "Spin_2=164", "Eye_S=62", "Step_1=233", "Swing_2=110", "Flip_1=12", "Spin_V=648", "Lift_P=55", "Swing_C=1056", "Cog_1=1299", "Hand=1382", "Hand=1534" },
             new string[0])]
-        // D-167: L023 "Ferryman": three storeys of spike lakes crossed on platforms that betray the rider (Pier_0 gives way, Ferry_2
-        // stalls under Slam_2, Sink_3 sinks), lifts between them, two shuttles to hop between, Hinge_F chasing and Slam_F.
-        [TestCase("L023", 1037, new[] { 14 },
-            new[] { "Pier_0=17", "Ferry_1=75", "Ferry_2=59", "Slam_2=6", "Lift_U=128", "Sink_3=6", "Ride_4=455", "Ride_5a=695", "Hinge_F=14", "Slam_F=6" },
+        // D-206-D-208: L023 "Ferryman": one very long spike lake crossed in one go on fifteen platforms at one speed (plus five dead
+        // ends); Climb, Skyway, Hopper and Lambda carry their riders into hanging spikes; Press_1 and Press_2 keep their beat.
+        [TestCase("L023", 1439, new[] { 51, 36 },
+            new[] { "Climb=83", "Skyway=96", "Press_1=40", "Hopper=76", "Lambda=48", "Press_2=18" },
             new string[0])]
-        // D-168: L024 "Ceiling Town": three corridors walked on their ceilings, inverted at first; the hidden Flip_H1 under the jump
-        // over Spikes_R1, CC_1, Lift_1, Arrow_1 along the ceiling; Piston_2, Pop_C2, CC_2; Push_3, Flip_D3, Hinge_F, Slam_F.
-        [TestCase("L024", 935, new[] { 30, 40, 14, 51, 14, 15, 14 },
-            new[] { "Cat.Gravity=72", "Spikes_R1=8", "CC_1=15", "Lift_1=8", "Arrow_1=10", "Piston_2=9", "Pop_C2=9", "CC_2=11", "Push_3=18", "Hinge_F=14", "Slam_F=6" },
+        // D-196: L024 "Ceiling Town": the braid, floor and ceiling by turns through orbs; Inv_1, Spin_1-3, GB_1-3 (half-hall glitch
+        // blocks), the hidden Flip_H2 and Inv_F.
+        [TestCase("L024", 950, new[] { 45, 51, 51, 44, 51, 42 },
+            new[] { "Cat.Inverted=32", "Spin_1=146", "GB_1=119", "GB_2=119", "Spin_2=505", "Cat.Gravity=572", "Spin_3=921", "Cat.Inverted=905" },
             new string[0])]
-        // D-169: L025 "Rhythm": everything on one 90-tick beat; the piston wave, G_1's launch, two slams half a beat apart, Lift_2;
-        // G_3 over Spikes_3, Arrow_3 from behind, Slam_D in front of the door.
-        [TestCase("L025", 769, new[] { 42, 51, 14, 26, 51 },
-            new[] { "Piston_A=9", "Piston_B=9", "Piston_C=9", "Slam_2a=7", "Slam_2b=7", "Lift_2=74", "G_3=595", "Arrow_3=10", "Slam_D=8" },
+        // D-195, D-209: L025 "Rhythm": the V; Andante (Piston_1, Spin_2, Flip_3, Tile_4), Allegro (Spin_V1/V2), Presto (the stair's spinners).
+        [TestCase("L025", 863, new[] { 51, 51, 51, 51, 48, 23 },
+            new[] { "Piston_1=7", "Spin_2=164", "Flip_3=12", "Tile_4=239", "Spin_V1=458", "Spin_R1=584" },
             new string[0])]
-        // D-170: L026 "Liar's Temple": fake ground, fake stepping stones and fake floor columns on every storey; the door rides its
-        // lift up the shaft; Slam_S betrays a cat resting at the checkpoint; Hinge_2, the slams, Lift_2; the cloud chases to Slam_D.
-        [TestCase("L026", 838, new[] { 27, 23, 19, 15, 51, 28, 28, 51, 28, 33, 15 },
-            new[] { "Fake_0=26", "Fake_a=10", "Fake_b=10", "Pop_1=7", "Slam_1=7", "Slam_S=6", "Hinge_2=48", "Fake_2b=41", "Fake_2a=40", "Slam_2=7", "Lift_2=74", "Fake_3a=51", "Cloud=184", "Fake_3b=51", "Pop_3=7", "Slam_D=6" },
-            new[] { "Door visible t203, complete t838" })]
-        // D-171: L027 "Updraft": snap vines everywhere, vents between them; G_1 flings the cat across the lake to V3, G_2 up the hole,
-        // G_3 high up V_S (too quick to climb from a jump), V5-V8 under the roof with GD_C blowing down between V6 and V7, G_D to the door.
-        [TestCase("L027", 876, new[] { 19, 15, 15, 15, 26, 40, 21, 21, 14, 13, 26, 26, 23, 24, 14, 26 },
-            new[] { "V1=28", "V2=28", "G_1=139", "V3=22", "Slam_2=7", "V4=17", "G_3=490", "V_S=33", "V5=18", "V6=23", "GD_C=663", "V7=23", "V8=23", "Pop_3=8" },
+        // D-180: L026 "Wrong Way": the door sits behind the start; east is bait (Fake_U, Vine_E); Drop_W drops the cat into the
+        // underpass (Hinge_L chasing, Slam_L), Flip_U puts it on the ceiling (Piston_P, CC_C) and it falls up and over to the door.
+        [TestCase("L026", 585, new[] { 51, 51, 40 },
+            new[] { "Fake_U=14", "Vine_E=33", "Hinge_L=29", "Slam_L=7", "Piston_P=8", "CC_C=11" },
             new string[0])]
-        // D-173: L028 "Mirror Lanes": each corridor is its own upside-down reflection; a flip orb in its middle swaps faces and the
-        // same traps come back mirrored (pops, slams and risers, collapses); Arrow_M2 shoots along whichever face the cat is on.
-        [TestCase("L028", 942, new[] { 13, 15, 17, 16, 13, 15, 14, 16, 13, 18, 17, 17 },
-            new[] { "Pop_F1=7", "Slam_F1=6", "Collapse_F1=12", "CC_C1=15", "Piston_C1=8", "Pop_C1=8", "Arrow_M2=10", "Pop_C2=7", "Pop_F2=7", "Pop_C3=7", "Slam_C3=8", "CC_C3=13", "Collapse_F3=12", "Slam_F3=6", "Pop_F3=8" },
+        // D-194: L027 "Updraft": the canyon; V1/V2 by Spin_1, G_3 to V4, GD_5, V5, Ledge_G, Rest_6, V7-V10 with Cloud chasing.
+        [TestCase("L027", 701, new[] { 19, 26, 43, 47, 25, 26, 26, 26 },
+            new[] { "V1=33", "V5=36", "Ledge_G=89", "V2=32", "V4=33", "Cloud=244", "V7=33", "V8=36", "V9=36", "V10=9" },
             new string[0])]
-        // D-174: L029 "Stormfront": one storm cloud follows the cat through the room; on storey 1 it starts ahead and strikes the far
-        // bank of the falling bridge, on storeys 2 and 3 it chases the cat over crumbling planks; Pop_1, Pop_2, Slam_2, Slam_D.
-        [TestCase("L029", 868, new[] { 32, 14, 15, 45 },
-            new[] { "Bridge1_1=47", "Cloud=127", "Pop_1=7", "Cloud=524", "Plank2_3=8", "Pop_2=7", "Slam_2=7", "Cloud=824", "Plank3_3=13", "Slam_D=7" },
+        // D-191, D-209: L028 "Glitch": the spiral; Press_A, Spin_A, Loop_A, Spin_B, Crush_1-3 sliding out of the ceiling (holes in the
+        // inner corridor's floor while they're down), Lift_L, Spin_E.
+        [TestCase("L028", 2135, new[] { 51, 51, 50, 51, 51, 51, 51, 51, 51, 51 },
+            new[] { "Press_A=11", "Spin_A=317", "Crush_1=13", "Spin_E=2181" },
             new string[0])]
-        // D-175: L030 "Meltdown": the temple comes down behind the cat; storey 1's ceiling falls in rock by rock, storey 2's Hinge_2
-        // pushes it onto the spike field under three snapping vines, storey 3's spiked Hinge_3 slides after it to Slam_D and the door.
-        [TestCase("L030", 825, new[] { 15, 27, 51, 51, 12, 31, 26, 26, 14, 40, 13 },
-            new[] { "Rock_2=10", "Pop_1=7", "Collapse_1=13", "Slam_1=7", "Slam_2=7", "Hinge_2=6", "V1=15", "V2=22", "V3=20", "Hinge_3=32", "Pop_3=8", "Collapse_3=8", "Slam_D=7", "Pop_D=8" },
+        // D-190: L029 "Freefall": seven floors down; Drop_0, Spin_1, Pad_2's glitch, Ferry_3's loop, Flip_A-C, the volley, the door down
+        // the shaft.
+        [TestCase("L029", 1269, new[] { 14, 26, 15, 39, 41 },
+            new[] { "Spin_1=226", "Pad_2=366", "Ferry_3=129", "Flip_A=10", "Arrow_5a=6", "Lift_D=57" },
+            new string[0])]
+        // D-183 + D-189: L030 "The Elevator": the slow ride under spiked slams, Arrow_B/Arrow_F and Spin_1/Spin_2; the climb past Jut_W
+        // and Jut_E, Spikes_V, Fake_V, Lift_V2 and Spikes_D, Lift_P, Spin_D and Arrow_D at the door.
+        [TestCase("L030", 1229, new[] { 28, 41, 13, 28 },
+            new[] { "Spikes_C1=22", "Arrow_B=10", "Spin_1=357", "Spikes_C2b=22", "Spikes_C2a=22", "Arrow_F=10", "Spin_2=701", "Lift_V1=79", "Lift_V1=139", "Spikes_V=29", "Fake_V=12", "Spikes_D=19", "Spin_D=1230" },
             new string[0])]
         // A level's whole route measurement runs inside its case, over NUnit's default 180 s for the larger levels (L014).
         [Timeout(600000)]

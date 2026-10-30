@@ -55,6 +55,26 @@ namespace Parallax.Editor.Setup
             return trap;
         }
 
+        // PAX-112 (D-176): the pulse gate. Its body is the barrier (a trigger box with a Hazard, disarmed until On), drawn in
+        // `color` while on and flickering faint through the warning; nothing shows while it is off. Periodic only, so it has no
+        // trigger, and its cooldown is its warning plus its on time (the base timing rearms it then). Placeholder art.
+        internal static PulseGateTrap BuildPulseGateCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, Color color, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, PulseGateSettings gate, int? sortingOrder, List<string> changes)
+        {
+            GameObject go = CreateTrap<PulseGateTrap>(parent, root, name, position, size, color, roomId, rooms, death, observers, true, sortingOrder, changes);
+            Hazard hazard = SetupUtility.Ensure<Hazard>(go, changes);
+            Write(hazard, changes, ("observers", (Object)observers), ("roomDeath", death), ("rooms", rooms), ("armed", false), ("deathKind", (int)CatDeathKind.Zapped));
+            PulseGateTrap trap = go.GetComponent<PulseGateTrap>();
+            Write(trap, changes, ("hazard", hazard), ("warnTicks", gate.WarnTicks), ("onTicks", gate.OnTicks));
+            return trap;
+        }
+
+        // PAX-112 (D-176): ConfigureTiming, then the cooldown a gate's cycle implies (warn + on), whatever the layout gave.
+        internal static void ConfigurePulseGateTiming(PulseGateTrap trap, SoloRoomTrapSettings settings, Transform roomRoot, List<string> changes)
+        {
+            ConfigureTiming(trap, settings, roomRoot, changes);
+            Write(trap, changes, ("cooldownTicks", settings.Gate.WarnTicks + settings.Gate.OnTicks));
+        }
+
         internal static DoorRetreatTrap BuildDoorRetreatCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, Transform doorRoot, Vector2 offset, int moveTicks, int delayTicks, List<string> changes)
         {
             GameObject go = CreateTrap<DoorRetreatTrap>(parent, root, name, position, size, Color.clear, roomId, rooms, death, observers, true, null, changes);
@@ -87,6 +107,8 @@ namespace Parallax.Editor.Setup
             MovingTrap trap = go.GetComponent<MovingTrap>();
             Write(trap, changes, ("trigger", trigger), ("kind", (int)settings.MovingKind), ("offset", settings.Offset), ("moveTicks", settings.MoveTicks), ("holdTicks", settings.HoldTicks), ("returnTicks", settings.ReturnTicks), ("crushDepth", settings.CrushDepth), ("crushConfig", crushConfig));
             ConfigureMovingFloor(trap, settings, changes);   // PAX-093 (D-095)
+            Write(trap, changes, ("warnTicks", settings.Scan.IsConfigured ? settings.Scan.WarnTicks : 0));   // PAX-113 (D-178)
+            ConfigurePath(trap, root, size, settings, changes);   // PAX-114 (D-187)
             return trap;
         }
     }

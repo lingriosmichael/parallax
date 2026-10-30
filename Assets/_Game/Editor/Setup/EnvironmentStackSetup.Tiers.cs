@@ -224,7 +224,7 @@ namespace Parallax.Editor.Setup
             if (c.Room.HasValue)
             {
                 Compose(new ComposeContext { Tier = c, Palette = c.Palette, LevelId = c.LevelId, Signature = LevelPalettes.Signature(c.LevelId) });
-                NearTier(c);
+                if (LevelPalettes.Signature(c.LevelId) != "Clear") NearTier(c);   // D-232
                 Outside(c);
                 // Phase 2 round 4: no arch fringe (Fringes). Critics, two rounds: "arcade strips hard-cut at their ends",
                 // "ghost pillars under the bridge like a broken reflection" (L008, L020); a floating floor shows its underside.

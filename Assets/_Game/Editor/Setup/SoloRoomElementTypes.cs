@@ -18,7 +18,13 @@ namespace Parallax.Editor.Setup
     // box; the secondary box is its Overlap wake trigger.
     // PAX-093 (D-095): ShrinkingFloor is appended the same way (levels 11+ only). Position/Size is the full floor; the
     // secondary box, when set, is its Overlap trigger (else its own top, like a collapsing floor).
-    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser, Vine, StormCloud, ShrinkingFloor, GripWall }
+    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser, Vine, StormCloud, ShrinkingFloor, GripWall, PulseGate, Spinner, Plate, Portal, Turret }
+    // PAX-112 (D-176): PulseGate is appended the same way (Obsidian Void, L031+). Position/Size is the barrier's box (a vertical or
+    // horizontal bar between two solids); its settings carry PulseGateSettings on Periodic timing, and it has no trigger.
+    // PAX-119/120/121 (D-197): Plate (a thin trigger flush on a floor top), Portal (its entry; the exit in SecondaryPosition/Size) and
+    // Turret (hosted in a solid; Position is the muzzle) are appended the same way (the conveyor was removed, D-199).
+    // PAX-116 (D-187): Spinner is appended the same way. Position is the pivot, Size the hub (harmless); its settings carry
+    // SpinnerSettings, and a triggered one has its trigger in SecondaryPosition/SecondarySize.
     public enum SoloRoomOpeningKind { Pit, Recess }
     public enum SoloRoomHazardRole { Normal, OpeningBottom, OpeningCap, CeilingForceUpCoverage, UnjumpableFloor }
     public enum RequiredJumpKind { Pit, Hazard }
@@ -43,8 +49,23 @@ namespace Parallax.Editor.Setup
         // D-156: a vertical lane (angle ±90) leaves the launcher's bottom (or top) face at LaneY and its tip stops at LaneEndY;
         // LaneEndX is unused there.
         public readonly float LaneEndY;
+        // PAX-111 (D-177): a laser turret (Obsidian Void). Beam: the shot is the whole lane, a thin warning ray through the tell,
+        // then lethal for BeamTicks, then dark; nothing flies. WarningRay alone (on a spear, the hard-light bar): the same ray
+        // shows through the tell, and the shot flies as before. Default false/0: every existing arrow and spear is unchanged.
+        public readonly bool Beam; public readonly int BeamTicks; public readonly bool WarningRay;
         public ArrowLane(ArrowDirection direction, float laneY, float laneEndX, float length = .8f, float thickness = .16f, float unitsPerTick = .3f, int tellTicks = 6, bool disguised = false, bool spear = false, float angleDegrees = 0f, bool mirrorWithGravity = false, float mirrorAxisY = 0f, float laneEndY = 0f)
-        { IsConfigured = true; Direction = direction; LaneY = laneY; LaneEndX = laneEndX; Length = length; Thickness = thickness; UnitsPerTick = unitsPerTick; TellTicks = tellTicks; Disguised = disguised; Spear = spear; AngleDegrees = angleDegrees; MirrorWithGravity = mirrorWithGravity; MirrorAxisY = mirrorAxisY; LaneEndY = laneEndY; }
+        { IsConfigured = true; Direction = direction; LaneY = laneY; LaneEndX = laneEndX; Length = length; Thickness = thickness; UnitsPerTick = unitsPerTick; TellTicks = tellTicks; Disguised = disguised; Spear = spear; AngleDegrees = angleDegrees; MirrorWithGravity = mirrorWithGravity; MirrorAxisY = mirrorAxisY; LaneEndY = laneEndY; Beam = false; BeamTicks = 0; WarningRay = false; }
+        // PAX-111 (D-177): a lane with beam mode or the warning ray on top (a separate constructor, so the one above, which tests
+        // reach by reflection, keeps its parameters).
+        public ArrowLane(ArrowLane lane, bool beam, int beamTicks, bool warningRay) { this = lane; Beam = beam; BeamTicks = beamTicks; WarningRay = warningRay || beam; }
+
+        /// <summary>PAX-111 (D-177): a laser turret's lane: tell 12, beam 20, 0.3 thick by default.</summary>
+        public static ArrowLane BeamLane(ArrowDirection direction, float laneY, float laneEndX, int tellTicks = 12, int beamTicks = 20, float thickness = .3f, float angleDegrees = 0f, float laneEndY = 0f, bool mirrorWithGravity = false, float mirrorAxisY = 0f) =>
+            new(new ArrowLane(direction, laneY, laneEndX, .8f, thickness, .3f, tellTicks, false, false, angleDegrees, mirrorWithGravity, mirrorAxisY, laneEndY), true, beamTicks, true);
+
+        /// <summary>PAX-111 (D-177): the hard-light bar: a spear (D-086) whose tell shows the warning ray.</summary>
+        public static ArrowLane HardLightBar(ArrowDirection direction, float laneY, float laneEndX, float length = 1.4f, float thickness = .4f, float unitsPerTick = 1.2f, int tellTicks = 8) =>
+            new(SpearLane(direction, laneY, laneEndX, length, thickness, unitsPerTick, tellTicks), false, 0, true);
 
         /// <summary>D-156: a lane straight down or up (ArrowMath.IsVertical).</summary>
         public bool Vertical => ArrowMath.IsVertical(AngleDegrees);
@@ -53,7 +74,7 @@ namespace Parallax.Editor.Setup
         public float MirrorShift => MirrorWithGravity ? 2f * (MirrorAxisY - LaneY) : 0f;
 
         /// <summary>PAX-107 (D-123): the lane a mirrored shot flies on (itself not mirroring).</summary>
-        public ArrowLane Mirrored => new(Direction, LaneY + MirrorShift, LaneEndX, Length, Thickness, UnitsPerTick, TellTicks, Disguised, Spear, AngleDegrees, laneEndY: LaneEndY);
+        public ArrowLane Mirrored => new(new ArrowLane(Direction, LaneY + MirrorShift, LaneEndX, Length, Thickness, UnitsPerTick, TellTicks, Disguised, Spear, AngleDegrees, laneEndY: LaneEndY), Beam, BeamTicks, WarningRay);
 
         // PAX-084 (D-086) defaults: 1.4 long, 0.4 thick (PlatformSizeConfig.SpearMinThickness), 1.2 u/tick, tell 8.
         public static ArrowLane SpearLane(ArrowDirection direction, float laneY, float laneEndX, float length = 1.4f, float thickness = .4f, float unitsPerTick = 1.2f, int tellTicks = 8, bool disguised = false) =>
@@ -125,10 +146,26 @@ namespace Parallax.Editor.Setup
         public readonly bool Spiked, RiseFirst;
         // PAX-107 (D-140): a slam: coming down, it kills a cat it lands on (MovingTrap.SlamHits), even one physics would push aside.
         public readonly bool Slams;
+        // PAX-115 (D-187): a flip platform turns 180 degrees about its centre over FlipTicks (0: none), holds the timing's hold and
+        // turns back over its return; its underside is spiked (always shown).
+        public readonly int FlipTicks;
+        // PAX-115: its tell: from the fire it flickers FlipWarnTicks at rest before it turns.
+        public readonly int FlipWarnTicks;
+        // PAX-122 (D-201): a phase platform stays put: from each fire it is there for PhaseOnTicks (0: none), flickering its last
+        // PhaseWarnTicks, then gone (no collider, not drawn) until the next fire. It kills a cat it appears on, as a glitch wall.
+        public readonly int PhaseOnTicks, PhaseWarnTicks;
         public MovingFloorSettings(SurfaceMotion motion, bool pushes = false, string crushPartner = null, int hingeTicks = 0, bool hingeAtRight = false,
-            bool spiked = false, bool riseFirst = false, bool slams = false)
-        { IsConfigured = true; Motion = motion; Pushes = pushes; CrushPartner = crushPartner; HingeTicks = hingeTicks; HingeAtRight = hingeAtRight; Spiked = spiked; RiseFirst = riseFirst; Slams = slams; }
+            bool spiked = false, bool riseFirst = false, bool slams = false, int flipTicks = 0, int flipWarnTicks = 8, int phaseOnTicks = 0, int phaseWarnTicks = 12)
+        { IsConfigured = true; Motion = motion; Pushes = pushes; CrushPartner = crushPartner; HingeTicks = hingeTicks; HingeAtRight = hingeAtRight; Spiked = spiked; RiseFirst = riseFirst; Slams = slams; FlipTicks = flipTicks; FlipWarnTicks = flipTicks > 0 ? flipWarnTicks : 0; PhaseOnTicks = phaseOnTicks; PhaseWarnTicks = phaseOnTicks > 0 ? phaseWarnTicks : 0; }
+        public bool Phases => PhaseOnTicks > 0;
         public bool Hinges => HingeTicks > 0;
+        public bool Flips => FlipTicks > 0;
+        /// <summary>PAX-115: the disc a flip platform of `box` turns through (its half-diagonal plus its spiked face about its centre).</summary>
+        public static Rect FlipDisc(Rect box)
+        {
+            float r = Mathf.Sqrt(box.width * box.width + (box.height + 2f * .3f) * (box.height + 2f * .3f)) * .5f;
+            return new Rect(box.center.x - r, box.center.y - r, 2f * r, 2f * r);
+        }
         /// <summary>D-119: the wall a hinge floor of `flat` stands up into, room-local: as thick as the floor, as tall as it was
         /// long, beside its hinge (left of a right-end hinge, right of a left-end one), from the floor's top up.</summary>
         public Rect Upright(Rect flat) => HingeAtRight
@@ -161,6 +198,67 @@ namespace Parallax.Editor.Setup
         public static GripSettings On => new(true);
     }
 
+    // PAX-112 (D-176): a pulse gate's cycle on top of its Periodic timing: warnTicks of harmless flicker from each fire, then
+    // onTicks lethal. Default (IsConfigured false) never occurs on a PulseGate: ValidatePulseGate requires a configured one.
+    public readonly struct PulseGateSettings
+    {
+        public readonly bool IsConfigured; public readonly int WarnTicks; public readonly int OnTicks;
+        public PulseGateSettings(int warnTicks, int onTicks) { IsConfigured = true; WarnTicks = warnTicks; OnTicks = onTicks; }
+    }
+
+    // PAX-113 (D-178): a scanner: a MovingTrap of kind Hazard (a lethal, non-solid beam body) that warns at home for WarnTicks from
+    // each fire, harmless, before it moves. Default (IsConfigured false): every mover as before.
+    public readonly struct ScanSettings
+    {
+        public readonly bool IsConfigured; public readonly int WarnTicks;
+        public ScanSettings(int warnTicks) { IsConfigured = true; WarnTicks = warnTicks; }
+    }
+
+    // PAX-114 (D-187): a MovingTrap's path (offsets from home, in order; a closed loop ends on Vector2.zero), and the glitch wall
+    // that teleports along it, warning WarnTicks before each jump. Default for every other mover (its single Offset).
+    public readonly struct PathSettings
+    {
+        // D-250: FirstLegTicks, the first leg's share of moveTicks (the rest at its own speed; 0: the whole path at one speed).
+        public readonly bool IsConfigured; public readonly Vector2[] Points; public readonly bool Glitch; public readonly int WarnTicks; public readonly int FirstLegTicks;
+        public PathSettings(Vector2[] points, bool glitch = false, int warnTicks = 0, int firstLegTicks = 0) { IsConfigured = true; Points = points; Glitch = glitch; WarnTicks = warnTicks; FirstLegTicks = firstLegTicks; }
+        public bool HasPoints => IsConfigured && Points != null && Points.Length > 0;
+    }
+
+    // PAX-116 (D-187): a spinner's arms and turn. AlwaysOn turns from the room's first tick; otherwise from the trap's fire.
+    public readonly struct SpinnerSettings
+    {
+        public readonly bool IsConfigured; public readonly int Arms; public readonly float ArmLength; public readonly float ArmWidth;
+        public readonly float DegreesPerTick; public readonly float StartAngle; public readonly bool AlwaysOn;
+        // PAX-118 (D-197): a pendulum swings StartAngle ± SwingAmplitude (degrees) over SwingPeriod ticks instead of turning (0: turns).
+        public readonly float SwingAmplitude; public readonly int SwingPeriod;
+        public SpinnerSettings(int arms, float armLength, float degreesPerTick, float startAngle = 0f, float armWidth = .3f, bool alwaysOn = true, float swingAmplitude = 0f, int swingPeriod = 0)
+        { IsConfigured = true; Arms = arms; ArmLength = armLength; ArmWidth = armWidth; DegreesPerTick = degreesPerTick; StartAngle = startAngle; AlwaysOn = alwaysOn; SwingAmplitude = swingAmplitude; SwingPeriod = swingPeriod; }
+        /// <summary>PAX-118: a pendulum hanging from a pivot above, swinging ±amplitude about straight down, once every period.</summary>
+        public static SpinnerSettings Pendulum(float armLength, float swingAmplitude, int swingPeriod, float armWidth = .4f) =>
+            new(1, armLength, 0f, 270f, armWidth, true, swingAmplitude, swingPeriod);
+        public bool Swings => SwingPeriod > 0 && SwingAmplitude > 0f;
+        /// <summary>The tip's speed, u a tick (a pendulum's at the bottom of its swing).</summary>
+        public float TipSpeed => Swings ? SwingAmplitude * Mathf.Deg2Rad * 2f * Mathf.PI / SwingPeriod * ArmLength : Mathf.Abs(DegreesPerTick) * Mathf.Deg2Rad * ArmLength;
+    }
+
+    // PAX-120 (D-197): a portal pair; TwoWay makes the exit an entry too. Its exit may move along the timing's PathSettings.
+    public readonly struct PortalSettings
+    {
+        public readonly bool IsConfigured; public readonly bool TwoWay;
+        public PortalSettings(bool twoWay = false) { IsConfigured = true; TwoWay = twoWay; }
+    }
+
+    // PAX-121 (D-197): an aiming turret's cycle from each fire: AimTicks tracking the cat, LockTicks locked (the tell), FireTicks firing.
+    // D-203: CeilingMount, it tracks only a cat below its muzzle that it can see; AimZone (relative to the muzzle; zero size:
+    // anywhere), only a cat whose centre is inside it: the standable area of the turret's floor.
+    public readonly struct TurretSettings
+    {
+        public readonly bool IsConfigured, CeilingMount; public readonly int AimTicks, LockTicks, FireTicks; public readonly float BeamWidth, Range; public readonly Rect AimZone;
+        public TurretSettings(int aimTicks, int lockTicks, int fireTicks, float beamWidth = .3f, float range = 40f, bool ceilingMount = false, Rect aimZone = default)
+        { IsConfigured = true; AimTicks = aimTicks; LockTicks = lockTicks; FireTicks = fireTicks; BeamWidth = beamWidth; Range = range; CeilingMount = ceilingMount; AimZone = aimZone; }
+        public int Cycle => AimTicks + LockTicks + FireTicks;
+    }
+
     public readonly struct SoloRoomTrapSettings
     {
         public readonly bool IsConfigured; public readonly int DelayTicks; public readonly int MoveTicks; public readonly int RevealDelayTicks;
@@ -184,8 +282,18 @@ namespace Parallax.Editor.Setup
         public readonly ShrinkSettings Shrink;
         // PAX-105 (D-110 amendment 3): default for everything but a grip falling block.
         public readonly GripSettings Grip;
+        // PAX-112 (D-176): default for everything but a pulse gate.
+        public readonly PulseGateSettings Gate;
+        // PAX-113 (D-178): default for everything but a scanner.
+        public readonly ScanSettings Scan;
+        // PAX-114 (D-187): default for every mover without a path. PAX-116: default for everything but a spinner.
+        public readonly PathSettings Path;
+        public readonly SpinnerSettings Spinner;
+        // PAX-120/121 (D-197): default for everything but a portal, a turret.
+        public readonly PortalSettings Portal;
+        public readonly TurretSettings Turret;
         public SoloRoomTrapSettings(int delayTicks = 0, int moveTicks = 0, int revealDelayTicks = 0, float unitsPerTick = 0f, float travelDistance = 0f, FallingBlockDirection direction = FallingBlockDirection.Down, GravityFlipMode gravityMode = GravityFlipMode.Flip, bool rearmOnExit = false, bool rendererEnabled = false, Vector2 offset = default, string triggerName = "Trigger", TrapTriggerSource triggerSource = TrapTriggerSource.Overlap, string chainSource = null, TrapRepeatMode repeatMode = TrapRepeatMode.Once, int cooldownTicks = 0, int periodTicks = 1, int phaseTicks = 0, MovingTrapKind movingKind = MovingTrapKind.Hazard, int holdTicks = 0, int returnTicks = 0, float crushDepth = 0f, string learnedBypassReason = null)
-        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; Geyser = default; Cloud = default; Floor = default; Shrink = default; Grip = default; }
+        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; Geyser = default; Cloud = default; Floor = default; Shrink = default; Grip = default; Gate = default; Scan = default; Path = default; Spinner = default; Portal = default; Turret = default; }
         // PAX-074 (D-078): an arrow's lane on top of ordinary trigger/repeat settings. Two parameters on
         // purpose: tests that build settings by reflection pick the longest constructor, which stays the one above.
         public SoloRoomTrapSettings(ArrowLane arrow, SoloRoomTrapSettings timing) { this = timing; Arrow = arrow; }
@@ -200,6 +308,18 @@ namespace Parallax.Editor.Setup
         public SoloRoomTrapSettings(ShrinkSettings shrink, SoloRoomTrapSettings timing) { this = timing; Shrink = shrink; }
         // PAX-105 (D-110 amendment 3): a falling block's grip on top of its timing (same two-parameter shape).
         public SoloRoomTrapSettings(GripSettings grip, SoloRoomTrapSettings timing) { this = timing; Grip = grip; }
+        // PAX-112 (D-176): a pulse gate's cycle on top of its Periodic timing (same two-parameter shape).
+        public SoloRoomTrapSettings(PulseGateSettings gate, SoloRoomTrapSettings timing) { this = timing; Gate = gate; }
+        // PAX-113 (D-178): a scanner's warning on top of a Hazard mover's timing (same two-parameter shape).
+        public SoloRoomTrapSettings(ScanSettings scan, SoloRoomTrapSettings timing) { this = timing; Scan = scan; }
+        // PAX-114 (D-187): a mover's path on top of its timing (same two-parameter shape); its Offset becomes the path's end.
+        public SoloRoomTrapSettings(PathSettings path, SoloRoomTrapSettings timing)
+        { this = timing; Path = path; if (path.HasPoints) Offset = path.Points[path.Points.Length - 1]; }
+        // PAX-116 (D-187): a spinner's arms on top of its timing (same two-parameter shape).
+        public SoloRoomTrapSettings(SpinnerSettings spinner, SoloRoomTrapSettings timing) { this = timing; Spinner = spinner; }
+        // PAX-120/121 (D-197): the same two-parameter shape.
+        public SoloRoomTrapSettings(PortalSettings portal, SoloRoomTrapSettings timing) { this = timing; Portal = portal; }
+        public SoloRoomTrapSettings(TurretSettings turret, SoloRoomTrapSettings timing) { this = timing; Turret = turret; }
     }
 
     public readonly struct SoloRoomElement

@@ -32,7 +32,13 @@ namespace Parallax.Editor.Setup
                     case SoloRoomElementKind.MovingTrap:
                     {
                         Rect moved = r; moved.position += e.Settings.Offset;
-                        list.Add(Grow(Rect.MinMaxRect(Mathf.Min(r.xMin, moved.xMin), Mathf.Min(r.yMin, moved.yMin), Mathf.Max(r.xMax, moved.xMax), Mathf.Max(r.yMax, moved.yMax)), 0.2f));
+                        Rect sweep = Rect.MinMaxRect(Mathf.Min(r.xMin, moved.xMin), Mathf.Min(r.yMin, moved.yMin), Mathf.Max(r.xMax, moved.xMax), Mathf.Max(r.yMax, moved.yMax));
+                        // 2026-10-28 (the developer, L029: the ivy curtain over Ferry_3's loop): a path mover sweeps every point of
+                        // its path, not its (zero) offset; its ride up under a floor hid it behind that floor's ivy.
+                        if (e.Settings.Path.HasPoints)
+                            foreach (Vector2 p in e.Settings.Path.Points)
+                                sweep = Rect.MinMaxRect(Mathf.Min(sweep.xMin, r.xMin + p.x), Mathf.Min(sweep.yMin, r.yMin + p.y), Mathf.Max(sweep.xMax, r.xMax + p.x), Mathf.Max(sweep.yMax, r.yMax + p.y));
+                        list.Add(Grow(sweep, 0.2f));
                         break;
                     }
                 }
@@ -44,6 +50,29 @@ namespace Parallax.Editor.Setup
         /// ceiling, wall, post or falling block, whose look is its host's) at least 1.5 u long, in a room without gravity flips
         /// (a flipped cat walks on undersides), with the headroom below and nothing the player must see in the way.</summary>
         public static bool ThickUnderFits(Edge e, List<Solid> solids, bool flips, List<Rect> visualKeepOut)
+        {
+            if (!ThickUnderFitsOne(e, solids, flips, visualKeepOut)) return false;
+            // 2026-10-28 (the developer, L029's F5: "Very awkward ceiling. Not consistent"): one ceiling line is thick all along or
+            // nowhere. The undersides on this line that meet this one end to end (one run of ceiling) must each fit too, or none
+            // draws thick (it hung its stone and ivy at the run's ends and left the plain edge between, a stepped ceiling).
+            float from = e.From, to = e.To;
+            for (bool grew = true; grew; )
+            {
+                grew = false;
+                foreach (Solid o in solids)
+                {
+                    if (Mathf.Abs(o.Rect.yMin - e.Line) > Eps || o.Rect.xMax < from - Eps || o.Rect.xMin > to + Eps) continue;
+                    if (o.Rect.xMin < from - Eps || o.Rect.xMax > to + Eps) { from = Mathf.Min(from, o.Rect.xMin); to = Mathf.Max(to, o.Rect.xMax); grew = true; }
+                }
+            }
+            if (from >= e.From - Eps && to <= e.To + Eps) return true;
+            // (what the player must see, anywhere under the run; the headroom stays each part's own test, so a wall standing
+            // under the run doesn't strip it)
+            var run = Rect.MinMaxRect(from, e.Line - ThickDepth, to, e.Line);
+            return !visualKeepOut.Any(k => k.Overlaps(run));
+        }
+
+        static bool ThickUnderFitsOne(Edge e, List<Solid> solids, bool flips, List<Rect> visualKeepOut)
         {
             if (flips || e.Side != Side.Bottom || e.Length < 1.5f) return false;
             if (e.Owner.Kind is not (SoloRoomElementKind.Floor or SoloRoomElementKind.CollapsingFloor or SoloRoomElementKind.FakePlatform

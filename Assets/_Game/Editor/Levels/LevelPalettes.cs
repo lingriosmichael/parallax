@@ -110,6 +110,12 @@ namespace Parallax.Editor.Levels
             ["L014"] = ("RoseDusk", "FloatingIsles"), ["L015"] = ("JadeCanopy", "Aqueduct"), ["L016"] = ("HighNoon", "Towers"),
             ["L017"] = ("Twilight", "Ruins"), ["L018"] = ("AmberStorm", "GreatTree"), ["L019"] = ("Ember", "Temple"),
             ["L020"] = ("BlueHour", "Aqueduct"),
+            // D-232 (the developer: "I prefer a clear background in this level instead of the shaded part"): L027 keeps the default
+            // palette and shows no ruins (Clear: the sky and the far skyline only).
+            ["L027"] = ("GoldenHour", "Clear"),
+            // D-252 (the developer, of Lift_H: "Cat looks like it is sliding when its moving on a platform"): the shaded ruin wall
+            // behind L030's chasm topped out level with the lift, so the lift read as a block sliding along the ground. Clear too.
+            ["L030"] = ("GoldenHour", "Clear"),
         };
 
         public static Palette For(string levelId) =>

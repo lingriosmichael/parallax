@@ -821,6 +821,11 @@ namespace Parallax.Editor.Setup
                 if (s.Shape is not (Shape.Block or Shape.PitBottom) || faceShade == null || shadeSolid == null) return (0f, 0f, false);
                 if (!s.Trap && roomRoot.Find(s.Name)?.GetComponent<SpriteRenderer>() == null) return (0f, 0f, false);
                 (float top, float bottom) = Column(s, x);
+                // D-253 (the developer, of L030's corridor roof: "The ceiling is also shaded ... instead of using the same normal
+                // tiling"): stone whose column ends on a ceiling is seen from under it: no lit top to fall away from, unshaded
+                // (L030's Roof_A-C carry 24 u of Fill, so their undersides were deep in its shadow).
+                if (solids.Any(o => o.Kind == SoloRoomElementKind.Ceiling && Mathf.Abs(o.Rect.yMin - bottom) < Eps && o.Rect.xMin < x && o.Rect.xMax > x))
+                    return (0f, 0f, false);
                 // An upright hung under a slab or a roof (Column stops at its top) has no lit top to fall away from: unshaded,
                 // like the underside it hangs from.
                 if (s.Kind == SoloRoomElementKind.Wall && solids.Any(o => o.Kind != SoloRoomElementKind.Wall && o.Shape is Shape.Block or Shape.Slab

@@ -73,3 +73,33 @@ MonoBehaviour:
   - Id: L020
     SceneName: Level_020
     DisplayName: Level 20
+  - Id: L021
+    SceneName: Level_021
+    DisplayName: Level 21
+  - Id: L022
+    SceneName: Level_022
+    DisplayName: Level 22
+  - Id: L023
+    SceneName: Level_023
+    DisplayName: Level 23
+  - Id: L024
+    SceneName: Level_024
+    DisplayName: Level 24
+  - Id: L025
+    SceneName: Level_025
+    DisplayName: Level 25
+  - Id: L026
+    SceneName: Level_026
+    DisplayName: Level 26
+  - Id: L027
+    SceneName: Level_027
+    DisplayName: Level 27
+  - Id: L028
+    SceneName: Level_028
+    DisplayName: Level 28
+  - Id: L029
+    SceneName: Level_029
+    DisplayName: Level 29
+  - Id: L030
+    SceneName: Level_030
+    DisplayName: Level 30

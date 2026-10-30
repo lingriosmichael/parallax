@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Parallax.Core;
 using Parallax.Editor.Routes;
@@ -5,86 +6,66 @@ using static Parallax.Editor.Routes.R;
 
 namespace Parallax.Editor.Levels
 {
-    // D-169: level 25's routes. Almost every wait is on the beat (room ticks); Arrow_3 is jumped as each shot comes up behind.
-    // Betrayals branch off the solution's own steps.
+    // D-213: level 25's routes ("Rhythm"). A vine is caught in the air by holding Down (D-089); a leap off a vine is a jump while
+    // climbing with a direction held; the chimney is climbed by wall jumps (D-110). Written with the layout and not yet replayed
+    // (the developer asked for the changes without test runs): re-record before relying on them.
     static class L025Routes
     {
-        const int Beat = L025Layout.Beat;
+        static RouteCondition On(string vine, float x) => new($"on {vine}", v => v.Last.IsClimbing && Math.Abs(v.Last.X - x) < .05f);
+        static RouteCondition Below(float y) => new("Y<" + y.ToString(System.Globalization.CultureInfo.InvariantCulture), v => v.Last.Y < y);
+        static RouteCondition Landed() => new("landed", v => v.Last.Grounded && !v.Last.IsClimbing);
+        static RouteCondition Beat(int period, int tick) => new($"beat {tick}/{period}", v => ((v.Last.RoomLifeTick - tick) % period + period) % period == 0);
 
-        // The room tick is `tick` past a multiple of `period`.
-        static RouteCondition On(int period, int tick) => new($"beat {tick}/{period}", v => ((v.Last.RoomLifeTick - tick) % period + period) % period == 0);
-        // Arrow_3's latest shot in flight (after its tell, from Jamb_W's face), its tip within `d` behind the cat's west side.
-        static RouteCondition ShotBehind(float d) => new($"Arrow_3 within {d}", v =>
+        static RouteStep[] Steps(params object[] parts)
         {
-            int i = v.Result.Elements.IndexOf("Arrow_3");
-            if (i < 0 || v.Last.FireTick[i] < 0) return false;
-            int flying = v.Last.RoomLifeTick - v.Last.FireTick[i] - L025Layout.ArrowTell;
-            float tip = L025Layout.ArrowMouth + .8f + L025Layout.ArrowSpeed * flying, back = v.Last.X - .5f;
-            return flying >= 0 && tip < back && back - tip <= d;
-        });
+            var list = new System.Collections.Generic.List<RouteStep>();
+            foreach (object p in parts) { if (p is RouteStep s) list.Add(s); else list.AddRange((RouteStep[])p); }
+            return list.ToArray();
+        }
 
-        // ---- Pistons, storey 1, walked east ----
-        // Set off as Piston_A comes down and run the wave; hop onto the Plinth and stand on G_1 until it launches the cat; steer
-        // west onto storey 2.
-        static RouteStep[] Pistons() => new[] {
-            Until(On(Beat, L025Layout.PistonA + 35)), Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(16.6f)), Jump(), Until(Airborne()), Until(Grounded()),
-            Until(XAtLeast(18.2f)), Release(), Until(YAtLeast(L025Layout.S2 + .3f)), Hold(Left), Until(Grounded()),
-        };
+        // A running jump east from x, landing where it falls.
+        static RouteStep[] JumpFrom(float x) => new[] { Hold(Right), Until(XAtLeast(x)), Jump(), Until(Airborne()), Until(Landed()) };
+        // Leap east off the vine the cat is on, and catch `vine` (at x) late in the fall.
+        static RouteStep[] Leap(string vine, float x) => new[] {
+            ReleaseClimb(), Hold(Right), Jump().Timed(TimedMode.Shift), For(26), Hold(R.Down), Until(On(vine, x)), Release(), ReleaseClimb() };
+        // Hanging low enough that a leap clears the next vine's reach.
+        const float Low = 7f;
+        static RouteStep[] Down(float y) => new[] { Hold(R.Down), Until(Below(y)), ReleaseClimb() };
 
-        // ---- Slams, storey 2, walked west ----
-        // Stop short of Slam_2a; go as it goes back up, through both slams' gaps; wait for Lift_2 at home, step on, ride it up.
-        static RouteStep[] Slams() => new[] {
-            Until(XAtMost(15.6f)), Release(), Until(Still()),
-            Until(On(Beat, L025Layout.Slam2a + 40)), Hold(Left).Timed(TimedMode.Shift), Until(XAtMost(3.4f)), Release(), Until(Still()),
-            Until(On(L025Layout.LiftPeriod, L025Layout.LiftPhase + 2 * L025Layout.LiftMove + L025Layout.LiftHold + 3)), Hold(Left), Until(XAtMost(1.9f)), Release(), Until(Still()),
-            Until(Moving("Lift_2")), Until(Stopped("Lift_2")),
-        };
+        // ---- Descent ----
+        // Off the start onto Step_1 (it crumbles: on at once); off onto Step_2 and straight on onto Step_3; a long running jump past
+        // Fake_4 onto Step_4; a jump onto Step_5's east half (Eye_D shoots at a cat that waits).
+        static RouteStep[] Descent() => Steps(
+            Hold(Right), Until(XAtLeast(9f)), Until(Landed()),
+            JumpFrom(11.4f), JumpFrom(18.8f), JumpFrom(26.6f), Release(), Until(Still()));
 
-        // ---- Drums, storey 3, walked east ----
-        // Stop short of Spikes_3; jump them once G_3 has stopped blowing; jump Arrow_3's shots as they come up behind; over Kerb_3;
-        // stop, and through as Slam_D goes back up, into the door.
-        static RouteStep[] Drums() => new[] {
-            Hold(Right), Until(XAtLeast(3.4f)), Release(), Until(Still()),
-            Until(On(Beat, L025Layout.G3Erupt + 42)), Hold(Right), Until(XAtLeast(4.4f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(ShotBehind(2f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
-            Until(XAtLeast(21.6f)), Jump(), Until(Airborne()), Until(Grounded()), Release(), Until(Still()),
-            Until(On(Beat, L025Layout.SlamD + 34)), Hold(Right).Timed(TimedMode.Shift), Until(RoomComplete()),
-        };
+        // ---- Valley ----
+        // Onto V1; vine to vine ahead of the snapping wave, moving out of Eye_V's locked line; off V6 onto the east floor.
+        static RouteStep[] Valley() => Steps(
+            Hold(Right), Jump(), Until(Falling()), Hold(R.Down), Until(On("V1", L025Layout.VineX[0])), Release(), ReleaseClimb(),
+            Down(Low), Leap("V2", L025Layout.VineX[1]),
+            Down(Low), Leap("V3", L025Layout.VineX[2]),
+            Down(Low), Leap("V4", L025Layout.VineX[3]),
+            Down(Low), Leap("V5", L025Layout.VineX[4]),
+            Down(Low), Leap("V6", L025Layout.VineX[5]),
+            Down(Low), ReleaseClimb(), Hold(Right), Jump(), Until(Landed()), Release(), Until(Still()));
 
-        static RouteStep[] Cat(params RouteStep[][] parts) => parts.SelectMany(p => p).ToArray();
-        // The solution's steps before part `part`'s step `index`, then these.
-        static RouteStep[] Branch(RouteStep[][] parts, int part, int index, params RouteStep[] then) =>
-            parts.Take(part).SelectMany(p => p).Concat(parts[part].Take(index)).Concat(then).ToArray();
+        // ---- Climb ----
+        // East into the chimney; up it by wall jumps; over Wall_E's top; after the door.
+        static RouteStep[] Climb() => Steps(
+            Hold(Right), Until(XAtLeast(67f)), Release(), Until(Still()),
+            Jump(), Hold(Right), Until(ClingingRight()), Release(),
+            Jump(), For(2), Hold(Left), Until(ClingingLeft()), Release(),
+            Jump(), For(2), Hold(Right), Until(ClingingRight()), Release(),
+            Jump(), For(2), Hold(Left), Until(ClingingLeft()), Release(),
+            Jump(), For(2), Hold(Right), Until(ClingingRight()), Release(),
+            Jump(), For(2), Hold(Left), Until(ClingingLeft()), Release(),
+            Jump(), For(2), Hold(Right), Until(Landed()), Hold(Right), Until(RoomComplete()));
 
         public static RoomRoutes Build()
         {
-            RouteStep[][] parts = { Pistons(), Slams(), Drums() };
-            const int P = 0, S = 1, D = 2;
-            var solution = new Route("L025 solution", Cat(parts));
-            Route B(string name, int part, int index, params RouteStep[] then) => new(name, Branch(parts, part, index, then));
-
-            return new RoomRoutes(solution,
-                // Pistons.
-                new Betrayal("T1 [W]: a cat that sets off late is under Piston_A as it rises", "Piston_A", DeathCause.Hazard,
-                    B("late", P, 0, Until(On(Beat, L025Layout.PistonA + 60)), Hold(Right), Until(Dead()))),
-                new Betrayal("T2 [NW]: a cat that stops under Piston_B is crushed", "Piston_B", DeathCause.Hazard,
-                    B("stop", P, 2, Until(XAtLeast(9.6f)), Release(), Until(Dead()))),
-                new Betrayal("T3 [NW]: a cat that stops under Piston_C is crushed", "Piston_C", DeathCause.Hazard,
-                    B("stop", P, 2, Until(XAtLeast(13.6f)), Release(), Until(Dead()))),
-                // Slams.
-                new Betrayal("T4 [W]: a cat that goes before Slam_2a is back up is crushed", "Slam_2a", DeathCause.Hazard,
-                    B("go now", S, 3, Until(On(Beat, L025Layout.Slam2a - 15)), Hold(Left), Until(Dead()))),
-                new Betrayal("T5 [NW]: a cat that stops under Slam_2b is crushed", "Slam_2b", DeathCause.Hazard,
-                    B("stop", S, 5, Until(XAtMost(7.9f)), Release(), Until(Dead()))),
-                new Betrayal("T6 [W]: a cat that steps into Lift_2's well while it's up is crushed when it comes down", "Lift_2", DeathCause.Hazard,
-                    B("step in", S, 8, Until(On(L025Layout.LiftPeriod, L025Layout.LiftPhase + L025Layout.LiftMove + 5)), Hold(Left), Until(Dead()))),
-                // Drums.
-                new Betrayal("T7 [W]: a cat that jumps Spikes_3 while G_3 blows is pushed onto them", "Spikes_3", DeathCause.Hazard,
-                    B("jump now", D, 4, Until(On(Beat, L025Layout.G3Erupt + 5)), Hold(Right), Jump(), Until(Dead())), revealedBy: "G_3"),
-                new Betrayal("T8 [J]: a cat that doesn't jump Arrow_3's shot is hit", "Arrow_3", DeathCause.Hazard,
-                    B("walk on", D, 11, Until(Dead()))),
-                new Betrayal("T9 [W]: a cat that goes as Slam_D comes down is crushed", "Slam_D", DeathCause.Hazard,
-                    B("go now", D, 20, Until(On(Beat, L025Layout.SlamD - 5)), Hold(Right), Until(Dead()))));
+            RouteStep[][] parts = { Descent(), Valley(), Climb() };
+            return new RoomRoutes(new Route("L025 solution", parts.SelectMany(p => p).ToArray()));
         }
     }
 }

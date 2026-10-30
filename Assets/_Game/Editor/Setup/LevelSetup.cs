@@ -238,6 +238,10 @@ namespace Parallax.Editor.Setup
             var layoutRooms = new[] { layout };
             SoloRoomBuilder.BuildRooms(parent, root, layoutRooms, checkpoints, rooms, death, observers, config, changes);
             SoloRoomBuilder.AssignBounds(rooms, layoutRooms, root, safety, changes);
+            // D-236: a level's arrow variations (L028), picked on load.
+            ArrowVariantSetup.Wire(parent, Parallax.Editor.Levels.LevelLooks.LevelOf(layout), death, changes);
+            // D-248: L029's falling ceilings come down filled.
+            CeilingFillSetup.Wire(parent, Parallax.Editor.Levels.LevelLooks.LevelOf(layout), layout, changes);
 
             // §2.2.6/§2.3: only once the template carries a LevelCameraFollow (via PARALLAX/Setup/
             // Levels/Level Camera) does regeneration have anything to bake it onto. Before that,

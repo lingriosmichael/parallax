@@ -5,8 +5,9 @@ using UnityEngine;
 namespace Parallax.Editor.Setup
 {
     // PAX-105 (D-110): a wall jump's arc from the motor's numbers, pure, tick by tick as CatMotor2D integrates it (the wall
-    // jump's launch on its own step, then the normal path with the move lock: Move back toward the wall ignored and the side
-    // speed kept for WallJumpMoveLockTicks steps; physics moves the body by the velocity the step set). Gravity down.
+    // jump's launch on its own step, then the normal path with the kick; physics moves the body by the velocity the step set).
+    // D-218 (amendment 1): the kick ignores the stick and keeps the side speed while the cat rises; from the top of the jump the
+    // stick steers again (XBack: held back toward the wall from then, at the ordinary acceleration). Gravity down.
     // Positions are the collider's from where it left the wall, in units: Y is its bottom's rise, XAway and XBack how far its
     // centre has moved away from the wall with the stick held away the whole time and held back toward the wall (after the
     // lock: the ordinary acceleration), the two ends of every input in between. The vertical motion doesn't depend on the
@@ -34,8 +35,8 @@ namespace Parallax.Editor.Setup
                 {
                     // The normal path's fall (velocity along gravity: -vy), capped at the max fall speed.
                     vy = -Mathf.Min(-vy + gravity * dt, m.MaxFallSpeed);
-                    va = Mathf.MoveTowards(va, m.MaxSpeed, m.Acceleration * dt);                  // held away: toward +MaxSpeed
-                    if (k - 1 > m.WallJumpMoveLockTicks) vb = Mathf.MoveTowards(vb, -m.MaxSpeed, m.Acceleration * dt);   // held back, after the lock
+                    // D-218 amendment 1: the stick is ignored while rising; held back after the top of the jump.
+                    if (vy <= 0f) vb = Mathf.MoveTowards(vb, -m.MaxSpeed, m.Acceleration * dt);
                 }
                 py += vy * dt; xa += va * dt; xb += vb * dt;
                 y.Add(py); away.Add(xa); back.Add(xb);

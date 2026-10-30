@@ -53,7 +53,7 @@ namespace Parallax.Gameplay.Player
         [Tooltip("PAX-105 (D-110): a wall jump's speed away from the wall, in units/second (with the normal jump launch up).")]
         [SerializeField] float wallJumpSideSpeed = Parallax.Core.WallClingState.DefaultWallJumpSideSpeed;
 
-        [Tooltip("PAX-105 (D-110): motor steps after a wall jump in which Move back toward that wall is ignored and, with no Move away, the sideways speed is kept.")]
+        [Tooltip("PAX-105 (D-110). D-218: no longer read: a wall jump's kick ignores the stick and keeps its sideways speed until the cat lands or latches.")]
         [SerializeField] int wallJumpMoveLockTicks = Parallax.Core.WallClingState.DefaultMoveLockTicks;
 
         [Tooltip("PAX-105 (D-110): the shortest wall face a cat can cling to, in units (the collider's height).")]
