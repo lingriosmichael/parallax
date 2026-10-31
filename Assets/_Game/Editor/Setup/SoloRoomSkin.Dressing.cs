@@ -34,11 +34,15 @@ namespace Parallax.Editor.Setup
             List<Rect> tuftKeepOut = TuftKeepOut(room);
 
             int rubbleCount = 0, drapeCount = 0;
+            // PAX-A20 stage 4: a biome with its own props (Obsidian: ENV_Fixture_*, ENV_Prop_*) places them sparsely instead of
+            // moss tufts, ivy and ferns (a lamp or a machine every few units, not a curtain).
+            bool tech = EnvironmentKit.Get("ENV_Fixture_0") != null;
             float lowestTop = edges.Where(e => e.Side == Side.Top && e.Owner.Shape != Shape.PitBottom).Select(e => e.Line).DefaultIfEmpty(0f).Min();
             foreach (Edge e in edges.Where(e => e.Side == Side.Top && e.Owner.Shape is Shape.Block or Shape.Slab))
             {
                 // Gauntlet P1-R3: tufts one by one (a strip repeated them): six shapes, random size, flips and gaps, some
                 // bare stone. Low (at most 0.42 u above the line), so the walk line stays clear.
+                if (!tech)
                 {
                     float x = e.From + 0.2f * Hash(e.Owner.Name, 1);
                     for (int i = 0; x < e.To && i < 80; i++)
@@ -58,7 +62,7 @@ namespace Parallax.Editor.Setup
                 }
                 // Gauntlet: ivy curtains down the block's face from its lip (the concept's ivy-covered bridge face), random
                 // pieces and lengths, never above the walkable line; the same rule for real and disguised blocks (P10).
-                if (e.Owner.Shape == Shape.Block && e.Owner.Rect.height >= 1.2f && !flips)
+                if (e.Owner.Shape == Shape.Block && e.Owner.Rect.height >= 1.2f && !flips && !tech)
                 {
                     // Irregular: a random walk along the lip, some gaps, lengths from a short tuft to a long curtain.
                     float x = e.From + 0.3f * Hash(e.Owner.Name, 399);
@@ -91,7 +95,8 @@ namespace Parallax.Editor.Setup
                 // Gauntlet (the developer: front ferns fixed in the world, never over a trap, not blurry): sharp fern clumps at
                 // the foot of a tall block's face, well below its walk line (their tops at least 1 u under it), clear of
                 // everything the player must see; the same rule for real and disguised blocks (P10).
-                if (e.Owner.Shape == Shape.Block && e.Owner.Rect.height >= 2.4f)
+                if (tech && e.Owner.Shape == Shape.Block && e.Owner.Rect.height >= 2.4f) Props(e, place, ClearOfVisible);
+                else if (e.Owner.Shape == Shape.Block && e.Owner.Rect.height >= 2.4f)
                 {
                     Rect b = e.Owner.Rect;
                     float x = e.From + 0.4f * Hash(e.Owner.Name, 600);
@@ -119,7 +124,10 @@ namespace Parallax.Editor.Setup
                 }
             }
 
-            if (!flips)
+            if (tech)
+                foreach (Edge e in edges.Where(e => e.Side == Side.Bottom && e.Owner.Shape is Shape.Block or Shape.Slab && e.Length >= 1f))
+                    Fixtures(e, solids, place, ClearOfVisible);
+            else if (!flips)
                 // Gauntlet P1-R3: short roots and ivy under every overhang one by one (the underside strip no longer carries
                 // any): six shapes, random lengths (at most 1 u, so they never read as a lower ceiling or a climbable vine).
                 foreach (Edge e in edges.Where(e => e.Side == Side.Bottom && e.Owner.Shape is Shape.Block or Shape.Slab && e.Length >= 1f))
@@ -182,8 +190,49 @@ namespace Parallax.Editor.Setup
                     var centre = new Vector2(s.Rect.center.x + (Hash(s.Name, 171) - 0.5f) * (s.Rect.width - size.x - 1f), s.Rect.center.y - 0.2f);
                     // 2026-10-17 visual review ("the carved square plaques are cool pinkish-grey and clean, about 1.6x brighter
                     // than the wall next to them ... pasted on"): carved into the wall's own stone, a little lighter (relief).
-                    if (Clear(Box(centre, size))) { if (place(s, "Glyph", slot, centre, size, ZPanel) is SpriteRenderer g) g.color = GlyphTint; n++; }
+                    if (Clear(Box(centre, size))) { if (place(s, "Glyph", slot, centre, size, ZPanel) is SpriteRenderer g) g.color = tech ? Color.white : GlyphTint; n++; }
                 }
+            }
+        }
+
+        // ---------- PAX-A20 stage 4: Obsidian's props ----------
+
+        const int TechVariants = 6;
+
+        /// <summary>Machines and crystal props at the foot of a tall block's face (where Golden Ruins grows ferns): one every
+        /// 3–7 u, clear of everything the player must see.</summary>
+        static void Props(Edge e, Placer place, System.Func<Rect, bool> clear)
+        {
+            Rect b = e.Owner.Rect;
+            float x = e.From + 0.8f + 1.5f * Hash(e.Owner.Name, 600);
+            for (int i = 0; x < e.To && i < 12; i++)
+            {
+                EnvironmentKit.Slot def = EnvironmentKit.Get("ENV_Prop_" + (int)(Hash(e.Owner.Name, 610 + i) * TechVariants));
+                if (def == null) return;
+                float w = def.width * (0.8f + 0.3f * Hash(e.Owner.Name, 620 + i)), h = Mathf.Min(def.height * w / def.width, b.height - 1f);
+                if (h < 0.3f) return;
+                var centre = new Vector2(x + w * 0.5f, b.yMin + h * 0.5f - 0.05f);
+                x += w + 3f + 4f * Hash(e.Owner.Name, 640 + i);
+                if (centre.x + w * 0.5f > e.To) continue;
+                if (clear(Box(centre, new Vector2(w, h)))) place(e.Owner, $"Prop_{Idx(e)}_{i}", def.name, centre, new Vector2(Hash(e.Owner.Name, 660 + i) < 0.5f ? -w : w, h), ZPanel);
+            }
+        }
+
+        /// <summary>Ceiling fixtures hung from an overhang with at least 2.2 u clear under it: one every 4–8 u, at most 0.8 u long
+        /// (they never read as a lower ceiling).</summary>
+        static void Fixtures(Edge e, List<Solid> solids, Placer place, System.Func<Rect, bool> clear)
+        {
+            if (ClearBelow(e, solids) < 2.2f) return;
+            float x = e.From + 1f + 2f * Hash(e.Owner.Name, 119);
+            for (int i = 0; x < e.To && i < 8; i++)
+            {
+                EnvironmentKit.Slot def = EnvironmentKit.Get("ENV_Fixture_" + (int)(Hash(e.Owner.Name, 120 + i) * TechVariants));
+                if (def == null) return;
+                float h = Mathf.Min(0.8f, def.height * (0.7f + 0.3f * Hash(e.Owner.Name, 130 + i))), w = def.width * h / def.height;
+                var centre = new Vector2(x + w * 0.5f, e.Line - h * 0.5f + 0.02f);
+                x += w + 4f + 4f * Hash(e.Owner.Name, 145 + i);
+                if (centre.x + w * 0.5f > e.To - 0.3f) continue;
+                if (clear(Box(centre, new Vector2(w, h)))) place(e.Owner, $"Fixture_{Idx(e)}_{i}", def.name, centre, new Vector2(w, h), ZDrape);
             }
         }
 
@@ -220,9 +269,11 @@ namespace Parallax.Editor.Setup
             // (each sprite turned a quarter, UprightMoss), narrow across the face line and long down it, overlapping from the foot
             // to the top. Sizes here are the footprint (width across, height down the face).
             float y = e.From + 0.02f;
+            // PAX-A20: a biome with its own grip sign (Obsidian's lit circuit panel, ENV_GripTuft_*) stands that instead of moss.
+            string tuft = EnvironmentKit.Get("ENV_GripTuft_0") != null ? "ENV_GripTuft_" : "ENV_Moss_";
             for (int i = 0; y < e.To - 0.06f && i < 400; i++)
             {
-                string slot = "ENV_Moss_" + (int)(Hash(n, 900 + i) * 3f);
+                string slot = tuft + (int)(Hash(n, 900 + i) * 3f);
                 EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
                 if (def == null) return;
                 float h = 0.55f + 0.25f * Hash(n, 920 + i), w = h * def.height / def.width * (0.9f + 0.3f * Hash(n, 940 + i));

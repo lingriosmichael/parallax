@@ -81,6 +81,7 @@ namespace Parallax.Editor.Setup
             var changes = new List<string>();
             TitleScreenConfig config = EnsureConfig(changes);
             BuildWorld(config, changes);
+            ImportArt(changes);
             BuildCanvas(config, levelList, changes);
             AudioSetup.AddTo(scene, AudioSetup.EnsureBank(changes), changes);   // PAX-064
             EditorSceneManager.MarkSceneDirty(scene);
@@ -132,6 +133,7 @@ namespace Parallax.Editor.Setup
             // The levels' own stack builder, as Rebuild All runs it. Its room is only the ledge, so the composer sets the
             // horizon, the far ruins and the haze from the ledge's top, as it does from a level's floors.
             EnvironmentStackSetup.Build(root, camera, Frame, LookLevel, Room(), changes);
+            ImportArt(changes);
             BuildLedge(world.transform, layer, changes);
             BuildCat(world.transform, layer, config, changes);
         }
@@ -205,6 +207,17 @@ namespace Parallax.Editor.Setup
                 Plain("Drape_0", "ENV_Drape_3", new Vector2(LedgeRight - drape.bounds.size.x * 0.4f, LedgeTop - 0.2f - drape.bounds.size.y * 0.8f), 7, scale: 1.6f);
             if (EnvironmentKit.Sprite("ENV_Drape_0") is Sprite drape2)
                 Plain("Drape_1", "ENV_Drape_0", new Vector2(LedgeRight - 0.15f, LedgeTop - 1.2f - drape2.bounds.size.y * 0.7f), 7, flip: true, scale: 1.4f);
+            // D-280: leaves over the ledge's cut, in the world so they stay on it at every aspect and through the pan. The sprite's peak is 0.58 across.
+            if (ArtSprite("TUI_FoliageL") is Sprite leaves)
+            {
+                Transform t = SetupUtility.EnsureChild(ledge, "CutLeaves", layer, changes);
+                Vector2 size = leaves.bounds.size;
+                t.position = new Vector3(LedgeRight - 0.08f * size.x, LedgeBottom + 3.92f + size.y * 0.5f, 0f);
+                var r = SetupUtility.Ensure<SpriteRenderer>(t.gameObject, changes);
+                r.sprite = leaves;
+                if (EnvironmentKit.TileMaterial("Sprite") is Material plain) r.sharedMaterial = plain;
+                r.sortingLayerName = sorting; r.sortingOrder = 30;
+            }
         }
 
         static void BuildCat(Transform world, int layer, TitleScreenConfig config, List<string> changes)

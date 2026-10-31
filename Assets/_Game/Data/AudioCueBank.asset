@@ -19,3 +19,48 @@ MonoBehaviour:
   pausedBed: 0.4
   bedFadeIn: 1.2
   overrides: []
+  catVoice:
+  - Role: 0
+    Variants:
+    - {fileID: 8300000, guid: c258d63f5d156404a80598d18da92cac, type: 3}
+    - {fileID: 8300000, guid: e6626ee9580484c4aa79e25cd455c266, type: 3}
+    - {fileID: 8300000, guid: 111e0233218e14367875fbd470fd89ba, type: 3}
+  - Role: 1
+    Variants:
+    - {fileID: 8300000, guid: 48198b6eb208846c9a1f44845e8d87d4, type: 3}
+    - {fileID: 8300000, guid: 0151085c6134e486ba109cdbb44d69bb, type: 3}
+  - Role: 2
+    Variants:
+    - {fileID: 8300000, guid: 07cc85be30f95448d8a73afa99b54aaa, type: 3}
+    - {fileID: 8300000, guid: 6ca10cdc0a71c49d0a227769281e76f4, type: 3}
+  - Role: 3
+    Variants:
+    - {fileID: 8300000, guid: 9389e23ecb9314931976af0fb8269984, type: 3}
+    - {fileID: 8300000, guid: 36c5ae3013e354274be7161ab1b0d098, type: 3}
+    - {fileID: 8300000, guid: ec667fbcdf8b349cd871c08355aa0ece, type: 3}
+  - Role: 4
+    Variants:
+    - {fileID: 8300000, guid: 906ed4a49f5844fc28ae3a3c3e7ad7e2, type: 3}
+    - {fileID: 8300000, guid: 62b26a3928fbe4bd9bf8ae3a46d749d5, type: 3}
+    - {fileID: 8300000, guid: 7350caca42be94847ab2785a0d293fdc, type: 3}
+  - Role: 5
+    Variants:
+    - {fileID: 8300000, guid: b9f861074974a40e2a3ec819df2ee0a3, type: 3}
+    - {fileID: 8300000, guid: 138ffa7ec3f3c43368e5871982778f7a, type: 3}
+  - Role: 6
+    Variants:
+    - {fileID: 8300000, guid: c6af1b685bb1b4abc9a885128ead8363, type: 3}
+    - {fileID: 8300000, guid: 2098f8353524d462f98c0ba9f57d11d7, type: 3}
+  - Role: 7
+    Variants:
+    - {fileID: 8300000, guid: 42b057e72f38b49c7be1eca5f7dc2c86, type: 3}
+  - Role: 8
+    Variants:
+    - {fileID: 8300000, guid: 9f2024e5415a74971949caf349b7c644, type: 3}
+    - {fileID: 8300000, guid: c0253def55ce54e99bdc7c1ab2c46eb3, type: 3}
+    - {fileID: 8300000, guid: 744cee85b8db24ba7b52d568ae7ea4de, type: 3}
+  tracks:
+  - Track: 0
+    Clip: {fileID: 8300000, guid: 4d92233dc33c343d08ebd21238c12936, type: 3}
+  - Track: 1
+    Clip: {fileID: 8300000, guid: 8a9719295fb4341329d5305d011215f4, type: 3}

@@ -18,10 +18,20 @@ namespace Parallax.Editor.Art
         static string BuildKitElement(Transform artRoot, Transform roomRoot, SoloRoomDefinition room, SoloRoomElement e, Transform t, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
         {
             if (t.TryGetComponent(out HiddenSpikesTrap hidden)) return BuildSpikes(artRoot, room, e, hidden, hidden.GetComponent<SpriteRenderer>(), true, rooms, config, layer, changes);
+            // PAX-A20: in Obsidian Void a lethal band is a laser, not spikes.
+            bool lasers = config.LaserBeam != null && Parallax.Editor.Levels.Biomes.Of(room) == Parallax.Editor.Levels.Biome.ObsidianVoid;
+            if (lasers && t.TryGetComponent(out PulseGateTrap gate)) return BuildGate(artRoot, e.Name, gate, config, rooms, layer, changes);
+            if (lasers && t.TryGetComponent(out TurretTrap turret) && config.TurretIdle != null) return BuildTurret(artRoot, e.Name, turret, config, rooms, layer, changes);
+            if (lasers && t.TryGetComponent(out TridentTrap trident)) return BuildTrident(artRoot, e.Name, trident, config, rooms, layer, changes);
+            if (lasers && t.TryGetComponent(out SweeperTrap sweeper)) return BuildSweeper(artRoot, e.Name, sweeper, config, rooms, layer, changes);
+            if (lasers && t.TryGetComponent(out ChaserTrap chaser)) return BuildSweeper(artRoot, e.Name, chaser, config, rooms, layer, changes);
             if (t.TryGetComponent(out MovingTrap mover))
-                return mover.GetComponent<Hazard>() != null || (MovingTrapKind)ReadInt(mover, "kind") == MovingTrapKind.Hazard
-                    ? BuildSpikes(artRoot, room, e, mover, mover.GetComponent<SpriteRenderer>(), false, rooms, config, layer, changes)
-                    : BuildSolid(artRoot, roomRoot, room, e, mover, mover.GetComponent<SpriteRenderer>(), SolidArtKind.Mover, rooms, config, layer, changes);
+            {
+                if (mover.GetComponent<Hazard>() == null && (MovingTrapKind)ReadInt(mover, "kind") != MovingTrapKind.Hazard)
+                    return BuildSolid(artRoot, roomRoot, room, e, mover, mover.GetComponent<SpriteRenderer>(), SolidArtKind.Mover, rooms, config, layer, changes);
+                return lasers ? BuildLaser(artRoot, e.Name, mover, mover.GetComponent<SpriteRenderer>(), ReadInt(mover, "warnTicks"), config, rooms, layer, changes, Chaser(config))
+                    : BuildSpikes(artRoot, room, e, mover, mover.GetComponent<SpriteRenderer>(), false, rooms, config, layer, changes);
+            }
             if (t.TryGetComponent(out FallingBlockTrap block)) return BuildSolid(artRoot, roomRoot, room, e, block, block.GetComponent<SpriteRenderer>(), SolidArtKind.FallingBlock, rooms, config, layer, changes);
             if (t.TryGetComponent(out ShrinkingFloorTrap shrink)) return BuildSolid(artRoot, roomRoot, room, e, shrink, (SpriteRenderer)ReadObject(shrink, "visual"), SolidArtKind.Shrinker, rooms, config, layer, changes);
             if (t.TryGetComponent(out GravityFlipTrap flip)) return BuildFlip(artRoot, e, flip, rooms, config, layer, changes);
@@ -29,8 +39,129 @@ namespace Parallax.Editor.Art
             if (t.TryGetComponent(out StormCloudTrap cloud)) return BuildCloud(artRoot, e, cloud, rooms, config, layer, changes);
             if (t.TryGetComponent(out ClimbVine vine) && vine.Snaps) return BuildVine(artRoot, e, vine, rooms, config, layer, changes);
             if (t.TryGetComponent(out DoorRetreatTrap retreat)) return BuildDoorRetreat(artRoot, room, e, retreat, rooms, config, layer, changes);
-            if (t.TryGetComponent(out Hazard hazard) && t.GetComponent<RoomTrap>() == null) return BuildSpikes(artRoot, room, e, null, hazard.GetComponent<SpriteRenderer>(), false, rooms, config, layer, changes);
+            if (t.TryGetComponent(out Hazard hazard) && t.GetComponent<RoomTrap>() == null)
+                return lasers ? BuildLaser(artRoot, e.Name, null, hazard.GetComponent<SpriteRenderer>(), 0, config, rooms, layer, changes)
+                    : BuildSpikes(artRoot, room, e, null, hazard.GetComponent<SpriteRenderer>(), false, rooms, config, layer, changes);
             return null;
+        }
+
+        // ---------- PAX-A20: Obsidian lasers ----------
+
+        /// <summary>A pulse gate: its beam (LaserArt over its own grey-box) and its two emitters.</summary>
+        static string BuildGate(Transform artRoot, string name, PulseGateTrap gate, TrapArtConfig config, RoomManager rooms, int layer, List<string> changes)
+        {
+            SpriteRenderer greybox = gate.GetComponent<SpriteRenderer>();
+            string built = BuildLaser(artRoot, name, gate, greybox, 0, config, rooms, layer, changes);
+            if (built == null) return null;
+            Transform art = artRoot.Find(built);
+            LaserArt presenter = art.GetComponent<LaserArt>();
+            SpriteRenderer Emitter(string child, Sprite sprite)
+            {
+                if (sprite == null) { RemoveChild(art, child, changes); return null; }
+                SpriteRenderer r = Child(art, child, layer, changes);
+                r.sprite = sprite; r.sharedMaterial = config.TrapMaterial; r.drawMode = SpriteDrawMode.Simple;
+                r.sortingOrder = greybox.sortingOrder + 1;   // over the beam's ends
+                return r;
+            }
+            TrapKitSetup.Write(presenter, changes, ("emitterTop", Emitter("EmitterTop", config.GateEmitterTop)), ("emitterBottom", Emitter("EmitterBottom", config.GateEmitterBottom)),
+                ("gateAlpha", greybox.color.a));
+            return built;
+        }
+
+        /// <summary>A turret: its housing (TurretArt over its grey-box) and, in a child, its aim and shot line (a LaserArt over
+        /// the turret's line renderer, at the line's own alpha: faint aiming, flickering as it locks, full as it fires).</summary>
+        static string BuildTurret(Transform artRoot, string name, TurretTrap turret, TrapArtConfig config, RoomManager rooms, int layer, List<string> changes)
+        {
+            SpriteRenderer greybox = turret.GetComponent<SpriteRenderer>();
+            var line = (SpriteRenderer)ReadObject(turret, "line");
+            if (greybox == null) return null;
+            Transform art = ArtObject(artRoot, name, greybox.transform.position, layer, changes);
+            TurretArt presenter = SetupUtility.Ensure<TurretArt>(art.gameObject, changes);
+            SpriteRenderer body = Child(art, "Housing", layer, changes);
+            body.sprite = config.TurretIdle; body.sharedMaterial = config.TrapMaterial; body.drawMode = SpriteDrawMode.Simple;
+            body.sortingOrder = greybox.sortingOrder + 3;   // over its own beam's end
+            TrapKitSetup.Write(presenter, changes, ("trap", turret), ("rooms", rooms), ("seedName", name), ("body", body), ("greyboxBody", greybox),
+                ("idle", config.TurretIdle), ("locked", config.TurretLock), ("aimTicks", ReadInt(turret, "aimTicks")), ("lockTicks", ReadInt(turret, "lockTicks")), ("fireTicks", ReadInt(turret, "fireTicks")));
+            SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
+            if (line == null) return art.name;
+            Transform shot = ArtChild(art, "Shot", layer, changes);
+            LaserArt beam = SetupUtility.Ensure<LaserArt>(shot.gameObject, changes);
+            SpriteRenderer beamBody = Child(shot, "Beam", layer, changes);
+            beamBody.sprite = config.LaserBeam; beamBody.sharedMaterial = HazardMaterial(config); beamBody.drawMode = SpriteDrawMode.Tiled;
+            beamBody.sortingOrder = line.sortingOrder; beamBody.enabled = false;
+            TrapKitSetup.Write(beam, changes, ("trap", turret), ("rooms", rooms), ("seedName", name + "_Shot"), ("body", beamBody), ("greyboxBody", line),
+                ("beam", config.LaserBeam), ("gateAlpha", 1f));
+            SetupUtility.SetArray(beam, "greybox", new Object[] { line }, changes);
+            return art.name;
+        }
+
+        /// <summary>D-276: a chasing laser's beam (pale blue-white), or the crimson one without it.</summary>
+        static Sprite Chaser(TrapArtConfig config) => config.ChaserBeam != null ? config.ChaserBeam : config.LaserBeam;
+
+        /// <summary>PAX-123 (D-276): a trident: OT-04's housing at its muzzle and, per beam, a crimson LaserArt over the trap's line at the
+        /// line's own alpha (faint flicker as it warns, full as it fires).</summary>
+        static string BuildTrident(Transform artRoot, string name, TridentTrap trident, TrapArtConfig config, RoomManager rooms, int layer, List<string> changes)
+        {
+            Object[] lines = ReadObjects(trident, "lines");
+            Transform art = ArtObject(artRoot, name, trident.transform.position, layer, changes);
+            Housing(art, config, 0.75f, layer, changes);
+            for (int i = 0; i < lines.Length; i++) BeamOver(art, "Beam" + i, name, trident, lines[i] as SpriteRenderer, config.LaserBeam, config, rooms, layer, changes);
+            return art.name;
+        }
+
+        /// <summary>PAX-124 (D-276): a rotating chaser: a housing riding its pivot (FollowTransform) and, per arm, a pale blue-white
+        /// LaserArt over the trap's arm at the arm's own alpha (dim before it fires, flickering through its warning, full when live).</summary>
+        static string BuildSweeper(Transform artRoot, string name, RoomTrap sweeper, TrapArtConfig config, RoomManager rooms, int layer, List<string> changes)
+        {
+            Object[] arms = ReadObjects(sweeper, "arms");
+            var pivot = (Transform)ReadObject(sweeper, "pivot");
+            Transform art = ArtObject(artRoot, name, sweeper.transform.position, layer, changes);
+            Transform hub = ArtChild(art, "Hub", layer, changes);
+            FollowTransform follow = SetupUtility.Ensure<FollowTransform>(hub.gameObject, changes);
+            TrapKitSetup.Write(follow, changes, ("target", pivot), ("offset", Vector2.zero));
+            Housing(hub, config, 0.6f, layer, changes);
+            for (int i = 0; i < arms.Length; i++) BeamOver(art, "Arm" + i, name, sweeper, arms[i] as SpriteRenderer, Chaser(config), config, rooms, layer, changes);
+            return art.name;
+        }
+
+        // An OT-04 housing `width` units wide at the parent's origin, over its beams.
+        static void Housing(Transform parent, TrapArtConfig config, float width, int layer, List<string> changes)
+        {
+            SpriteRenderer housing = Child(parent, "Housing", layer, changes);
+            housing.sprite = config.TurretIdle; housing.sharedMaterial = config.TrapMaterial; housing.drawMode = SpriteDrawMode.Simple; housing.sortingOrder = 5;
+            if (config.TurretIdle != null) housing.transform.localScale = Vector3.one * (width / config.TurretIdle.bounds.size.x);
+        }
+
+        // A LaserArt in its own child of `art`, drawn over `line` (one of a trap's line renderers) at the line's alpha.
+        static void BeamOver(Transform art, string child, string name, RoomTrap trap, SpriteRenderer line, Sprite sprite, TrapArtConfig config, RoomManager rooms, int layer, List<string> changes)
+        {
+            if (line == null) return;
+            Transform t = ArtChild(art, child, layer, changes);
+            LaserArt beam = SetupUtility.Ensure<LaserArt>(t.gameObject, changes);
+            SpriteRenderer body = Child(t, "Beam", layer, changes);
+            body.sprite = sprite; body.sharedMaterial = HazardMaterial(config); body.drawMode = SpriteDrawMode.Tiled;
+            body.sortingOrder = line.sortingOrder; body.enabled = false;
+            TrapKitSetup.Write(beam, changes, ("trap", trap), ("rooms", rooms), ("seedName", name + "_" + child), ("body", body), ("greyboxBody", line),
+                ("beam", sprite), ("gateAlpha", 1f));
+            SetupUtility.SetArray(beam, "greybox", new Object[] { line }, changes);
+        }
+
+        static string BuildLaser(Transform artRoot, string name, RoomTrap trap, SpriteRenderer greybox, int warnTicks, TrapArtConfig config, RoomManager rooms, int layer, List<string> changes, Sprite beamSprite = null)
+        {
+            Sprite sprite = beamSprite != null ? beamSprite : config.LaserBeam;
+            if (greybox == null) return null;
+            Transform art = ArtObject(artRoot, name, greybox.transform.position, layer, changes);
+            // A rebuild over a level built with spikes: the spike presenter and its blades go.
+            if (art.TryGetComponent(out SpikeArt spikes)) { Object.DestroyImmediate(spikes); changes.Add("removed " + name + "'s spikes"); }
+            foreach (Transform old in art.Cast<Transform>().Where(c => c.name is not ("Beam" or "EmitterTop" or "EmitterBottom")).ToList()) RemoveChild(art, old.name, changes);
+            LaserArt presenter = SetupUtility.Ensure<LaserArt>(art.gameObject, changes);
+            SpriteRenderer body = Child(art, "Beam", layer, changes);
+            body.sprite = sprite; body.sharedMaterial = HazardMaterial(config); body.drawMode = SpriteDrawMode.Tiled;
+            body.sortingOrder = greybox.sortingOrder; body.enabled = greybox.enabled;
+            TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", name), ("body", body), ("greyboxBody", greybox),
+                ("beam", sprite), ("warnTicks", warnTicks));
+            SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
+            return art.name;
         }
 
         // ---------- spikes: static, pit floors, hidden, periodic, sliding ----------
@@ -281,7 +412,9 @@ namespace Parallax.Editor.Art
             // block out instead (SoloRoomSkin.LeavesHole), so the air shows through; no socket.
             SpriteRenderer socket = null;
             RemoveChild(art, "Socket", changes);
-            SpriteRenderer[] dust = Effects(art, "Dust", config.SolidDust, config.Dust, config.TrapMaterial, greybox.sortingOrder + EffectOrder, layer, changes);
+            // PAX-A20: a flip plate (PAX-115) turns over in place and a glitch platform (PAX-114) jumps; neither raises dust as if it slid.
+            bool turns = trap is MovingTrap flipper && (ReadInt(flipper, "flipTicks") > 0 || (Prop(flipper, "glitch")?.boolValue ?? false));
+            SpriteRenderer[] dust = Effects(art, "Dust", turns ? 0 : config.SolidDust, config.Dust, config.TrapMaterial, greybox.sortingOrder + EffectOrder, layer, changes);
             // 2026-10-17 (the developer: "Whatever falls needs to crash and look like a pile of rubble and not like a perfect
             // square, but this goes only for the ones that fall and never go back up"): a falling block that has landed shows
             // a heap of broken stone over its footprint instead of its skin (every falling block stays down until its room

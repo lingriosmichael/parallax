@@ -6320,3 +6320,557 @@ coming down before the elevator reaches the floor, forcing the player to jump to
 - **No Shaft checkpoint:** the start's section runs to Summit's gate (1957 ticks; `L030/Ride`'s cap raised to 2200).
 - Validated on a batch clone (Quick, Full, Det for L030): solution 2266 ticks, deterministic, 23 betrayals each to its killer,
   every jump window 17+ ticks; Full's report is clean (the test exceeds the harness's 180 s timeout).
+
+## D-262 — L031 "Firewall": pulse gates with a purge behind you; Obsidian Void opens (2026-10-30, Proposed)
+
+The developer, 2026-10-30: "Lets analyse what I like and then start building the first 5 levels for obsidian (31-35)", after
+asking for a review of L021–L030's play-test rounds. The review and the five concepts are in `Docs/Design/L031-L035_concepts.md`.
+L031–L035 follow its rules:
+- one new headline mechanic per level;
+- pressure on the normal path at all times;
+- a lie about the player's habit;
+- 1000–1400 ticks with at most one checkpoint gate;
+- a finale of each level's own;
+- Obsidian's trap set (D-172), with none of the rejected mechanics: arrows, beam lanes, clouds, pop spikes, glitch walls,
+  spinners, pendulums.
+
+L031 is one corridor, 4 u tall and 130 u long, crossed by pulse gates (PAX-112). Purge beams (scanners, PAX-113) sweep it from
+behind a little slower than a run, so every wait spends time you can't see.
+- **Hall 1:**
+  - Gate_1 is on as a running cat arrives.
+  - Eye_1, an aiming turret, watches the obvious place to wait for Gate_2. Wait in the gap past Gate_1 instead.
+  - Stone_1 is a phase platform over Pit_1.
+  - Gate_3 and Gate_4 have a pocket between them. Gate_4 is on whenever a cat that crossed Gate_3 at a run gets to it, so the
+    cat has to stop in the pocket.
+  - A glass bridge, with Gate_5 at its end: time the gate from the solid floor.
+  - ~~Inv_1 is hidden over the first pane. A cat that keeps pressing on turns back into the purge.~~ Removed by amendment 1.
+- **Hall 2** (one gate):
+  - Turn_1–3, flip platforms (PAX-115), turn over in a running light over Pit_3.
+  - Gate_6 stands at the landing.
+  - Eye_2 aims down the corridor: jump its shot as it locks. It uses a 14-tick lock and a 6-tick fire, about 10 u away, which
+    gives a 12-tick window.
+- **The firewall:** five gates switch on one after another from the door toward the cat, faster than it runs. A straight run
+  never fits; run, stop, run, stop, run. The tightest window is 27 ticks; 32 lethal ticks of 120, each gate 12 ticks after the
+  one east of it.
+- **Validated** on a batch clone (`Band2DevTests` Quick and Full for L031):
+  - The solution takes 1334 ticks and is deterministic.
+  - 16 betrayals die to 14 distinct killers, with leads of 10 or more.
+  - Windows are 12–51 ticks (the shortest is Eye_2's jump).
+  - Hall1 is 583 ticks and Hall2 751. The rewind is exact.
+  - Every killer is on screen at 4:3, 16:9 and 20:9.
+- **Look:** a night palette with a clear sky (`LevelPalettes`) until PAX-A20's biome switch. Gates, purges, flip plates and turrets
+  wear their placeholder art.
+
+**Amendment 1 (2026-10-31):** the developer, play-testing L031: "At this part remove the direction inverter. Its too hard". Inv_1
+is gone from the glass bridge, with its betrayal; the bridge is now just "time Gate_5 and don't stop on the glass". The glass
+betrayal now stops on Glass_1 itself. Not re-validated (edit and hand over).
+
+## D-263 — L032 "Overflow": a flooded tower (2026-10-30, Proposed)
+
+A tower 24 wide with five storeys 5 apart. It is climbed through 2 u wall-jump chimneys between circuit panels (grip walls, D-110),
+which alternate ends. A laser flood rises from below; it is a Hazard mover, harmless and hidden until it fires.
+- **S0:** Retract_0, a shrinking bridge, pulls back from under the cat's heels.
+- **S1:** Bar_1, a hard-light bar (PAX-111), fires along the storey at a jumping cat's height as the cat comes to Step_1. This is
+  the level's BAIT: let it fly over, then jump. Holo_1 is a hologram floor; jump it.
+- **S2** (one gate): Flood_2 starts at the checkpoint. Squeeze_2, the lower half of S3's slab, comes down over the walk.
+- **S3:** an 8 u hole is crossed upside down on S4's underside. Flip_3U takes the cat up. It jumps Flip_3T (a 0.5 × 0.6 orb, small
+  enough to clear). Inv_3 sends a cat that keeps pressing on back into Flip_3T. Flip_3D brings it back down.
+- **The Surge:** set off at Chimney D's foot, it fills that chimney's column a little faster than a cat climbs it.
+- **S4:** Retract_4, over S3's hole, pulls back over the flood. Bar_4 comes at the cat at shin height (jump it) and sticks in the
+  Sill by the door.
+- **Engine facts learned here:**
+  - A Hazard or scanner mover ignores `delayTicks`; the builder writes the delay for PAX-093 floors only.
+  - A mover with `PathSettings` is checked as a Solid against fixed geometry, so a flood crossing slabs moves by a plain offset.
+- **Validated** (Quick and Full for L032):
+  - The solution takes 1214 ticks and is deterministic.
+  - 11 betrayals die to 6 distinct killers.
+  - Windows are 23–27 ticks. Lower is 543 ticks and Upper 667. The rewind is exact.
+
+**Amendment 1 (2026-10-31):** the developer, play-testing L032: "looks weird what is this spikes in the air". Flood_2 waited
+at y 7 across S1's air and the Surge at y 11 over S2's west end, both drawn as rows of spikes in mid-air. Both now wait inside
+the stone (Flood_2 in S2's slab, top 9.4; the Surge in Floor_3W, top 14.5). Movers have no delay, so each holds on a first leg
+that moves 0.01 u (160 and 64 ticks), then rises at its old speed: each reaches its floor on the same tick as before (199 vs
+200, 73 vs 73). Not re-validated (edit and hand over).
+
+## D-264 — L033 "Wormhole": portals whose exits move (2026-10-30, Proposed)
+
+The first level with portals (PAX-120). Walled cells, each crossed by a portal; a portal keeps the cat's speed. A glitching exit is
+home for move ÷ spots ticks, then on each spot in turn, holds the last for `hold`, then goes home. Each period is long enough that
+the exit rests home 41 or more ticks (D-056's slack).
+- **Cell A:** Portal_A's exit sits over Pit_A for most of its beat. A cat that runs straight in comes out over the pit.
+- **Cell B:** Portal_B stands on glass. Time the run-up from the solid floor.
+- **Cell C:** Pit_C's floor is Portal_C, between two laser strips. Jump into the pit; the cat falls out of the exit high over the
+  far floor, or over Pit_C2 when off the beat.
+- **Cell X:** Portal_X's exit hangs over a laser lake, and Ferry_X shuttles underneath. Go in as the ferry comes under it.
+- **Cell Y:** Portal_Y's exit sits high over Pit_Y. A cat that runs in falls short; one that jumps in keeps its rise and carries
+  across. This one is a skill check, not a betrayal: the pit is a static, honest hazard, so the validator can't count it as one.
+- **The finale:** Portal_D's exit hops across the 20 u chasm in four jumps and holds over the door's ledge at the end of its beat.
+  Eye_D watches the floor by the entry, so wait out of its sight.
+- **Validated** (Quick and Full for L033):
+  - The solution takes 1008 ticks and is deterministic.
+  - 8 betrayals die to their killers.
+  - Windows are 19–51 ticks. Near is 401 ticks and Deep 607. The rewind is exact.
+
+## D-265 — L034 "Phase Shift": blinking stones, gravity orbs, a blackout (2026-10-30, Proposed)
+
+The first level built on phase platforms (PAX-122): a void with a laser floor below and a laser roof above.
+- **Blink:** eight floor stones, every other one lit in turn, 50 of every 100 ticks. Hop on the beat.
+- **Flip** (one gate):
+  - Stones on the floor and the ceiling alternate, each lit 70 of every 120 ticks, 30 after the one before.
+  - Honest gravity orbs sit in the gaps. Each orb is 1.5 past the platform before it, and the next stone starts 1 past the orb:
+    that's where a flipped cat arrives.
+  - Inv_C3 sits under a ceiling stone. A cat that keeps pressing on walks back off it into the laser roof.
+- **Blackout:**
+  - Glass tiles shatter one after another behind the cat, 30 after the first step, then 19 apart (a little slower than a run).
+  - Orb_B1 takes the cat up onto the ceiling's tiles; the shattering follows. Orb_B2 brings it down by the door.
+  - Phase platforms must be Periodic (PAX-122), which is why the blackout is glass.
+- **Validated** (Quick and Full for L034):
+  - The solution takes 1113 ticks and is deterministic.
+  - 7 betrayals die to their killers.
+  - Windows are 27–49 ticks. Blink is 498 ticks and Flip 615. The rewind is exact.
+
+## D-266 — L035 "Scanline": hide from the scan (2026-10-30, Proposed)
+
+The first level built on scanners (PAX-113). Floor-to-ceiling beams sweep west at twice the cat's run speed: they can't be jumped
+or outrun. A scanline is a scanner with `returnTicks` 0, so it is gone home at once. The only safety is a slot 1.3 deep in the floor,
+below the beam's band. Every slot fills up once a cat is in it, so no slot is a place to idle.
+- **Hall 1:** Scan_A's slots are 10 apart and fill after 90 ticks. Shallow_3 (0.4 deep) is too shallow to hide in; jump it, the
+  real slot is just past it.
+- **Hall 2** (one gate): the Fill_1–4 slots are 9 apart and fill after 55 ticks. Duck late, not early.
+- **The double scan:** Scan_E follows Scan_D 26 ticks behind. Stay down through both, climb out after the second.
+- **Validated** (Quick and Full for L035):
+  - The solution takes 1364 ticks and is deterministic.
+  - 5 betrayals die to their killers.
+  - Hall1 is 629 ticks and Hall2 735. The rewind is exact.
+
+**For all five (D-262–D-266):**
+- **The developer's steps:** run `PARALLAX/Setup/Levels/New Level...` once per level (L031 to L035), then `Rebuild All Levels`.
+  Built on a clone this way, all five scenes came out without errors.
+- **Until then:** `LevelLayouts`' list-both-ways test fails, because the layouts are registered but not yet listed.
+
+## D-267 — L036 "Overwatch": aiming turrets and cover (2026-10-30, Proposed)
+
+The developer asked for L036–L040 after L031–L035 (concepts in `Docs/Design/L031-L035_concepts.md` §7). L036 is the first level
+built on aiming turrets (PAX-121) used with cover. A wall turret tracks the cat anywhere, and its beam stops at the first solid, so a
+low block between the turret and the cat is cover. Far from a turret, a low block shades a long way; close to it, little.
+- **Hall 1:**
+  - Eye_1 sits in Tower_1 at the hall's end, muzzle 4 u up, range 50, firing every 90 ticks. Hop from cover to cover between shots.
+  - The cover is Block_1, then Holo_2 (a hologram: the beam goes through), Block_3, Glass_4 (breaks 10 ticks after it's touched:
+    don't lean on it), Block_5, and Block_6. Block_6 is 1.1 tall: this close to Eye_1 the beam comes down steeper.
+  - Then over Pit_1 and under Tower_1.
+  - Watch_1, Watch_3 and Watch_5 are ceiling eyes over the spots behind Block_1, 3 and 5. They shoot a cat that waits there through
+    a second shot.
+- **Hall 2** (one gate):
+  - Shield_1 is a moving block 1 u tall. It sets off east toward Eye_2 as the cat leaves the checkpoint (17.3 u over 220 ticks), then
+    sinks into Slot_S by Block_7. Walk in its shadow, and get behind Block_7 as it sinks.
+  - Then Block_8, and under Tower_2.
+  - Eye_2's range is 27, so it can't reach hall 1 under Tower_1.
+- **The crossfire:** Eye_W (low, on Tower_2's east face) and Eye_E (high, over the door, on the end wall) fire in turn, 45 ticks
+  apart. Hop each block as Eye_E's shot ends and stand in its lee for Eye_W's. Cross each gap as Eye_W's ends and press on the next
+  block for Eye_E's.
+- Every eye's shot is aim 30, lock 12, fire 8, on a 90-tick period (Eye_2: 85), to fit D-056's slack.
+- **Validated** (Quick and Full for L036):
+  - The solution takes 1509 ticks and is deterministic.
+  - 8 betrayals die to their killers.
+  - Hall1 is 545 ticks and Hall2 964. The rewind is exact.
+
+## D-268 — L037 "Transit": one lake, platforms every way (2026-10-30, Proposed)
+
+One laser lake 100 u long, crossed on cat-sized platforms (1.5 × 0.5) that move every way. The idea comes from L023/L030, which the
+developer liked. Glitch platforms (PAX-114) never carry a rider: they jump out from under a cat. So they're leapfrogged: jump as one
+flickers, toward the spot it's about to appear on.
+- **Section 0:**
+  - Ferry_1 leaves 40 ticks after the start.
+  - Sink_2 looks like the next ferry, but at its far end it goes down through the laser into the Well (a deeper cut in the lake floor).
+  - Glitch_3 jumps east between three spots, 60 ticks each, with a 12-tick flicker.
+  - Ferry_4 runs to the middle ledge and holds only 12 ticks before heading back.
+- **Section 1** (one gate), on one shared 270-tick beat:
+  - Lift_5 rises 3 u; the cat can't jump while it rises.
+  - Ferry_6 runs east at that height.
+  - Slide_7 comes down the slope to the lake's height.
+  - Leap_8 jumps four spots toward the door ledge, 45 ticks each, and holds the last for 45.
+- **Validated** (Quick and Full for L037):
+  - The solution takes 1119 ticks and is deterministic.
+  - 3 betrayals die to their killers.
+  - Windows are 12–51 ticks. Lake1 is 543 ticks and Lake2 576. The rewind is exact.
+
+## D-269 — L038 "Compactor": the roof comes down (2026-10-30, Proposed)
+
+Claustrophobia, which the developer liked in L024. A corridor 3.2 u tall whose roof comes down. The cat sets all of it off; none of
+it runs on a beat.
+- **The cave-in:**
+  - 26 roof columns, each 2.5 wide, come down one after another, starting behind the cat. The first falls 30 ticks after the start
+    and each next 23 later, a little slower than a run. They're chained (each crushes), and the trigger is the whole section.
+  - Ahead, presses come down as the cat comes near:
+    - Press_1, Press_2 and Press_5 close slowly. Run under them; don't stop.
+    - Press_3 stops half way, so a cat fits under it, then shuts slowly. There's no hiding under it.
+    - Press_4 shuts fast and lifts again (rearmed). Press on its face and go as it lifts, using the lead the cave-in left you.
+  - Three laser pits to jump. Inv_0 (45 ticks, hidden) turns the stick round.
+- **The closing hall** (one gate):
+  - The Lid is the whole hall's ceiling, 45.5 u long. It comes down to 0.3 over 480 ticks once the cat leaves the checkpoint.
+  - It's a slam, so a cat jumping into it as it comes down is crushed too. Jump Pit_A at once.
+  - Run the glass over Pit_C, and hold the stick back through Inv_D and Inv_F (30 ticks each, hidden).
+  - A cat that never hesitates comes out from under the Lid's end with about 0.8 of head room.
+- **Validated** (Quick and Full for L038):
+  - The solution takes 963 ticks and is deterministic.
+  - 7 betrayals die to their killers.
+  - CaveIn is 539 ticks and Closing 424. The rewind is exact.
+
+## D-270 — L039 "Barrage": bars you climb (2026-10-30, Proposed)
+
+Built on hard-light bars (PAX-111). A bar is lethal in flight, and where it sticks it's solid: a step. The lie: "dodge the shots".
+The bars that almost hit you are the ones you climb.
+- **Shaft A:**
+  - Its floor is glass over a laser pit and gives way 75 ticks after it's touched.
+  - A1 to A5 fly across the shaft, each just over a standing cat's head, and stick 1.25 higher on alternating walls.
+  - Each fires when a cat comes up over the step below it, with a 30-tick warning, so a cat jumping onto a step lands before the
+    next bar flies. A cat that jumps as a bar flies is hit.
+  - Climb out over the east wall onto the corridor.
+- **The corridor:** two bars come from behind, out of Shaft A's wall.
+  - Low flies at shin height: jump it.
+  - High flies at a jumping cat's height: run under it.
+  - Both fly on under the Lintel into Shaft B; High is Shaft B's first step.
+- **Shaft B** (one gate): ten steps the same way over glass. Then up onto the Lintel's top and west to the door.
+- **Rules learned:**
+  - Each bar needs its own lane, since a stuck bar can't lie in another's.
+  - Launchers sit inside the room's frame.
+  - A trap trigger sees more of the cat than its body, so each bar's trigger starts 0.3 above the step below it.
+- **Validated** (Quick and Full for L039):
+  - The solution takes 985 ticks and is deterministic.
+  - 6 betrayals die to their killers.
+  - ShaftA is 438 ticks and ShaftB 547. The rewind is exact.
+
+## D-271 — L040 "Freefall": the first descent (2026-10-30, Proposed)
+
+Five storeys 4 apart, each a run to its hole at the far end, alternating sides. The Beam is a flat laser across the tower, coming down
+it after the cat from the start at 0.016 u/tick. It's a lethal mover like L032's floods, because a scanner only sweeps sideways (R2).
+The lie: "go down the hole". A hole is a hatch, and it opens when it opens.
+- **S0** is taller, so the Beam starts high. Gate_0 is on the walk, and Hatch_0 pulls back as the cat comes to it.
+- **S1:** a glass run over Pit_1, then the open west hole.
+- **S2:** Hatch_2 opens only as the Beam comes within 2 u of S2's floor (chained from the Beam's start). Wait at it, under the Beam.
+- **S3** (one gate): Inv_3 (hidden), Gate_3, and Hatch_3.
+- **S4:** run east to the door, which sits in a notch in the tower wall where the Beam can't reach.
+- **Validated** (Quick and Full for L040):
+  - The solution takes 1144 ticks and is deterministic.
+  - 6 betrayals die to their killers.
+  - Upper is 724 ticks and Lower 420. The rewind is exact.
+
+**For all five (D-267–D-271):**
+- **The developer's steps:** run `PARALLAX/Setup/Levels/New Level...` once per level (L036 to L040; after L031 to L035), then
+  `Rebuild All Levels`. Built on a clone this way, all five scenes came out without errors.
+- **Look:** they wear the night palette over the Golden Ruins kit until PAX-A20. The new trap kinds still use placeholder art.
+
+**Art clean-up (2026-10-30, after the developer asked for one before testing).** I rendered all ten levels and fixed what the
+current kit can fix. L032, L037 and L040 still pass Full.
+- **L032:** Flood_1, Flood_2 and the Surge are now 0.3-thick bands (they were 6 u tall). A lethal mover draws as spikes stretched to
+  its height, so the old floods showed as tall spike fields.
+- **L037:**
+  - The roof is at 4.8 (it was 6): the ceiling stays in view.
+  - Lift_5, Ferry_6 and Slide_7 work 0.5 lower.
+  - The Well is a narrow slot under Sink_2's end, not a wide sky hole in the lake floor.
+- **L040:** the west holes run to the wall. The 1 u stone stubs beside them are gone.
+- **Left for PAX-A20 (Obsidian art):**
+  - Every Hazard still draws as Golden Ruins spikes: pit lasers, L034's void and roof, the floods, and L040's Beam.
+  - L040's Beam reads as a row of spikes coming down, not a laser.
+  - Turrets are dark placeholder squares.
+  - Holograms look like stone. That's intended for L036's Holo_2, but the art should say "hologram".
+
+## D-272 — PAX-A20 stage 1: Obsidian trap art (lasers, gates, turrets, bars) (2026-10-31, Proposed)
+
+The developer, 2026-10-31, play-testing L031–L032 ("What is this long spike supposed to be?", "am I running through a laser",
+"We have a lot of art in ObsidianVoid that is not being used, why is that?", then "lets go in order"). PAX-A20 is built in
+stages so the worst problem goes first: (1) trap art, (2) stone, (3) backgrounds, (4) props and OT-18–OT-23.
+
+**Stage 1:**
+- **Biome table** (`Biomes`, in code with `BiomesTests`): Golden Ruins L001–L030, Obsidian Void L031–L060, anything else
+  Golden Ruins. Phase 1's plan stands, with one change: the Obsidian trap art is a set of fields in the one `TrapArtConfig`
+  (null = the Golden Ruins art), not a second config asset. Same import menu, no asset choice by level, and an Obsidian
+  field left empty falls back on its own.
+- **`Tools/Art/obsidian_traps.py`** cuts the OT paintings into `Assets/_Game/Art/Traps/Obsidian/` with its own manifest,
+  which `Import Trap Kit` reads after the Golden Ruins kit's (its own atlas, `ObsidianTraps`). Deterministic, `--check`.
+- **Lasers** (`LaserArt`): in an Obsidian level, every bare `Hazard` and every hazard `MovingTrap` (pit floors, floods,
+  purges, L040's Beam) draws as OT-05's beam, tiled along the band and as thick as it, instead of spike blades. A scanner
+  draws dim before it fires and flickers through its warning, so a beam that can't kill yet doesn't look lethal.
+- **Pulse gates:** the same beam between OT-16's two emitters (fittings at floor and ceiling, always drawn), at the gate's own
+  alpha, so the beam flickers exactly as the gate warns.
+- **Turrets** (`TurretArt`): OT-04's housing, lit crimson while it locks and fires; the aim and shot line is the beam at
+  the line's own alpha.
+- **Hard-light bars:** OT-06's cyan bar (drawn whole at 1.4 × 0.3, as the spear is) out of a small OT-04 housing.
+- **Dust:** flip plates (PAX-115) and glitch platforms (PAX-114) no longer throw sliding dust, in every biome. They turn or
+  jump; the dust ran on ticks they didn't move and failed art parity (L031, L037).
+
+**Verified on the batch clone:** Import Trap Kit, Rebuild All, captures of L031–L040; `TrapArtParityTests` passes for L031,
+L032, L034–L040 (with the dust fix); `BiomesTests` and `TrapArtSizeTests` pass.
+
+**Not yet:**
+- L033's portals have no art: they wait for OT-19.
+- Flip plates' spiked faces are still Golden Ruins blades (OT-21); glass, holograms, orbs, crushers and moving platforms
+  keep the Golden Ruins look until stage 2 gives Obsidian its stone, so the two change together.
+
+## D-273 — PAX-A20 stage 2: Obsidian stone (2026-10-31, Proposed)
+
+The developer, 2026-10-31: "Start with stage 2."
+
+**The kit is an overlay.** `Tools/Art/obsidian_env.py` writes Obsidian Void's play-layer slots into
+`Assets/_Game/Art/ObsidianVoid/Environment/Kit/` under the Golden Ruins slots' own names, pixel sizes and alignment offsets (copied
+from Golden Ruins' `env_kit.json`), so every rule the skin aligns by holds unchanged. `EnvironmentKit.Current` (a `Biome`) picks the
+kit: `LevelSetup` sets it from `Biomes.Of(layout)` for each level build and puts it back after. A slot the overlay lists resolves in
+its folder; every other slot falls back to Golden Ruins'. Each biome has its own tile and edge materials (`TileMaterialFolder`) and
+atlases (its own sprites only); the background tiers' materials stay Golden Ruins' until stage 3. `Environment Stack` makes both
+biomes' materials, normal maps and atlases.
+
+**The slots (76):**
+- **Painted:** the three fills (OV-10a, a2, a3, made seamless, 2 × 2 per Golden Ruins fill, blocks about 0.8 u), the cap (OV-10b,
+  its crystals above the walk line), the underside (OV-10c), the slab (OV-11), the wall side (OV-12), the door (OV-24, open and
+  lit) and the checkpoint (OV-25, dark and lit). The thick undersides are the fill with OV-10c's underside and crystals below it.
+- **Re-cut:** ends, posts, inner sides and recess lips keep the Golden Ruins shape and light and shade, filled with Obsidian stone.
+  The recess fills are the Obsidian fills softened and darkened.
+- **Recoloured** to the cold palette: washes, arch shade, glow, halo, water.
+- **Empty until stage 4:** moss, drapes, ferns, banners, glyphs, rubble, lip vines, fringes, chains.
+- **Grip faces (D-114):** Obsidian's sign is OV-31's lit circuit panel. Three panel pieces (`ENV_GripTuft_*`, Obsidian only) stand
+  along each grip face where Golden Ruins stands moss.
+- **Kept:** the broken-stone masks (they take the fill's colour), shading, the vines, and the backgrounds.
+- The checkpoint marker now comes from the current kit (`SoloRoomBuilder`), so L031+ get the Obsidian crystal.
+
+**Verified on the batch clone:** Environment Stack, Rebuild All, captures of L031–L040. No L001–L030 scene references an Obsidian
+asset (GUID scan). `EnvironmentKitImportTests`, `LevelLookConfigTests`, `BiomesTests` and `TrapArtSizeTests` pass.
+
+**Failing before stage 2, not changed by it:**
+- `MossSignAndBrokenStoneTests.TheGripRooms_HaveGripMoss`: L001 has had no grip walls since its redesign (D-159).
+- `Room:L032`: Pillar_D's grip face gets 30% moss, not 80% (the room's keep-outs, from D-263).
+- `TrapArtRevealFrameTests` for L021, L022 and L025 (the same failures with the committed art code), and for L036 and L039 (glass
+  over laser pits, the same with the Obsidian kit off).
+
+## D-274 — PAX-A20 stage 3: Obsidian backgrounds (2026-10-31, Proposed)
+
+The developer, 2026-10-31: "Proceed with stage 3."
+
+**The backgrounds join the overlay.** `obsidian_env.py` also writes the background slots, the Golden Ruins slots' names and canvases,
+into `Assets/_Game/Art/ObsidianVoid/Environment/Backgrounds/Kit/` (`EnvironmentKit.ObsidianLayerFolder`). The composer, the sky and
+the tiers are unchanged: in an L031+ build they find Obsidian pieces where Golden Ruins' were. Each piece is fitted into the Golden
+Ruins piece's own visible box (bottom-aligned), so placement, scale and the rules the composer checks (A2's legal bases) hold.
+
+**The pieces (55):**
+- **Sky:** every sky plate is OV-01's starry void (the plate is drawn untinted). The sun or moon is OV-02's star.
+- **Clouds and bands:** OV-03 c, b and a (far, mid, near mist) at half strength (their bright wisps were busy behind the play
+  layer); OV-06 haze, OV-27 fog.
+- **Far skyline:** OV-04's four floating monoliths are the islands; OV-05's towers, bridge and crystal spire the spires; OV-41 the
+  city and far cluster; OV-30's void pool the far lake and water plane.
+- **Mid distance** (for a signature; L031–L040 stay "Clear"): OV-07a's gateway, stepped pyramid, ring and leaning slab; OV-07b's
+  crystal formations instead of trees; OV-07c's span; OV-07d's colonnade; OV-32 the back and ruin walls; OV-08 the voidfall;
+  OV-28 the light shafts.
+- **Foreground:** OV-26's crystal corners and OV-26b's monolith.
+- **Motes:** cold sparks in Obsidian levels (the particle colour, by `EnvironmentKit.Current`).
+
+**Verified on the batch clone:** Environment Stack, Rebuild All, captures of L031–L040; no L001–L030 scene references an Obsidian
+asset (GUID scan); `EnvironmentKitImportTests`, `LevelLookConfigTests`, `BiomesTests`, `TrapArtSizeTests`,
+`EnvironmentReadabilityTests` pass (19/19).
+
+**Seen, not changed:** the level template's frozen co-op sandbox anchors (`Vine_A`, `Plate_A`, Golden Ruins art at fixed world
+positions) show in levels whose stone doesn't hide them (L031's bottom edge, under L040's S0). They are in every level since the
+template was made; hiding them touches frozen co-op objects, so it waits for the developer.
+
+## D-275 — PAX-A20 stage 4: Obsidian props, orbs, slam plates and glass (2026-10-31, Proposed)
+
+The developer, 2026-10-31: "Proceed with stage 4."
+
+**Props** (`obsidian_env.py`, in the overlay):
+- **New Obsidian-only slots:** `ENV_Fixture_0–5`, OV-20's six ceiling fixtures (0.9 u tall), and `ENV_Prop_0–5`, OV-21's six
+  machines and crystal clusters (1.2 u wide).
+- **Golden Ruins slots refilled:** the banners from OV-22's holo-banners (hung from the top), the rubble from OV-23's wreckage, and
+  the glyph panels from OV-23's circuit panels (their debris foot cut away, drawn untinted).
+- **Placement (`SoloRoomSkin.Dressing`):** a biome with fixtures places no moss tufts, lip ivy or ferns. Instead it hangs one
+  fixture every 4–8 u under each overhang with 2.2 u clear below (at most 0.8 u long, so it never reads as a lower ceiling), and
+  stands one prop every 3–7 u at the foot of a tall block's face, clear of everything the player must see. Golden Ruins dressing
+  is unchanged.
+- **Look:** unlisted Obsidian levels take `LevelLooks.DefaultObsidian` (no moss; banners, rubble and glyph panels on).
+
+**Trap art** (`obsidian_traps.py`; `TrapArtConfig.ObsidianView()`, a copy the builder uses for an Obsidian level and then destroys):
+- OT-13's rings stand in for the flip ring (arrows up and down) and the inverter orb (left and right).
+- OT-10's striking edge (its lip and crimson blades) is the slam plate.
+- OT-09's three crack stages and broken edge are the glass floors' cracks and crumbling edge.
+
+**Verified on the batch clone:** Environment Stack, Import Trap Kit, Rebuild All, captures of L031–L040. `TrapArtParityTests` pass
+for L031, L032 and L034–L040; L033 fails only on its portals (they wait for OT-19). `BiomesTests`, `TrapArtSizeTests`,
+`EnvironmentKitImportTests` and `LevelLookConfigTests` pass. No L001–L030 scene references an Obsidian asset.
+
+**Waiting for the developer's paintings (OT-18–OT-23):** the aiming turret's turning eye, portals, phase platform, flip plates'
+spiked faces (still Golden Ruins blades), glitch platform and retracting hard-light floor.
+
+**D-275 amendment 1 (2026-10-31):** the developer, after a rebuild: "you reverted the art to golden ruins". Their `Level_031` was
+rebuilt at 11:20, while stage 3's art was being rewritten and before Unity had imported it; `EnvironmentKit.Ready` failed on one
+unimported Obsidian sprite, `EnvironmentStackSetup.Build` returned without a word, and the template's Golden Ruins stack stayed.
+Now an Obsidian override whose sprite isn't imported is left out of the overlay (its Golden Ruins twin stands in, with a warning
+naming it), and a skipped stack logs an error naming the missing sprite.
+
+## D-276 — Obsidian chasers are pale blue-white; L031 v2's new traps (2026-10-31, Proposed)
+
+The developer, 2026-10-31, after playing L031: "I think it is a bit easy ... I dont see troll deaths anywhere ... Some laser shooters
+should shoot out 3 lasers, one straight down, and 2 at an angle ... the laser that chases you to always always be like a very light
+obsidian based light blue almost white ... the vertical laser that chases the cat to turn 360, but have ... pieces of wall one has to
+hide in". Asked: "pure pale blue white", "the whole corridor", "yes fixed angles".
+
+1. **Chasers are pale blue-white, always.** Every laser that chases the cat (purges, floods, L040's descending beam, the rotating
+   chaser) draws as a pale, almost white, cold-blue beam. **This amends D-108 and D-172's colour rule** ("crimson is danger only;
+   cyan is safe") with one exception: a moving wall of light that follows you is lethal whatever its colour. Every other lethal
+   light (gates, turrets, pit floors, the trident) stays crimson. Art: PAX-A20 (a second beam sprite for `LaserArt`).
+2. **Two new traps,** tickets proposed for approval: PAX-123, the trident emitter (three fixed beams: down and two at an angle), and
+   PAX-124, the rotating chaser (a full-height laser bar turning 360° as it follows you, stopped by stone, so stone is cover).
+3. **L031 v2:** the concept in `Docs/Design/L031-L035_concepts.md` §9, for approval before building.
+
+**D-276 as built (2026-10-31), the developer: "proceed with the building now":**
+- **PAX-123, trident** (`TridentTrap`, `TridentSettings`, `TrapKitSetup.Kit3`, rules in `ValidateNewMovers`): warn ≥ 12, three fixed beams
+  to the first solid, the pulse gate's phase by ticks. It has no static kill volume (as the turret); the route validator proves
+  it. Art: OT-04's housing with three crimson `LaserArt` beams.
+- **PAX-124, rotating chaser** (`SweeperTrap`, `SweeperSettings`): the arms stop at stone, so a recess deeper than the arm's
+  reach is cover. **Changed while building:** a single chaser that passes over a hiding cat is then ahead of it and no longer
+  chases, so the chaser runs in **waves** (Periodic): each warns at home, sweeps past faster than a run, parks spinning at its
+  path's end, and vanishes as the next starts from home. It spins 10° a tick so that a pass is sure to hit a cat in the open.
+  Art: two pale `LaserArt` arms and a housing riding the pivot.
+- **Chasers are pale blue-white:** `OBS_chaser_beam` (OT-05's beam through a pale ramp) on every hazard mover in an Obsidian level
+  (purges, floods, L040's beam) and on the rotating chaser's arms. Static lasers, gates, turrets and tridents stay crimson.
+- **L031 v2** (passes `Band2DevTests.Full(31)`): solution 1519 ticks (Hall1 592, Hall2 927: under 1000, over the 750 aim); 15
+  betrayals, 14 distinct killers; rewind exact; the checkpoint (in Den_0) survives a wave.
+  - **Hall 1:** the pocket trapdoor (Trap_P); Trident_1 over the bridge's foot (wait at x 39 and run its fan and Gate_5
+    together, a 26-tick window).
+  - **Hall 2:** Wave_2 every 200 ticks (warn 30, sweep 130, park 40); four dens, Den_1 a hologram over a laser (its shaft deeper
+    than the hall's base, for a 6-tick lead).
+  - **Finale:** the door slides 3.5 u as the cat passes x 123, short of Gate_7.
+  - **Removed:** Purge_2, the flip plates, Pit_3, Gate_6, Eye_2, and v1's "Gate_5 [W]" betrayal (Purge_1 always got there first).
+- **Tests:** `Kit3Tests` (7: math, rules, both fixture rooms through the real game code); art parity for L031, L032 and L040;
+  `Kit2Tests`; `TrapArtSizeTests`: 29/29.
+
+**D-276 amendment 1 (2026-10-31):** the developer: "Thats not what I meant ... Revert what you did for the laser that spins. I want
+the same laser that is chasing at the beginning ... to slow start tilting and spinning, but not that fast ... I just want 1 laser
+chasing the whole level."
+- **L031:** Wave_2, the dens and the hologram den are gone; Hall 2 is v1's again (the flip plates over Pit_3, Gate_6, Eye_2), with
+  the runaway door kept. **One chaser, all level:** Purge_1 is now a rotating chaser (PAX-124) that sweeps from the start to x 121
+  at v1's speed (0.09 u a tick), upright through Hall 1. As its pivot reaches x 61 (where Purge_2 used to start) it begins to tilt
+  forward, speeding up over 300 ticks to a slow turn of 0.6° a tick (a full turn every 10 s).
+- **Runtime:** `SweeperTrap` can hold its angle until `spinFromTicks` and ramp its turn over `spinRampTicks` (`TrapPath.SweepAngle`).
+  Its arms now stop at fixed stone only (trap floors such as glass never shelter the cat, and a rewind restores traps in no set
+  order, so a trap's pose must not set the reach).
+- **Validated:** `Full(31)` passes (1399 ticks: Hall1 592, Hall2 807; 15 distinct killers; the rewind exact); `Kit3Tests` (8) and L031's
+  art parity pass. With these numbers the bar starts to tilt while the cat is on the flip plates and reaches it, turning, around
+  the firewall.
+
+**D-276 amendment 2 (2026-10-31):** the developer, playing amendment 1: "When it hits the 2nd hall it kind of slows down. I want it
+to be always in sight ... I dont like that it stays the same length ... it hits everything from end to end. There are no gaps. And I
+want it to speed up and sometimes slow down. Toy around with the player ... do a full 360 but add a platform it has to jump on top
+and jump over as it does a 360. MAke it fun!"
+- **`ChaserTrap`** (a new kind, `Chaser`): a laser line through a pivot at mid-height, each half a beam **to the first fixed solid**
+  (end to end, no gaps; trap solids never stop it). From its fire it warns, then its pivot runs east at the speed of the zone it
+  is in. From `catchUpFromX` it is never more than `maxLag` behind the cat (beyond that it runs at `catchUpSpeed`). At `spinX` it
+  stops and turns a full circle, then runs on, upright. Its pose depends on the cat, so it keeps its state by value in the
+  snapshot (a rewind restores it exactly). Rule: `CheckChaser`. Art: as the rotating chaser (pale arms, a housing on the pivot).
+- **A full-length line can't be jumped over:** the cat can only cross it round its end, at stone. So the 360's "platform" is
+  shade. **Step_S** (1.5 × 1.4) stands past the spin point (x 92): behind it the cat is out of every sweep. A cat that ran on must
+  come back to it, and a cat short of it must hop on and over it between sweeps (on top, it's in the path whenever the beam lies
+  level).
+- **L031:** Purge_1 is the chaser. Hall 1 runs at v1's 0.09 u a tick, with no catch-up (Hall 1's waits). Hall 2 has catch-up at
+  9 u, and zone speeds of 0.07 at the entry, 0.035 over the flip plates (a lull), 0.14 after the landing (a surge), 0.04 after
+  the circle and 0.02 in the firewall (a crawl). The circle turns at 3° a tick (120 ticks); slower circles put Hall 2 over 1000.
+  Eye_2 is removed (the set piece takes its place). Full passes: 1519 ticks (Hall1 592, Hall2 927); 14 distinct killers,
+  including "waits in the open as the laser turns"; the rewind exact. The route reads the chaser's phase from the room to leave
+  the step when the circle is done.
+- **Not covered:** no Kit fixture for `ChaserTrap` yet; L031's full validation exercises it.
+
+**D-276 amendment 3 (2026-10-31):** the developer, playing amendment 2: "I dont know why at this point it needs time to catch up so
+it some how slows down before this point ... I want the level to be longer. No need for so many lasers that are straight down
+vertical (at th end) The hard part will be evading the turning laser that goes one way and then reverts and then reverts again but
+further", then "I meant start spinning before that", then "It starts at the end of hall 1. when it starts swinging in a direction
+that it will likely kill you add places the cat can hide to avoid getting hit. It doesnt matter if the laser goes faster and gets in
+front of the cat, that is acceptable. but give it a way through jumping on platforms to catch up and get over it without dieing. Get
+creative. Adjust my ideas to the plan you have".
+- **`ChaserTrap`:**
+  - **Always near:** closer than `minLag` ahead of it, the cat makes it creep (speed × `closeScale`); a surge (a speed over
+    `catchUpSpeed`) never creeps, or a fleeing cat would slow it down.
+  - **The swing:** from `swingFromX` its line turns to each of `swingTilts` in turn at `swingSpeed` degrees a tick.
+  - **The overtake:** past `parkFromX`, once ahead of the cat, it parks (`parkSpeed`); once the cat is more than 1 u past it, it
+    runs on at `afterSpeed`. The full-circle `spinX` stays in the trap, but L031 no longer uses it.
+- **L031:**
+  - **Chase:** catch-up from the start at 9 u, creeping × 0.2 closer than 5 u. Zone speeds: 0.09 in Hall 1, 0.07 from x 59, 0.035
+    over the flip plates from x 67, 0.07 from x 84, and a 0.25 surge from x 106. After the cat passes it: 0.05.
+  - **Swing:** from x 45 (the end of Hall 1) at 0.8°/tick to +20, -30, +40, -50, +60, -60.
+  - **Tables** (low slabs, y 1 to 1.5) are the shelter, since a full-length line stops at stone: Table_0 and Table_1 in Hall 2,
+    Tunnel (x 112-120), Table_P and Table_D in Hall 3. Step_S and the firewall's row of gates are gone; Gate_7 stays by the door.
+  - **New Hall 3, the overtake:** the laser surges past the cat in the Tunnel, parks swinging at x 128 over the narrow Table_P
+    (1.4 u), and the cat gets by under it: in as the lower beam swings forward, out as it swings back. A cat that leaves the Tunnel
+    before the laser has passed is caught by the surge. The runaway door stays as the end.
+- **Measured:** `Band2DevTests.Full(31)` passes (batch clone): 1760 ticks (35.2 s; amendment 2 was 1519), Hall1 592, Hall2 388, Hall3
+  780; 16 betrayals, 13 distinct killers; both rewinds exact. Hall3 is over the 750-tick aim, under the 1000 limit (D-091).
+- **Not covered:** still no Kit fixture for `ChaserTrap`. Not rebuilt or played in the Editor, not on a device.
+
+## D-277 — Music: one melodic loop per world (2026-10-31, Proposed)
+
+**The developer:** "Lets do PAX 064. Can we also add some sort of melodic background music that matches the background?" PAX-064 was
+already built (D-158) and listed music composition as out of scope, so this is its own ticket, PAX-125.
+
+**Decisions:**
+- **One loop per world**, composed to match its background: GoldenRuins (L001-L030, Title, LevelSelect) is a warm 6/8 in G major on
+  harp, ocarina and bowed strings over running water; ObsidianVoid (L031-L060) is a cold 4/4 in D minor on glass bells and a
+  theremin-like voice.
+- **Rendered offline, as the cat voice is (D-165):** `Tools/Audio/music.py` writes WAVs, because an 80 s stereo loop is too much to
+  synthesize on a phone at load. No recorded audio and no licences. Reference: every note is in the script's scores.
+- **The music replaces the ambient bed, it doesn't sit on top of it.** Each track carries its own ambience (water and birds; air and
+  far-off glints), so one source plays and the bed's held G chord never clashes with D minor. Vision §9's "warm, organic ambient bed"
+  holds for Golden Ruins; Obsidian's is cold on purpose. The synthesized bed stays as the fallback for a bank with no loops.
+- **The loop carries on across scenes.** Levels run about 30 s, so restarting on each load would only ever play the opening. `GameAudio`
+  remembers the clip and sample in two static fields; a different clip starts from the top. This is presentation state, not a
+  singleton: nothing reads it, and losing it only restarts the loop. Deaths reload nothing, so they never interrupt the music.
+- **A level's track is baked from `Biomes` at rebuild**, on the same rule as its art, because `Biomes` is Editor-side.
+- **Streamed Vorbis, quality 0.5** (PAX-064 draft §2.6). The bank references both clips from every scene, so they stay out of memory.
+
+**Measured (offline, on the WAVs):** seam step 0.009 and 0.0003 against a typical (99th percentile) step of 0.04-0.06; the scored
+melody is the strongest pitch on 103 of 106 notes of two eighths or longer; about 93% of the energy is above 200 Hz, which phone
+speakers can play. Nobody has listened yet: musical quality and the mix are the developer's call.
+
+## D-278 — Haptics: near traps, deaths, level complete, and a pause-menu switch (2026-10-31, Proposed)
+
+**The developer:** "build it next" (PAX-065), after being told the ticket's on/off setting didn't exist.
+
+**Decisions:**
+- **Three cues:** TrapFire (light, 25 ms), Death (medium, 60 ms), LevelComplete (a rising pattern). No button tap; it was optional.
+- **Not every trap, an amendment to Vision §9:** "every trap firing" gets a haptic only within 9 u of the cat and 0.25 s after the last cue,
+  because a hall of periodic gates would otherwise buzz nonstop. Sound already fades the same way. Deaths and level complete always play.
+- **The switch is a pause-menu button,** "Vibration: On/Off", on by default, saved with `LevelProgressStore`, because there's no settings
+  screen. If one is built later, the button moves there.
+- **Older phones:** below API 26 or without amplitude control, only Death and LevelComplete play, as one plain `Handheld.Vibrate()`; a light
+  tick can't be expressed there.
+- **Presentation only:** `LevelHaptics` subscribes and polls, as `LevelAudioEvents` does. Nothing in gameplay reads it. No package, manifest or
+  ProjectSettings change: referencing `Handheld.Vibrate` adds the `VIBRATE` permission.
+
+## D-279 — Paid unlock: pay once or wait 12 hours, on the phone's clock (2026-10-31, Proposed)
+
+**The developer,** on PAX-066: approved `com.unity.purchasing` 5.3.1, "Pay or wait 12 hours", "Local clock, accept cheating", "Unlock panel + pause menu". These settle D-068's open
+points for v1.
+
+**Decisions:**
+- **Levels 1-10 are free; each later level needs the paid unlock or its own 12-hour wait.** A level whose wait has run stays open.
+- **The wait starts when the player finishes the level before it,** and runs with the app closed.
+- **The clock is the phone's.** There's no server, so a clock moved forward skips the wait; accepted. A clock moved back never makes a wait longer than 12 hours.
+- **Paying doesn't skip progress:** a level still needs the level before it finished (`LevelProgress`), so no level can be entered out of order.
+- **Only the store grants.** The cache exists so play works offline, and anything but its exact value reads as not paid. A store check that finds the product sets it; one that
+  finds nothing clears it, which is what a refund looks like. An unavailable store changes nothing, and free levels never wait on it. A pending or deferred order is neither yes nor no.
+- **Restore lives on the unlock panel and the pause menu,** because there's no settings screen.
+- **In the Editor, `EditorStoreGateway` replaces the store,** because Unity IAP's fake-store dialog can't work with this project's Input System (PAX-066 §9).
+- **Choice screen:** one panel, "Keep going?", with the price, Restore, Not now and a live countdown. The total level count stays open: 40 today, and the free set doesn't depend on it.
+
+**Regional prices** are set in Play Console; the game shows the store's localized string. **Real billing is unverified until a Play test track (Phase H).**
+
+## D-280 — The title looks like the paid game it is (2026-10-31, Proposed)
+
+**The developer:** "Add more flair to the title. Remember I want to get money for this game. Its a premium Game. Maybe change the font, some more animation. Some more design and visual
+flair." Amends D-157; the title slice of PAX-A09 §1 and §4 comes forward.
+
+**Decisions:**
+- **Old gold, carved:** Cinzel and Cormorant Garamond, both under the SIL Open Font License, which allows a paid app (licences in `Docs/Art/Licences/`). Static weights are cut from the variable fonts because
+  Unity's dynamic fonts use only the default weight.
+- **Line art is drawn by script** (`Tools/Art/title_ui.py`): no paid generation and no licences.
+- **The title lies too:** one letter slips and snaps back every 13 s, in a fixed order, after the intro. It's the only place the game's joke appears before play.
+- **All pose is a function of the clock,** so `TitleScreen.Seek` shows any moment and the timing is tested; nothing touches a gameplay tick, and nothing is random.
+- **Gilding is a mesh effect, not a shader:** no new material or shader to carry into builds.
+- **The ledge's leaves are in the world,** so they stay on its cut at every aspect and through the pan; the corner leaves are on the canvas.
+- **Buttons are one row:** with no progress, START GAME hides and PLAY and LEVELS close up, centred.
+
+**Open from D-157:** Android back on the title and level list. **Unverified:** the feel of the motion, and frame time on a phone (34 motes, 4 shafts, per-letter mesh rebuilds during a sheen).

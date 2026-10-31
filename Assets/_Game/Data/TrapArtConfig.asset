@@ -356,6 +356,22 @@ MonoBehaviour:
   - {fileID: 21300000, guid: fa4d38f44cecd4509ad2b7077732b834, type: 3}
   - {fileID: 21300000, guid: d057e4e8caf724146b037a00b9747b46, type: 3}
   - {fileID: 21300000, guid: 878a62e17a1964c598313fa22d7de3b1, type: 3}
+  LaserBeam: {fileID: 21300000, guid: 82fd468c6db0f47a69b797d79a42f802, type: 3}
+  ChaserBeam: {fileID: 21300000, guid: 0d2bbd4f4fa48463fad00aa221074c8c, type: 3}
+  GateEmitterTop: {fileID: 21300000, guid: 956c486e4e8f5417ba664d435f68edf9, type: 3}
+  GateEmitterBottom: {fileID: 21300000, guid: c85515bd4241b42609b50d6e479d30e3, type: 3}
+  TurretIdle: {fileID: 21300000, guid: 62b084cb1fbef4c0fa35e222a1294891, type: 3}
+  TurretLock: {fileID: 21300000, guid: 4c39d68d5a72e4755ab68db4852198ec, type: 3}
+  HardLightBar: {fileID: 21300000, guid: 866e499cd84bf473aa5e53d6ea98eacc, type: 3}
+  BarLauncher: {fileID: 21300000, guid: d6aafd59011a14be98e244f3aa4c31be, type: 3}
+  FlipRing: {fileID: 21300000, guid: aa5140bed79624e72b60c28450034090, type: 3}
+  InverterRing: {fileID: 21300000, guid: f873791f499084df0b47fc64e3327ea6, type: 3}
+  ObsidianSlamPlate: {fileID: 21300000, guid: 1e6f7eeab24ef4592ba3149b7ea53a22, type: 3}
+  GlassEdge: {fileID: 21300000, guid: 86779db59b6d6403ebe98ebb1dd11ce3, type: 3}
+  GlassCracks:
+  - {fileID: 21300000, guid: 6e8f3f2e167924a48ab2f9cfd947a18e, type: 3}
+  - {fileID: 21300000, guid: 582829eb755654ab3bcbba84af631900, type: 3}
+  - {fileID: 21300000, guid: fb3198e8014514a498c0d100d6bec53f, type: 3}
   BoltSegment: {fileID: 21300000, guid: 58184e33e00b2446691a28f2465a351b, type: 3}
   Flash: {fileID: 21300000, guid: 8cd6b88e883b14f788c1853d42b408f5, type: 3}
   Ring: {fileID: 21300000, guid: b1adc11c646c74c2cb323eba244fa8a3, type: 3}

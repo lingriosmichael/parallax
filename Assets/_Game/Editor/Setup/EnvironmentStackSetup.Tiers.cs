@@ -306,7 +306,10 @@ namespace Parallax.Editor.Setup
             main.startLifetime = new ParticleSystem.MinMaxCurve(7f, 11f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(0.05f, 0.14f);
             main.startSize = new ParticleSystem.MinMaxCurve(0.07f, 0.2f);
-            main.startColor = new ParticleSystem.MinMaxGradient(new Color(1f, 0.9f, 0.7f, 0.35f), new Color(1f, 0.82f, 0.55f, 0.8f));
+            // PAX-A20: Obsidian's motes are cold sparks, not warm dust.
+            main.startColor = EnvironmentKit.Current == Parallax.Editor.Levels.Biome.ObsidianVoid
+                ? new ParticleSystem.MinMaxGradient(new Color(0.6f, 0.9f, 1f, 0.3f), new Color(0.75f, 0.95f, 1f, 0.75f))
+                : new ParticleSystem.MinMaxGradient(new Color(1f, 0.9f, 0.7f, 0.35f), new Color(1f, 0.82f, 0.55f, 0.8f));
             main.maxParticles = c.Config.Motes;
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.scalingMode = ParticleSystemScalingMode.Hierarchy;

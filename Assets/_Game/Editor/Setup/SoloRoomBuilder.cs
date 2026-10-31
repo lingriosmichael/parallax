@@ -242,7 +242,8 @@ namespace Parallax.Editor.Setup
         static SpriteRenderer BuildMarker(Transform roomRoot, RealityRoot root, CheckpointSection section, Vector2 paw, List<string> changes)
         {
             Transform t = SetupUtility.EnsureChild(roomRoot, section.MarkerName, root.gameObject.layer, changes);
-            Sprite sprite = (SoloRoomSkin.Enabled ? AssetDatabase.LoadAssetAtPath<Sprite>(KitCheckpointSpritePath) : null) ?? AssetDatabase.LoadAssetAtPath<Sprite>(CheckpointSpritePath);
+            // PAX-A20: the current biome's checkpoint (Obsidian's crystal in L031+).
+            Sprite sprite = (SoloRoomSkin.Enabled ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Checkpoint") ?? AssetDatabase.LoadAssetAtPath<Sprite>(KitCheckpointSpritePath) : null) ?? AssetDatabase.LoadAssetAtPath<Sprite>(CheckpointSpritePath);
             SpriteRenderer marker;
             float scale = 1f, bottom = -MarkerHeight * .5f;
             if (sprite == null)
@@ -340,6 +341,9 @@ namespace Parallax.Editor.Setup
                 case SoloRoomElementKind.Plate: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildPlateCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, changes), e.Settings, parent, changes); break;   // PAX-119 (D-197)
                 case SoloRoomElementKind.Portal: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildPortalCore(parent, root, e.Name, position, e.Size, e.SecondaryPosition - e.Position, e.SecondarySize, room.Id, rooms, death, observers, e.Settings, changes), e.Settings, parent, changes); break;   // PAX-120 (D-197)
                 case SoloRoomElementKind.Turret: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildTurretCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings.Turret, changes), e.Settings, parent, changes); break;   // PAX-121 (D-197)
+                case SoloRoomElementKind.Trident: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildTridentCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings.Trident, changes), e.Settings, parent, changes); break;   // PAX-123 (D-276)
+                case SoloRoomElementKind.Chaser: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildChaserCore(parent, root, e.Name, position, e.Position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;   // D-276 amendment 2
+                case SoloRoomElementKind.Sweeper: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildSweeperCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;   // PAX-124 (D-276)
                 // PAX-105 (D-110 amendment 2): a Wall whose collider carries the GripSurface marker (the only face a cat can grab).
                 case SoloRoomElementKind.GripWall:
                     BuildGeometry(parent, root, e.Name, position, e.Size, changes);

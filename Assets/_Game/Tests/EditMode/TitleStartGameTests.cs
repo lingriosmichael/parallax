@@ -92,12 +92,15 @@ namespace Parallax.Tests.EditMode
         }
 
         [Test]
-        public void WithoutProgress_StartGameIsHidden_AndLevelsTakesItsPlace()
+        public void WithoutProgress_StartGameIsHidden_AndTheRowClosesUp()
         {
             LevelProgressStore.Clear(Ids);
-            (_, Button start, Button levels, _) = Build();
+            (TitleScreen screen, Button start, Button levels, _) = Build();
+            Button play = (Button)typeof(TitleScreen).GetField("playButton", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(screen);
             Assert.IsFalse(start.gameObject.activeSelf);
-            Assert.AreEqual(new Vector2(0f, -40f), ((RectTransform)levels.transform).anchoredPosition);
+            // D-280: the buttons are one row; with START GAME gone, PLAY and LEVELS close up, centred.
+            Assert.AreEqual(new Vector2(200f, 0f), ((RectTransform)levels.transform).anchoredPosition);
+            Assert.AreEqual(new Vector2(-200f, 0f), ((RectTransform)play.transform).anchoredPosition);
         }
 
         (TitleScreen, Button, Button, GameObject) Build()
@@ -112,12 +115,14 @@ namespace Parallax.Tests.EditMode
             });
             var root = new GameObject("Title", typeof(RectTransform));
             made.Add(root);
-            Button start = NewButton(root.transform, "StartGame", new Vector2(0f, -40f));
-            Button levels = NewButton(root.transform, "Levels", new Vector2(0f, -124f));
+            Button play = NewButton(root.transform, "Play", Vector2.zero);
+            Button start = NewButton(root.transform, "StartGame", new Vector2(-400f, 0f));
+            Button levels = NewButton(root.transform, "Levels", new Vector2(400f, 0f));
             var confirm = new GameObject("Confirm");
             confirm.transform.SetParent(root.transform);
             var screen = root.AddComponent<TitleScreen>();
             Set(screen, "levelList", list);
+            Set(screen, "playButton", play);
             Set(screen, "startButton", start);
             Set(screen, "levelsButton", levels);
             Set(screen, "confirmPanel", confirm);

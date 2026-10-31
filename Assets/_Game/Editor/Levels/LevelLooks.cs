@@ -199,7 +199,16 @@ namespace Parallax.Editor.Levels
             ["L006"] = "LateAfternoon", ["L007"] = "GoldenHour", ["L008"] = "GoldenHour", ["L009"] = "DuskAmber", ["L010"] = "DuskRose",
         };
 
-        public static Look For(string levelId) => levelId != null && ById.TryGetValue(levelId, out Look look) ? look : Default;
+        public static Look For(string levelId) => levelId != null && ById.TryGetValue(levelId, out Look look) ? look
+            : Biomes.For(levelId) == Biome.ObsidianVoid ? DefaultObsidian : Default;
+
+        /// <summary>PAX-A20 stage 4: an unlisted Obsidian Void level's look: Default's, dressed with Obsidian's props (no moss;
+        /// holo-banners, wreckage and circuit panels; the kit places fixtures and machines in place of ivy and ferns).</summary>
+        public static readonly Look DefaultObsidian = new()
+        {
+            Grade = DefaultGrade, Stone = Fill.A, Dress = new Dressing(0f, drapes: true, banners: true, rubble: true, glyphs: true), Signature = "none",
+            Pieces = Default.Pieces,
+        };
 
         /// <summary>The level a room definition belongs to (the registry shares each layout's element array), or null for a
         /// room that isn't a level's (the Trap Lab, test fixtures).</summary>

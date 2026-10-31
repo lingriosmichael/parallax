@@ -195,7 +195,10 @@ namespace Parallax.Editor.Setup
             AssetDatabase.ImportAsset(scenePath, ImportAssetOptions.ForceUpdate);
 
             Scene scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
-            BuildRoomInScene(scene, layout, changes);
+            // PAX-A20: the level's world picks the environment kit its stone is skinned from.
+            Parallax.Editor.Art.EnvironmentKit.Current = Parallax.Editor.Levels.Biomes.Of(layout);
+            try { BuildRoomInScene(scene, layout, changes); }
+            finally { Parallax.Editor.Art.EnvironmentKit.Current = Parallax.Editor.Levels.Biome.GoldenRuins; }
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             return true;
@@ -240,6 +243,8 @@ namespace Parallax.Editor.Setup
             SoloRoomBuilder.AssignBounds(rooms, layoutRooms, root, safety, changes);
             // D-236: a level's arrow variations (L028), picked on load.
             ArrowVariantSetup.Wire(parent, Parallax.Editor.Levels.LevelLooks.LevelOf(layout), death, changes);
+            // D-277: the level's world picks its music.
+            MusicImport.Wire(scene, Parallax.Editor.Levels.Biomes.Of(layout), changes);
             // D-248: L029's falling ceilings come down filled.
             CeilingFillSetup.Wire(parent, Parallax.Editor.Levels.LevelLooks.LevelOf(layout), layout, changes);
 

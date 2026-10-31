@@ -14,6 +14,40 @@ namespace Parallax.Gameplay.Levels
     {
         const string UnlockedPrefix = "PARALLAX_LEVEL_UNLOCKED_";
         const string BestPrefix = "PARALLAX_LEVEL_BEST_";
+        const string HapticsKey = "PARALLAX_HAPTICS_ENABLED";
+        const string WaitPrefix = "PARALLAX_LEVEL_WAIT_";
+        const string PaidKey = "PARALLAX_FULL_UNLOCK";
+        const string PaidValue = "granted";
+
+        /// <summary>PAX-066 (D-279): the store's answer, cached so play works offline. Only IapService writes it. Anything but the exact
+        /// value reads as not paid (a corrupt cache), and the store is asked again on the next launch. Start Game's Clear keeps it.</summary>
+        public static bool PaidUnlocked
+        {
+            get => PlayerPrefs.GetString(PaidKey, "") == PaidValue;
+            set
+            {
+                if (value) PlayerPrefs.SetString(PaidKey, PaidValue);
+                else PlayerPrefs.DeleteKey(PaidKey);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>PAX-066 (D-279): when the level's free wait began (unix seconds), beginning it now if it hadn't, or if what's saved
+        /// can't be read.</summary>
+        public static long WaitStartedAt(string id, long now)
+        {
+            if (long.TryParse(PlayerPrefs.GetString(WaitPrefix + id, ""), out long started) && started >= 0) return started;
+            PlayerPrefs.SetString(WaitPrefix + id, now.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            PlayerPrefs.Save();
+            return now;
+        }
+
+        /// <summary>PAX-065 (D-278): the pause menu's Vibration setting, on until the player turns it off.</summary>
+        public static bool HapticsEnabled
+        {
+            get => PlayerPrefs.GetInt(HapticsKey, 1) == 1;
+            set { PlayerPrefs.SetInt(HapticsKey, value ? 1 : 0); PlayerPrefs.Save(); }
+        }
 
         public static LevelProgress Load(IReadOnlyList<string> orderedLevelIds)
         {
@@ -48,6 +82,7 @@ namespace Parallax.Gameplay.Levels
             {
                 PlayerPrefs.DeleteKey(UnlockedPrefix + orderedLevelIds[i]);
                 PlayerPrefs.DeleteKey(BestPrefix + orderedLevelIds[i]);
+                PlayerPrefs.DeleteKey(WaitPrefix + orderedLevelIds[i]);
             }
             PlayerPrefs.Save();
         }

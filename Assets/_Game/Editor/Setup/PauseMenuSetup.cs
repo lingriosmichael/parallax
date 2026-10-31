@@ -33,6 +33,8 @@ namespace Parallax.Editor.Setup
         const string ResumeButtonName = "PauseResumeButton";
         const string RestartButtonName = "PauseRestartButton";
         const string LevelsButtonName = "PauseLevelsButton";
+        const string VibrationButtonName = "PauseVibrationButton";
+        const string RestorePurchaseButtonName = "PauseRestorePurchaseButton";
 
         // HUD reference resolution is 1920x1080, match 0.5 (SwitchSetup). The dev-only
         // GravityDebugControl FLIP button draws 16-96 px from the top-right in screen pixels, so
@@ -154,15 +156,22 @@ namespace Parallax.Editor.Setup
             Wire(panelComponent, "resumeButton", resume, changes);
             Wire(panelComponent, "restartButton", restart, changes);
             Wire(panelComponent, "levelsButton", levels, changes);
+            // PAX-065 (D-278), PAX-066 (D-279): under the row, the game's one setting and Restore purchase.
+            Button vibration = EnsurePanelButton(panelGO.transform, VibrationButtonName, "Vibration: On", -360f, changes, 350f, -120f);
+            Button restorePurchase = EnsurePanelButton(panelGO.transform, RestorePurchaseButtonName, "Restore purchase", 10f, changes, 350f, -120f);
+            Wire(panelComponent, "restorePurchaseButton", restorePurchase, changes);
+            Wire(panelComponent, "restorePurchaseLabel", restorePurchase.transform.Find("Label").GetComponent<Text>(), changes);
+            Wire(panelComponent, "vibrationButton", vibration, changes);
+            Wire(panelComponent, "vibrationLabel", vibration.transform.Find("Label").GetComponent<Text>(), changes);
 
             if (panelGO.activeSelf) { panelGO.SetActive(false); changes.Add($"set {PanelName} active = False"); } // shown by LevelPause
         }
 
-        static Button EnsurePanelButton(Transform panel, string name, string label, float left, List<string> changes)
+        internal static Button EnsurePanelButton(Transform panel, string name, string label, float left, List<string> changes, float width = 220f, float y = 0f)
         {
             GameObject go = EnsureChild(panel, name, changes);
             var anchor = new Vector2(0.5f, 0.5f);
-            SetAnchors((RectTransform)go.transform, anchor, anchor, new Vector2(left, -40f), new Vector2(left + 220f, 40f), changes, name);
+            SetAnchors((RectTransform)go.transform, anchor, anchor, new Vector2(left, y - 40f), new Vector2(left + width, y + 40f), changes, name);
             return EnsureButton(go, label, changes);
         }
 
@@ -185,7 +194,7 @@ namespace Parallax.Editor.Setup
             return button;
         }
 
-        static GameObject EnsureChild(Transform parent, string name, List<string> changes)
+        internal static GameObject EnsureChild(Transform parent, string name, List<string> changes)
         {
             Transform t = parent.Find(name);
             if (t != null) return t.gameObject;
@@ -196,7 +205,7 @@ namespace Parallax.Editor.Setup
             return go;
         }
 
-        static T EnsureComponent<T>(GameObject go, List<string> changes, string ownerLabel) where T : Component
+        internal static T EnsureComponent<T>(GameObject go, List<string> changes, string ownerLabel) where T : Component
         {
             var component = go.GetComponent<T>();
             if (component != null) return component;
@@ -205,7 +214,7 @@ namespace Parallax.Editor.Setup
             return component;
         }
 
-        static void ConfigureText(Text text, string content, int fontSize, Color color, List<string> changes, string label)
+        internal static void ConfigureText(Text text, string content, int fontSize, Color color, List<string> changes, string label)
         {
             bool changed = false;
             if (text.font == null) { text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); changed = true; }
@@ -216,7 +225,7 @@ namespace Parallax.Editor.Setup
             if (changed) changes.Add($"configured {label} Text");
         }
 
-        static void SetAnchors(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, List<string> changes, string label)
+        internal static void SetAnchors(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, List<string> changes, string label)
         {
             if (rect.anchorMin == anchorMin && rect.anchorMax == anchorMax && rect.offsetMin == offsetMin && rect.offsetMax == offsetMax) return;
             rect.anchorMin = anchorMin;
@@ -246,7 +255,7 @@ namespace Parallax.Editor.Setup
             changes.Add($"wired {target.GetType().Name}.{propertyName} = {value.name}");
         }
 
-        static void AppendReservedRegion(TouchStickCatInput touchInput, Component region, List<string> changes)
+        internal static void AppendReservedRegion(TouchStickCatInput touchInput, Component region, List<string> changes)
         {
             var so = new SerializedObject(touchInput);
             SerializedProperty prop = so.FindProperty("reservedRegions");

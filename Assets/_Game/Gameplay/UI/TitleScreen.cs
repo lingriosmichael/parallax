@@ -11,7 +11,9 @@ namespace Parallax.Gameplay.UI
     /// only; nothing here touches a gameplay tick or Time.timeScale); a press anywhere during the intro jumps it to its end.
     /// PLAY loads TitleContinue's level and LEVELS the level list, both through LevelSceneLoader (D-072). Once there is
     /// progress, PLAY reads CONTINUE and START GAME appears: it asks first, then erases the progress and loads the first level
-    /// (D-157 amendment 1). With no progress START GAME is hidden and LEVELS takes its place.</summary>
+    /// (D-157 amendment 1). With no progress START GAME is hidden and LEVELS takes its place. D-280: the letters arrive one by one,
+    /// light crosses them, the buttons rise in turn, one letter slips now and then, and leaving fades to black first. Every pose is a
+    /// function of the clock, so Seek shows any moment.</summary>
     public sealed class TitleScreen : MonoBehaviour
     {
         [SerializeField] TitleScreenConfig config;
@@ -21,6 +23,9 @@ namespace Parallax.Gameplay.UI
         [Tooltip("The soft darkening behind the wordmark; it fades in with it, up to its own alpha.")]
         [SerializeField] Image shade;
         [SerializeField] RectTransform rule;
+        [SerializeField] TitleAtmosphere atmosphere;
+        [Tooltip("D-280: the buttons, from the middle out, in the order they rise.")]
+        [SerializeField] RectTransform[] menuItems = new RectTransform[0];
         [SerializeField] Text tagline;
         [SerializeField] CanvasGroup menu;
         [SerializeField] Button playButton;
@@ -37,6 +42,9 @@ namespace Parallax.Gameplay.UI
         string playScene;
         string firstScene;
         bool hasProgress;
+        Vector2[] menuRest;
+        string leavingTo;
+        float leaveAt;
 
         public float Elapsed => elapsed;
 
@@ -66,6 +74,8 @@ namespace Parallax.Gameplay.UI
             if (confirmPanel != null) confirmPanel.SetActive(false);
             ResolvePlay();
             ShowStart();
+            menuRest = new Vector2[menuItems.Length];
+            for (int i = 0; i < menuItems.Length; i++) if (menuItems[i] != null) menuRest[i] = menuItems[i].anchoredPosition;
             Apply();
         }
 
@@ -76,6 +86,14 @@ namespace Parallax.Gameplay.UI
             if (TitleIntroTimeline.IsPlaying(times, elapsed) && PressedThisFrame()) elapsed = TitleIntroTimeline.SkipTo(times);
             else elapsed += Time.unscaledDeltaTime;
             Apply();
+            if (leavingTo == null) return;
+            float left = config.LeaveSeconds > 0f ? (Time.unscaledTime - leaveAt) / config.LeaveSeconds : 1f;
+            if (cover != null)
+            {
+                cover.enabled = true;
+                cover.color = new Color(0f, 0f, 0f, Mathf.Clamp01(left));
+            }
+            if (left >= 1f) LevelSceneLoader.Load(leavingTo);
         }
 
         /// <summary>Jumps the intro to the given second (tests, and the skip).</summary>
@@ -99,8 +117,15 @@ namespace Parallax.Gameplay.UI
             }
             if (wordmark != null)
             {
-                wordmark.SetAlpha(TitleIntroTimeline.Wordmark(t, s));
                 wordmark.Spacing = TitleIntroTimeline.Tracking(t, s);
+                TitleSlip slip = TitleIntroTimeline.Slip(t, s, config.SlipOrder);
+                for (int i = 0; i < wordmark.Count; i++)
+                {
+                    bool slipping = i == slip.Letter;
+                    float lift = -config.LetterRise * TitleIntroTimeline.LetterRise(t, s, i, wordmark.Count) - (slipping ? config.SlipDrop * slip.Drop : 0f);
+                    wordmark.SetLetter(i, TitleIntroTimeline.Letter(t, s, i, wordmark.Count), lift, slipping ? config.SlipTilt * slip.Tilt : 0f);
+                }
+                wordmark.SetSheen(TitleIntroTimeline.Sheen(t, s));
             }
             if (shade != null && shadeAlpha >= 0f)
             {
@@ -109,6 +134,7 @@ namespace Parallax.Gameplay.UI
                 shade.color = c;
             }
             if (rule != null) rule.localScale = new Vector3(TitleIntroTimeline.Rule(t, s), 1f, 1f);
+            if (atmosphere != null) atmosphere.Apply(s, TitleIntroTimeline.Wordmark(t, s));
             if (tagline != null)
             {
                 Color c = tagline.color;
@@ -118,10 +144,22 @@ namespace Parallax.Gameplay.UI
             if (menu != null)
             {
                 menu.alpha = TitleIntroTimeline.Menu(t, s);
-                bool live = TitleIntroTimeline.MenuInteractable(t, s);
+                bool live = TitleIntroTimeline.MenuInteractable(t, s) && leavingTo == null;
                 menu.interactable = live;
                 menu.blocksRaycasts = live;
             }
+            for (int i = 0; menuRest != null && i < menuItems.Length; i++)
+                if (menuItems[i] != null)
+                    menuItems[i].anchoredPosition = menuRest[i] + Vector2.down * (config.MenuRise * (1f - TitleIntroTimeline.MenuItem(t, s, i)));
+        }
+
+        // D-280: the fade before a scene change. Outside Play Mode nothing runs Update, so it loads at once.
+        void Leave(string scene)
+        {
+            if (leavingTo != null) return;
+            if (!Application.isPlaying || config == null || config.LeaveSeconds <= 0f) { LevelSceneLoader.Load(scene); return; }
+            leavingTo = scene;
+            leaveAt = Time.unscaledTime;
         }
 
         void ResolvePlay()
@@ -145,8 +183,15 @@ namespace Parallax.Gameplay.UI
         void ShowStart()
         {
             if (startButton == null || hasProgress) return;
-            if (levelsButton != null)
-                ((RectTransform)levelsButton.transform).anchoredPosition = ((RectTransform)startButton.transform).anchoredPosition;
+            // D-280: the row closes up: PLAY and LEVELS stay side by side, centred.
+            if (levelsButton != null && playButton != null)
+            {
+                var play = (RectTransform)playButton.transform;
+                var levels = (RectTransform)levelsButton.transform;
+                float shift = (levels.anchoredPosition.x - ((RectTransform)startButton.transform).anchoredPosition.x) * 0.25f;
+                play.anchoredPosition += Vector2.left * shift;
+                levels.anchoredPosition += Vector2.left * shift;
+            }
             startButton.gameObject.SetActive(false);
         }
 
@@ -173,7 +218,8 @@ namespace Parallax.Gameplay.UI
                 return;
             }
             LevelProgressStore.Clear(levelList.OrderedIds());
-            LevelSceneLoader.Load(firstScene);
+            if (confirmPanel != null) confirmPanel.SetActive(false);
+            Leave(firstScene);
         }
 
         public void Play()
@@ -183,10 +229,10 @@ namespace Parallax.Gameplay.UI
                 Debug.LogError("TitleScreen: no level to play (is LevelListConfig empty?).", this);
                 return;
             }
-            LevelSceneLoader.Load(playScene);
+            Leave(playScene);
         }
 
-        public void OpenLevels() => LevelSceneLoader.Load(LevelSceneLoader.LevelSelectSceneName);
+        public void OpenLevels() => Leave(LevelSceneLoader.LevelSelectSceneName);
 
         static bool PressedThisFrame()
         {

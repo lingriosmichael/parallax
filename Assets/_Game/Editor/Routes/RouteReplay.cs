@@ -164,6 +164,8 @@ namespace Parallax.Editor.Routes
             public bool SpikedFace;   // PAX-107 (D-124): a spiked hinge floor (a touch kills once it stands)
             public SpinnerTrap Spinner;   // PAX-116 (D-187)
             public TurretTrap Turret;     // PAX-121 (D-197)
+            public TridentTrap Trident; public SweeperTrap Sweeper;   // PAX-123/124 (D-276)
+            public ChaserTrap Chaser;   // D-276 amendment 2
             public ArrowTrap Arrow; public int ArrowTell;
             public InverterTrap Inverter;
             public StormCloudTrap StormCloud;   // PAX-088 (D-090)
@@ -315,6 +317,9 @@ namespace Parallax.Editor.Routes
                 }
                 e.Spinner = go.GetComponent<SpinnerTrap>();
                 e.Turret = go.GetComponent<TurretTrap>();
+                e.Trident = go.GetComponent<TridentTrap>();
+                e.Sweeper = go.GetComponent<SweeperTrap>();
+                e.Chaser = go.GetComponent<ChaserTrap>();
                 e.Arrow = go.GetComponent<ArrowTrap>();
                 e.Inverter = go.GetComponent<InverterTrap>();
                 e.StormCloud = go.GetComponent<StormCloudTrap>();
@@ -464,6 +469,10 @@ namespace Parallax.Editor.Routes
                     else if (e.Spinner != null) match = e.Spinner.ArmHits();
                     // PAX-121 (D-197): a turret's beam test on its pose this tick.
                     else if (e.Turret != null) match = e.Turret.BeamHits();
+                    // PAX-123/124 (D-276): a trident's beams, a rotating chaser's arms, on this tick's pose.
+                    else if (e.Trident != null) match = e.Trident.BeamHits();
+                    else if (e.Sweeper != null) match = e.Sweeper.ArmHits();
+                    else if (e.Chaser != null) match = e.Chaser.ArmHits();
                     else if (e.Block != null && e.Trap.LatestFireTick >= 0 && e.Box != null
                         && (e.Block.GetComponent<Rigidbody2D>().position - e.BlockLanded).sqrMagnitude > 1e-8f)
                     { Bounds shrunk = e.Box.bounds; shrunk.Expand(-.04f); match = Overlaps(shrunk); }

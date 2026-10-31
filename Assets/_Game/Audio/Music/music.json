@@ -1,0 +1,20 @@
+{
+ "GoldenRuins": {
+  "bars": 40,
+  "dotted_quarter_bpm": 58.0,
+  "key": "G major",
+  "meter": "6/8",
+  "rate": 44100,
+  "seconds": 82.759,
+  "sha256": "c55ddd2a0ef11c0f9ad0a25a5e55435a9e50b227461402acaa4acf7b3cb5b97c"
+ },
+ "ObsidianVoid": {
+  "bars": 26,
+  "bpm": 72.0,
+  "key": "D minor",
+  "meter": "4/4",
+  "rate": 44100,
+  "seconds": 86.667,
+  "sha256": "c738c18480f776f144c9171d50729a85995088d9d4905a8e50f9fa8474e09453"
+ }
+}

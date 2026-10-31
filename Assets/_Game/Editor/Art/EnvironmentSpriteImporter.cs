@@ -98,7 +98,8 @@ namespace Parallax.Editor.Art
         static bool IsKitNormal(string path) => IsKit(path) && path.EndsWith("_n.png");
 
         static bool IsEnvironmentArt(string path) =>
-            path.StartsWith("Assets/_Game/Art/RealityA/Environment/") || path.StartsWith("Assets/_Game/Art/RealityB/Environment/");
+            path.StartsWith("Assets/_Game/Art/RealityA/Environment/") || path.StartsWith("Assets/_Game/Art/RealityB/Environment/")
+            || path.StartsWith("Assets/_Game/Art/ObsidianVoid/Environment/");   // PAX-A20
 
         static bool IsBackground(string path) => path.Contains("/Environment/Backgrounds/");
         static bool IsMaterial(string path)

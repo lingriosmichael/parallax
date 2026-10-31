@@ -1,117 +1,75 @@
-# PARALLAX — v1 roadmap (after PAX-050)
+# PARALLAX · What's left (updated 2026-10-31)
 
-Rev. 2026-09-24, per D-062, D-064 and D-069: build everything first, test once at the end.
-Tickets run one at a time in this order unless noted. Numbers after PAX-059 may shift if a
-kit-gap ticket is inserted during Phase D.
+Read this first. Finished tickets are removed from `Docs/`; decisions stay in `07_DECISIONS.md`, and the rest is in git history.
+**v1 is:** Android, solo, paid unlock (levels 1–10 free). The finish line is a Play Store release (PAX-071). iOS and co-op come after.
 
-## Status at a glance (2026-09-26)
+## Where it stands
 
-- **Done (committed):** PAX-050, PAX-051, PAX-052, PAX-053, PAX-054, KIT-1 (PAX-073), PAX-077,
-  PAX-078, PAX-079, KIT-2 (PAX-074), KIT-3a (PAX-075), KIT-3b (PAX-080), PAX-081, PAX-082, KIT-4 (PAX-076), PAX-083. Acceptance so far is EditMode tests plus Editor checks (D-064); none of it is
-  device-validated yet. EditMode baseline after PAX-083: 685.
-- **Next:** the developer's play of levels 6–10 (PAX-059b, D-085), then KIT-5–KIT-9 and PAX-060. Phase B is complete;
-  PAX-058 was dropped by D-067. EditMode count after PAX-059a: 733 (with the play fixes); after PAX-059b: 771; latest
-  full run (2026-09-26, PAX-059 committed): 774, all passing. That is KIT-5's baseline.
-- **Remaining in Phase B:** none.
-- **Kit for levels 11+ (2026-09-25):** KIT-5–KIT-9 (PAX-084–PAX-088, D-086–D-090) are built before PAX-060, one at a time; they can run while the developer's play of levels 6–10 is still open. All five are levels 11+ only (`ValidateBand`).
-- **Remaining after Phase B:** Phase D content (PAX-059–063), Phase E art, Phase F audio and
-  haptics, Phase G release prep, Phase H validation, then Phase I (iOS) and the co-op update.
-- **Open developer checks:** PAX-078 §9 play check of L002 and L004 (D-076 (7)); PAX-079 §9 play
-  check of coyote and buffer in L001 and L004; PAX-082: run `PARALLAX/Setup/Trap Lab (PAX-045)`, save
-  `Sandbox_TrapLab.unity`, and play Trap Lab rooms 3–4 (D-082 (10)); PAX-076: run
-  `PARALLAX/Setup/Precision Thresholds (PAX-076)`, rerun the Trap Lab menu, and play Trap Lab room 5 (D-083); PAX-083: play Trap Lab rooms 0–4 once each (rooms 0–2
-  never played at their refit, rooms 3–4 never at their PAX-082 layout).
+| Area | State |
+|---|---|
+| Levels | **40 built.** L001–L030 Golden Ruins, L031–L040 Obsidian Void. All pass validation; L031–L040 and much of L021–L030 are still to be played and approved by you |
+| Traps, audio, music, haptics, paid unlock, title | Built. Audio, haptics, unlock and title await your Editor steps below |
+| Art | Worlds finished. Some traps are still grey placeholders (16 paintings), and the cat has known animation gaps |
+| On a real phone | **Nothing tested yet.** No device session has happened |
+| Git | **Nothing is committed since `6ac4b1d`.** L031–L040, the Obsidian art and everything from 2026-10-31 exist only on this Mac. Commit soon |
 
-### Phase B · One-room levels, flow and trap kit
+## Do next: you (about an hour, no new code)
 
-| Order | Ticket | What | Decision |
+1. **Commit.** Say the word and Claude commits and pushes it all.
+2. **Run the setup menus,** in this order, saving first:
+   1. `PARALLAX/Setup/Audio (PAX-064)` (music, and the cat's meows, which main still lacks)
+   2. `PARALLAX/Setup/Haptics (PAX-065)`
+   3. `PARALLAX/Setup/Paid Unlock (PAX-066)`
+   4. `PARALLAX/Setup/Levels/Rebuild All Levels`
+   5. Open `Title.unity`, run `PARALLAX/Setup/Title Screen`, then Cmd+S
+3. **Look and listen:** the music (does it fit?), the title's motion, L031's swinging chaser, the unlock panel from L011.
+4. **Play L031–L040** and say what's fun and what isn't.
+
+Steps in detail: `0_TASKS/PAX-125.md` §6, `PAX-065.md` §9, `PAX-066.md` §10, `PAX-108.md` amendment 2.
+
+## Decide: only you can
+
+1. **How many levels ship?** 40 are built, the plan says 50, and Obsidian Void has room up to 60. This sets how much is left more than anything else. (`PAX-063` is levels 41–50.)
+2. **A settings screen?** D-062 planned one (music, sound, vibration). Today there's only Vibration and Restore on the pause menu. Recommended: a small one, or drop it on purpose.
+3. **`PAX-A12`:** polish of L011–L020 and the Trap Lab. Much of it was done by later art work. Keep it or close it?
+4. **`PAX-V07b`:** parked cat polish. Keep it or close it?
+
+## Build: in this order
+
+| # | Ticket | What | Who |
 |---|---|---|---|
-| ✓ | PAX-051 | One-room level authoring pipeline, L001–L004 seeds | D-066 |
-| ✓ | PAX-052 (refreshed) | Level camera: follows the cat through rooms wider than one screen, keeps the next landing and trap reveals on screen. Scaffolding menus target `_LevelTemplate`; `Rebuild All Levels` regenerates each scene as template + layout. Test reading baked `RoomManager` bounds from the `Level_00N` scenes. Background placement per level. | D-070, D-071 |
-| ✓ | PAX-053 | Level select; Build Settings scene list generated by `BuildSceneList.Sync()`, every load through `LevelSceneLoader` | D-072 |
-| ✓ | PAX-054 | Pause menu, auto-pause, every `Time.timeScale` write through `RunningState` | D-073 |
-| ✓ | KIT-1 (PAX-073) | Trap fixes and platform geometry: trigger zones cover every approach to the danger, including jump arcs (fixes the falling ceiling you can jump past); thin, narrow floating platform element; validator rule for trigger coverage. | D-074 |
-| ✓ | PAX-077 | Tick rate: one source, 50 Hz. `TickTime` seam for every seconds↔ticks conversion, guard test pinning the 0.02 s fixed step, door clearance derived as one tick at run speed. No tick-count threshold changes. | D-075 |
-| ✓ | PAX-078 | 50 Hz timing gaps: L002 Lift trigger moved (slack 12.96 ticks); L004 `Flip_A` moved out of `Block_1`'s column and blocks retimed (fast-flip window 14.8 ticks). Shipped levels checked at the real rate; the two `SoloRoomsLayoutTests` 60 Hz pins stay as a documented exception. | D-076 |
-| ✓ | PAX-079 | Coyote time and jump buffer in whole ticks: `JumpWindows` in `Parallax.Core`, lengths from `TickTime.ToWholeTicks` (round half up), 5 and 6 ticks at 50 Hz as since abb55f9; equivalence test against the old float logic at the committed step. | D-077 |
-| ✓ | KIT-2 (PAX-074) | Arrow trap, fired left→right and right→left: deterministic (zone/jump-triggered or periodic), visible tell ≥ 6 ticks (D-057), door clearance (D-060), validator support. Dev room: Trap Lab room 3. | D-078 |
-| ✓ | KIT-3a (PAX-075) | Route validator: each room declares a solution route and its betrayal routes, replayed through the real game code; timed windows ≥ 12 ticks, measured leads ≥ 6, deterministic replays. | D-079 |
-| ✓ | KIT-3b (PAX-080) | Troll-route kit: fake platform (builder-only), betrayal outcomes Dies/Recovers with soft-lock reporting, surface coverage for non-lethal betrayals, Trap Lab room 4 (10 platforms, one valid route, four betrayals). L004 `FalseLanding` and L002 `Block_A` recorded as claimed but not betrayals; `Block_1` disputed. | D-080 |
-| ✓ | PAX-081 | L004 `Block_1` harness fidelity. Done: no discrepancy. The scene matches the layout, Play and the harness run the same pipeline, and the developer confirms no falling-block death; `Block_1` kills no route. | D-081 |
-| ✓ | PAX-082 | Movement feel: jump height 3.2 → 1.6, every moving trap 20% faster; L001–L004 and Trap Lab 3–4 rebuilt around the new cat; harness pins re-measured once; movement readout. Camera judder fix alongside. | D-082, D-084 |
-| ✓ | KIT-4 (PAX-076) | Precision sections: section marker, per-section thresholds from one config asset (provisional 0.85 / 8 until PAX-069), the level-band check (no precision in levels 1–10), bait gaps, Trap Lab room 5, the camera tell rule (`CameraMath.Step` shared with the level camera); Trap Lab rooms 0–2 refitted to the 1.6 jump and the Trap Lab menu now updates existing rooms. No device session (deferred to Phase H). | D-083, enforces D-065 |
-| ✓ | PAX-083 | Cleanup after KIT-4: PAX-075 and KIT-4 reviewer nits (route-session fingerprint by identity, the camera rule's short-replay guard), clean scenes after the level-select tests, known-noise lines, the split chain message, L001 `Retreat` as a Recovers betrayal, saved-scene sync tests for `Sandbox_TrapLab` and `Level_00N`, and every unproven PAX-080/KIT-4 test seen red. No runtime or layout change. | D-080 |
-| ✗ | PAX-058 | Bounded randomness: dropped by D-067 (no randomness in v1; traps are learned by dying). | D-067 |
+| 1 | `PAX-063` | Levels 41+, if you want more (Decide 1) | Claude + your play tests |
+| 2 | Trap art | 16 paintings: `Art/GoldenRuins_NEW_TRAP_PROMPTS.md` (8) and `Art/ObsidianVoid_TRAP_PROMPTS.md` (8, OT-19 first); Claude imports them | **You paint**, Claude imports |
+| 3 | Android back | Level select → title; title → "Quit?" (D-157 open point). Needs a new ticket | Claude |
+| 4 | `PAX-A09` | Rest of the UI art: level select, in-level HUD, styled stick | Claude |
+| 5 | `PAX-V06` | Game feel: squash and stretch, dust, camera impulse, death and level-complete beats | Claude |
+| 6 | `Art/NEEDED_ASSETS.md` | Cat animation gaps: run brake, landing contact, falling loop and others. Pick the ones worth painting | **You paint**, Claude imports |
+| 7 | `PAX-098` | Validator rule: head clearance above walkable surfaces | Claude |
+| 8 | `PAX-A10` | App icon, feature graphic, screenshots | Both |
+| 9 | `PAX-067` | Signed release build and build checks | Claude + your Player settings |
+| 10 | `PAX-V03` | Performance budget on the Pixel 8a (the look itself is done) | Both, on the phone |
 
-PAX-057 (tiers) dropped by D-065.
+**Order:** items 2 and 6 are art, so they can run alongside the rest and block nothing.
 
-**Decisions:** D-065 difficulty bands ✓ · D-066 level format ✓ ·
-D-067 no randomness ✓ · D-068 free levels and price ✓ · D-069 precision sections ✓ (thresholds: D-083) ·
-D-070–D-080 written with PAX-052–PAX-080 ✓ · D-081 ✓ · D-082 movement feel ✓ · D-083 precision sections (KIT-4) ✓ · D-085 band-1 content ✓ ·
-D-084 camera judder ✓
+## Then release
 
-KIT-1–KIT-4 take PAX-073–PAX-076, and KIT-3b takes PAX-080 (the next free PAX numbers at time of writing), ordered ahead of
-PAX-058 in this phase's build order even though their numbers are higher; PAX-055 and PAX-056
-(the old "Trap kit v3a/v3b" plan) are superseded by KIT-1–KIT-4 above and are not used.
+| # | Ticket | What |
+|---|---|---|
+| 11 | Device session | The whole game on the Pixel 8a: touch, feel, sound, haptics, frame rate |
+| 12 | `PAX-069` | Retune the hard levels to device numbers |
+| 13 | `PAX-068` | Store listing and compliance; **create `full_unlock` at 4.99 in Play Console** |
+| 14 | `PAX-070` | Closed test track: blind playtest, and the first real purchase test |
+| 15 | `PAX-071` | **Production release on Google Play** |
+| Later | `PAX-072` | iOS. Then the co-op update (D-047) |
 
-| Phase | Ticket | What | Depends on |
-|---|---|---|---|
-| B · Levels & flow | PAX-050 ✓ | Level list, next level, progress save (done, 0b2ff77) | PAX-049 |
-| D · Content | PAX-059 ✓ | Levels 1–10 (easy band, D-065): half A (PAX-059a) is levels 1–5; half B (PAX-059b) is levels 6–10 and D-085. The developer's play of 6–10 is still open | PAX-052, PAX-076 |
-| | KIT-5 (PAX-084) | Spear: fires once, extremely fast, sticks as a standable platform. Makes `ValidateBand` the shared levels-11+ check. Trap Lab room 6. **Done** (2c0cdb9). EditMode 805 (774 + 31) | PAX-059a, D-086 |
-| | KIT-6 (PAX-085) | Inverter: touching it swaps left/right for 150 ticks, visible cue; amends D-040/D-049 for traps only. Trap Lab room 7. **Done** (32fd29b). EditMode 843 (805 + 38) | KIT-5, D-087 |
-| | KIT-7 (PAX-086) | Geyser: periodic air column launching the cat (apex 4.81 u, measured); `CatMotor2D.ApplyLaunch` seam. Trap Lab room 8. **Done** (2026-09-26; developer accepted room 8, no issues). EditMode 900 (843 + 57) | KIT-6, D-088 |
-| | KIT-8 (PAX-087) | Climbable vines: new `Climb` stick axis (grab at 42.5° full push; Space-only jump on the keyboard), grab/climb/leap, snap vines. Trap Lab room 9 (window 48, lead 38). **Done** (61023fe). EditMode 973 expected (900 + 73); the developer's Run All total wasn't recorded | KIT-7, D-089 |
-| | KIT-9 (PAX-088) | Storm cloud: wakes on a trigger, follows the cat's body x (0.08 u a tick), charges 25 ticks and strikes to the first static top. Trap Lab room 10 (window 51, leads 74). **Done** (70fc760; developer accepted room 10). EditMode 1042 (developer's Run All; 1034 was expected) | KIT-8, D-090 |
-| | PAX-089 | Kit cleanup: every level runs every kit rule (`ValidateKit`, `LevelKitRulesTests`), inverters and snap vines as chain sources and trigger-coverage roots, seated-climb test, `TrapKitSetup` split into partials, storm cloud nits (no root box; one shared `CatBodyCollider`). No D-091 (validator-only). **Implemented** (2026-09-26); awaiting the developer's Trap Lab menu + Rebuild All Levels, Run All (expected 1074 = 1042 + 32) and rooms 6–10 play | KIT-9 |
-| ✓ | PAX-090 | Checkpoint sections: long levels split into sections, death rewinds to the last checkpoint (D-091); vine grab "away from the ground" (D-092); Trap Lab room 11 (sections 222 / 234 / 388 ticks, both rewinds exact). **Implemented** (2026-09-26); awaiting the developer's Trap Lab menu + Rebuild All Levels, Run All and room 11 play | PAX-089 |
-| next | PAX-060 | Levels 11–20, one verb per level, organised chaos, checkpoint sections; brief `Docs/Design/L011-L020_concepts.md`; D-093 band-2 rules. Two halves (11–15, play, 16–20). **Half A:** L011–L013 built (L013 has one coverage false error from geyser launches, left for a ruling); L014 and L015 redrawn under §13's 1100-tick floor, awaiting the Architect before code; the developer's play of L011–L013 next. PAX-091 (coverage sees launches, vine climbs, stuck spears) runs before half B | PAX-059, KIT-4, KIT-5–KIT-9, PAX-089, PAX-090 |
-| | PAX-061 | Levels 21–30 (hard, batch 2) | PAX-060 |
-| | PAX-062 | Levels 31–40 (hard, batch 3) | PAX-061 |
-| | PAX-063 | Levels 41–50 (hard, batch 4) | PAX-062 |
-| | (as needed) | Kit-gap tickets: chained flips, rearming doors, queued chains… | raised by a batch |
-| | PAX-091 | Coverage search sees launches, vine climbs and stuck spears; per-storey surface coverage; closed pits (before PAX-060 half B). **Implemented** (2026-09-27); awaiting the Architect's acceptance. One new error on an existing level (L011 `Spikes_D2`, reached from the stuck Spear_Door), reported, layout unchanged | PAX-060a |
-| | PAX-093 | KIT-10 floors that move: riding (motor carry), mover, slide-away (carry/slip), drop-and-return, shrinker, push wall; Trap Lab room 12 (D-095); before L014–L015. **Implemented** (2026-09-27); awaiting acceptance, the developer's Trap Lab menu and play of room 12 | PAX-091 |
-| | PAX-105 | KIT-11 grip walls: wall cling, slide and wall jump on a Grab button (touch above jump; Left Shift), latch mode wall to wall, only on `GripWall`s (D-110 and amendments 1–2); L001–L020 unchanged (no grip walls; every existing route replays identically). Trap Lab room 14. **Implemented** (2026-10-04); awaiting the developer's Trap Lab menu and play of room 14, and the residue call on the wall contact sheets | PAX-104 |
-| E · Look & feel (D-094, target `Docs/Art/LOOK_AND_FEEL.md`) | PAX-V03 | Look slice on L011 + performance budget: layer stack, vertical parallax, 2D lights + normal maps, fog/grade/bloom, reflective water, 50 Hz judder fix; one recommended phone check | PAX-060 |
-| | PAX-A12 | Environment kit: full Reality A layer stack, platform/wall/ceiling/thin-platform pieces, water, dressing, normal maps | PAX-V03 |
-| | PAX-A08 | The full Cat A animation set (15 slots, absorbs PAX-A11 climb + seamless vine) | PAX-V03 |
-| | PAX-V07 | Wire the cat animation set (state machine, presenter, importer) | PAX-A08 |
-| | PAX-A13 | Trap art kit: every trap, every state, death effects | PAX-A12 |
-| | PAX-V05 | Trap presentation: flipbooks driven by trap state, effects, particles, no-tell by sprite | PAX-A13 |
-| | PAX-V06 | Game feel: squash/stretch, dust, camera impulse, death/checkpoint/complete beats, transitions (with PAX-064/065) | PAX-V05, PAX-V07 |
-| | PAX-108 | Title screen and intro (D-157): the app starts on a live title with a skippable intro; PLAY/CONTINUE and LEVELS. **Built** 2026-10-19 on a batch clone; awaiting the developer's `PARALLAX/Setup/Title Screen` run and look | PAX-053 |
-| | PAX-A09 | UI art to the premium target (live title scene, line-icon HUD, styled stick) | PAX-V06 |
-| | PAX-A10 | App icon + store graphics (after the finished look) | PAX-A09 |
-| F · Audio & haptics | PAX-064 | Audio (D-158): sounds synthesized in code, ambient bed, trap/death/cat/UI cues, channel volumes. **Built** 2026-10-20 on a batch clone; awaiting the developer's `PARALLAX/Setup/Audio (PAX-064)` run, Rebuild All Levels, and a listen | PAX-054 |
-| | PAX-065 | Haptics: trap and death cues, toggle | PAX-064 |
-| G · Release prep | PAX-066 | Paid unlock (Unity IAP), locked levels, restore | PAX-053, D-068 |
-| | PAX-067 | Release build: signed AAB, stripping, build checks | PAX-066 |
-| | PAX-068 | Store listing and compliance (developer checklist) | PAX-A10, PAX-067 |
-| H · Validate (moved here, D-064) | PAX-037 | Device session, whole game on the Pixel 8a | all above |
-| | PAX-069 | Hard-band threshold retune to device numbers (D-065, D-083 final) | PAX-037 |
-| | PAX-070 | Closed test track = blind playtest, Gate 3 | PAX-069 |
-| | (as needed) | Fix tickets from PAX-037 / PAX-070 | — |
-| | PAX-071 | Production release on Google Play | PAX-070 |
-| I · iOS | PAX-072 | iOS port (outline only) | PAX-071 |
-| Later | — | Co-op update (D-047) | — |
+## Start early (not tickets)
 
-PAX-060 note: **Kit gaps from the Level Devil study (candidates, not scheduled).** Moving pit · door as a platform · fake exit / warp · springs · slippery floor · wraparound screen edges. Content model for levels 11–50: **one new kit element per theme, explored across ~5 rooms, with a mixed "exam" level closing each theme**. Each element gets its own KIT ticket before the levels that use it (KIT-5 to KIT-9 already planned). Not in band 1: reversed controls and reaction-based traps. Design guidance: Docs/LEVEL_DESIGN_GUIDE.md.
+- **Google Play account:** if it's a personal account made after 13 Nov 2023, production access needs a closed test with at least 12 testers for 14 straight days. Recruit 15–25 people well
+  before item 14. An organization account (D-U-N-S) is exempt.
+- **Privacy policy URL:** needed for the listing even though the game collects no data.
 
-Phase E (art) and the art tickets can run alongside B–D, as today; they don't block code.
+## Small clean-ups
 
-## Decisions still to write
-
-- **D-044 follow-up:** whether and how the per-room death count is shown or persisted, decided
-  with the ticket that shows it.
-- **D-062** is still Proposed for luck, business model and audio/haptics; D-067 (no randomness) settles
-  luck and D-068 (free levels and price) settles the business model. Its tier clauses are replaced by D-065's difficulty bands.
-
-## Lead-time items to start early (not tickets)
-
-- Google Play developer account: check whether it is a **personal** account created after
-  13 Nov 2023. If so, production access needs a closed test with ≥ 12 testers opted in for 14
-  continuous days first; recruit 15–25 people well before Phase H. An organization account
-  (D-U-N-S) is exempt.
-- Privacy policy URL (needed for the listing even with no data collected).
-- ~~Audio source material (licences) for PAX-064.~~ Not needed: v1 sounds are synthesized in code (D-158).
+- `CLAUDE.md`'s scope list still says "no IAP". It should go now that PAX-066 is approved and built.
+- `Docs/PARALLAX_detailed_implementation_plan copy.md`: `CLAUDE.md` names it as a source (without "copy"), so it stayed, but it's long out of date. Your call.
+- `Docs/INVENTORY.md` (the Level Devil research) stays as a source of level ideas.

@@ -15,7 +15,7 @@ namespace Parallax.Editor.Setup
     /// LevelSelect a root "GameAudio" (GameAudio, plus LevelAudioEvents wired to the RoomManager, RoomDeath and ObserverSet in
     /// a level), saving each scene it changes. Rebuild All Levels then carries the template's into every Level_NNN. Like
     /// Rebuild All, it opens those scenes itself, so it refuses while the open scene has unsaved changes. D-165: it also fills the
-    /// bank's cat voice (CatVoiceImport).</summary>
+    /// bank's cat voice (CatVoiceImport). D-277: and its music (MusicImport).</summary>
     public static class AudioSetup
     {
         public const string RootName = "GameAudio";
@@ -31,6 +31,7 @@ namespace Parallax.Editor.Setup
 
             var changes = new List<string>();
             CatVoiceImport.Import(EnsureBank(changes), changes);   // D-165
+            MusicImport.Import(EnsureBank(changes), changes);      // D-277
             foreach (string path in new[] { TemplatePath, TitleSetup.ScenePath, LevelSelectPath })
             {
                 if (AssetDatabase.LoadAssetAtPath<Object>(path) == null) { changes.Add(path + " doesn't exist, skipped"); continue; }
@@ -85,7 +86,7 @@ namespace Parallax.Editor.Setup
             TrapKitSetup.Write(events, changes, ("gameAudio", gameAudio), ("rooms", rooms), ("death", death), ("observers", observers));
         }
 
-        static T Find<T>(Scene scene) where T : Component
+        internal static T Find<T>(Scene scene) where T : Component
         {
             foreach (GameObject root in scene.GetRootGameObjects())
             {

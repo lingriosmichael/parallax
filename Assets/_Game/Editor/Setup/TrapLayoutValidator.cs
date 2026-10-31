@@ -40,7 +40,8 @@ namespace Parallax.Editor.Setup
         static bool IsTrap(SoloRoomElementKind kind) => kind == SoloRoomElementKind.CollapsingFloor || kind == SoloRoomElementKind.HiddenSpikes || kind == SoloRoomElementKind.FallingBlock || kind == SoloRoomElementKind.GravityFlip || kind == SoloRoomElementKind.DoorRetreat || kind == SoloRoomElementKind.MovingTrap || kind == SoloRoomElementKind.Arrow
             || kind == SoloRoomElementKind.Inverter || kind == SoloRoomElementKind.Vine   // PAX-089 B
             || kind == SoloRoomElementKind.PulseGate   // PAX-112 (D-176)
-            || kind == SoloRoomElementKind.Spinner || kind == SoloRoomElementKind.Plate || kind == SoloRoomElementKind.Portal || kind == SoloRoomElementKind.Turret;   // PAX-116, D-197
+            || kind == SoloRoomElementKind.Spinner || kind == SoloRoomElementKind.Plate || kind == SoloRoomElementKind.Portal || kind == SoloRoomElementKind.Turret   // PAX-116, D-197
+            || kind == SoloRoomElementKind.Trident || kind == SoloRoomElementKind.Sweeper || kind == SoloRoomElementKind.Chaser;   // PAX-123/124 (D-276)
         static bool HasCycle(string start, Dictionary<string, SoloRoomElement> byName)
         {
             var seen = new HashSet<string>(); string current = start;

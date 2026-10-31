@@ -7,7 +7,8 @@ namespace Parallax.Gameplay.Audio
     /// <summary>PAX-064 (D-158): the game's mix. The sounds themselves are synthesized from SfxPresets; this asset holds the
     /// channel volumes and, per cue, an optional recording that replaces the synthesized sound, a volume trim, or a mute.
     /// One asset at AssetPath, made by PARALLAX/Setup/Audio (PAX-064). D-165: it also holds the cat's voice (Tools/Audio/cat_voice.py's
-    /// sounds), filled by PARALLAX/Setup/Cat Voice (PAX-110).</summary>
+    /// sounds), filled by PARALLAX/Setup/Cat Voice (PAX-110). D-277: and the music (Tools/Audio/music.py's loops), filled by
+    /// PARALLAX/Setup/Music (PAX-125).</summary>
     [CreateAssetMenu(menuName = "PARALLAX/Audio Cue Bank")]
     public sealed class AudioCueBank : ScriptableObject
     {
@@ -32,6 +33,14 @@ namespace Parallax.Gameplay.Audio
             public AudioClip[] Variants;
         }
 
+        /// <summary>D-277: a world's music loop.</summary>
+        [Serializable]
+        public struct MusicClip
+        {
+            public MusicTrack Track;
+            public AudioClip Clip;
+        }
+
         [Header("Channel volumes (0 to 1)")]
         [SerializeField, Range(0f, 1f)] float music = 0.5f;
         [SerializeField, Range(0f, 1f)] float sfx = 0.85f;
@@ -51,6 +60,10 @@ namespace Parallax.Gameplay.Audio
         [Header("Cat voice (D-165)")]
         [Tooltip("Written by PARALLAX/Setup/Cat Voice (PAX-110) from Assets/_Game/Audio/CatVoice.")]
         [SerializeField] VoiceClips[] catVoice = new VoiceClips[0];
+
+        [Header("Music (D-277)")]
+        [Tooltip("Written by PARALLAX/Setup/Music (PAX-125) from Assets/_Game/Audio/Music.")]
+        [SerializeField] MusicClip[] tracks = new MusicClip[0];
 
         public AudioClip BedClip => bedClip;
         public float PausedBed => pausedBed;
@@ -77,6 +90,14 @@ namespace Parallax.Gameplay.Audio
             foreach (VoiceClips v in catVoice)
                 if (v.Role == role && v.Variants != null && v.Variants.Length > 0)
                     return v.Variants[((turn % v.Variants.Length) + v.Variants.Length) % v.Variants.Length];
+            return null;
+        }
+
+        /// <summary>The track's loop, or null when the bank has none (the scene then plays the ambient bed).</summary>
+        public AudioClip MusicFor(MusicTrack track)
+        {
+            foreach (MusicClip t in tracks)
+                if (t.Track == track) return t.Clip;
             return null;
         }
 

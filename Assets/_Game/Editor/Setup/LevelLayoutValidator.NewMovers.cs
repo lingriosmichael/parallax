@@ -25,6 +25,11 @@ namespace Parallax.Editor.Setup
         // PAX-119/120/121 (D-197).
         internal const float MinPlateWidth = .6f;
         internal const int MinTurretLock = 6;
+        // PAX-123/124 (D-276).
+        internal const int MinTridentWarn = 12;
+        internal const float MaxSweeperTip = .5f;
+        // D-276 amendment 2: the chaser's run (u a tick: faster than a run) and turn (degrees a tick).
+        internal const float MaxChaserSpeed = .25f, MaxChaserTurn = 3f;
         internal static readonly Vector2 MinPortalSize = new(.6f, .7f);
 
         /// <summary>PAX-114 (D-187): a mover's offsets from home, home first: home and each path point, or home and its offset.</summary>
@@ -92,6 +97,9 @@ namespace Parallax.Editor.Setup
                 if (e.Kind == SoloRoomElementKind.Plate) CheckPlate(levelId, e, fixedSolids, errors);
                 if (e.Kind == SoloRoomElementKind.Portal) CheckPortal(levelId, room, e, fixedSolids, errors);
                 if (e.Kind == SoloRoomElementKind.Turret) CheckTurret(levelId, e, fixedSolids, errors);
+                if (e.Kind == SoloRoomElementKind.Trident) CheckTrident(levelId, e, fixedSolids, errors);
+                if (e.Kind == SoloRoomElementKind.Sweeper) CheckSweeper(levelId, room, e, errors);
+                if (e.Kind == SoloRoomElementKind.Chaser) CheckChaser(levelId, room, e, errors);
             }
             return errors;
 
@@ -137,6 +145,59 @@ namespace Parallax.Editor.Setup
                 // D-203: a ceiling turret's muzzle hangs just under its host; inside it, its beam would reach through to the floor above.
                 if (k.CeilingMount && solids.Any(f => Box(f, Vector2.zero).Contains(e.Position)))
                     list.Add($"{id}: {e.Name} is ceiling-mounted with its muzzle {e.Position} inside a fixed solid (D-203).");
+            }
+
+            // PAX-123 (D-276): a warning (its tell) of at least MinTridentWarn, a fire of at least a tick, Periodic, a cooldown covering
+            // the cycle, a spread under 90°, hosted in a fixed solid with its muzzle just outside it (inside, its beams would start in the stone).
+            void CheckTrident(string id, SoloRoomElement e, SoloRoomElement[] solids, List<string> list)
+            {
+                TridentSettings k = e.Settings.Trident;
+                if (!k.IsConfigured) { list.Add($"{id}: {e.Name} is a trident with no trident settings (PAX-123)."); return; }
+                if (k.WarnTicks < MinTridentWarn) list.Add($"{id}: {e.Name} warns for {k.WarnTicks} ticks; at least {MinTridentWarn}, its tell (D-057, PAX-123).");
+                if (k.FireTicks < 1) list.Add($"{id}: {e.Name} fires {k.FireTicks} ticks; at least 1 (PAX-123).");
+                if (k.SpreadDegrees <= 0f || k.SpreadDegrees >= 90f) list.Add($"{id}: {e.Name}'s spread is {k.SpreadDegrees}°; between 0 and 90 (PAX-123).");
+                if (e.Settings.RepeatMode != TrapRepeatMode.Periodic) list.Add($"{id}: {e.Name} isn't Periodic; a trident keeps its own cycle (PAX-123).");
+                if (e.Settings.CooldownTicks < k.Cycle) list.Add($"{id}: {e.Name}'s cooldown {e.Settings.CooldownTicks} is below its cycle {k.Cycle} (PAX-123).");
+                Rect b = Box(e, Vector2.zero);
+                if (!solids.Any(f => Box(f, Vector2.zero).Overlaps(b))) list.Add($"{id}: {e.Name} {Describe(b)} isn't hosted in a fixed solid (PAX-123).");
+                if (solids.Any(f => Box(f, Vector2.zero).Contains(e.Position))) list.Add($"{id}: {e.Name}'s muzzle {e.Position} is inside a fixed solid (PAX-123).");
+            }
+
+            // PAX-124 (D-276): a warning of at least the scanner's minimum, a tip speed of at most MaxSpinnerTip, a positive run, and its
+            // pivot's path inside the room.
+            void CheckSweeper(string id, SoloRoomDefinition r, SoloRoomElement e, List<string> list)
+            {
+                SweeperSettings k = e.Settings.Sweeper;
+                if (!k.IsConfigured) { list.Add($"{id}: {e.Name} is a rotating chaser with no settings (PAX-124)."); return; }
+                if (k.WarnTicks < MinScanWarnTicks) list.Add($"{id}: {e.Name} warns for {k.WarnTicks} ticks; at least {MinScanWarnTicks} (R1, D-057, PAX-124).");
+                if (k.ArmLength <= 0f || k.ArmWidth < .2f || k.ArmWidth > .6f) list.Add($"{id}: {e.Name}'s arms are {k.ArmLength} x {k.ArmWidth}; a positive length, width 0.2-0.6 (PAX-124).");
+                if (k.TipSpeed > MaxSweeperTip + 1e-4f) list.Add($"{id}: {e.Name}'s tip moves {k.TipSpeed:F3} u a tick; at most {MaxSweeperTip} (PAX-124).");
+                if (e.Settings.MoveTicks < 1) list.Add($"{id}: {e.Name} moves over {e.Settings.MoveTicks} ticks; at least 1 (PAX-124).");
+                Vector2 end = e.Position + e.Settings.Offset;
+                foreach (Vector2 p in new[] { e.Position, end })
+                    if (p.x < -eps || p.x > r.Width + eps) list.Add($"{id}: {e.Name}'s pivot {p} leaves the room's x range [0, {r.Width:F2}] (PAX-124).");
+            }
+
+            // D-276 amendment 2: a warning of at least the scanner's minimum, speeds no faster than MaxChaserSpeed, a turn no faster than
+            // MaxChaserTurn, zones in ascending x, and its run inside the room.
+            void CheckChaser(string id, SoloRoomDefinition r, SoloRoomElement e, List<string> list)
+            {
+                ChaserSettings k = e.Settings.Chaser;
+                if (!k.IsConfigured) { list.Add($"{id}: {e.Name} is a chaser with no settings (D-276)."); return; }
+                if (k.WarnTicks < MinScanWarnTicks) list.Add($"{id}: {e.Name} warns for {k.WarnTicks} ticks; at least {MinScanWarnTicks} (R1, D-057).");
+                if (k.ArmWidth < .2f || k.ArmWidth > .6f) list.Add($"{id}: {e.Name}'s beam is {k.ArmWidth} wide; 0.2-0.6 (D-276).");
+                if (k.ZoneX == null || k.ZoneSpeed == null || k.ZoneX.Length == 0 || k.ZoneX.Length != k.ZoneSpeed.Length) { list.Add($"{id}: {e.Name} needs one speed per zone (D-276)."); return; }
+                for (int i = 0; i < k.ZoneX.Length; i++)
+                {
+                    if (i > 0 && k.ZoneX[i] <= k.ZoneX[i - 1]) list.Add($"{id}: {e.Name}'s zones aren't in ascending x at {i} (D-276).");
+                    if (k.ZoneSpeed[i] < 0f || k.ZoneSpeed[i] > MaxChaserSpeed) list.Add($"{id}: {e.Name}'s zone {i} speed {k.ZoneSpeed[i]} is outside 0-{MaxChaserSpeed} (D-276).");
+                }
+                if (k.CatchUpSpeed <= 0f || k.CatchUpSpeed > MaxChaserSpeed) list.Add($"{id}: {e.Name}'s catch-up speed {k.CatchUpSpeed} is outside 0-{MaxChaserSpeed} (D-276).");
+                if (Mathf.Abs(k.SpinTurn) > MaxChaserTurn) list.Add($"{id}: {e.Name} turns {k.SpinTurn}° a tick; at most {MaxChaserTurn} (D-276).");
+                if (k.SwingSpeed < 0f || k.SwingSpeed > MaxChaserTurn) list.Add($"{id}: {e.Name} swings {k.SwingSpeed}° a tick; 0-{MaxChaserTurn} (D-276).");
+                foreach (float tilt in k.SwingTilts ?? new float[0]) if (Mathf.Abs(tilt) >= 85f) list.Add($"{id}: {e.Name} tilts {tilt}°; under 85 (a level beam fills the hall; D-276).");
+                if (k.CloseScale < 0f || k.CloseScale > 1f || k.MinLag < 0f || k.MinLag > k.MaxLag) list.Add($"{id}: {e.Name}'s creep ({k.MinLag}, {k.CloseScale}) needs 0 ≤ min lag ≤ max lag and a scale 0-1 (D-276).");
+                if (k.EndX > r.Width + eps || e.Position.x < -eps) list.Add($"{id}: {e.Name}'s run {e.Position.x}-{k.EndX} leaves the room (D-276).");
             }
 
             void CheckPath(string id, SoloRoomDefinition r, SoloRoomElement e, SoloRoomElement[] solids, List<string> list)

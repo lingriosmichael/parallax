@@ -116,6 +116,15 @@ namespace Parallax.Editor.Levels
             // D-252 (the developer, of Lift_H: "Cat looks like it is sliding when its moving on a platform"): the shaded ruin wall
             // behind L030's chasm topped out level with the lift, so the lift read as a block sliding along the ground. Clear too.
             ["L030"] = ("GoldenHour", "Clear"),
+            // D-262: L031-L035 open Obsidian Void (D-172). Until PAX-A20's biome switch they wear the Golden Ruins kit, so a night
+            // sky over a clear background is what sets the new world apart for now.
+            ["L031"] = ("Moonlit", "Clear"), ["L032"] = ("Moonlit", "Clear"), ["L033"] = ("Moonlit", "Clear"),
+            ["L034"] = ("Moonlit", "Clear"), ["L035"] = ("Moonlit", "Clear"),
+            ["L036"] = ("Moonlit", "Clear"),
+            ["L037"] = ("Moonlit", "Clear"),
+            ["L038"] = ("Moonlit", "Clear"),
+            ["L039"] = ("Moonlit", "Clear"),
+            ["L040"] = ("Moonlit", "Clear"),
         };
 
         public static Palette For(string levelId) =>

@@ -74,5 +74,78 @@ namespace Parallax.Tests.EditMode
                 Assert.LessOrEqual(System.Math.Abs(TitleIntroTimeline.Drift(s, 2.5f, 48f)), 2.5f + 1e-5f);
             Assert.AreEqual(0f, TitleIntroTimeline.Drift(5f, 2.5f, 0f), "no period, no pan");
         }
+
+        // D-280.
+        static TitleIntroTimes Flair()
+        {
+            TitleIntroTimes t = Times();
+            t.LetterStep = 0.1f; t.MenuStep = 0.14f; t.SheenStart = 2.5f; t.SheenSeconds = 1.5f; t.SheenEvery = 9f;
+            t.SlipDelay = 5f; t.SlipEvery = 13f; t.SlipSeconds = 1.7f;
+            return t;
+        }
+
+        [Test]
+        public void Letters_ArriveFromTheMiddleOut()
+        {
+            TitleIntroTimes t = Flair();
+            float early = t.WordmarkStart + 0.2f;
+            Assert.Greater(TitleIntroTimeline.Letter(t, early, 3, 8), TitleIntroTimeline.Letter(t, early, 0, 8));
+            Assert.AreEqual(TitleIntroTimeline.Letter(t, early, 3, 8), TitleIntroTimeline.Letter(t, early, 4, 8), "mirrored about the middle");
+            Assert.AreEqual(0f, TitleIntroTimeline.LetterRise(t, TitleIntroTimeline.SkipTo(t), 0, 8), "every letter is home when the intro ends");
+            Assert.AreEqual(1f, TitleIntroTimeline.Letter(t, TitleIntroTimeline.SkipTo(t), 0, 8));
+        }
+
+        [Test]
+        public void Buttons_FollowEachOther_AndASkipShowsThemAll()
+        {
+            TitleIntroTimes t = Flair();
+            Assert.Greater(TitleIntroTimeline.MenuItem(t, t.MenuStart + 0.2f, 0), TitleIntroTimeline.MenuItem(t, t.MenuStart + 0.2f, 2));
+            for (int i = 0; i < 3; i++) Assert.AreEqual(1f, TitleIntroTimeline.MenuItem(t, TitleIntroTimeline.SkipTo(t), i));
+        }
+
+        [Test]
+        public void TheLight_Crosses_ThenComesBackLater()
+        {
+            TitleIntroTimes t = Flair();
+            Assert.AreEqual(-1f, TitleIntroTimeline.Sheen(t, 1f));
+            Assert.AreEqual(0.5f, TitleIntroTimeline.Sheen(t, 3.25f), 1e-5f);
+            Assert.AreEqual(-1f, TitleIntroTimeline.Sheen(t, 5f));
+            Assert.AreEqual(0.5f, TitleIntroTimeline.Sheen(t, 12.25f), 1e-5f);
+        }
+
+        [Test]
+        public void NoLetterSlips_DuringTheIntro_OrBetweenSlips()
+        {
+            TitleIntroTimes t = Flair();
+            int[] order = { 7, 2 };
+            float first = TitleIntroTimeline.SkipTo(t) + t.SlipDelay;
+            Assert.AreEqual(-1, TitleIntroTimeline.Slip(t, TitleIntroTimeline.SkipTo(t), order).Letter);
+            Assert.AreEqual(-1, TitleIntroTimeline.Slip(t, first - 0.01f, order).Letter);
+            Assert.AreEqual(-1, TitleIntroTimeline.Slip(t, first + t.SlipSeconds + 0.1f, order).Letter);
+            Assert.AreEqual(-1, TitleIntroTimeline.Slip(t, 5f, null).Letter);
+        }
+
+        [Test]
+        public void ALetter_Hangs_ThenComesHome_AndTheNextTurnIsAnother()
+        {
+            TitleIntroTimes t = Flair();
+            int[] order = { 7, 2 };
+            float first = TitleIntroTimeline.SkipTo(t) + t.SlipDelay;
+            TitleSlip hanging = TitleIntroTimeline.Slip(t, first + t.SlipSeconds * 0.5f, order);
+            Assert.AreEqual(7, hanging.Letter);
+            Assert.AreEqual(1f, hanging.Drop);
+            TitleSlip home = TitleIntroTimeline.Slip(t, first + t.SlipSeconds * 0.9999f, order);
+            Assert.AreEqual(0f, home.Drop, 0.01f);
+            Assert.AreEqual(0f, home.Tilt, 0.01f);
+            Assert.AreEqual(2, TitleIntroTimeline.Slip(t, first + t.SlipEvery + 0.8f, order).Letter);
+        }
+
+        [Test]
+        public void TheCamera_PushesIn_AndStops()
+        {
+            Assert.AreEqual(0f, TitleIntroTimeline.Push(0f, 6f));
+            Assert.AreEqual(1f, TitleIntroTimeline.Push(6f, 6f));
+            Assert.AreEqual(1f, TitleIntroTimeline.Push(60f, 6f));
+        }
     }
 }

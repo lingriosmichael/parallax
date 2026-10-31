@@ -103,3 +103,33 @@ MonoBehaviour:
   - Id: L030
     SceneName: Level_030
     DisplayName: Level 30
+  - Id: L031
+    SceneName: Level_031
+    DisplayName: Level 31
+  - Id: L032
+    SceneName: Level_032
+    DisplayName: Level 32
+  - Id: L033
+    SceneName: Level_033
+    DisplayName: Level 33
+  - Id: L034
+    SceneName: Level_034
+    DisplayName: Level 34
+  - Id: L035
+    SceneName: Level_035
+    DisplayName: Level 35
+  - Id: L036
+    SceneName: Level_036
+    DisplayName: Level 36
+  - Id: L037
+    SceneName: Level_037
+    DisplayName: Level 37
+  - Id: L038
+    SceneName: Level_038
+    DisplayName: Level 38
+  - Id: L039
+    SceneName: Level_039
+    DisplayName: Level 39
+  - Id: L040
+    SceneName: Level_040
+    DisplayName: Level 40

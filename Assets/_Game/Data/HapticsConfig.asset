@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f049cbb19b1394b05b0de7e74aeca3cb, type: 3}
+  m_Name: HapticsConfig
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Audio.HapticsConfig
+  minGap: 0.25
+  trapWithin: 9
+  patterns:
+  - Cue: 0
+    Millis: 19000000
+    Amplitudes: 46000000
+    Strong: 0
+  - Cue: 1
+    Millis: 3c000000
+    Amplitudes: b4000000
+    Strong: 1
+  - Cue: 2
+    Millis: 280000003c000000280000003c00000050000000
+    Amplitudes: 8c00000000000000aa00000000000000dc000000
+    Strong: 1

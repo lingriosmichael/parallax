@@ -229,7 +229,7 @@ namespace Parallax.Editor.Art
         static readonly System.Reflection.MethodInfo LightMesh = typeof(UnityEngine.Rendering.Universal.Light2D).GetMethod("UpdateMesh", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         static readonly System.Reflection.MethodInfo LightSphere = typeof(UnityEngine.Rendering.Universal.Light2D).GetMethod("UpdateBoundingSphere", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
-        static void PrepareLights()
+        internal static void PrepareLights()
         {
             // The followers (the cat's key light, the sun's backlight) move to their targets first, as their LateUpdate would.
             var follow = typeof(Parallax.Presentation.FollowTransform).GetMethod("LateUpdate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);

@@ -12,7 +12,8 @@ namespace Parallax.Gameplay.Audio
     /// ambient bed, plays cues through a small pool of voices, and clicks for every button in the scene. Presentation only:
     /// nothing in gameplay reads it, and removing it changes no test. One per scene (Title, LevelSelect, every level via
     /// _LevelTemplate), placed by PARALLAX/Setup/Audio (PAX-064); not a singleton. D-165: a cue's cat voice (CatVoice, the bank's
-    /// clips) starts with it on other voices, delayed, panned and faded the same way.</summary>
+    /// clips) starts with it on other voices, delayed, panned and faded the same way. D-277: a scene's world picks its music,
+    /// which takes the bed's place; the bed stays as the fallback when the bank has no loop.</summary>
     [DisallowMultipleComponent]
     public sealed class GameAudio : MonoBehaviour
     {
@@ -20,6 +21,8 @@ namespace Parallax.Gameplay.Audio
 
         [SerializeField] AudioCueBank bank;
         [SerializeField] bool playBed = true;
+        [Tooltip("D-277: this scene's music. Rebuild All Levels sets it from the level's world; Title and LevelSelect keep the default.")]
+        [SerializeField] MusicTrack track = MusicTrack.GoldenRuins;
         [Tooltip("How many sounds may play at once.")]
         [SerializeField] int voices = 12;
         [Tooltip("Pitch walk between repeats of a cue, in semitones (a fixed pattern, not randomness).")]
@@ -30,6 +33,11 @@ namespace Parallax.Gameplay.Audio
         [SerializeField] float fullWithin = 9f;
         [Tooltip("...and fades out by this distance (an off-screen launcher stays quiet).")]
         [SerializeField] float silentBeyond = 17f;
+
+        // D-277: where the music had got to, for the next scene. Levels are short: restarting the loop every scene would only ever
+        // play its first half minute. Presentation only; a clip that doesn't match starts from the top.
+        static AudioClip resumeClip;
+        static int resumeSample;
 
         readonly Dictionary<AudioCue, AudioClip> clips = new Dictionary<AudioCue, AudioClip>();
         readonly CueLimiter limiter = new CueLimiter();
@@ -71,6 +79,8 @@ namespace Parallax.Gameplay.Audio
             float fade = bank.BedFadeIn > 0f ? Mathf.Clamp01((Time.unscaledTime - bedStart) / bank.BedFadeIn) : 1f;
             float paused = pause != null && pause.IsPaused ? bank.PausedBed : 1f;
             bed.volume = bank.VolumeOf(AudioChannel.Music) * fade * paused;
+            resumeClip = bed.clip;
+            resumeSample = bed.timeSamples;
         }
 
         /// <summary>Plays a cue (panned by its world x when given, and faded with its distance from the camera), unless it is
@@ -171,7 +181,8 @@ namespace Parallax.Gameplay.Audio
 
         void StartBed()
         {
-            AudioClip clip = bank.BedClip;
+            AudioClip clip = bank.MusicFor(track);   // D-277
+            if (clip == null) clip = bank.BedClip;
             if (clip == null)
             {
                 float[] samples = AmbientBed.Render(SfxPresets.Bed(), BedRate);
@@ -180,6 +191,7 @@ namespace Parallax.Gameplay.Audio
             }
             bed = NewSource("Bed");
             bed.clip = clip;
+            if (clip == resumeClip) bed.timeSamples = resumeSample;
             bed.loop = true;
             bed.volume = 0f;
             bed.ignoreListenerPause = true;

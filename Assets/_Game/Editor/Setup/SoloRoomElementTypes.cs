@@ -18,11 +18,13 @@ namespace Parallax.Editor.Setup
     // box; the secondary box is its Overlap wake trigger.
     // PAX-093 (D-095): ShrinkingFloor is appended the same way (levels 11+ only). Position/Size is the full floor; the
     // secondary box, when set, is its Overlap trigger (else its own top, like a collapsing floor).
-    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser, Vine, StormCloud, ShrinkingFloor, GripWall, PulseGate, Spinner, Plate, Portal, Turret }
+    public enum SoloRoomElementKind { Floor, Ceiling, Wall, PitBottom, Checkpoint, Door, Hazard, CollapsingFloor, HiddenSpikes, FallingBlock, GravityFlip, DoorRetreat, MovingTrap, Arrow, FakePlatform, Inverter, Geyser, Vine, StormCloud, ShrinkingFloor, GripWall, PulseGate, Spinner, Plate, Portal, Turret, Trident, Sweeper, Chaser }
     // PAX-112 (D-176): PulseGate is appended the same way (Obsidian Void, L031+). Position/Size is the barrier's box (a vertical or
     // horizontal bar between two solids); its settings carry PulseGateSettings on Periodic timing, and it has no trigger.
     // PAX-119/120/121 (D-197): Plate (a thin trigger flush on a floor top), Portal (its entry; the exit in SecondaryPosition/Size) and
     // Turret (hosted in a solid; Position is the muzzle) are appended the same way (the conveyor was removed, D-199).
+    // PAX-123/124 (D-276): Trident (hosted in a solid; Position is the muzzle) and Sweeper (Position is the pivot's home; the
+    // secondary box its trigger) are appended the same way.
     // PAX-116 (D-187): Spinner is appended the same way. Position is the pivot, Size the hub (harmless); its settings carry
     // SpinnerSettings, and a triggered one has its trigger in SecondaryPosition/SecondarySize.
     public enum SoloRoomOpeningKind { Pit, Recess }
@@ -259,6 +261,48 @@ namespace Parallax.Editor.Setup
         public int Cycle => AimTicks + LockTicks + FireTicks;
     }
 
+    // PAX-123 (D-276): a trident's three fixed beams (DownAngle, and SpreadDegrees to either side) and its cycle on top of its
+    // Periodic timing: WarnTicks (the tell), FireTicks lethal.
+    public readonly struct TridentSettings
+    {
+        public readonly bool IsConfigured; public readonly int WarnTicks, FireTicks; public readonly float DownAngle, SpreadDegrees, BeamWidth, Range;
+        public TridentSettings(int warnTicks, int fireTicks, float downAngle = -90f, float spreadDegrees = 35f, float beamWidth = .3f, float range = 40f)
+        { IsConfigured = true; WarnTicks = warnTicks; FireTicks = fireTicks; DownAngle = downAngle; SpreadDegrees = spreadDegrees; BeamWidth = beamWidth; Range = range; }
+        public int Cycle => WarnTicks + FireTicks;
+    }
+
+    // PAX-124 (D-276): a rotating chaser's bar (two arms of ArmLength through the pivot, turning DegreesPerTick from StartAngle) and its
+    // run: a harmless WarnTicks at home from its fire, then its pivot along the timing's Offset over the timing's MoveTicks.
+    public readonly struct SweeperSettings
+    {
+        public readonly bool IsConfigured; public readonly int WarnTicks; public readonly float ArmLength, ArmWidth, DegreesPerTick, StartAngle;
+        // D-276 amendment 1: it turns from SpinFromTicks after its fire (-1: as its warning ends), speeding up over SpinRampTicks.
+        public readonly int SpinFromTicks, SpinRampTicks;
+        public SweeperSettings(float armLength, float degreesPerTick, int warnTicks, float startAngle = 90f, float armWidth = .3f, int spinFromTicks = -1, int spinRampTicks = 0)
+        { IsConfigured = true; ArmLength = armLength; DegreesPerTick = degreesPerTick; WarnTicks = warnTicks; StartAngle = startAngle; ArmWidth = armWidth; SpinFromTicks = spinFromTicks; SpinRampTicks = spinRampTicks; }
+        /// <summary>The tip's speed from the turn alone, u a tick.</summary>
+        public float TipSpeed => Mathf.Abs(DegreesPerTick) * Mathf.Deg2Rad * ArmLength;
+    }
+
+    // D-276 amendment 2: the chaser (ChaserTrap): its beams to the first fixed solid; from its fire a WarnTicks warning, then its
+    // pivot runs east at ZoneSpeed[i] from ZoneX[i] (local x) on, never more than MaxLag behind the cat (CatchUpSpeed beyond), to
+    // EndX, upright; at SpinX it stops and turns a full circle at SpinTurn degrees a tick, then runs on.
+    public readonly struct ChaserSettings
+    {
+        public readonly bool IsConfigured; public readonly int WarnTicks; public readonly float ArmWidth, Range, EndX, MaxLag, CatchUpSpeed, CatchUpFromX, SpinX, SpinTurn;
+        public readonly float[] ZoneX, ZoneSpeed;
+        // D-276 amendment 3: it creeps (CloseScale) closer than MinLag; from SwingFromX it swings to each of SwingTilts in turn.
+        public readonly float MinLag, CloseScale, SwingFromX, SwingSpeed; public readonly float[] SwingTilts;
+        // It parks past ParkFromX once ahead of the cat (ParkSpeed), and runs on at AfterSpeed once the cat has passed it.
+        public readonly float ParkFromX, ParkSpeed, AfterSpeed;
+        public ChaserSettings(int warnTicks, float endX, float[] zoneX, float[] zoneSpeed, float maxLag = 9f, float catchUpSpeed = .16f, float catchUpFromX = 0f, float spinX = float.MaxValue, float spinTurn = -1f, float armWidth = .3f, float range = 80f,
+            float minLag = 0f, float closeScale = 1f, float swingFromX = float.MaxValue, float swingSpeed = .5f, float[] swingTilts = null,
+            float parkFromX = float.MaxValue, float parkSpeed = 0f, float afterSpeed = .05f)
+        { IsConfigured = true; WarnTicks = warnTicks; EndX = endX; ZoneX = zoneX; ZoneSpeed = zoneSpeed; MaxLag = maxLag; CatchUpSpeed = catchUpSpeed; CatchUpFromX = catchUpFromX; SpinX = spinX; SpinTurn = spinTurn; ArmWidth = armWidth; Range = range;
+          MinLag = minLag; CloseScale = closeScale; SwingFromX = swingFromX; SwingSpeed = swingSpeed; SwingTilts = swingTilts ?? new float[0];
+          ParkFromX = parkFromX; ParkSpeed = parkSpeed; AfterSpeed = afterSpeed; }
+    }
+
     public readonly struct SoloRoomTrapSettings
     {
         public readonly bool IsConfigured; public readonly int DelayTicks; public readonly int MoveTicks; public readonly int RevealDelayTicks;
@@ -292,8 +336,12 @@ namespace Parallax.Editor.Setup
         // PAX-120/121 (D-197): default for everything but a portal, a turret.
         public readonly PortalSettings Portal;
         public readonly TurretSettings Turret;
+        // PAX-123/124 (D-276): default for everything but a trident, a rotating chaser.
+        public readonly TridentSettings Trident;
+        public readonly SweeperSettings Sweeper;
+        public readonly ChaserSettings Chaser;   // D-276 amendment 2
         public SoloRoomTrapSettings(int delayTicks = 0, int moveTicks = 0, int revealDelayTicks = 0, float unitsPerTick = 0f, float travelDistance = 0f, FallingBlockDirection direction = FallingBlockDirection.Down, GravityFlipMode gravityMode = GravityFlipMode.Flip, bool rearmOnExit = false, bool rendererEnabled = false, Vector2 offset = default, string triggerName = "Trigger", TrapTriggerSource triggerSource = TrapTriggerSource.Overlap, string chainSource = null, TrapRepeatMode repeatMode = TrapRepeatMode.Once, int cooldownTicks = 0, int periodTicks = 1, int phaseTicks = 0, MovingTrapKind movingKind = MovingTrapKind.Hazard, int holdTicks = 0, int returnTicks = 0, float crushDepth = 0f, string learnedBypassReason = null)
-        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; Geyser = default; Cloud = default; Floor = default; Shrink = default; Grip = default; Gate = default; Scan = default; Path = default; Spinner = default; Portal = default; Turret = default; }
+        { IsConfigured = true; DelayTicks = delayTicks; MoveTicks = moveTicks; RevealDelayTicks = revealDelayTicks; UnitsPerTick = unitsPerTick; TravelDistance = travelDistance; Direction = direction; GravityMode = gravityMode; RearmOnExit = rearmOnExit; RendererEnabled = rendererEnabled; Offset = offset; TriggerName = triggerName; TriggerSource = triggerSource; ChainSource = chainSource; RepeatMode = repeatMode; CooldownTicks = cooldownTicks; PeriodTicks = periodTicks; PhaseTicks = phaseTicks; MovingKind = movingKind; HoldTicks = holdTicks; ReturnTicks = returnTicks; CrushDepth = crushDepth; LearnedBypassReason = learnedBypassReason; Arrow = default; Inverter = default; Geyser = default; Cloud = default; Floor = default; Shrink = default; Grip = default; Gate = default; Scan = default; Path = default; Spinner = default; Portal = default; Turret = default; Trident = default; Sweeper = default; Chaser = default; }
         // PAX-074 (D-078): an arrow's lane on top of ordinary trigger/repeat settings. Two parameters on
         // purpose: tests that build settings by reflection pick the longest constructor, which stays the one above.
         public SoloRoomTrapSettings(ArrowLane arrow, SoloRoomTrapSettings timing) { this = timing; Arrow = arrow; }
@@ -320,6 +368,10 @@ namespace Parallax.Editor.Setup
         // PAX-120/121 (D-197): the same two-parameter shape.
         public SoloRoomTrapSettings(PortalSettings portal, SoloRoomTrapSettings timing) { this = timing; Portal = portal; }
         public SoloRoomTrapSettings(TurretSettings turret, SoloRoomTrapSettings timing) { this = timing; Turret = turret; }
+        // PAX-123/124 (D-276): the same two-parameter shape.
+        public SoloRoomTrapSettings(TridentSettings trident, SoloRoomTrapSettings timing) { this = timing; Trident = trident; }
+        public SoloRoomTrapSettings(SweeperSettings sweeper, SoloRoomTrapSettings timing) { this = timing; Sweeper = sweeper; }
+        public SoloRoomTrapSettings(ChaserSettings chaser, SoloRoomTrapSettings timing) { this = timing; Chaser = chaser; }
     }
 
     public readonly struct SoloRoomElement

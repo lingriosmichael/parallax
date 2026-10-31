@@ -14,14 +14,17 @@ namespace Parallax.Core
         public readonly string DisplayName;
         public readonly bool IsUnlocked;
         public readonly string BestDeathsText;
+        // PAX-066 (D-279): not playable yet: tapping the row opens the unlock panel.
+        public readonly bool IsPaywalled;
 
-        public LevelSelectEntry(string id, string sceneName, string displayName, bool isUnlocked, string bestDeathsText)
+        public LevelSelectEntry(string id, string sceneName, string displayName, bool isUnlocked, string bestDeathsText, bool isPaywalled = false)
         {
             Id = id;
             SceneName = sceneName;
             DisplayName = displayName;
             IsUnlocked = isUnlocked;
             BestDeathsText = bestDeathsText;
+            IsPaywalled = isPaywalled;
         }
     }
 
@@ -29,7 +32,9 @@ namespace Parallax.Core
     {
         public static LevelSelectEntry[] Build(
             IReadOnlyList<(string Id, string SceneName, string DisplayName)> levels,
-            LevelProgress progress)
+            LevelProgress progress,
+            Entitlements entitlements = null,
+            long now = 0)
         {
             var entries = new LevelSelectEntry[levels.Count];
             for (int i = 0; i < levels.Count; i++)
@@ -37,7 +42,9 @@ namespace Parallax.Core
                 (string id, string sceneName, string displayName) = levels[i];
                 int best = progress.BestDeaths(id);
                 string bestText = best == LevelProgress.NeverCompleted ? "—" : best.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                entries[i] = new LevelSelectEntry(id, sceneName, displayName, progress.IsUnlocked(id), bestText);
+                bool paywalled = entitlements != null && !entitlements.IsPlayable(id, now);
+                if (paywalled) bestText = "Locked";
+                entries[i] = new LevelSelectEntry(id, sceneName, displayName, progress.IsUnlocked(id), bestText, paywalled);
             }
             return entries;
         }

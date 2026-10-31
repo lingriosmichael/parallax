@@ -109,5 +109,26 @@ namespace Parallax.Core
 
         /// <summary>PAX-116: arm `arm`'s angle (degrees) for a spinner at `angle`.</summary>
         public static float ArmAngle(float angle, int arm, int arms) => angle + arm * 360f / Mathf.Max(1, arms);
+
+        /// <summary>PAX-123 (D-276): a trident's beam `i` (0, 1, 2): along `down`, then `spread` degrees to either side of it.</summary>
+        public static float TridentAngle(float down, float spread, int i) => i == 0 ? down : i == 1 ? down - spread : down + spread;
+
+        /// <summary>PAX-124 (D-276): how far along its path a rotating chaser's pivot is `since` ticks after its fire: still through its
+        /// warning, then evenly over `moveTicks`, then held at the end (0..1; 0 before the fire).</summary>
+        public static float SweepProgress(int since, int warnTicks, int moveTicks) =>
+            since < warnTicks ? 0f : moveTicks <= 0 ? 1f : Mathf.Clamp01((since - warnTicks) / (float)moveTicks);
+
+        /// <summary>PAX-124: its bar's angle: `start` until its warning ends, then turning `degreesPerTick` (it turns as it moves).</summary>
+        public static float SweepAngle(float start, float degreesPerTick, int since, int warnTicks) => SpinAngle(start, degreesPerTick, since - warnTicks);
+
+        /// <summary>D-276 amendment 1: a bar that holds `start` until `spinFrom` ticks after its fire, then starts turning, speeding up
+        /// evenly over `ramp` ticks to `degreesPerTick` (0: at once), and turns on at that rate.</summary>
+        public static float SweepAngle(float start, float degreesPerTick, int since, int spinFrom, int ramp)
+        {
+            int t = since - spinFrom;
+            if (t <= 0) return start;
+            float turned = ramp > 0 && t < ramp ? degreesPerTick * t * t / (2f * ramp) : degreesPerTick * ((ramp > 0 ? ramp * .5f : 0f) + (t - Mathf.Max(ramp, 0)));
+            return Mathf.Repeat(start + turned, 360f);
+        }
     }
 }

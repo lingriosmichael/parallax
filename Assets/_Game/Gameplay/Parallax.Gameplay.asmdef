@@ -4,7 +4,9 @@
   "references": [
     "Parallax.Core",
     "Unity.InputSystem",
-    "UnityEngine.UI"
+    "UnityEngine.UI",
+    "Unity.Purchasing",
+    "Unity.Services.Core"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

@@ -50,6 +50,20 @@ namespace Parallax.Presentation
         public Sprite Scorch, BlockCrack;
         public Sprite[] Steam = new Sprite[0];
         public Sprite[] Leaves = new Sprite[0];
+        [Header("Obsidian Void (PAX-A20; levels 31-60)")]
+        [Tooltip("OT-05's laser beam, one unit tall and tileable along x (Tools/Art/obsidian_traps.py): every lethal band in an Obsidian level draws as it (LaserArt) instead of spikes. Null = spikes there too.")]
+        public Sprite LaserBeam;
+        [Tooltip("D-276: the pale blue-white beam every chasing laser draws as (purges, floods, descending beams, rotating chasers).")]
+        public Sprite ChaserBeam;
+        [Tooltip("OT-16's emitters: a pulse gate's ceiling and floor ends (with LaserBeam between them).")]
+        public Sprite GateEmitterTop, GateEmitterBottom;
+        [Tooltip("OT-04's turret housing: dark (aiming, resting) and lit crimson (locking, firing).")]
+        public Sprite TurretIdle, TurretLock;
+        [Tooltip("OT-06's hard-light bar (drawn whole at its one size, as the spear is) and its launcher (OT-04's housing, small).")]
+        public Sprite HardLightBar, BarLauncher;
+        [Tooltip("Stage 4: OT-13's rings (flip: arrows up and down; inverter: left and right), OT-10's striking edge (a slam's plate), OT-09's crack stages and broken edge (glass). In an Obsidian level they stand in for GlyphRing, InverterOrb, SlamPlate, Cracks and CrumbleEdge.")]
+        public Sprite FlipRing, InverterRing, ObsidianSlamPlate, GlassEdge;
+        public Sprite[] GlassCracks = new Sprite[0];
         [Header("Code effects")]
         public Sprite BoltSegment, Flash, Ring, Mote;
         [Tooltip("Sprites that are still code-drawn placeholders for a ChatGPT body (the contact sheet marks them PLACEHOLDER).")]
@@ -78,6 +92,20 @@ namespace Parallax.Presentation
         [Min(0)] public int VineLeaves = 6;
         [Min(0)] public int DoorDust = 4;
         [Min(0)] public int DeathPuffs = 8;
+
+        /// <summary>PAX-A20 stage 4: a copy of this config with Obsidian Void's trap sprites in the Golden Ruins fields they replace
+        /// (each only where its Obsidian sprite exists). The caller owns the copy and destroys it (it is never saved).</summary>
+        public TrapArtConfig ObsidianView()
+        {
+            TrapArtConfig v = Instantiate(this);
+            v.hideFlags = HideFlags.DontSave;
+            if (FlipRing != null) v.GlyphRing = FlipRing;
+            if (InverterRing != null) v.InverterOrb = InverterRing;
+            if (ObsidianSlamPlate != null) v.SlamPlate = ObsidianSlamPlate;
+            if (GlassEdge != null) v.CrumbleEdge = GlassEdge;
+            if (GlassCracks.Length > 0) v.Cracks = GlassCracks;
+            return v;
+        }
 
         public bool HasArrow => ArrowLauncher != null && Arrow != null;
         public bool HasGeyser => GeyserVent != null && GeyserSteamUp.Complete && GeyserSteamDown.Complete;

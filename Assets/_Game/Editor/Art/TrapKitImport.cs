@@ -27,6 +27,10 @@ namespace Parallax.Editor.Art
         public const string SteamFolder = "Assets/_Game/Art/Geyser";
         const string SteamManifestPath = SteamFolder + "/geyser_steam.json";
         const string SteamAtlasPath = SteamFolder + "/GeyserSteam.spriteatlasv2";
+        // PAX-A20: the Obsidian Void trap art (Tools/Art/obsidian_traps.py), its own manifest and atlas beside the kit's.
+        public const string ObsidianFolder = Folder + "/Obsidian";
+        const string ObsidianManifestPath = ObsidianFolder + "/obsidian_kit.json";
+        const string ObsidianAtlasPath = ObsidianFolder + "/ObsidianTraps.spriteatlasv2";
 
         [System.Serializable] class Entry { public string path; public float pivotX, pivotY; public bool tiled; public string normal; public string placeholder; public float ppu; }
         const int KitVersion = 2;
@@ -50,10 +54,15 @@ namespace Parallax.Editor.Art
             if (steam?.entries == null || steam.entries.Length == 0) Debug.LogError($"Import Trap Kit: no geyser steam in {SteamManifestPath}; run Tools/Art/geyser_steam.py first (geysers build grey-box only without it).");
             else foreach (Entry e in steam.entries) ImportSprite(e.path, new Vector2(e.pivotX, e.pivotY), false, null, e.ppu > 0f ? e.ppu : steam.ppu, changes);
 
+            // PAX-A20: the Obsidian trap art (optional: without it, Obsidian levels draw the Golden Ruins kit).
+            Manifest obsidian = File.Exists(ObsidianManifestPath) ? JsonUtility.FromJson<Manifest>(File.ReadAllText(ObsidianManifestPath)) : null;
+            if (obsidian?.entries != null) foreach (Entry e in obsidian.entries) ImportSprite(e.path, new Vector2(e.pivotX, e.pivotY), e.tiled, string.IsNullOrEmpty(e.normal) ? null : e.normal, e.ppu > 0f ? e.ppu : obsidian.ppu, changes);
+
             Material material = EnsureMaterial(MaterialPath, ShaderName, "TrapArt", changes);
             Material worldTile = EnsureMaterial(WorldTileMaterialPath, Parallax.Presentation.HostSkin.WorldTileShader, "TrapArtWorldTile", changes);
             EnsureAtlas(AtlasPath, new[] { Folder + "/Bodies", Folder + "/Effects" }, changes);
             if (steam?.entries != null) EnsureAtlas(SteamAtlasPath, new[] { SteamFolder + "/Up", SteamFolder + "/Down" }, changes);
+            if (obsidian?.entries != null && obsidian.entries.Length > 0) EnsureAtlas(ObsidianAtlasPath, new[] { ObsidianFolder }, changes);
             EnsureConfig(material, worldTile, manifest, changes);
             AssetDatabase.SaveAssets();
             Debug.Log($"Import Trap Kit: {manifest.entries.Length} sprites; {(changes.Count == 0 ? "no changes" : string.Join("; ", changes))}");
@@ -224,6 +233,19 @@ namespace Parallax.Editor.Art
             Ref("Flash", S("Effects/flash"));
             Ref("Ring", S("Effects/ring"));
             Ref("Mote", S("Effects/mote"));
+            Ref("LaserBeam", S("Obsidian/OBS_laser_beam"));   // PAX-A20
+            Ref("ChaserBeam", S("Obsidian/OBS_chaser_beam"));   // D-276
+            Ref("GateEmitterTop", S("Obsidian/OBS_gate_top"));
+            Ref("GateEmitterBottom", S("Obsidian/OBS_gate_bottom"));
+            Ref("TurretIdle", S("Obsidian/OBS_turret_idle"));
+            Ref("TurretLock", S("Obsidian/OBS_turret_lock"));
+            Ref("HardLightBar", S("Obsidian/OBS_bar"));
+            Ref("BarLauncher", S("Obsidian/OBS_bar_launcher"));
+            Ref("FlipRing", S("Obsidian/OBS_flip_ring"));
+            Ref("InverterRing", S("Obsidian/OBS_inverter_ring"));
+            Ref("ObsidianSlamPlate", S("Obsidian/OBS_slam_plate"));
+            Ref("GlassEdge", S("Obsidian/OBS_glass_edge"));
+            Refs("GlassCracks", Many("OBS_crack_", "/Obsidian"));
             string[] placeholders = manifest.entries.Where(e => !string.IsNullOrEmpty(e.placeholder)).Select(e => Path.GetFileNameWithoutExtension(e.path)).OrderBy(n => n, System.StringComparer.Ordinal).ToArray();
             SerializedProperty ph = so.FindProperty("Placeholders");
             bool samePh = ph.arraySize == placeholders.Length;

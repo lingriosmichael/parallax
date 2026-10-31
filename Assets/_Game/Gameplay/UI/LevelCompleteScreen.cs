@@ -122,7 +122,7 @@ namespace Parallax.Gameplay.UI
                 && levelList.TryGetBySceneName(SceneManager.GetActiveScene().name, out LevelEntry current)
                 && levelList.TryGetNext(current.Id, out LevelEntry next))
             {
-                nextLevelButton.Configure(current.Id, total, next.SceneName, levelList.OrderedIds());
+                nextLevelButton.Configure(current.Id, total, next.SceneName, levelList.OrderedIds(), next.Id);
                 hasNext = true;
             }
 

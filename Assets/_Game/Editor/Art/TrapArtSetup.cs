@@ -33,7 +33,14 @@ namespace Parallax.Editor.Art
                 if (existing != null) { Object.DestroyImmediate(existing.gameObject); changes.Add("removed " + roomRoot.name + "/Art (no TrapArtConfig)"); }
                 return;
             }
-            int layer = root.gameObject.layer;
+            // PAX-A20 stage 4: an Obsidian level reads Obsidian's rings, slam plates and glass cracks in place of Golden Ruins'.
+            TrapArtConfig view = Parallax.Editor.Levels.Biomes.Of(room) == Parallax.Editor.Levels.Biome.ObsidianVoid ? config.ObsidianView() : null;
+            try { BuildArt(roomRoot, room, rooms, view ?? config, root.gameObject.layer, changes); }
+            finally { if (view != null) Object.DestroyImmediate(view); }
+        }
+
+        static void BuildArt(Transform roomRoot, SoloRoomDefinition room, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
+        {
             Transform artRoot = ArtChild(roomRoot, ArtRootName, layer, changes);
             var built = new HashSet<string>();
             var faces = new HashSet<string>();   // PAX-107 (D-124): spiked hinge faces
@@ -124,6 +131,11 @@ namespace Parallax.Editor.Art
             ArrowLane lane = e.Settings.Arrow;
             SpriteRenderer greyLauncher = trap.GetComponent<SpriteRenderer>();
             bool spear = lane.Spear;
+            // PAX-A20: an Obsidian hard-light bar (a spear with a warning ray) draws OT-06's bar from a small turret housing.
+            bool bar = spear && lane.WarningRay && config.HardLightBar != null && config.BarLauncher != null
+                && Parallax.Editor.Levels.Biomes.Of(room) == Parallax.Editor.Levels.Biome.ObsidianVoid;
+            Sprite launcherSprite = bar ? config.BarLauncher : config.ArrowLauncher, wholeSprite = bar ? config.HardLightBar : config.SpearWhole;
+            Sprite mouthSprite = bar ? null : config.LauncherMouth;
             SpriteRenderer greyArrow = (trap.transform.Find("Arrow") ?? trap.transform.Find(e.Name + "_Shaft"))?.GetComponent<SpriteRenderer>();
             HostSkin hostLook = lane.Disguised ? HostSkin.Of(HostRenderer(roomRoot, room, e, floorFirst: false)) : default;
             Transform art = ArtObject(artRoot, e.Name, trap.transform.position, layer, changes);
@@ -132,13 +144,13 @@ namespace Parallax.Editor.Art
             SpriteRenderer launcher = Child(art, "Launcher", layer, changes);
             launcher.sortingOrder = greyLauncher.sortingOrder;
             if (lane.Disguised) { hostLook.ApplyTo(launcher, e.Size); launcher.transform.localScale = Vector3.one; launcher.flipX = false; }   // scale after the draw mode (Sliced rewrites it)
-            else { launcher.sprite = config.ArrowLauncher; launcher.sharedMaterial = HazardMaterial(config); launcher.drawMode = SpriteDrawMode.Simple; launcher.flipX = lane.Direction == ArrowDirection.Left; }
+            else { launcher.sprite = launcherSprite; launcher.sharedMaterial = HazardMaterial(config); launcher.drawMode = SpriteDrawMode.Simple; launcher.flipX = lane.Direction == ArrowDirection.Left; }
             // PAX-A18 (D-108 amendment): an honest launcher's mouth over its frame.
             SpriteRenderer mouth = null;
-            if (!lane.Disguised && config.LauncherMouth != null)
+            if (!lane.Disguised && mouthSprite != null)
             {
                 mouth = Child(art, "Mouth", layer, changes);
-                mouth.sprite = config.LauncherMouth; mouth.sharedMaterial = HazardMaterial(config); mouth.drawMode = SpriteDrawMode.Simple;
+                mouth.sprite = mouthSprite; mouth.sharedMaterial = HazardMaterial(config); mouth.drawMode = SpriteDrawMode.Simple;
                 mouth.sortingOrder = launcher.sortingOrder + 1; mouth.flipX = launcher.flipX;
             }
             else RemoveChild(art, "Mouth", changes);
@@ -174,11 +186,11 @@ namespace Parallax.Editor.Art
 
             int flight = ArrowMath.FlightTicks(LevelLayoutValidator.ArrowTravel(e), lane.UnitsPerTick);
             TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", e.Name), ("launcherArt", launcher), ("greyboxLauncher", greyLauncher),
-                ("arrowArt", arrow), ("greyboxArrow", greyArrow), ("disguised", lane.Disguised), ("launcherSprite", config.ArrowLauncher), ("arrowSprite", config.Arrow),
+                ("arrowArt", arrow), ("greyboxArrow", greyArrow), ("disguised", lane.Disguised), ("launcherSprite", launcherSprite), ("arrowSprite", config.Arrow),
                 ("trapMaterial", HazardMaterial(config)), ("launcherSize", e.Size), ("arrowSize", new Vector2(lane.Length, lane.Thickness)),
                 ("direction", (int)lane.Direction), ("tellTicks", lane.TellTicks), ("flightTicks", flight), ("glint", glint), ("slot", slot),
-                ("spear", spear), ("shaftArt", shaft), ("spearHeadSprite", config.SpearHead), ("spearShaftSprite", config.SpearShaft), ("spearWholeSprite", spear ? config.SpearWhole : null),
-                ("mouthArt", mouth), ("mouthSprite", config.LauncherMouth));
+                ("spear", spear), ("shaftArt", shaft), ("spearHeadSprite", config.SpearHead), ("spearShaftSprite", config.SpearShaft), ("spearWholeSprite", spear ? wholeSprite : null),
+                ("mouthArt", mouth), ("mouthSprite", mouthSprite));
             WriteSkin(presenter, "hostSkin", hostLook, changes);
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greyLauncher, greyArrow }, changes);
             SetupUtility.SetArray(presenter, "impact", impact.Cast<Object>().ToArray(), changes);

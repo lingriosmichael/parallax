@@ -1,11 +1,18 @@
-# Golden Ruins · prompts for the new traps (2026-10-24, D-187, D-197)
+# Golden Ruins · trap paintings still to do (updated 2026-10-31)
 
-**Scope:** art for the mechanics added on 2026-10-24, in the Golden Ruins look (L001–L030, D-172). The game uses grey-box
-placeholders for them today.
-- **Part A, now:** GT-01 to GT-05, the pieces already in L022–L030 (D-187): spinners, glitch-wall ghosts, flip platforms and
-  falling spiked ceilings.
-- **Part B, later:** GT-07 to GT-11, for D-197's mechanics (pendulum, plate, portal, turret; GT-06, the conveyor, is withdrawn, D-199). Paint those once they are
-  placed in a level, so the sizes match.
+**Only what's missing is listed here.** These traps are in L021–L030 and still draw as grey and red placeholders. Paint them in this order, the most
+visible first. Finished items are removed; the full history is in git.
+
+| Paint | What | Seen in levels |
+|---|---|---|
+| GT-01, GT-02 | Spinner arm and hub | 21, 22, 24, 27, 28 |
+| GT-10, GT-11 | Aiming turret and its beam | 21, 22, 25, 30 |
+| GT-07 | Pendulum blade | 21, 22, 27 |
+| GT-05 | Falling spiked ceiling | 30 |
+| GT-04 | Spiked underside strip (turning plates and spiked hinge floors) | 22, 30 |
+| GT-08 | Pressure plate | 22, 26 |
+
+**Dropped:** GT-03 (no glitch walls in Golden Ruins), GT-06 (conveyor withdrawn, D-199), GT-09 (portals are Obsidian only, L033: see OT-19).
 
 **The world:** a sunlit ancient temple city of weathered sandstone, bronze and old iron, floating among golden clouds. There's a
 warm backlit sun, vines and moss, and red cloth banners. See `Docs/Art/LOOK_AND_FEEL.md`.
@@ -46,7 +53,7 @@ warm backlit sun, vines and moss, and red cloth banners. See `Docs/Art/LOOK_AND_
 
 ---
 
-## Part A · now (in L022–L030)
+## To paint
 
 ### GT-01 · Spinner arm (the spiked arm that turns)
 
@@ -87,27 +94,6 @@ Strict side view, orthographic: no perspective, no 3/4 angle, no top surfaces sh
 - it has spikes or crimson;
 - it's busy at phone size;
 - it isn't round.
-
-### GT-03 · Glitch ghost (where a glitch wall is about to appear)
-
-**Save as:** `Art_Source/Traps_ChatGPT/GT-03_glitch_ghost_v1.png`, square, transparent. **Attach:** R1, P7, R4.
-**In game:** for about a quarter of a second before a glitch wall teleports, this shows where it will appear. It's stretched as a
-9-slice to 1 × 2.5 u (a wall), 1 × 3 u (a half-hall block) or 2 × 0.5 u (a platform), so its border must be even all round.
-
-```text
-I'm making a premium, hand-painted 2D side-view platformer for phones (a paid game: the art must be rich, crafted and painterly, never cheap). This place is the GOLDEN RUINS: a sunlit ancient temple city of weathered sandstone, aged bronze and old iron, floating among golden clouds, with moss and vines. Light is a low warm sun from behind (gold, around #FFD9A0), warm brown shadows (never black). Match the attached style image's painting technique and palette. DANGER IS CRIMSON: every edge or tip that can kill is crimson-red, with a dark outline and a thin light rim, and nothing safe is ever crimson.
-
-Paint the GHOST of a carved sandstone block, filling the square: a see-through mirage of the block, as if an ancient enchantment is about to drop it into the world. It's made of shimmering pale-gold heat-haze light, with faint carved-stone lines inside it and a few thin horizontal slices offset sideways like a flickering mirage. It has a bright, even pale-white glowing outline all the way round, the same thickness on every side, and its inside is mostly transparent. It warns "something solid is about to appear here": it must stand out, but it is not deadly, so no crimson.
-
-Strict side view, orthographic: no perspective, no 3/4 angle, no top surfaces showing. It must look like a concept artist's painting for a premium game: not a photo, not a 3D render, not a cartoon, not a vector icon. Big simple shapes that read at phone size. No text, no letters, no characters, no animals.
-```
-
-**Reject if:**
-- it's opaque;
-- the outline is uneven, so it can't stretch;
-- there's any crimson;
-- it reads as a door, a window or a portal;
-- it's too faint to see over a bright sky.
 
 ### GT-04 · Spiked underside strip (flip platforms, and the bottom of falling spiked ceilings)
 
@@ -153,14 +139,6 @@ Strict side view, orthographic: no perspective, no 3/4 angle, no top surfaces sh
 - it reads as a platform you could stand on;
 - it's shown in perspective.
 
----
-
-## Part B · later (D-197's mechanics, paint once they are placed in a level)
-
-### GT-06 · (withdrawn)
-
-The conveyor was removed from the kit (D-199), so this slot isn't painted.
-
 ### GT-07 · Pendulum blade
 
 **Save as:** `Art_Source/Traps_ChatGPT/GT-07_pendulum_blade_v1.png`, portrait 1:4, transparent. **Attach:** R1, P1, R4.
@@ -198,27 +176,6 @@ Strict side view, orthographic: no perspective, no 3/4 angle, no top surfaces sh
 - it's taller than a fifth of its width;
 - there's any crimson;
 - it reads as a coin or a button icon.
-
-### GT-09 · Portal pair (entry and exit)
-
-**Save as:** `Art_Source/Traps_ChatGPT/GT-09_portals_v1.png`, landscape 2:1, transparent: the entry on the left, the exit on the
-right. **Attach:** R1, R4.
-**In game:** each is about 0.6–1 u wide and 1.5 u tall. You walk into the entry and come out of the exit. The exit can flicker and
-move.
-
-```text
-I'm making a premium, hand-painted 2D side-view platformer for phones (a paid game: the art must be rich, crafted and painterly, never cheap). This place is the GOLDEN RUINS: a sunlit ancient temple city of weathered sandstone, aged bronze and old iron, floating among golden clouds, with moss and vines. Light is a low warm sun from behind (gold, around #FFD9A0), warm brown shadows (never black). Match the attached style image's painting technique and palette. DANGER IS CRIMSON: every edge or tip that can kill is crimson-red, with a dark outline and a thin light rim, and nothing safe is ever crimson.
-
-Paint TWO matching ancient portals side by side, each a tall narrow arch of carved sandstone and bronze framing a swirling oval of light. The LEFT one (the way in) swirls with cool pale blue light; the RIGHT one (the way out) swirls with soft violet light. Each is twice as tall as it is wide, and empty space separates them. They are magic doorways, inviting and harmless: no crimson.
-
-Strict side view, orthographic: no perspective, no 3/4 angle, no top surfaces showing. It must look like a concept artist's painting for a premium game: not a photo, not a 3D render, not a cartoon, not a vector icon. Big simple shapes that read at phone size. No text, no letters, no characters, no animals.
-```
-
-**Reject if:**
-- the two look the same colour;
-- either is red or orange;
-- they touch;
-- they read as the level's exit door (which is gold).
 
 ### GT-10 · Aiming turret (body)
 

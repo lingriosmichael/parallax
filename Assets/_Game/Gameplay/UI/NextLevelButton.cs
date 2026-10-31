@@ -11,13 +11,16 @@ namespace Parallax.Gameplay.UI
     /// death count, next-level unlock) and loads the next level's scene. Mirrors RestartButton's
     /// ITouchReservedRegion pattern; unlike Restart it has no Editor keyboard shortcut, so it
     /// never double-binds Enter with Restart. PAX-053 (D-072) §2.2: routes through
-    /// LevelSceneLoader, the one seam every level/menu scene change goes through.</summary>
+    /// LevelSceneLoader, the one seam every level/menu scene change goes through. PAX-066 (D-279): a next level that isn't playable yet
+    /// opens the unlock panel instead of loading.</summary>
     [RequireComponent(typeof(RectTransform))]
     public sealed class NextLevelButton : MonoBehaviour, ITouchReservedRegion
     {
         [SerializeField] Button button;
+        [SerializeField] UnlockPanel unlockPanel;
 
         string currentLevelId;
+        string nextLevelId;
         int deaths;
         string nextSceneName;
         IReadOnlyList<string> orderedLevelIds;
@@ -25,8 +28,9 @@ namespace Parallax.Gameplay.UI
         void OnEnable() { if (button != null) button.onClick.AddListener(GoToNextLevel); }
         void OnDisable() { if (button != null) button.onClick.RemoveListener(GoToNextLevel); }
 
-        public void Configure(string currentLevelId, int deaths, string nextSceneName, IReadOnlyList<string> orderedLevelIds)
+        public void Configure(string currentLevelId, int deaths, string nextSceneName, IReadOnlyList<string> orderedLevelIds, string nextLevelId = null)
         {
+            this.nextLevelId = nextLevelId;
             this.currentLevelId = currentLevelId;
             this.deaths = deaths;
             this.nextSceneName = nextSceneName;
@@ -37,6 +41,7 @@ namespace Parallax.Gameplay.UI
         {
             if (string.IsNullOrEmpty(nextSceneName)) return;
             RecordAndSaveProgress();
+            if (unlockPanel != null && !unlockPanel.Allows(nextLevelId)) { unlockPanel.Show(nextLevelId, nextSceneName); return; }
             LevelSceneLoader.Load(nextSceneName);
         }
 

@@ -40,7 +40,7 @@ namespace Parallax.Editor.Setup
             var changes = new List<string>();
             LevelLookConfig config = EnsureConfig(changes);
             ApplyCameraZoom(changes);
-            AttachNormalMaps(changes);
+            EnvironmentKit.ForEachBiome(() => AttachNormalMaps(changes));   // PAX-A20: each biome's kit
             EnvironmentKit.EnsureMaterials(changes);
             EnvironmentKit.EnsureAtlas(changes);
             EnsureTierAssets(config, changes);
@@ -160,7 +160,9 @@ namespace Parallax.Editor.Setup
         public static void Build(RealityRoot root, Camera camera, Bounds worldFrame, string levelId, SoloRoomDefinition? room, List<string> changes)
         {
             var config = AssetDatabase.LoadAssetAtPath<LevelLookConfig>(LevelLookConfig.AssetPath);
-            if (config == null || !EnvironmentKit.Ready(out _)) return;
+            if (config == null) return;
+            // PAX-A20: never silent: a skipped stack leaves the template's (Golden Ruins, no level) in the level.
+            if (!EnvironmentKit.Ready(out string missing)) { Debug.LogError($"Environment Stack: {levelId ?? "template"}'s background not built: {missing} isn't imported. The template's stays."); return; }
             foreach (string path in OldLayerPaths)
             {
                 Transform old = root.transform.Find(path);

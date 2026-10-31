@@ -37,6 +37,9 @@ namespace Parallax.Core
     /// <summary>PAX-064: the mixer group a cue plays through; each has its own volume.</summary>
     public enum AudioChannel { Music, Sfx, Ui }
 
+    /// <summary>D-277: the music loops, one per world. Title and LevelSelect play the first.</summary>
+    public enum MusicTrack { GoldenRuins, ObsidianVoid }
+
     /// <summary>PAX-064: how a cue plays: its channel and volume, how many copies may sound at once, and the shortest gap
     /// between two starts (a burst of the same event plays once).</summary>
     public readonly struct CueSpec

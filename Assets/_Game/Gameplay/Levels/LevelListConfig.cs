@@ -19,7 +19,10 @@ namespace Parallax.Gameplay.Levels
     public sealed class LevelListConfig : ScriptableObject
     {
         [SerializeField] LevelEntry[] levels = Array.Empty<LevelEntry>();
+        [Tooltip("PAX-066 (D-068): how many levels, from the first, are free.")]
+        [SerializeField] int freeLevels = 10;
 
+        public int FreeLevels => freeLevels;
         public IReadOnlyList<LevelEntry> Levels => levels;
 
         public IReadOnlyList<string> OrderedIds()

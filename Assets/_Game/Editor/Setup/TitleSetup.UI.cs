@@ -10,15 +10,18 @@ using Object = UnityEngine.Object;
 
 namespace Parallax.Editor.Setup
 {
-    /// <summary>PAX-108 (D-157): the title's canvas. Restrained, per the UI target (DesignImages/15): a letter-spaced
-    /// wordmark, a thin rule and the tagline over the world, two framed text buttons below, and a black cover for the
+    /// <summary>PAX-108 (D-157): the title's canvas. D-280: an old-gold inscription over the world: the air (TitleAtmosphere), a turning
+    /// sigil, a gilded wordmark, a flourish and the tagline, a row of gold-line buttons on a darkened ground, and a black cover for the
     /// fade-in. Rebuilt whole on every run, so the menu stays idempotent.</summary>
     public static partial class TitleSetup
     {
         const string CanvasName = "TitleCanvas";
         const string Word = "PARALLAX";
-        const string FontPath = "Assets/TextMesh Pro/Fonts/LiberationSans.ttf";
-        static readonly Color Ink = new(1f, 0.97f, 0.9f, 1f);
+        const string FontFolder = "Assets/_Game/Art/UI/Fonts/", ArtFolder = "Assets/_Game/Art/UI/Title/";
+        const int MoteCount = 34;
+        static readonly Color Ink = new(1f, 0.97f, 0.9f, 1f), Gold = new(1f, 0.87f, 0.58f, 1f);
+        // The light shafts: x from the top's centre (the sun's side), tilt, width.
+        static readonly Vector3[] RayAt = { new(330f, 7f, 620f), new(470f, -9f, 460f), new(120f, 20f, 520f), new(690f, -20f, 560f) };
 
         static void BuildCanvas(TitleScreenConfig config, LevelListConfig levelList, List<string> changes)
         {
@@ -35,28 +38,53 @@ namespace Parallax.Editor.Setup
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 1f; // landscape: scale by height, so a 20:9 phone keeps the same text size as 16:9
             canvasGO.AddComponent<GraphicRaycaster>();
-            Font font = AssetDatabase.LoadAssetAtPath<Font>(FontPath) ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            Font display = LoadFont("Cinzel-Bold.ttf"), font = LoadFont("Cinzel-Medium.ttf"), italic = LoadFont("CormorantGaramond-MediumItalic.ttf");
 
-            // A soft darkening behind the wordmark, so it reads on a bright sky.
-            Image shade = Rect(canvasGO.transform, "Shade", new Vector2(0.5f, 0.62f), new Vector2(1900f, 760f), Vector2.zero).gameObject.AddComponent<Image>();
-            Sprite glow = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Glow");
-            shade.sprite = glow;
-            shade.color = new Color(0.08f, 0.04f, 0.02f, glow != null ? 0.75f : 0f);
-            shade.raycastTarget = false;
+            // D-280: back to front: the air, the darkening that gives the gold something to stand on, the foreground, the sigil, the type.
+            var atmosphere = canvasGO.AddComponent<TitleAtmosphere>();
+            Image vignette = Stretch(canvasGO.transform, "Vignette", ArtSprite("TUI_Vignette"), Color.white);
+            var rays = new Image[RayAt.Length];
+            for (int i = 0; i < RayAt.Length; i++)
+            {
+                RectTransform ray = Rect(canvasGO.transform, "Ray_" + i, new Vector2(0.5f, 1f), new Vector2(RayAt[i].z, 1500f), new Vector2(RayAt[i].x, 40f));
+                ray.pivot = new Vector2(0.5f, 1f);
+                ray.localRotation = Quaternion.Euler(0f, 0f, RayAt[i].y);
+                rays[i] = Picture(ray, ArtSprite("TUI_Ray"), new Color(1f, 0.88f, 0.62f, 0f));
+            }
+            RectTransform moteField = Rect(canvasGO.transform, "Motes", new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            var motes = new Image[MoteCount];
+            for (int i = 0; i < MoteCount; i++)
+            {
+                float size = 7f + 15f * Mathf.Repeat(i * 0.4142f, 1f);
+                motes[i] = Picture(Rect(moteField, "Mote_" + i, new Vector2(0.5f, 0.5f), new Vector2(size, size), Vector2.zero), ArtSprite("TUI_Soft"), new Color(1f, 0.86f, 0.55f, 0f));
+            }
+            RectTransform leftFern = Foliage(canvasGO.transform, "Foliage_L", "TUI_FoliageR", new Vector2(0f, 0f), new Vector2(720f, 250f), new Vector2(-10f, -24f), false);
+            RectTransform rightFern = Foliage(canvasGO.transform, "Foliage_R", "TUI_FoliageR", new Vector2(1f, 0f), new Vector2(900f, 340f), new Vector2(10f, -24f), true);
+            RectTransform scrimRect = Rect(canvasGO.transform, "Scrim", new Vector2(0.5f, 0f), new Vector2(0f, 460f), Vector2.zero);
+            scrimRect.anchorMin = Vector2.zero; scrimRect.anchorMax = new Vector2(1f, 0f); scrimRect.pivot = new Vector2(0.5f, 0f); scrimRect.sizeDelta = new Vector2(0f, 460f);
+            Picture(scrimRect, ArtSprite("TUI_Scrim"), Color.white);
+
+            Vector2 mark = new(0.5f, 0.69f);
+            Image shade = Picture(Rect(canvasGO.transform, "Shade", mark, new Vector2(2000f, 720f), Vector2.zero), ArtSprite("TUI_Soft"), new Color(0.07f, 0.035f, 0.015f, 0.8f));
+            Image sigilOuter = Picture(Rect(canvasGO.transform, "SigilOuter", mark, new Vector2(820f, 820f), Vector2.zero), ArtSprite("TUI_SigilOuter"), new Color(1f, 0.86f, 0.56f, 0f));
+            Image sigilInner = Picture(Rect(canvasGO.transform, "SigilInner", mark, new Vector2(560f, 560f), Vector2.zero), ArtSprite("TUI_SigilInner"), new Color(1f, 0.86f, 0.56f, 0f));
+            Image glow = Picture(Rect(canvasGO.transform, "Glow", mark, new Vector2(1500f, 460f), Vector2.zero), ArtSprite("TUI_Soft"), new Color(1f, 0.72f, 0.34f, 0.22f));
+            Picture(Rect(canvasGO.transform, "TagShade", mark, new Vector2(1250f, 300f), new Vector2(0f, -176f)), ArtSprite("TUI_Soft"), new Color(0.06f, 0.03f, 0.012f, 0.82f));
 
             // The wordmark: one Text per letter, spaced by LetterSpacedText.
-            RectTransform wordRect = Rect(canvasGO.transform, "Wordmark", new Vector2(0.5f, 0.68f), new Vector2(1600f, 200f), Vector2.zero);
+            RectTransform wordRect = Rect(canvasGO.transform, "Wordmark", mark, new Vector2(1600f, 240f), Vector2.zero);
             var letters = new Text[Word.Length];
             for (int i = 0; i < Word.Length; i++)
             {
-                RectTransform l = Rect(wordRect, "Letter_" + i, new Vector2(0.5f, 0.5f), new Vector2(100f, 200f), Vector2.zero);
-                letters[i] = Label(l.gameObject, font, Word[i].ToString(), 128, FontStyle.Normal, Ink);
+                RectTransform l = Rect(wordRect, "Letter_" + i, new Vector2(0.5f, 0.5f), new Vector2(100f, 240f), Vector2.zero);
+                letters[i] = Label(l.gameObject, display, Word[i].ToString(), 158, FontStyle.Normal, Color.white);
+                l.gameObject.AddComponent<GildedText>();
                 var edge = l.gameObject.AddComponent<Outline>();
-                edge.effectColor = new Color(0.1f, 0.06f, 0.03f, 0.35f);
-                edge.effectDistance = new Vector2(1.5f, -1.5f);
+                edge.effectColor = new Color(0.16f, 0.07f, 0.02f, 0.9f);
+                edge.effectDistance = new Vector2(2f, -2f);
                 var shadow = l.gameObject.AddComponent<Shadow>();
-                shadow.effectColor = new Color(0f, 0f, 0f, 0.5f);
-                shadow.effectDistance = new Vector2(0f, -5f);
+                shadow.effectColor = new Color(0f, 0f, 0f, 0.65f);
+                shadow.effectDistance = new Vector2(0f, -8f);
             }
             var word = wordRect.gameObject.AddComponent<LetterSpacedText>();
             var wordSo = new SerializedObject(word);
@@ -66,25 +94,22 @@ namespace Parallax.Editor.Setup
             wordSo.ApplyModifiedPropertiesWithoutUndo();
             word.Layout();
 
-            RectTransform rule = Rect(canvasGO.transform, "Rule", new Vector2(0.5f, 0.68f), new Vector2(560f, 2f), new Vector2(0f, -112f));
-            Image ruleImage = rule.gameObject.AddComponent<Image>();
-            ruleImage.color = new Color(Ink.r, Ink.g, Ink.b, 0.75f);
-            ruleImage.raycastTarget = false;
+            RectTransform rule = Rect(canvasGO.transform, "Rule", mark, new Vector2(1000f, 69f), new Vector2(0f, -122f));
+            Picture(rule, ArtSprite("TUI_Flourish"), new Color(1f, 0.86f, 0.56f, 0.95f));
 
-            RectTransform taglineRect = Rect(canvasGO.transform, "Tagline", new Vector2(0.5f, 0.68f), new Vector2(1200f, 60f), new Vector2(0f, -160f));
-            Text tagline = Label(taglineRect.gameObject, font, config.Tagline, 36, FontStyle.Italic, new Color(Ink.r, Ink.g, Ink.b, 0.9f));
+            RectTransform taglineRect = Rect(canvasGO.transform, "Tagline", mark, new Vector2(1200f, 70f), new Vector2(0f, -180f));
+            Text tagline = Label(taglineRect.gameObject, italic, config.Tagline, 52, FontStyle.Normal, Ink);
             var tagShadow = taglineRect.gameObject.AddComponent<Shadow>();
-            tagShadow.effectColor = new Color(0f, 0f, 0f, 0.5f);
-            tagShadow.effectDistance = new Vector2(0f, -2f);
+            tagShadow.effectColor = new Color(0f, 0f, 0f, 0.75f);
+            tagShadow.effectDistance = new Vector2(0f, -3f);
 
-            // The menu.
-            // PLAY/CONTINUE, then START GAME (shown once there is progress; TitleScreen moves LEVELS up into its place otherwise).
-            RectTransform menuRect = Rect(canvasGO.transform, "Menu", new Vector2(0.5f, 0.24f), new Vector2(600f, 330f), Vector2.zero);
+            // The menu, one row on the darkened ground: START GAME (shown once there is progress), PLAY/CONTINUE, LEVELS.
+            RectTransform menuRect = Rect(canvasGO.transform, "Menu", new Vector2(0.5f, 0.125f), new Vector2(1300f, 160f), Vector2.zero);
             var menu = menuRect.gameObject.AddComponent<CanvasGroup>();
-            (Button play, Text playLabel) = FramedButton(menuRect, "Play", font, "PLAY", 46, new Vector2(380f, 104f), new Vector2(0f, 74f), true);
-            (Button start, _) = FramedButton(menuRect, "StartGame", font, "START GAME", 30, new Vector2(300f, 70f), new Vector2(0f, -40f), false);
-            (Button levels, _) = FramedButton(menuRect, "Levels", font, "LEVELS", 30, new Vector2(300f, 70f), new Vector2(0f, -124f), false);
-            (GameObject confirm, Button confirmYes, Button confirmNo) = ConfirmPanel(canvasGO.transform, font);
+            (Button play, Text playLabel) = FramedButton(menuRect, "Play", font, "PLAY", 46, new Vector2(420f, 122f), Vector2.zero, true);
+            (Button start, _) = FramedButton(menuRect, "StartGame", font, "START GAME", 28, new Vector2(320f, 88f), new Vector2(-400f, 0f), false);
+            (Button levels, _) = FramedButton(menuRect, "Levels", font, "LEVELS", 28, new Vector2(320f, 88f), new Vector2(400f, 0f), false);
+            (GameObject confirm, Button confirmYes, Button confirmNo) = ConfirmPanel(canvasGO.transform, font, italic);
 
             RectTransform coverRect = Rect(canvasGO.transform, "Cover", Vector2.zero, Vector2.zero, Vector2.zero);
             coverRect.anchorMin = Vector2.zero; coverRect.anchorMax = Vector2.one; coverRect.sizeDelta = Vector2.zero;
@@ -93,75 +118,83 @@ namespace Parallax.Editor.Setup
             cover.raycastTarget = false;
 
             var screen = canvasGO.AddComponent<TitleScreen>();
-            TrapKitSetup.Write(screen, changes, ("config", config), ("levelList", levelList), ("cover", cover), ("wordmark", word), ("shade", shade),
+            TrapKitSetup.Write(atmosphere, changes, ("sigilOuter", sigilOuter), ("sigilInner", sigilInner), ("glow", glow));
+            SetupUtility.SetArray(atmosphere, "rays", rays, changes);
+            SetupUtility.SetArray(atmosphere, "motes", motes, changes);
+            SetupUtility.SetArray(atmosphere, "ferns", new[] { leftFern, rightFern }, changes);
+            SetupUtility.SetArray(screen, "menuItems", new[] { (RectTransform)play.transform, (RectTransform)start.transform, (RectTransform)levels.transform }, changes);
+            TrapKitSetup.Write(screen, changes, ("config", config), ("levelList", levelList), ("cover", cover), ("wordmark", word), ("shade", shade), ("atmosphere", atmosphere),
                 ("rule", rule), ("tagline", tagline), ("menu", menu), ("playButton", play), ("playLabel", playLabel), ("levelsButton", levels),
                 ("startButton", start), ("confirmPanel", confirm), ("confirmButton", confirmYes), ("cancelButton", confirmNo));
             changes.Add("built " + CanvasName);
         }
 
         // D-157 amendment 1: START GAME asks before it erases the progress. A dimmed screen (it takes every tap) and a box.
-        static (GameObject, Button, Button) ConfirmPanel(Transform canvas, Font font)
+        static (GameObject, Button, Button) ConfirmPanel(Transform canvas, Font font, Font italic)
         {
             RectTransform panel = Rect(canvas, "ConfirmStart", Vector2.zero, Vector2.zero, Vector2.zero);
             panel.anchorMin = Vector2.zero; panel.anchorMax = Vector2.one; panel.sizeDelta = Vector2.zero;
             Image dim = panel.gameObject.AddComponent<Image>();
             dim.color = new Color(0f, 0f, 0f, 0.6f);
             RectTransform box = Rect(panel, "Box", new Vector2(0.5f, 0.5f), new Vector2(900f, 420f), Vector2.zero);
-            Image boxImage = box.gameObject.AddComponent<Image>();
-            boxImage.color = new Color(0.07f, 0.045f, 0.03f, 1f);   // solid: the wordmark and tagline sit right behind it
-            Color line = new(Ink.r, Ink.g, Ink.b, 0.5f);
-            Edge(box, "Top", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, 2f), line);
-            Edge(box, "Bottom", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 2f), line);
-            Edge(box, "Left", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(2f, 0f), line);
-            Edge(box, "Right", new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(2f, 0f), line);
+            Image boxImage = Picture(box, ArtSprite("TUI_Plate"), Color.white);
+            boxImage.type = Image.Type.Sliced;
+            boxImage.raycastTarget = true;
             RectTransform title = Rect(box, "Question", new Vector2(0.5f, 0.5f), new Vector2(820f, 70f), new Vector2(0f, 120f));
-            Label(title.gameObject, font, "Start over from level 1?", 46, FontStyle.Normal, Ink);
+            Label(title.gameObject, font, "Start over from level 1?", 44, FontStyle.Normal, Ink);
             RectTransform note = Rect(box, "Note", new Vector2(0.5f, 0.5f), new Vector2(820f, 60f), new Vector2(0f, 40f));
-            Label(note.gameObject, font, "Your progress and best death counts will be erased.", 28, FontStyle.Italic, new Color(Ink.r, Ink.g, Ink.b, 0.8f));
-            (Button yes, _) = FramedButton(box, "StartOver", font, "START OVER", 36, new Vector2(320f, 90f), new Vector2(-180f, -100f), true);
-            (Button no, _) = FramedButton(box, "Cancel", font, "CANCEL", 30, new Vector2(260f, 76f), new Vector2(180f, -100f), false);
+            Label(note.gameObject, italic, "Your progress and best death counts will be erased.", 34, FontStyle.Normal, new Color(Ink.r, Ink.g, Ink.b, 0.85f));
+            (Button yes, _) = FramedButton(box, "StartOver", font, "START OVER", 32, new Vector2(340f, 96f), new Vector2(-180f, -100f), true);
+            (Button no, _) = FramedButton(box, "Cancel", font, "CANCEL", 28, new Vector2(280f, 84f), new Vector2(180f, -100f), false);
             panel.gameObject.SetActive(false);
             return (panel.gameObject, yes, no);
         }
 
+        // D-280: a gold-line plate, stretched by its corners. PLAY's is at full strength; the others are quieter. Under a finger it gives.
         static (Button, Text) FramedButton(Transform parent, string name, Font font, string text, int size, Vector2 box, Vector2 at, bool fill)
         {
             RectTransform rect = Rect(parent, name, new Vector2(0.5f, 0.5f), box, at);
-            Image hit = rect.gameObject.AddComponent<Image>();
-            hit.color = new Color(0.06f, 0.035f, 0.02f, fill ? 0.5f : 0.35f);
+            Image hit = Picture(rect, ArtSprite("TUI_Plate"), new Color(1f, 1f, 1f, fill ? 1f : 0.92f));
+            hit.type = Image.Type.Sliced;
+            hit.raycastTarget = true;
             var button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = hit;
             button.navigation = new Navigation { mode = Navigation.Mode.None };
             ColorBlock colors = button.colors;
             colors.normalColor = Color.white; colors.highlightedColor = Color.white;
-            colors.pressedColor = new Color(0.75f, 0.75f, 0.75f, 1f); colors.selectedColor = Color.white;
+            colors.pressedColor = new Color(1f, 0.86f, 0.62f, 1f); colors.selectedColor = Color.white;
             button.colors = colors;
-            if (fill)
-            {
-                // A thin line frame (four 2 px edges), as the UI target's circular buttons are drawn: line, not slab.
-                Color line = new(Ink.r, Ink.g, Ink.b, 0.85f);
-                Edge(rect, "Top", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, 2f), line);
-                Edge(rect, "Bottom", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, 2f), line);
-                Edge(rect, "Left", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(2f, 0f), line);
-                Edge(rect, "Right", new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(2f, 0f), line);
-            }
+            rect.gameObject.AddComponent<TitleButtonFx>();
             RectTransform labelRect = Rect(rect, "Label", new Vector2(0.5f, 0.5f), box, Vector2.zero);
-            Text label = Label(labelRect.gameObject, font, text, size, FontStyle.Normal, fill ? Ink : new Color(Ink.r, Ink.g, Ink.b, 0.8f));
+            Text label = Label(labelRect.gameObject, font, text, size, FontStyle.Normal, fill ? Gold : new Color(Ink.r, Ink.g, Ink.b, 0.86f));
             var shadow = labelRect.gameObject.AddComponent<Shadow>();
-            shadow.effectColor = new Color(0f, 0f, 0f, 0.5f);
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.6f);
             shadow.effectDistance = new Vector2(0f, -2f);
             return (button, label);
         }
 
-        static void Edge(RectTransform parent, string name, Vector2 min, Vector2 max, Vector2 size, Color color)
+        static Image Picture(RectTransform rect, Sprite sprite, Color color)
         {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var rect = (RectTransform)go.transform;
-            rect.anchorMin = min; rect.anchorMax = max; rect.sizeDelta = size; rect.anchoredPosition = Vector2.zero;
-            Image image = go.AddComponent<Image>();
-            image.color = color;
-            image.raycastTarget = false;
+            Image image = rect.gameObject.AddComponent<Image>();
+            image.sprite = sprite; image.color = color; image.raycastTarget = false;
+            return image;
+        }
+
+        static Image Stretch(Transform parent, string name, Sprite sprite, Color color)
+        {
+            RectTransform rect = Rect(parent, name, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one; rect.sizeDelta = Vector2.zero;
+            return Picture(rect, sprite, color);
+        }
+
+        // D-280: soft leaves in the corners (the near ones out of focus), as the key art frames its own. They also hide the ledge's cut.
+        static RectTransform Foliage(Transform canvas, string name, string art, Vector2 anchor, Vector2 size, Vector2 at, bool flip)
+        {
+            RectTransform rect = Rect(canvas, name, anchor, size, at);
+            rect.pivot = Vector2.zero;
+            if (flip) rect.localScale = new Vector3(-1f, 1f, 1f);
+            Picture(rect, ArtSprite(art), Color.white);
+            return rect;
         }
 
         static RectTransform Rect(Transform parent, string name, Vector2 anchor, Vector2 size, Vector2 at)
@@ -182,6 +215,35 @@ namespace Parallax.Editor.Setup
             label.horizontalOverflow = HorizontalWrapMode.Overflow; label.verticalOverflow = VerticalWrapMode.Overflow;
             label.raycastTarget = false;
             return label;
+        }
+
+        static Font LoadFont(string file) => AssetDatabase.LoadAssetAtPath<Font>(FontFolder + file) ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+        static Sprite ArtSprite(string name) => AssetDatabase.LoadAssetAtPath<Sprite>(ArtFolder + name + ".png");
+
+        // D-280: the line art's import settings (Tools/Art/title_ui.py draws it): sprites without mips; the plate stretches by its corners.
+        static void ImportArt(List<string> changes)
+        {
+            foreach (string path in AssetDatabase.FindAssets("t:Texture2D", new[] { ArtFolder.TrimEnd('/') }))
+            {
+                string file = AssetDatabase.GUIDToAssetPath(path);
+                if (!(AssetImporter.GetAtPath(file) is TextureImporter importer)) continue;
+                Vector4 border = file.EndsWith("TUI_Plate.png") ? new Vector4(44f, 44f, 44f, 44f) : Vector4.zero;
+                // Thin lines don't survive block compression: the flourish and the plate stay exact.
+                TextureImporterCompression compression = file.EndsWith("TUI_Plate.png") || file.EndsWith("TUI_Flourish.png")
+                    ? TextureImporterCompression.Uncompressed : TextureImporterCompression.CompressedHQ;
+                if (importer.textureType == TextureImporterType.Sprite && !importer.mipmapEnabled && importer.spriteBorder == border
+                    && importer.textureCompression == compression) continue;
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                importer.mipmapEnabled = false;
+                importer.alphaIsTransparency = true;
+                importer.wrapMode = TextureWrapMode.Clamp;
+                importer.spriteBorder = border;
+                importer.textureCompression = compression;
+                importer.SaveAndReimport();
+                changes.Add("import settings: " + System.IO.Path.GetFileName(file));
+            }
         }
 
         static void EnsureEventSystem(List<string> changes)
