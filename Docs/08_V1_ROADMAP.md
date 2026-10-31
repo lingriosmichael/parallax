@@ -8,24 +8,16 @@ Read this first. Finished tickets are removed from `Docs/`; decisions stay in `0
 | Area | State |
 |---|---|
 | Levels | **40 built.** L001–L030 Golden Ruins, L031–L040 Obsidian Void. All pass validation; L031–L040 and much of L021–L030 are still to be played and approved by you |
-| Traps, audio, music, haptics, paid unlock, title | Built. Audio, haptics, unlock and title await your Editor steps below |
+| Traps, audio, music, haptics, paid unlock, title | Built and in every scene. Not yet judged in play |
 | Art | Worlds finished. Some traps are still grey placeholders (16 paintings), and the cat has known animation gaps |
 | On a real phone | **Nothing tested yet.** No device session has happened |
-| Git | **Nothing is committed since `6ac4b1d`.** L031–L040, the Obsidian art and everything from 2026-10-31 exist only on this Mac. Commit soon |
 
-## Do next: you (about an hour, no new code)
+## Do next: you (no new code)
 
-1. **Commit.** Say the word and Claude commits and pushes it all.
-2. **Run the setup menus,** in this order, saving first:
-   1. `PARALLAX/Setup/Audio (PAX-064)` (music, and the cat's meows, which main still lacks)
-   2. `PARALLAX/Setup/Haptics (PAX-065)`
-   3. `PARALLAX/Setup/Paid Unlock (PAX-066)`
-   4. `PARALLAX/Setup/Levels/Rebuild All Levels`
-   5. Open `Title.unity`, run `PARALLAX/Setup/Title Screen`, then Cmd+S
-3. **Look and listen:** the music (does it fit?), the title's motion, L031's swinging chaser, the unlock panel from L011.
-4. **Play L031–L040** and say what's fun and what isn't.
+1. **Look and listen:** the music (does it fit?), the title's motion, L031's swinging chaser, the unlock panel from L011.
+2. **Play L031–L040** and say what's fun and what isn't.
 
-Steps in detail: `0_TASKS/PAX-125.md` §6, `PAX-065.md` §9, `PAX-066.md` §10, `PAX-108.md` amendment 2.
+How to test the unlock flows: `0_TASKS/PAX-066.md` §10.
 
 ## Decide: only you can
 
@@ -71,5 +63,6 @@ Steps in detail: `0_TASKS/PAX-125.md` §6, `PAX-065.md` §9, `PAX-066.md` §10, 
 ## Small clean-ups
 
 - `CLAUDE.md`'s scope list still says "no IAP". It should go now that PAX-066 is approved and built.
+- `ProjectSettings` has `cloudServicesEnabled: Purchasing: 0`, written when the IAP package installed. Check it in `PAX-067`, before the first real purchase test.
 - `Docs/PARALLAX_detailed_implementation_plan copy.md`: `CLAUDE.md` names it as a source (without "copy"), so it stayed, but it's long out of date. Your call.
 - `Docs/INVENTORY.md` (the Level Devil research) stays as a source of level ideas.
