@@ -135,11 +135,12 @@ namespace Parallax.Tests.EditMode
                 else if (follow2.Owner.transform != trims.parent) failures.Add($"{id}: {trims.parent?.parent?.name} trims follow the wrong renderer");
             }
 
-            // The door: ENV-24's lit frame with its glow (A6's art).
+            // The door: ENV-24's lit frame with its glow (A6's art); D-312: the district's own door in L011-L030.
+            string doorSlot = (string)Looks.GetMethod("DoorSlot").Invoke(null, new object[] { id });
             foreach (RoomDoor door in rootA.GetComponentsInChildren<RoomDoor>(true))
             {
                 SpriteRenderer art = door.transform.Find("Art")?.GetComponent<SpriteRenderer>();
-                if (art == null || art.sprite == null || art.sprite.name != "ENV_Door") failures.Add($"{id}: door {door.name} isn't ENV_Door");
+                if (art == null || art.sprite == null || art.sprite.name != doorSlot) failures.Add($"{id}: door {door.name} isn't {doorSlot}");
                 if (door.transform.Find("Art/Glow") == null) failures.Add($"{id}: door {door.name} has no glow");
             }
         }

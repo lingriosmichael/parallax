@@ -228,6 +228,7 @@ namespace Parallax.Tests.EditMode
 
             void CheckBodies(TrapArt art, int tick, int roomTick)
             {
+                if (art is ThornArt { Always: true }) return;   // D-295: a pit's growth is always there, whatever its hidden spikes do
                 foreach (TrapArt.Body b in art.Bodies)
                 {
                     bool greybox = Shown(b.Greybox), drawn = Shown(b.Art) && b.Art.sprite != null;
@@ -287,7 +288,9 @@ namespace Parallax.Tests.EditMode
                     bool allowed;
                     switch (e.Group)
                     {
-                        case "crumble": case "shard": allowed = !Shown(art.Bodies[0].Greybox); break;
+                        case "crumble": case "shard": case "caps": allowed = !Shown(art.Bodies[0].Greybox); break;
+                        case "cap": allowed = true; break;   // D-292: a hard-light floor's fixed emitter
+                        case "beam": allowed = Shown(art.Bodies[0].Greybox); break;   // D-294: a laser's light, with its beam
                         case "glint": anyGlint = true; allowed = ArrowFired(art) && TrapArtMath.ArrowGlint(s, (int)Private(trap, "tellTicks")); break;
                         case "impact": allowed = ArrowFired(art) && s >= (int)Private(trap, "tellTicks") + ArrowMath.FlightTicks((float)Private(trap, "travel"), (float)Private(trap, "unitsPerTick")); break;
                         case "tell": anyTell = true; allowed = trap is GeyserTrap g && g.Phase == GeyserPhase.Tell; break;

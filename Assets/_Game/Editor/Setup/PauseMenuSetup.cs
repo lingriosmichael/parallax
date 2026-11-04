@@ -34,6 +34,7 @@ namespace Parallax.Editor.Setup
         const string RestartButtonName = "PauseRestartButton";
         const string LevelsButtonName = "PauseLevelsButton";
         const string VibrationButtonName = "PauseVibrationButton";
+        const string MotionButtonName = "PauseMotionButton";
         const string RestorePurchaseButtonName = "PauseRestorePurchaseButton";
 
         // HUD reference resolution is 1920x1080, match 0.5 (SwitchSetup). The dev-only
@@ -41,8 +42,10 @@ namespace Parallax.Editor.Setup
         // the 120-unit inset clears it only while the HUD scale factor is at least 0.8 (screens
         // roughly 900 px tall or more, e.g. the 2400x1080 target). On smaller screens the two can
         // overlap - debug builds only, since FLIP doesn't exist in release.
-        static readonly Vector2 PauseButtonSize = new Vector2(110f, 110f);
-        static readonly Vector2 PauseButtonInset = new Vector2(-16f, -120f);
+        // PAX-A09: 120 units is 51 dp on the Pixel 8a, over the 48 dp a tap target needs; the ring drawn in it is quieter.
+        static readonly Vector2 PauseButtonSize = new Vector2(120f, 120f);
+        static readonly Vector2 PauseButtonInset = new Vector2(-100f, -8f);
+        static readonly Vector2 PauseRingSize = new Vector2(92f, 92f);
 
         public static bool RefusesToRun(string activeSceneName) => activeSceneName != RequiredSceneName;
 
@@ -128,16 +131,24 @@ namespace Parallax.Editor.Setup
                 pauseRect.pivot = Vector2.one;
                 pauseRect.sizeDelta = PauseButtonSize;
                 pauseRect.anchoredPosition = PauseButtonInset;
-                changes.Add($"positioned {PauseButtonName} (top-right, below the dev FLIP button)");
+                changes.Add($"positioned {PauseButtonName} (top-right, beside the dev FLIP button)");
             }
-            Button pauseButton = EnsureButton(pauseGO, "II", changes);
+            // PAX-A09: the old "II" label gives way to the icon. The whole rect stays the tap target; only the ring inside it is drawn.
+            Transform oldLabel = pauseGO.transform.Find("Label");
+            if (oldLabel != null) { Object.DestroyImmediate(oldLabel.gameObject); changes.Add($"removed {PauseButtonName}/Label"); }
+            Image pauseHit = GameUiStyle.Paint(EnsureComponent<Image>(pauseGO, changes, PauseButtonName), null, Color.clear, true, changes, PauseButtonName);
+            var center = new Vector2(0.5f, 0.5f);
+            GameUiStyle.Picture(pauseGO.transform, "Ring", center, PauseRingSize, Vector2.zero, GameUiStyle.Art("GUI_Ring"), new Color(1f, 1f, 1f, 0.8f), changes);
+            GameUiStyle.Picture(pauseGO.transform, "Icon", center, PauseRingSize * 0.62f, Vector2.zero, GameUiStyle.Art("GUI_Pause"), new Color(1f, 1f, 1f, 0.9f), changes);
+            Button pauseButton = GameUiStyle.Tap(pauseGO, pauseHit, changes);
+            EnsureComponent<TitleButtonFx>(pauseGO, changes, PauseButtonName);
             var pauseComponent = EnsureComponent<PauseButton>(pauseGO, changes, PauseButtonName);
             Wire(pauseComponent, "button", pauseButton, changes);
 
             GameObject panelGO = EnsureChild(hud, PanelName, changes);
             SetAnchors((RectTransform)panelGO.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, PanelName);
             var panelImage = EnsureComponent<Image>(panelGO, changes, PanelName);
-            if (panelImage.color != new Color(0f, 0f, 0f, 0.85f)) { panelImage.color = new Color(0f, 0f, 0f, 0.85f); changes.Add($"set {PanelName} Image.color"); }
+            if (panelImage.color != GameUiStyle.Dim) { panelImage.color = GameUiStyle.Dim; changes.Add($"set {PanelName} Image.color"); }
             var panelComponent = EnsureComponent<PausePanel>(panelGO, changes, PanelName);
             // Drawn over (and blocking) every other HUD control while shown.
             if (panelGO.transform.GetSiblingIndex() != hud.childCount - 1)
@@ -146,19 +157,27 @@ namespace Parallax.Editor.Setup
                 changes.Add($"moved {PanelName} to the top of {hud.name}");
             }
 
+            GameUiStyle.Plate(panelGO.transform, new Vector2(1240f, 620f), changes);
             GameObject titleGO = EnsureChild(panelGO.transform, TitleName, changes);
-            SetAnchors((RectTransform)titleGO.transform, new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(20f, 80f), new Vector2(-20f, 160f), changes, PanelName + "/" + TitleName);
-            ConfigureText(EnsureComponent<Text>(titleGO, changes, TitleName), "Paused", 56, Color.white, changes, PanelName + "/" + TitleName);
+            SetAnchors((RectTransform)titleGO.transform, new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(20f, 145f), new Vector2(-20f, 245f), changes, PanelName + "/" + TitleName);
+            Text title = EnsureComponent<Text>(titleGO, changes, TitleName);
+            ConfigureText(title, "Paused", 68, GameUiStyle.Gold, changes, PanelName + "/" + TitleName);
+            GameUiStyle.Type(title, GameUiStyle.Display, changes, PanelName + "/" + TitleName);
+            GameUiStyle.Flourish(panelGO.transform, center, 760f, new Vector2(0f, 115f), changes);
 
-            Button resume = EnsurePanelButton(panelGO.transform, ResumeButtonName, "Resume", -360f, changes);
-            Button restart = EnsurePanelButton(panelGO.transform, RestartButtonName, "Restart", -110f, changes);
-            Button levels = EnsurePanelButton(panelGO.transform, LevelsButtonName, "Levels", 140f, changes);
+            Button resume = EnsurePanelButton(panelGO.transform, ResumeButtonName, "Resume", -190f, changes, 380f, -5f, true);
+            Button restart = EnsurePanelButton(panelGO.transform, RestartButtonName, "Restart", -570f, changes, 350f, -5f);
+            Button levels = EnsurePanelButton(panelGO.transform, LevelsButtonName, "Levels", 220f, changes, 350f, -5f);
             Wire(panelComponent, "resumeButton", resume, changes);
             Wire(panelComponent, "restartButton", restart, changes);
             Wire(panelComponent, "levelsButton", levels, changes);
-            // PAX-065 (D-278), PAX-066 (D-279): under the row, the game's one setting and Restore purchase.
-            Button vibration = EnsurePanelButton(panelGO.transform, VibrationButtonName, "Vibration: On", -360f, changes, 350f, -120f);
-            Button restorePurchase = EnsurePanelButton(panelGO.transform, RestorePurchaseButtonName, "Restore purchase", 10f, changes, 350f, -120f);
+            // PAX-065 (D-278), PAX-066 (D-279), PAX-V06: under the row, the game's two settings and Restore purchase.
+            // D-316: as wide as the row above (at 245 each, "Restore purchase" broke onto two lines).
+            Button vibration = EnsurePanelButton(panelGO.transform, VibrationButtonName, "Vibration: On", -570f, changes, 360f, -170f);
+            Button motion = EnsurePanelButton(panelGO.transform, MotionButtonName, "Motion: Full", -180f, changes, 360f, -170f);
+            Button restorePurchase = EnsurePanelButton(panelGO.transform, RestorePurchaseButtonName, "Restore purchase", 210f, changes, 360f, -170f);
+            Wire(panelComponent, "motionButton", motion, changes);
+            Wire(panelComponent, "motionLabel", motion.transform.Find("Label").GetComponent<Text>(), changes);
             Wire(panelComponent, "restorePurchaseButton", restorePurchase, changes);
             Wire(panelComponent, "restorePurchaseLabel", restorePurchase.transform.Find("Label").GetComponent<Text>(), changes);
             Wire(panelComponent, "vibrationButton", vibration, changes);
@@ -167,31 +186,13 @@ namespace Parallax.Editor.Setup
             if (panelGO.activeSelf) { panelGO.SetActive(false); changes.Add($"set {PanelName} active = False"); } // shown by LevelPause
         }
 
-        internal static Button EnsurePanelButton(Transform panel, string name, string label, float left, List<string> changes, float width = 220f, float y = 0f)
+        internal static Button EnsurePanelButton(Transform panel, string name, string label, float left, List<string> changes, float width = 220f, float y = 0f, bool primary = false)
         {
             GameObject go = EnsureChild(panel, name, changes);
             var anchor = new Vector2(0.5f, 0.5f);
-            SetAnchors((RectTransform)go.transform, anchor, anchor, new Vector2(left, y - 40f), new Vector2(left + width, y + 40f), changes, name);
-            return EnsureButton(go, label, changes);
-        }
-
-        static Button EnsureButton(GameObject go, string label, List<string> changes)
-        {
-            var image = EnsureComponent<Image>(go, changes, go.name);
-            if (image.color != Color.white) { image.color = Color.white; changes.Add($"set {go.name} Image.color"); }
-            var button = EnsureComponent<Button>(go, changes, go.name);
-            if (button.navigation.mode != Navigation.Mode.None)
-            {
-                Navigation navigation = button.navigation;
-                navigation.mode = Navigation.Mode.None;
-                button.navigation = navigation;
-                changes.Add($"set {go.name} Button.navigation.mode = None");
-            }
-
-            GameObject labelGO = EnsureChild(go.transform, "Label", changes);
-            SetAnchors((RectTransform)labelGO.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, go.name + "/Label");
-            ConfigureText(EnsureComponent<Text>(labelGO, changes, go.name + "/Label"), label, 36, Color.black, changes, go.name + "/Label");
-            return button;
+            float half = primary ? 56f : 46f;
+            SetAnchors((RectTransform)go.transform, anchor, anchor, new Vector2(left, y - half), new Vector2(left + width, y + half), changes, name);
+            return GameUiStyle.Framed(go, label, primary ? 38 : 28, primary, changes);
         }
 
         internal static GameObject EnsureChild(Transform parent, string name, List<string> changes)

@@ -27,6 +27,18 @@ namespace Parallax.Gameplay.Presentation
         public bool Holding => Find() && death != null && death.IsHolding && death.HoldObserver != null && death.HoldObserver.Cat == motor;
         /// <summary>The held death's kind (§4): the killer's declared kind, else Pit for a fall, else Default.</summary>
         public CatDeathKind HoldKind => Holding ? CatDeathKinds.Resolve(death.HoldKiller, death.HoldCause) : CatDeathKind.Default;
+        /// <summary>D-293: crushed by something beside the cat, not above or below it.</summary>
+        public bool CrushedFromTheSide
+        {
+            get
+            {
+                if (HoldKind != CatDeathKind.Crushed || !(death.HoldKiller is Component killer) || !killer.TryGetComponent(out Collider2D c)) return false;
+                Vector2 at = motor.transform.position;
+                Bounds b = c.bounds;
+                return (at.x < b.min.x || at.x > b.max.x) && at.y >= b.min.y && at.y <= b.max.y;
+            }
+        }
+
         /// <summary>The level completed, and this is the solo reality's cat (§11 R3).</summary>
         public bool LevelComplete => Find() && rooms != null && rooms.LevelComplete && observer != null && observer.Id == rooms.SoloReality;
 

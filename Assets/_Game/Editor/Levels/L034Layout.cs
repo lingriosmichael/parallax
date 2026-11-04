@@ -13,7 +13,7 @@ namespace Parallax.Editor.Levels
     //  - Blink (section 0): eight floor stones, every other one lit in turn, half a beat each. Hop on the beat: leave a stone
     //    before it goes, land on the next as it lights.
     //  - Flip (section 1): stones on the floor and on the ceiling in turn, each lit on its own beat, with honest gravity orbs
-    //    in the gaps between: jump into an orb and fall up (or down) onto the next stone as it lights. Inv_C3, hidden on a
+    //    in the gaps between: jump into an orb and fall up (or down) onto the next stone as it lights. Inv_C3, on a
     //    ceiling stone, turns the stick round, so a cat still holding on walks back off it into the laser roof.
     //  - Blackout: a run of glass tiles that shatter one after another behind the cat from its first step, a little slower than
     //    a run, then up onto the ceiling's tiles through an orb (the shattering follows it there) and down by the door.
@@ -44,7 +44,7 @@ namespace Parallax.Editor.Levels
         internal static readonly float[] OrbX = { MidX1 + OrbIn, MidX1 + OrbIn + Pitch, MidX1 + OrbIn + 2f * Pitch, MidX1 + OrbIn + 3f * Pitch, MidX1 + OrbIn + 4f * Pitch, MidX1 + OrbIn + 5f * Pitch };
         internal const float OrbY0 = 1.5f, OrbY1 = 3.5f;
         internal static readonly float LandX0 = MidX1 + 5f * Pitch + OrbIn + OrbOut;
-        // Inv_C3: hidden on the third stone (the second ceiling stone).
+        // Inv_C3: on the third stone (the second ceiling stone).
         internal const int InvTicks = 40;
         // ---- Blackout ----
         // Glass tiles from LandX0 + LandW (floor), up through Orb_B1 onto the ceiling tiles, down through Orb_B2 by the door ledge.
@@ -84,9 +84,9 @@ namespace Parallax.Editor.Levels
             var down = new SoloRoomTrapSettings(gravityMode: GravityFlipMode.ForceDown, rearmOnExit: true, rendererEnabled: true);
             for (int k = 0; k < OrbX.Length; k++)
                 e.Add(E(SoloRoomElementKind.GravityFlip, k % 2 == 0 ? $"Orb_U{k + 1}" : $"Orb_D{k + 1}", (OrbX[k], (OrbY0 + OrbY1) * .5f), (1f, OrbY1 - OrbY0), settings: k % 2 == 0 ? up : down));
-            // Inv_C3, hidden under the second ceiling stone at a walking cat's height.
+            // Inv_C3, under the second ceiling stone at a walking cat's height.
             float c3 = FlipStones[2].x0;
-            e.Add(E(SoloRoomElementKind.Inverter,"Inv_C3",(c3 + 1f,Ceil - 1f),(.4f,2f),settings:new SoloRoomTrapSettings(new InverterSettings(InvTicks, disguised: true), new SoloRoomTrapSettings(delayTicks:0))));
+            e.Add(E(SoloRoomElementKind.Inverter,"Inv_C3",(c3 + 1f,Ceil - 1f),(.4f,2f),settings:new SoloRoomTrapSettings(new InverterSettings(InvTicks), new SoloRoomTrapSettings(delayTicks:0))));
 
             // ---------- Blackout ----------
             Block(e, SoloRoomElementKind.Floor, "Land", LandX0, LandX0 + LandW, VoidY, 0f);

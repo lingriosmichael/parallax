@@ -62,12 +62,17 @@ namespace Parallax.Gameplay.Rooms
         public bool LevelComplete => progress.LevelComplete;
         public bool CurrentDoorTouched { get; private set; }
         public int RoomLifeTick { get; private set; }
+        /// <summary>PAX-126 (D-321): after a respawn, until the cat's first move, jump or climb, nothing in the room runs.</summary>
+        public bool AwaitingMove => awaitingMove;
+        bool awaitingMove;
         int roomLifeRoom = -1;
         bool roomLifeStartsNextStep;
         readonly RoomSections roomSections = new RoomSections();
 
         public event Action<int> RoomCompleted;
         public event Action LevelCompleted;
+        /// <summary>PAX-V06: a checkpoint section's gate was passed (its marker's place), for the feel's burst. Presentation only.</summary>
+        public event Action<Vector2> SectionReached;
 
         public bool IsLive(int roomId) => !progress.LevelComplete && roomId == CurrentRoom;
 
@@ -192,6 +197,16 @@ namespace Parallax.Gameplay.Rooms
                 return;
             }
 
+            // PAX-126 (D-321, the developer: "if you respawn at a checkpoint, any trap ... only starts being online after the cat
+            // moves"): after a respawn (a reset or a rewind) the room stays as the respawn left it, frozen like the death hold
+            // but with the cat free, until the cat's first move, jump or climb. That step is the room's first live tick.
+            if (awaitingMove)
+            {
+                ObserverContext waiting = observers.Get(soloReality);
+                if (waiting != null && waiting.Cat != null && !waiting.Cat.ActedThisStep) return;
+                awaitingMove = false;
+            }
+
             if (roomLifeRoom != checkpoints.Current || roomLifeStartsNextStep) { roomLifeRoom = checkpoints.Current; RoomLifeTick = 0; roomLifeStartsNextStep = false; }
             else RoomLifeTick++;
 
@@ -229,7 +244,8 @@ namespace Parallax.Gameplay.Rooms
             // the door. Its snapshot is the room as this tick's traps left it, at this RoomLifeTick.
             if (roomDeath != null && !roomDeath.WasKilledThisTick(soloReality, tick) && observer != null && observer.Driver != null
                 && RoomPolicy.CompletesRoom(observer.Driver.Kind) && observer.Cat != null)
-                roomSections.TryPassGate(checkpoints.Current, sections, CatBodyCollider.Of(observer.Cat), traps, RoomLifeTick, sectionMarkerLit, this);
+                if (roomSections.TryPassGate(checkpoints.Current, sections, CatBodyCollider.Of(observer.Cat), traps, RoomLifeTick, sectionMarkerLit, this, out Vector2 gate))
+                    SectionReached?.Invoke(gate);
 
             int room = checkpoints.Current;
             if (!doors.TryGetValue(room, out RoomDoor door))
@@ -278,6 +294,7 @@ namespace Parallax.Gameplay.Rooms
 
         void OnDied(DeathInfo death)
         {
+            if (death.Room == CurrentRoom) awaitingMove = true;   // PAX-126 (D-321): the room waits for the cat's first move
             // PAX-090 (D-091) Q5: a rewind already put RoomLifeTick back at the gate tick; the next live tick continues it.
             if (roomSections.ConsumeRewound()) return;
             if (death.Room == CurrentRoom) roomLifeStartsNextStep = true;
@@ -332,16 +349,17 @@ namespace Parallax.Gameplay.Rooms
                 return -1;
             }
 
-            public void TryPassGate(int roomId, RoomSectionEntry[] entries, Collider2D cat, List<RoomTrap> traps, int roomTick, Color lit, UnityEngine.Object context)
+            public bool TryPassGate(int roomId, RoomSectionEntry[] entries, Collider2D cat, List<RoomTrap> traps, int roomTick, Color lit, UnityEngine.Object context, out Vector2 gate)
             {
+                gate = Vector2.zero;
                 Ensure(roomId, entries);
                 int next = progress.Current + 1;
-                if (cat == null || next >= entryIndices.Count) return;
+                if (cat == null || next >= entryIndices.Count) return false;
                 RoomSectionEntry entry = entries[entryIndices[next]];
                 Bounds b = cat.bounds;
                 Vector2 min = entry.GateCenter - entry.GateSize * .5f, max = entry.GateCenter + entry.GateSize * .5f;
-                if (b.max.x <= min.x || b.min.x >= max.x || b.max.y <= min.y || b.min.y >= max.y) return;
-                if (!progress.TryEnter(next)) return;
+                if (b.max.x <= min.x || b.min.x >= max.x || b.max.y <= min.y || b.min.y >= max.y) return false;
+                if (!progress.TryEnter(next)) return false;
 
                 snapshotTraps.Clear();
                 snapshotStates.Clear();
@@ -354,6 +372,8 @@ namespace Parallax.Gameplay.Rooms
                 gateTick = roomTick;
                 if (entry.Marker != null) entry.Marker.color = lit;
                 Debug.Log($"Room {roomId}: section '{entry.Name}' reached at room tick {roomTick}.", context);
+                gate = entry.Marker != null ? (Vector2)entry.Marker.transform.position : entry.GateCenter;
+                return true;
             }
 
             public bool TryGetCheckpoint(int roomId, RoomSectionEntry[] entries, out RoomSectionEntry entry)

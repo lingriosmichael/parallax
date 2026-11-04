@@ -116,6 +116,18 @@ namespace Parallax.Core.Cameras
             { MaxViewHeight = maxViewHeight; LookAhead = lookAhead; LookAheadFlipDistance = lookAheadFlipDistance; DeadZoneHalfExtents = deadZoneHalfExtents; SmoothTime = smoothTime; MaxSpeed = maxSpeed; VerticalBias = verticalBias; }
         }
 
+        /// <summary>D-297 (the developer: "the camera angle needs to start higher"): a snap (a level's start, a respawn) sits this share
+        /// of the dead zone above the cat, so it opens on the way ahead rather than the drop below. The dead zone then holds it there.</summary>
+        public const float SnapRaise = 0.9f;
+
+        /// <summary>A snap's centre, raised (follow mode with room to move up and down only).</summary>
+        public static Vector2 SnapRaised(Vector2 desired, Vector2 frameSize, float viewHeight, Vector2 frameMin, Vector2 frameMax, float deadZoneY, float maxViewHeight, float aspect)
+        {
+            if (IsFitMode(frameSize, maxViewHeight, aspect) || frameSize.y <= viewHeight + 0.001f) return desired;
+            desired.y = Mathf.Clamp(desired.y + deadZoneY * SnapRaise, frameMin.y + viewHeight * 0.5f, frameMax.y - viewHeight * 0.5f);
+            return desired;
+        }
+
         // PAX-076 (D-083): one level-camera step, moved verbatim out of LevelCameraFollow.Resolve (after D-084). Fit
         // mode centres on the frame; follow mode resolves the look direction, the dead zone, the look-ahead and the
         // clamp. immediate (a snap) skips SmoothDamp and leaves Velocity alone. Returns the view height.
@@ -141,6 +153,7 @@ namespace Parallax.Core.Cameras
                     p.DeadZoneHalfExtents, p.LookAhead, halfView, frameCentre, frameMin, frameMax, verticalFollow);
             }
 
+            desired = immediate ? SnapRaised(desired, frameSize, viewHeight, frameMin, frameMax, p.DeadZoneHalfExtents.y, p.MaxViewHeight, aspect) : desired;
             state.Centre = immediate ? desired : Vector2.SmoothDamp(state.Centre, desired, ref state.Velocity, p.SmoothTime, p.MaxSpeed, deltaTime);
             return viewHeight;
         }

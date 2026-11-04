@@ -101,7 +101,7 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual(-1, trap.RestoredAt, "no rewind");
             Assert.AreEqual(Vector2.zero, rig.CatBody.position, "respawned at the room's checkpoint");
             trap.Pressed = false;
-            rig.Tick();
+            rig.TickActing();   // PAX-126 (D-321): the room starts on the cat's first move
             Assert.AreEqual(0, rig.Rooms.RoomLifeTick, "the room starts again");
             Assert.AreEqual(1, rig.Rooms.SectionDeaths(0));
         }
@@ -136,6 +136,8 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual(Vector2.zero, rig.CatBody.linearVelocity, "at rest");
             Assert.AreEqual(1, rig.Rooms.CurrentSection, "the section is kept");
             rig.Tick();
+            Assert.AreEqual(gateTick, rig.Rooms.RoomLifeTick, "PAX-126 (D-321): the room waits for the cat's first move");
+            rig.TickActing();
             Assert.AreEqual(gateTick + 1, rig.Rooms.RoomLifeTick, "the next live tick continues from the gate");
             Assert.AreEqual(1, rig.Rooms.SectionDeaths(1));
             Assert.AreEqual(0, rig.Rooms.SectionDeaths(0));
@@ -216,7 +218,7 @@ namespace Parallax.Tests.EditMode
             Die();
             Assert.AreEqual(-1, trap.LatestFireTick);
             Assert.AreEqual(-1, trap.RestoredAt);
-            rig.Tick();
+            rig.TickActing();   // PAX-126 (D-321): the room starts on the cat's first move
             Assert.AreEqual(0, rig.Rooms.RoomLifeTick);
         }
     }

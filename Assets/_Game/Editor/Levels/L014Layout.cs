@@ -20,8 +20,7 @@ namespace Parallax.Editor.Levels
     //  - Ledges (section 1, S2, walked west): the same crossing over trench 2 (V5-V7, Arrow_2Hi from the east, Arrow_2Lo from
     //    the west). Lift_2 shoots up under a running cat into trench 3's bed (stop short); Hinge_3 stands up behind the cat and
     //    pushes it onto Spikes_2 (jump them). V_Up2 climbs the west shaft to S3.
-    //  - Roof (section 2, S3, walked east): V8-V11 under the roof; Slam_10 comes down V10's column as the cat leaps for V9 (wait
-    //    for it to go back up); the Perch in the trench has hidden spikes on top (dead end). Slam_3 comes down on the walk (set
+    //  - Roof (section 2, S3, walked east): V8-V11 under the roof; the Perch in the trench has hidden spikes on top (dead end). Slam_3 comes down on the walk (set
     //    it off, stop short, hop it); Hinge_5, spiked, stands up behind the cat and creeps onto it at Spikes_5 (jump them);
     //    V_Lure over them snaps (dead end). Under Hang_C into the chimney: Wall_C's moss, Hang_C's, then over Wall_C's top to
     //    the door.
@@ -31,7 +30,7 @@ namespace Parallax.Editor.Levels
         internal const float S1 = 0f, S2 = 5.5f, S3 = 11f;
         // The waves (each vine's snap after the one before) and the launchers' timing (first shot after the trigger, then every
         // delay + cooldown ticks).
-        internal const int V1Snap = 50, Wave1 = 50, V5Snap = 60, Wave2 = 60, V8Snap = 40, Wave3 = 60, SlamDelay = 6, Lift2Delay = 24;
+        internal const int V1Snap = 50, Wave1 = 50, V5Snap = 60, Wave2 = 60, V8Snap = 40, Wave3 = 60, Lift2Delay = 24;
         internal const int HiDelay1 = 5, HiCool1 = 50, LoDelay1 = 25, LoCool1 = 48;
         internal const int HiDelay2 = 8, HiCool2 = 45, LoDelay2 = 33, LoCool2 = 40;
 
@@ -93,7 +92,7 @@ namespace Parallax.Editor.Levels
                 // The roof over S3 (y 15.5 up), down to y 13.5 over the west shaft; split around Slam_3 (x 18.5-20) and its cap.
                 E(SoloRoomElementKind.Ceiling,"Roof_W",(1.25f,16.5f),(2.5f,6f)),
                 E(SoloRoomElementKind.Ceiling,"Roof_3a",(6.55f,17.5f),(8.1f,4f)),
-                E(SoloRoomElementKind.Ceiling,"Cap_10",(11.2f,18f),(1.2f,3f)),
+                E(SoloRoomElementKind.Ceiling,"Cap_10",(11.2f,17.5f),(1.2f,4f)),
                 E(SoloRoomElementKind.Ceiling,"Roof_3c",(15.9f,17.5f),(8.2f,4f)),
                 E(SoloRoomElementKind.Ceiling,"Cap_3",(20.75f,18f),(1.5f,3f)),
                 E(SoloRoomElementKind.Ceiling,"Roof_3b",(24.75f,17.5f),(6.5f,4f)),
@@ -172,12 +171,7 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Vine,"V9",(8.4f,v3Y),(.6f,v3H),settings:Chain("V8", Wave3)));
             elements.Add(E(SoloRoomElementKind.Vine,"V10",(11.2f,v3Y),(.6f,v3H),settings:Chain("V9", Wave3)));
             elements.Add(E(SoloRoomElementKind.Vine,"V11",(14f,v3Y),(.6f,v3H),settings:Chain("V10", Wave3)));
-            // Slam_10, the roof over V10 (x 10.6-11.8), slams 4.6 u down V10's column 6 ticks after the cat comes into the trench's
-            // middle (x 8.1-12, as it leaps for V9) and goes back up: a cat on V10, or leaping to it, as it comes down is killed. Wait
-            // on V9 until it's back.
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Slam_10",(11.2f,16f),(1.2f,1f),(10.05f,13.3f),(3.9f,7.6f),new SoloRoomTrapSettings(
-                new MovingFloorSettings(SurfaceMotion.Carry,crushPartner:"Cap_10",slams:true),
-                new SoloRoomTrapSettings(delayTicks:SlamDelay,offset:new Vector2(0f,-4.6f),moveTicks:10,holdTicks:4,returnTicks:20,movingKind:MovingTrapKind.Solid))));
+            // D-297 (the developer: "Remove this moving ceiling. It looks off"): Slam_10 is gone from V10's column; Cap_10 fills its seat.
             // Spikes_P come up on the Perch's top as a cat comes over it (its cut, from the top to the roof).
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_P",(9.8f,11.15f),(1f,.3f),(9.8f,13.25f),(1f,4.5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             // Slam_3, the roof at x 20-21.5, slams 4.5 u onto the walk as a cat walking east comes to x 19, and stays: stop short, hop it.
@@ -200,7 +194,7 @@ namespace Parallax.Editor.Levels
                 new CheckpointSection("Ledges", new Vector2(28.9f, S2), new Rect(28.1f, S2, .2f, 2.2f),
                     new[] { "V5", "V6", "V7", "Arrow_2Lo", "Arrow_2Hi", "Lift_2", "Hinge_3", "V_Up2" }),
                 new CheckpointSection("Roof", new Vector2(3.6f, S3), new Rect(0f, 10.5f, 2.5f, .2f),
-                    new[] { "V8", "V9", "V10", "V11", "Slam_10", "Spikes_P", "Slam_3", "Hinge_5", "V_Lure" }),
+                    new[] { "V8", "V9", "V10", "V11", "Spikes_P", "Slam_3", "Hinge_5", "V_Lure" }),
             };
             var openings = new[] { O(SoloRoomOpeningKind.Pit, 26.5f, 28.7f, "Walk_1b", "Walk_1c", "Pit_1_Bottom", "Pit_1") };
             return new SoloRoomDefinition(0, 0f, 32f, elements.ToArray(), openings, System.Array.Empty<RequiredJump>(), null, null, null, sections);

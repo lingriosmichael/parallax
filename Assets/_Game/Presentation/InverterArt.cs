@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace Parallax.Presentation
 {
-    /// <summary>PAX-A13: the inverter. An honest one draws a warm gold orb (TRAP-06, layer 05 glow; §11 R6: no cyan) inside its
-    /// zone; a disguised one has no orb (§11 R4). While the controls are swapped, its cue shows on the cat: a ring behind it and
+    /// <summary>PAX-A13: the inverter. An honest one draws the direction orb (TRAP-06, layer 05 glow; D-284: one art in every world) at its
+    /// zone's centre; a disguised one has no orb (§11 R4). While the controls are swapped, its cue shows on the cat: a ring behind it and
     /// a mark over it (TRAP-07), drawn exactly where and when the grey-box cue is, the 30-tick blink included. On the fire tick
     /// the orb flares.</summary>
     // PAX-096: after InverterTrap (default order), which moves the grey-box cue onto the cat in its own LateUpdate; the
@@ -19,22 +19,15 @@ namespace Parallax.Presentation
         [SerializeField] SpriteRenderer ring, greyboxRing, mark, greyboxMark;
         [SerializeField] Sprite orbSprite, ringSprite, markSprite;
         [SerializeField] Vector2 zoneSize, ringSize, markSize;
+        [SerializeField] float orbOffsetY;   // D-286: where the orb draws, from the zone's centre (TrapArtSetup.OrbOffset)
         [SerializeField] SpriteRenderer flare;
 
         public override RoomTrap Trap => trap;
 
-        /// <summary>2026-10-17 (the developer: "Inverters make them slightly bigger"): the orb draws at its sprite's own size
-        /// (TRAP-06, 0.78 u, was 0.6) even past a narrow zone (0.6 u wide), except in one under 0.5 u (L012's disguised Inv_H).</summary>
-        float OrbSide(float zoneSide) => orbSprite == null ? zoneSide * bodyScale
-            : zoneSide < 0.5f ? Mathf.Min(orbSprite.bounds.size.x, zoneSide * bodyScale) : orbSprite.bounds.size.x;
-
         public override Vector2 GrowthOf(Body b)
         {
-            Vector2 g = BodyGrowth;
-            if (b.Art != orb || orb == null || greyboxOrb == null) return g;
-            Vector2 box = greyboxOrb.bounds.size;
-            float drawn = OrbSide(Mathf.Min(zoneSize.x, zoneSize.y)) * 1.0f;   // the breathing only shrinks it
-            return new Vector2(Mathf.Max(g.x, (drawn / Mathf.Max(1e-3f, box.x) - 1f) * 0.5f + 1e-3f), Mathf.Max(g.y, (drawn / Mathf.Max(1e-3f, box.y) - 1f) * 0.5f + 1e-3f));
+            if (b.Art != orb || orb == null || greyboxOrb == null) return BodyGrowth;
+            return FlipArt.OrbGrowth(BodyGrowth, greyboxOrb.bounds.size, orbOffsetY);
         }
 
         protected override void CollectBodies(List<Body> into)
@@ -51,17 +44,15 @@ namespace Parallax.Presentation
             float side = Mathf.Min(zoneSize.x, zoneSize.y);
             if (orb != null && Mirror(orb, greyboxOrb))
             {
-                // PAX-A18 (D-151): one orb size everywhere (the sprite's own), smaller only in a zone too narrow for it.
-                float orbSide = OrbSide(side);
-                Fit(orb, orbSprite, new Vector2(orbSide, orbSide));
-                float breathe = 0.92f + 0.08f * Mathf.Sin(RoomTick * 0.08f);
-                orb.transform.localScale *= breathe;
+                // D-286: the same size as the gravity orb, in every zone, and it holds still as that one does.
+                Fit(orb, orbSprite, new Vector2(FlipArt.RingSide, FlipArt.RingSide));
+                orb.transform.position += Vector3.up * orbOffsetY;
             }
             if (Mirror(ring, greyboxRing)) Fit(ring, ringSprite, ringSize * bodyScale);
             if (Mirror(mark, greyboxMark)) Fit(mark, markSprite, markSize * bodyScale);
             int s = TicksSinceFire;
             bool on = orb != null && s >= 0 && s < TrapArtMath.InverterFlareTicks;
-            Vector2 at = greyboxOrb != null ? (Vector2)greyboxOrb.transform.position : (Vector2)transform.position;
+            Vector2 at = (greyboxOrb != null ? (Vector2)greyboxOrb.transform.position : (Vector2)transform.position) + Vector2.up * orbOffsetY;
             Place(flare, on, at, on ? side * (0.8f + 1.6f * s / TrapArtMath.InverterFlareTicks) : 1f, on ? 1f - s / (float)TrapArtMath.InverterFlareTicks : 0f);
         }
     }

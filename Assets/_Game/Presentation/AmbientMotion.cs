@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Parallax.Presentation
 {
-    /// <summary>PAX-A16 §3.5: decor motion. Drift (wrapping within a tile so a tiled band never shows its end), bob, sway and
+    /// <summary>PAX-A16 §3.5: decor motion. Drift (wrapping within a tile so a tiled band never shows its end), bob, sway, spin and
     /// an alpha breath, on render time accumulated from Time.deltaTime, so it freezes with the pause (RunningState sets the
     /// time scale). Presentation only: never on anything with a collider, never read by gameplay or ticks.</summary>
     public sealed class AmbientMotion : MonoBehaviour
@@ -15,6 +15,8 @@ namespace Parallax.Presentation
         [SerializeField] float bobFrequency = 0.12f;
         [SerializeField] float swayDegrees;
         [SerializeField] float swayFrequency = 0.2f;
+        [Tooltip("D-281: steady turning, degrees per second (a portal's swirl).")]
+        [SerializeField] float spinSpeed;
         [Tooltip("Alpha breath, as a fraction of the renderer's alpha (0.03 = ±3%).")]
         [SerializeField] float breathe;
         [SerializeField] float breatheFrequency = 0.125f;
@@ -34,6 +36,8 @@ namespace Parallax.Presentation
             driftSpeed = drift; wrapWidth = wrap; bobAmplitude = bob; bobFrequency = bobHz;
             swayDegrees = sway; swayFrequency = swayHz; breathe = breath; breatheFrequency = breathHz; phase = startPhase;
         }
+
+        public void ConfigureSpin(float degreesPerSecond) => spinSpeed = degreesPerSecond;
 
         void Awake()
         {
@@ -57,6 +61,7 @@ namespace Parallax.Presentation
             if (bobAmplitude != 0f) p.y += bobAmplitude * Mathf.Sin(tau * (bobFrequency * time + phase));
             transform.localPosition = p;
             if (swayDegrees != 0f) transform.localRotation = baseRotation * Quaternion.Euler(0f, 0f, swayDegrees * Mathf.Sin(tau * (swayFrequency * time + phase)));
+            if (spinSpeed != 0f) transform.localRotation = baseRotation * Quaternion.Euler(0f, 0f, Mathf.Repeat(spinSpeed * time, 360f));
             if (breathe != 0f && sprite != null)
             {
                 Color c = sprite.color;

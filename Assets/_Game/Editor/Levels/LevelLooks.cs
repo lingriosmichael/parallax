@@ -104,8 +104,8 @@ namespace Parallax.Editor.Levels
                     // Round 3 (critics: "a pale strip between the back wall and the floor"): every foot well under the floor line.
                     // 2026-10-03 (the developer: "visuals are weird", a pale sky column between two pieces): 10.8 u apart, so
                     // each piece's feathered end (8% of its 12 u) overlaps the next and no gap shows.
-                    new Piece("ENV_RuinWall", 2f, -1.5f), new Piece("ENV_RuinWall", 12.8f, -1.5f, flip: true), new Piece("ENV_RuinWall", 23.6f, -1.5f),
-                    new Piece("ENV_RuinWall", 34.4f, -1.5f, flip: true),
+                    new Piece("ENV_RuinWall", 2f, -1.5f), new Piece("ENV_RuinWall", 12.1f, -1.5f, flip: true), new Piece("ENV_RuinWall", 22.2f, -1.5f),
+                    new Piece("ENV_RuinWall", 32.3f, -1.5f, flip: true),
                     new Piece("ENV_FarIsland_3", 8f, 15.5f, 1.5f),
                     new Piece("ENV_MidTowers", 27f, 9.5f),
                     new Piece("ENV_FarSpire_2", 18f, 11f, 1.3f),
@@ -153,12 +153,12 @@ namespace Parallax.Editor.Levels
                 Grade = "GoldenHour", Stone = Fill.A, Dress = new Dressing(0.4f, drapes: true, glyphs: true), Signature = "light shafts through the back wall",
                 Pieces = new[]
                 {
-                    // 2026-10-03: 10.8 u apart (no gap between the feathered ends; see L004). 2026-10-17 visual review ("a strip of
+                    // D-300: 10.1 u apart, so each feathered end lies over the next wall's solid stone (at 10.8 they overlapped each other and stacked up into a pale pillar). 2026-10-17 visual review ("a strip of
                     // sky runs between the background ruin wall's straight bottom edge and the floor", "the floor dip shows a
                     // window of far sky", "a grey haze strip with a hard edge" where two pieces met at different heights): one
                     // base for all four, under the sump's floor (-3.6: -2 still stopped partway down the dip).
-                    new Piece("ENV_RuinWall", 2f, -3.6f, flip: true), new Piece("ENV_RuinWall", 12.8f, -3.6f), new Piece("ENV_RuinWall", 23.6f, -3.6f, flip: true),
-                    new Piece("ENV_RuinWall", 34.4f, -3.6f),
+                    new Piece("ENV_RuinWall", 2f, -3.6f, flip: true), new Piece("ENV_RuinWall", 12.1f, -3.6f), new Piece("ENV_RuinWall", 22.2f, -3.6f, flip: true),
+                    new Piece("ENV_RuinWall", 32.3f, -3.6f),
                     new Piece("ENV_MidTowers", 20f, 8.5f),
                     new Piece("ENV_Shaft", 11f, 1.5f, alpha: 0.45f),
                     new Piece("ENV_Shaft", 24.5f, 2.5f, alpha: 0.35f),
@@ -182,9 +182,9 @@ namespace Parallax.Editor.Levels
                 Pieces = new[]
                 {
                     // Round 4 (the cat vanished on them at night, contrast 2.0): hazed into the moonlit sky.
-                    // 2026-10-03: 10.8 u apart (no gap between the feathered ends; see L004).
-                    new Piece("ENV_RuinWall", 2f, 0.5f, alpha: 0.4f), new Piece("ENV_RuinWall", 12.8f, 1.2f, flip: true, alpha: 0.4f), new Piece("ENV_RuinWall", 23.6f, 0.2f, alpha: 0.4f),
-                    new Piece("ENV_RuinWall", 34.4f, 0.8f, flip: true, alpha: 0.4f),
+                    // D-300: 10.1 u apart, so each feathered end lies over the next wall's solid stone (at 10.8 they overlapped each other and stacked up into a pale pillar).
+                    new Piece("ENV_RuinWall", 2f, 0.5f, alpha: 0.4f), new Piece("ENV_RuinWall", 12.1f, 1.2f, flip: true, alpha: 0.4f), new Piece("ENV_RuinWall", 22.2f, 0.2f, alpha: 0.4f),
+                    new Piece("ENV_RuinWall", 32.3f, 0.8f, flip: true, alpha: 0.4f),
                     new Piece("ENV_Waterfall", 8f, 0f, span: 15f),
                     new Piece("ENV_MidTowers", 18f, 10f),
                     new Piece("ENV_Fog", 12f, 0.4f, span: 28f, alpha: 0.55f),
@@ -200,6 +200,7 @@ namespace Parallax.Editor.Levels
         };
 
         public static Look For(string levelId) => levelId != null && ById.TryGetValue(levelId, out Look look) ? look
+            : levelId != null && StoneLooks.TryGetValue(levelId, out Look stone) ? stone
             : Biomes.For(levelId) == Biome.ObsidianVoid ? DefaultObsidian : Default;
 
         /// <summary>PAX-A20 stage 4: an unlisted Obsidian Void level's look: Default's, dressed with Obsidian's props (no moss;
@@ -209,6 +210,43 @@ namespace Parallax.Editor.Levels
             Grade = DefaultGrade, Stone = Fill.A, Dress = new Dressing(0f, drapes: true, banners: true, rubble: true, glyphs: true), Signature = "none",
             Pieces = Default.Pieces,
         };
+
+        // D-281, D-282: levels that differ from their world's default look only in their stone.
+        static Look Stone(Fill stone) => new() { Grade = DefaultGrade, Stone = stone, Dress = Default.Dress, Signature = "none", Pieces = Default.Pieces };
+        static Look ObsidianStone(Fill stone) => new() { Grade = DefaultGrade, Stone = stone, Dress = DefaultObsidian.Dress, Signature = "none", Pieces = Default.Pieces };
+        static readonly Dictionary<string, Look> StoneLooks = new()
+        {
+            ["L021"] = Stone(Fill.A3), ["L022"] = Stone(Fill.A2), ["L023"] = Stone(Fill.A), ["L024"] = Stone(Fill.A3), ["L025"] = Stone(Fill.A2),
+            ["L026"] = Stone(Fill.A3), ["L027"] = Stone(Fill.A), ["L028"] = Stone(Fill.A2), ["L029"] = Stone(Fill.A3), ["L030"] = Stone(Fill.A2),
+            ["L031"] = ObsidianStone(Fill.A3), ["L032"] = ObsidianStone(Fill.A2), ["L033"] = ObsidianStone(Fill.A3), ["L034"] = ObsidianStone(Fill.A),
+            ["L035"] = ObsidianStone(Fill.A3), ["L036"] = ObsidianStone(Fill.A2), ["L037"] = ObsidianStone(Fill.A3), ["L038"] = ObsidianStone(Fill.A2),
+            ["L039"] = ObsidianStone(Fill.A3), ["L040"] = ObsidianStone(Fill.A),
+        };
+
+        /// <summary>D-305: Golden Ruins' three districts: 0 The Gardens, 1 The Overgrown Quarter, 2 The High Citadel; -1 elsewhere.</summary>
+        public static int District(string levelId)
+        {
+            int n = levelId != null && levelId.Length > 1 && int.TryParse(levelId.Substring(1), out int v) ? v : 0;
+            return n >= 1 && n <= 30 ? (n - 1) / 10 : -1;
+        }
+
+        /// <summary>D-312: the exit door's kit slot: Pack E's own door in The Overgrown Quarter and The High Citadel, the Gardens door
+        /// (and Obsidian's, from its own kit) elsewhere.</summary>
+        public static string DoorSlot(string levelId) => District(levelId) switch { 1 => "ENV_DoorOvergrown", 2 => "ENV_DoorCitadel", _ => "ENV_Door" };
+
+        /// <summary>D-307: hero walls may stand in any level, on a fixed wall big enough (a Trap Lab room or a fixture has none).</summary>
+        public static bool HeroWalls(string levelId) => levelId != null;
+
+        /// <summary>D-307: the levels with the collapsed wall (HW-02) behind the play, one every few levels so it stays a find.</summary>
+        public static readonly HashSet<string> Breaches = new() { "L004", "L008", "L012", "L017", "L022", "L025", "L026", "L029" };
+
+        /// <summary>D-310: levels whose thin tiles take depth on the face no cat reaches (L034: each floor tile is walked on top and each
+        /// ceiling tile underneath; their other faces look out over the laser floor and roof).</summary>
+        public static readonly HashSet<string> FarFaceDepth = new() { "L034" };
+
+
+        /// <summary>D-307: how much of a surface's dressing is Pack B's plants, by district (The Gardens, The Overgrown Quarter, The High Citadel).</summary>
+        public static float PlantShare(string levelId) => District(levelId) switch { 0 => 0.35f, 1 => 1f, 2 => 0.2f, _ => 0f };
 
         /// <summary>The level a room definition belongs to (the registry shares each layout's element array), or null for a
         /// room that isn't a level's (the Trap Lab, test fixtures).</summary>

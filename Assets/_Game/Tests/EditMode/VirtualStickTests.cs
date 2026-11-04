@@ -119,5 +119,45 @@ namespace Parallax.Tests
             Assert.LessOrEqual(move, 1f);
             Assert.GreaterOrEqual(move, -1f);
         }
+
+        // PAX-127 (D-322): full speed after a short push, and a centre that trails the thumb past the ring.
+        [Test]
+        public void ToRun_ReachesFullSpeed_AtFullSpeedAt_AndKeepsTheSign()
+        {
+            Assert.AreEqual(0f, VirtualStick.ToRun(0f, .25f));
+            Assert.AreEqual(.5f, VirtualStick.ToRun(.125f, .25f), 1e-5f);
+            Assert.AreEqual(1f, VirtualStick.ToRun(.25f, .25f), 1e-5f);
+            Assert.AreEqual(1f, VirtualStick.ToRun(.6f, .25f), 1e-5f);
+            Assert.AreEqual(-1f, VirtualStick.ToRun(-.6f, .25f), 1e-5f);
+            Assert.AreEqual(-1f, VirtualStick.ToRun(-.01f, 0f), "no ramp: any push is full speed");
+        }
+
+        [Test]
+        public void Follow_KeepsTheCentre_InsideTheRing()
+        {
+            Vector2 origin = new Vector2(100f, 100f);
+            Assert.AreEqual(origin, VirtualStick.Follow(origin, origin + new Vector2(30f, 20f), 50f));
+            Assert.AreEqual(origin, VirtualStick.Follow(origin, origin + new Vector2(50f, 0f), 50f));
+        }
+
+        [Test]
+        public void Follow_TrailsTheThumb_ByTheRadius_PastTheRing()
+        {
+            Vector2 origin = Vector2.zero;
+            Vector2 followed = VirtualStick.Follow(origin, new Vector2(200f, 0f), 50f);
+            Assert.AreEqual(150f, followed.x, 1e-4f);
+            Assert.AreEqual(0f, followed.y, 1e-4f);
+        }
+
+        [Test]
+        public void Follow_ThenAShortFlickBack_ReversesTheRun()
+        {
+            float radius = 50f, deadZone = .15f;
+            Vector2 origin = VirtualStick.Follow(Vector2.zero, new Vector2(200f, 0f), radius);
+            Vector2 back = new Vector2(200f - radius - 20f, 0f);
+            float move = VirtualStick.ToRun(VirtualStick.ToMove(VirtualStick.Evaluate(origin, back, radius, deadZone), Vector2.right,
+                StickProjection.CatRelative), VirtualStick.DefaultFullSpeedAt);
+            Assert.AreEqual(-1f, move, 1e-5f, "20 px past the centre is full speed the other way");
+        }
     }
 }

@@ -232,6 +232,39 @@ namespace Parallax.Tests.EditMode
             finally { rig.Dispose(); }
         }
 
+        // ---------- PAX-126 (D-321): the room waits for the cat's first move ----------
+
+        [Test]
+        public void AfterARespawn_TheRoomWaits_UntilTheCatsFirstMove()
+        {
+            const int holdTicks = 5;
+            Rig rig = Rig.Build(holdTicks, Vector2.zero, includeDoor: false);
+            try
+            {
+                for (int i = 0; i < 3; i++) rig.Tick();
+                Assert.AreEqual(2, rig.Rooms.RoomLifeTick, "a level's start doesn't wait: the room runs before the cat moves");
+                Assert.IsFalse(rig.Rooms.AwaitingMove);
+
+                rig.Death.Kill(ObserverId.A, DeathCause.Hazard);
+                for (int i = 0; i < holdTicks; i++) rig.Tick();
+                Assert.IsFalse(rig.Death.IsHolding, "the hold must have ended");
+                Assert.AreEqual(1, rig.Resettable.ResetCount, "the room must have reset");
+                Assert.IsTrue(rig.Rooms.AwaitingMove, "after the respawn the room waits");
+
+                for (int i = 0; i < 20; i++) rig.Tick();
+                Assert.IsTrue(rig.Rooms.AwaitingMove, "still waiting while the cat stands still");
+                Assert.AreEqual(2, rig.Rooms.RoomLifeTick, "nothing runs while waiting: the room's clock stays where it was");
+
+                rig.Driver.MoveCommandEachTick = true;
+                rig.Tick();
+                Assert.IsFalse(rig.Rooms.AwaitingMove, "the cat's first move ends the wait");
+                Assert.AreEqual(0, rig.Rooms.RoomLifeTick, "that move's tick is the reset room's first live tick");
+                rig.Tick();
+                Assert.AreEqual(1, rig.Rooms.RoomLifeTick, "and the room runs on from there");
+            }
+            finally { rig.Dispose(); }
+        }
+
         // ---------- §8.5 Door during a hold ----------
 
         [Test]

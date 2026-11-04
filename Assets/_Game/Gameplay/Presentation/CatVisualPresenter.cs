@@ -1,4 +1,5 @@
 using Parallax.Core;
+using Parallax.Gameplay.Levels;
 using Parallax.Gameplay.Player;
 using Parallax.Gameplay.Reality;
 using Parallax.Gameplay.Observers;
@@ -15,6 +16,8 @@ namespace Parallax.Gameplay.Presentation
         [SerializeField] CatVisualConfig config;
         [SerializeField] SpriteRenderer bodyRenderer;
         [SerializeField] SpriteRenderer outlineRenderer;
+        [Tooltip("D-304: the level's rim light, set by the level's build; clear keeps the config's.")]
+        [SerializeField] Color levelRim = Color.clear;
         [Tooltip("PAX-V07: the clip table, one clip per wired A08 slot (written by PARALLAX/Setup/Cat Visual).")]
         [SerializeField] CatClipSet clips = new CatClipSet();
         [Tooltip("PAX-V07 §4: death kind -> death clip (written by PARALLAX/Setup/Cat Visual).")]
@@ -23,6 +26,8 @@ namespace Parallax.Gameplay.Presentation
         [SerializeField] CatPresentationSignals signals;
         [SerializeField] CatMotor2D motor;
         [SerializeField] ObserverContext observer;
+        [Tooltip("PAX-V06: squash and stretch (written by PARALLAX/Setup/Game Feel); none without it.")]
+        [SerializeField] FeelConfig feel;
 
         GravityReceiver gravity;
         RealityRoot reality;
@@ -50,6 +55,10 @@ namespace Parallax.Gameplay.Presentation
         float lastBodyAlong;
         bool stopping = true;
         bool airStateEnding;
+        CatTransitionClips transitions;
+        float scaleWidth, turnTime = float.PositiveInfinity;
+        // PAX-V06: the drawing's own height (signed), and the squash or stretch under way.
+        float scaleHeight, squashAmount, squashTime = float.PositiveInfinity;
         // PAX-A14: the Carry floor the cat stands on (its collider and drawn transform) and where it was drawn last frame.
         Collider2D floorGround;
         Transform carryFloor;
@@ -114,12 +123,15 @@ namespace Parallax.Gameplay.Presentation
                 clips.ForState(CatAnimState.Respawn)?.DurationFromEntry ?? 0f));
             jumpSpeed = config.JumpSpeed(gravity.Strength);
             shownFacing = Facing;
+            transitions = new CatTransitionClips(clips);
+            scaleWidth = Mathf.Abs(transform.localScale.x);
+            scaleHeight = transform.localScale.y;
 
             if (outlineRenderer != null)
             {
                 Color outlineColor = reality != null && reality.Id == ObserverId.B
                     ? config.OutlineColorB
-                    : config.OutlineColorA;
+                    : levelRim.a > 0f ? levelRim : config.OutlineColorA;
 
                 var block = new MaterialPropertyBlock();
                 outlineRenderer.GetPropertyBlock(block);
@@ -142,6 +154,8 @@ namespace Parallax.Gameplay.Presentation
         public int ClipFrameCount => current != null ? current.Count : 0;
         /// <summary>+1 facing the cat's local right, -1 facing its left (the sign of Visual's localScale.x).</summary>
         public int Facing => transform.localScale.x >= 0f ? 1 : -1;
+        /// <summary>PAX-V06: the state on screen changed (from, to), for the feel's dust. Raised once per change, after it's chosen.</summary>
+        public event System.Action<CatAnimState, CatAnimState> StateChanged;
 
         void LateUpdate()
         {
@@ -236,8 +250,17 @@ namespace Parallax.Gameplay.Presentation
                     holding: holding, respawned: respawned, levelComplete: complete, stopping: stopping,
                     clinging: motor.IsClinging, clingSide: GravityFrame.LocalSide(motor.ClingSide, down), wallJumped: motor.WallJumpedThisStep));
 
+            if (next != before)
+            {
+                StartSquash(before, next);
+                StateChanged?.Invoke(before, next);
+            }
+            squashTime += dt;
+
             UpdateEchoAlpha();
+            bool pressing = Mathf.Abs(motor.MoveCommand) > config.WallPushCommand && motor.MoveCommand * Facing > 0f;
             if (next == CatAnimState.Turn) ShowFlipFrame(before != CatAnimState.Turn);
+            else if (transitions.Step(before, next, current, FrameIndex, dt, pressing)) ShowFrame(transitions.Clip, transitions.Frame);
             else if (next == CatAnimState.Climb || next == CatAnimState.Hang) Vine(next, teleported ? 0f : -Vector2.Dot(delta, down), dt);
             else if (next == CatAnimState.WallCling || next == CatAnimState.WallSlide) Wall(next, teleported ? 0f : -Vector2.Dot(delta, down), dt);
             else
@@ -245,14 +268,20 @@ namespace Parallax.Gameplay.Presentation
                 float progress = CatClipSet.AirProgress(next, rawVelocityAlongGravity, config.RiseExit, config.FallEnter, jumpSpeed);
                 airStateEnding = CatClip.AirFramesLeft(next, rawVelocityAlongGravity, config.RiseExit, config.FallEnter, gravity.Strength * dt) < config.MinStateFrames;
                 CatClip clip = next == CatAnimState.IdleFidget ? clips.ForState(next, stateMachine.FidgetIndex)
+                    : next == CatAnimState.Death && signals != null && signals.CrushedFromTheSide && clips.ForSlot("Death_CrushedSide") != null ? clips.ForSlot("Death_CrushedSide")
                     : next == CatAnimState.Death && deathClips != null ? deathClips.For(signals != null ? signals.HoldKind : CatDeathKind.Default) ?? clips.ForState(next)
                     : next == CatAnimState.WallJump ? clips.ForState(CatAnimState.Leap)
+                    // D-293: a jump at a run has no gather: the stride goes straight into the rise.
+                    : next == CatAnimState.TakeOff && Mathf.Abs(bodyAlong) >= config.RunEnterSpeed ? clips.ForState(CatAnimState.Rise) ?? clips.ForState(next)
+                    // D-293: with no run-up the cat goes straight up and comes straight down.
+                    : next == CatAnimState.Rise && Mathf.Abs(bodyAlong) < config.WalkEnter ? clips.ForSlot("RiseStraight") ?? clips.ForState(next)
+                    : next == CatAnimState.Fall && Mathf.Abs(bodyAlong) < config.WalkEnter ? clips.ForSlot("FallStraight") ?? clips.ForState(next)
                     : clips.ForState(next);
                 UpdateSprite(next, clip, Mathf.Abs(rawAlong), travelled, dt, byDistance: true, progress);
             }
             // The facing applies after the frame is chosen: Turn holds its flip frame facing the old way for one frame, and the
             // next frame shows the same pose mirrored, the gait continuing from it.
-            ApplyFacing(stateMachine.Facing);
+            ApplyFacing(stateMachine.Facing, next, dt);
             shownFacing = Facing;
             PlaceOnWall(next);
         }
@@ -376,13 +405,36 @@ namespace Parallax.Gameplay.Presentation
         }
 
         // D-034: the presenter owns Visual's facing; the state machine decides it (a ground reversal flips at Turn's end).
-        void ApplyFacing(int facing)
+        void ApplyFacing(int facing, CatAnimState next, float dt)
         {
-            if (facing == Facing) return;
+            bool turned = facing != Facing;
+            if (turned && (next == CatAnimState.Idle || next == CatAnimState.Walk || next == CatAnimState.Run)) turnTime = 0f;   // D-293
+            else turnTime += dt;
+            float width = scaleWidth * CatTransitionClips.TurnWidth(turnTime, config.TurnNarrowWidth, config.TurnOpenTime);
             Vector3 scale = transform.localScale;
-            scale.x = Mathf.Abs(scale.x) * (facing > 0 ? 1f : -1f);
+            scale.x = width * (turned ? (facing > 0 ? 1f : -1f) : Mathf.Sign(scale.x));
+            // PAX-V06: squash and stretch about the paws (the sprites' pivot), the drawing only.
+            Vector2 squash = FeelMath.ScaleOf(feel != null ? FeelMath.Squash(squashAmount, squashTime, feel.SquashTime) : 0f);
+            scale.x *= squash.x;
+            scale.y = scaleHeight * squash.y;
             transform.localScale = scale;
         }
+
+        // PAX-V06: a stretch off the ground, a squash on landing (more on a hard one); none with Reduce motion.
+        void StartSquash(CatAnimState before, CatAnimState next)
+        {
+            if (feel == null || LevelProgressStore.ReduceMotion) return;
+            float amount = next == CatAnimState.HardLand ? feel.HardLandSquash
+                : next == CatAnimState.Land ? feel.LandSquash
+                : next == CatAnimState.TakeOff || next == CatAnimState.Rise && OnGround(before) ? -feel.TakeOffStretch
+                : 0f;
+            if (amount == 0f) return;
+            squashAmount = amount;
+            squashTime = 0f;
+        }
+
+        static bool OnGround(CatAnimState s) =>
+            s is CatAnimState.Idle or CatAnimState.Walk or CatAnimState.Run or CatAnimState.Turn or CatAnimState.Land or CatAnimState.HardLand or CatAnimState.IdleFidget;
 
         void UpdateEchoAlpha()
         {

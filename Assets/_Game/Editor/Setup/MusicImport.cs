@@ -12,7 +12,7 @@ namespace Parallax.Editor.Setup
 {
     /// <summary>D-277 (PAX-125). Idempotent: gives the music loops (Tools/Audio/music.py's {Track}.wav in Folder) their import settings
     /// (stereo, streamed Vorbis: long loops that shouldn't sit in memory) and writes them into the AudioCueBank, saving the bank.
-    /// PARALLAX/Setup/Audio (PAX-064) runs it too. Rebuild All Levels bakes each level's track from its world (Wire).</summary>
+    /// PARALLAX/Setup/Audio (PAX-064) runs it too. Rebuild All Levels bakes each level's track (TrackForLevel, Wire).</summary>
     public static class MusicImport
     {
         public const string Folder = "Assets/_Game/Audio/Music";
@@ -30,7 +30,20 @@ namespace Parallax.Editor.Setup
 
         public static MusicTrack TrackFor(Biome biome) => biome == Biome.ObsidianVoid ? MusicTrack.ObsidianVoid : MusicTrack.GoldenRuins;
 
-        public static MusicTrack TrackForLevel(string levelId) => TrackFor(Biomes.For(levelId));
+        // D-289 (the developer: "change the beat a bit every 5 levels"): each world's tracks in order, a new one every LevelsPerBeat levels,
+        // from the first again if a world outruns them.
+        public const int LevelsPerBeat = 5;
+        static readonly MusicTrack[] GoldenBeats = { MusicTrack.GoldenRuins, MusicTrack.GoldenRuins2, MusicTrack.GoldenRuins3, MusicTrack.GoldenRuins4, MusicTrack.GoldenRuins5, MusicTrack.GoldenRuins6 };
+        static readonly MusicTrack[] ObsidianBeats = { MusicTrack.ObsidianVoid, MusicTrack.ObsidianVoid2 };
+
+        public static MusicTrack TrackForLevel(string levelId)
+        {
+            bool numbered = levelId != null && levelId.Length > 1 && levelId[0] == 'L';
+            if (!numbered || !int.TryParse(levelId.Substring(1), out int level)) return TrackFor(Biomes.For(levelId));
+            bool obsidian = Biomes.For(level) == Biome.ObsidianVoid;
+            MusicTrack[] beats = obsidian ? ObsidianBeats : GoldenBeats;
+            return beats[Mathf.Max(0, level - (obsidian ? Biomes.ObsidianFirst : 1)) / LevelsPerBeat % beats.Length];
+        }
 
         public static void Import(AudioCueBank bank, List<string> changes)
         {
@@ -59,14 +72,14 @@ namespace Parallax.Editor.Setup
             changes.Add("wrote " + tracks.Length + " music tracks into " + AudioCueBank.AssetPath);
         }
 
-        /// <summary>Sets the scene's GameAudio to its world's track. A scene without one has no audio to wire.</summary>
-        public static void Wire(Scene scene, Biome biome, List<string> changes)
+        /// <summary>Sets the scene's GameAudio to its track. A scene without one has no audio to wire.</summary>
+        public static void Wire(Scene scene, MusicTrack musicTrack, List<string> changes)
         {
             foreach (GameObject root in scene.GetRootGameObjects())
             {
                 GameAudio gameAudio = root.GetComponentInChildren<GameAudio>(true);
                 if (gameAudio == null) continue;
-                TrapKitSetup.Write(gameAudio, changes, ("track", (int)TrackFor(biome)));
+                TrapKitSetup.Write(gameAudio, changes, ("track", (int)musicTrack));
                 return;
             }
         }

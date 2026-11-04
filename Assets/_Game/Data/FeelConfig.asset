@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 853eff147097645498c934d259156891, type: 3}
+  m_Name: FeelConfig
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Presentation.FeelConfig
+  takeOffStretch: 0.12
+  landSquash: 0.12
+  hardLandSquash: 0.22
+  squashTime: 0.16
+  runPuffs:
+  - {fileID: 21300000, guid: 7b03066f37a9e41368c68afc15fc20a8, type: 3}
+  - {fileID: 21300000, guid: bf11d4826a38843c384eb5da1596c7c1, type: 3}
+  - {fileID: 21300000, guid: 9f52b1a392a774eb08703be27c84d822, type: 3}
+  - {fileID: 21300000, guid: 5ae052066cfa54a358f8ed318685a263, type: 3}
+  landPuffs:
+  - {fileID: 21300000, guid: 66e1dd4a63ba34b2baa83f4f95559a2c, type: 3}
+  - {fileID: 21300000, guid: 3867e6c2c1987426a8649d4217a6979c, type: 3}
+  skidPuffs:
+  - {fileID: 21300000, guid: 68d24e30063b649738071b709b56712e, type: 3}
+  - {fileID: 21300000, guid: 1ccdb888479bf459b9870a9c556e17a8, type: 3}
+  impactRings:
+  - {fileID: 21300000, guid: f1a0363cc90b8418eb489e31d8bc06f6, type: 3}
+  - {fileID: 21300000, guid: 48f491ade1ac04110a5d97febbfd212c, type: 3}
+  - {fileID: 21300000, guid: f4d0fcf208dad4c859364fd5f80a8780, type: 3}
+  dustTint: {r: 1, g: 0.94, b: 0.84, a: 0.8}
+  runPuffEvery: 1.1
+  wallPuffEvery: 0.18
+  puffLife: 0.45
+  impactLife: 0.5
+  puffScale: 0.6
+  poolSize: 32
+  deathShake: 0.16
+  deathShakeTime: 0.28
+  impactShake: 0.1
+  impactShakeTime: 0.22
+  hardLandShake: 0.05
+  shakeFrequency: 22
+  shakeWithin: 9
+  impactSpeed: 6
+  chips:
+  - {fileID: 21300000, guid: ba4e3aba28a40441c8b3cc552a00fbcf, type: 3}
+  - {fileID: 21300000, guid: fe5bf75d33719484881ef55cadc981c7, type: 3}
+  - {fileID: 21300000, guid: b847caba222874d8b9ba215e346cf33b, type: 3}
+  - {fileID: 21300000, guid: 612577fe06de44e43b055b301ce7d51e, type: 3}
+  - {fileID: 21300000, guid: 7f1a3ccc8054947968af4cef80f8f3d5, type: 3}
+  - {fileID: 21300000, guid: 87f77b1ffb6ce44ef9fd7c0da214a711, type: 3}
+  - {fileID: 21300000, guid: 5ffbb39ac62b04b6982d84630d7eecaa, type: 3}
+  - {fileID: 21300000, guid: 974177ab168404f32914e72bccb7ba94, type: 3}
+  sparks:
+  - {fileID: 21300000, guid: 9e81890fdedb34db7bcff93dd173f3ba, type: 3}
+  - {fileID: 21300000, guid: ffac6c9794a064479a194c78ef956972, type: 3}
+  - {fileID: 21300000, guid: 9f909e2cda9534d3da3934b05b1b2d21, type: 3}
+  shards:
+  - {fileID: 21300000, guid: fc787b946b5754556b5965fa4dd2d9c2, type: 3}
+  - {fileID: 21300000, guid: 69d12880e0a1848c28f22498229dde16, type: 3}
+  - {fileID: 21300000, guid: 5f3cc00036719458a8e53a984f7bef9e, type: 3}
+  - {fileID: 21300000, guid: 083ab665295c6496aa8e57a81394e324, type: 3}
+  - {fileID: 21300000, guid: 00b7188f391a649e98aeceb66e75a3d7, type: 3}
+  - {fileID: 21300000, guid: af99c474214d0462eaf383a193f9de57, type: 3}
+  coldSparks:
+  - {fileID: 21300000, guid: 8e88fc0c0d0d34567be0122d807cc90a, type: 3}
+  - {fileID: 21300000, guid: 215d8011b23b84f2cbb530d94894a0d6, type: 3}
+  - {fileID: 21300000, guid: 9cca6e38adb7b41b9999bfda714ec174, type: 3}
+  chipsPerImpact: 4
+  chipLife: 0.7
+  chipSpeed: 3
+  chipGravity: 18
+  leaves:
+  - {fileID: 21300000, guid: 2d29b2361680e4040bf304558b8fbfb5, type: 3}
+  - {fileID: 21300000, guid: e8e4a6b1b7e6a4b7e9f294b2c6998315, type: 3}
+  - {fileID: 21300000, guid: 3f0eb0a85853d406c99c816955332238, type: 3}
+  - {fileID: 21300000, guid: fa4d38f44cecd4509ad2b7077732b834, type: 3}
+  - {fileID: 21300000, guid: d057e4e8caf724146b037a00b9747b46, type: 3}
+  - {fileID: 21300000, guid: 878a62e17a1964c598313fa22d7de3b1, type: 3}
+  mote: {fileID: 21300000, guid: 6af5180fdb2e14dd3a19797e13d0621c, type: 3}
+  leafTint: {r: 0.9, g: 0.82, b: 0.6, a: 0.75}
+  moteTint: {r: 0.55, g: 0.95, b: 1, a: 0.55}
+  airFall: 0.35
+  airSway: 0.5
+  airSwayFrequency: 0.25
+  leafSize: 0.22
+  moteSize: 0.12
+  flash: {fileID: 21300000, guid: 8cd6b88e883b14f788c1853d42b408f5, type: 3}
+  flashTime: 0.06
+  flashColor: {r: 1, g: 1, b: 1, a: 0.85}
+  flashSize: 1.4
+  burst: {fileID: 21300000, guid: daa7ecc93ec4d4953994fd7532357edf, type: 3}
+  burstTime: 0.55
+  doorBurstSize: 3
+  gateBurstSize: 1.4

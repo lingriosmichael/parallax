@@ -7,26 +7,24 @@ using static Parallax.Editor.Levels.LevelElementFactory;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-107 (D-148): level 18, "Eye of the Storm" (the storm cloud, geysers and a vine), rebuilt to the developer's taste
-    // (compact stacked storeys, a moving threat every few steps, more inverters). The verb is GET ABOVE: lightning only
-    // strikes down from the cloud's bottom, and the cloud follows the cat at its run, storey to storey (D-116 floors). Three
-    // corridors 3.5 u tall on 1.5 u stone slabs, walked east, west, east; each climb (a geyser, a vine) is taken with the
-    // cloud closing in, and puts the cat above it until the cloud climbs after it.
-    //  - Ground (section 0, S1, walked east): the cloud wakes on the first step and Hinge_0 stands up behind the start and
+    // PAX-107 (D-148): level 18, "Eye of the Storm" (geysers and a vine; D-285: no cloud), rebuilt to the developer's taste
+    // (compact stacked storeys, a moving threat every few steps, more inverters). The verb is GET ABOVE. Three
+    // corridors 3.5 u tall on 1.5 u stone slabs, walked east, west, east; a geyser and a vine climb between them.
+    //  - Ground (section 0, S1, walked east): Hinge_0 stands up behind the start and
     //    pushes toward Collapse_1 (jump it). Slam_1 comes down out of slab A ahead (stop short, hop it); Lift_1 shoots up into
-    //    slab A as the cat lands (stop short; the cloud catches up: step out from under its charge; cross once it's down).
+    //    slab A as the cat lands (stop short; cross once it's down).
     //    Inv_1 swaps left and right for the last stretch, through Arrow_1's non-stop shots (jump one), onto the Plinth and G_1's
-    //    vent; the cloud charges over the vent before it erupts (step off, back on after the strike); the swap ends in the hole,
+    //    vent; the swap ends in the hole,
     //    mid-launch, so the steer west onto S2 switches hands in the air.
     //  - Storm (section 1, S2, walked west): Hinge_2 stands up behind the landing and pushes a cat that stops onto Spikes_2
     //    (jump them). The eye, Inv_E, swaps left and right again: Slam_2 comes down ahead (stop short, hop onto it, step to its
-    //    west end out of the cloud's charge), G_D blows a cat that jumps Spikes_G mid-eruption down onto them (wait it out).
+    //    west end), G_D blows a cat that jumps Spikes_G mid-eruption down onto them (wait it out).
     //    Arrow_2 shoots along the floor without stopping: hop Kerb_2 between shots and leap straight on for V_6 over Spikes_V,
-    //    climb above the cloud, and off before V_6 snaps.
+    //    climb it, and off before V_6 snaps.
     //  - Crown (section 2, S3, walked east): the crumbles give way behind the cat over the Briar; Inv_3 swaps left and right
     //    until the dais: Piston_3 rises into the roof as the cat comes (stop short, cross once it's down); the finale: Hinge_3,
     //    spiked, stands up behind, Slam_3 comes down ahead (hop onto it before the hinge arrives), Spikes_7 come up to the
-    //    dais, the cloud charges over the slam (step aside on it), and Slam_3b comes down onto the spikes: the step to the door.
+    //    dais, and Slam_3b comes down onto the spikes: the step to the door.
     //  - Dead ends: steering east off the launch onto Ledge_E (Spikes_E); back west off S3's landing down the shaft onto
     //    Spikes_V.
     static class L018Layout
@@ -34,8 +32,6 @@ namespace Parallax.Editor.Levels
         // The storeys' walk lines; each slab is 1.5 u of stone (its underside the corridor's ceiling below).
         internal const float S1 = 0f, S2 = 5f, S3 = 10f, Slab = 1.5f;
         internal const float A0 = S2 - Slab, B0 = S3 - Slab, R0 = 13.5f, RoofTop = 15.5f;
-        // The cloud's height in each corridor (its box 0.8 tall, 0.1 under the slab).
-        const float CloudDrop = .5f;
         // G_1's and G_D's beats (room ticks: period, first eruption); Lift_1's and Piston_3's delays after the cat's cut.
         internal const int G1Period = 120, G1Erupt = 115, GDPeriod = 100, GDErupt = 0, LiftDelay = 26, PistonDelay = 10;
 
@@ -104,15 +100,6 @@ namespace Parallax.Editor.Levels
             Spikes(elements, "Spikes_V", .5f, 2.6f, S2);
             Spikes(elements, "Briar", 5f, 9f, S3 - 1f);
 
-            // ---- The storm ----
-            // The Cloud wakes as the cat sets off (the start's cut, x 2.9-3.3) and follows it at its run, storey to storey: over S1
-            // to the vent (x 27: it clears S2's checkpoint by the time the cat gets there), over S2 from x 22 (clear of the
-            // checkpoint) to V_6, over S3 from x 5.5 (clear of the shaft's landing) to x 25 (clear of the door).
-            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(2.5f,A0 - CloudDrop),(2f,.8f),(3.1f,(S1 + A0) * .5f),(.4f,A0 - S1),
-                new SoloRoomTrapSettings(new StormCloudSettings(new[] {
-                    new StormFloor(-100f, A0 - CloudDrop, 2f, 27f),
-                    new StormFloor(S2 + .15f, B0 - CloudDrop, 1.6f, 22f),
-                    new StormFloor(S3 + .15f, R0 - CloudDrop, 5.5f, 25f) }, followSpeed:.12f, firstStrikeDelay:50, strikePeriod:90, climbSpeed:.24f), new SoloRoomTrapSettings(delayTicks:0))));
 
             // ---- Ground (S1) ----
             // Hinge_0 stands up behind the start 30 ticks in (its west end the hinge) and slides 4.5 u east: a cat that waits is
@@ -142,6 +129,10 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_E",(30.75f,S2 + .15f),(2.5f,.3f),(30.425f,(S1 + 1f + B0) * .5f),(3.15f,B0 - S1 - 1f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             elements.Add(E(SoloRoomElementKind.Geyser,"G_1",(27.5f,S1 + .85f),(1f,.3f),settings:Geyser(G1Period, G1Erupt)));
 
+            // D-291: the lasers where the cloud was, a corridor each (each from the slab over it).
+            elements.Add(Laser("Eye_G",7.8f,A0,Rect.MinMaxRect(2f,S1,7.5f,A0 - .2f),0,105));
+            elements.Add(Laser("Eye_S",12.25f,B0,Rect.MinMaxRect(6f,S2,12f,B0 - .2f),30,105,9f));
+            elements.Add(Laser("Eye_C",14f,R0,Rect.MinMaxRect(5.5f,S3,16f,R0 - .2f),60,105));
             // ---- Storm (S2) ----
             // Hinge_2, slab A's top unit at x 24-25.5 (its west end the hinge), stands up as the cat walks west past x 22.2 and
             // slides 3.5 u west: a cat that stops is pushed onto Spikes_2.
@@ -198,11 +189,11 @@ namespace Parallax.Editor.Levels
                 new SoloRoomTrapSettings(delayTicks:130,offset:new Vector2(0f,S3 - R0),moveTicks:8,holdTicks:600,triggerSource:TrapTriggerSource.Chain,chainSource:"Hinge_3",movingKind:MovingTrapKind.Solid))));
 
             var sections = new[] {
-                CheckpointSection.Start("Ground", new Vector2(2.5f, S1), new[] { "Cloud", "Hinge_0", "Collapse_1", "Slam_1", "Lift_1", "Inv_1", "Arrow_1", "Spikes_E", "G_1" }),
+                CheckpointSection.Start("Ground", new Vector2(2.5f, S1), new[] { "Eye_G", "Hinge_0", "Collapse_1", "Slam_1", "Lift_1", "Inv_1", "Arrow_1", "Spikes_E", "G_1" }),
                 new CheckpointSection("Storm", new Vector2(23.6f, S2), new Rect(22.8f, S2, .2f, B0 - S2),
-                    new[] { "Hinge_2", "Inv_E", "G_D", "Slam_2", "Arrow_2", "V_6" }),
+                    new[] { "Eye_S", "Hinge_2", "Inv_E", "G_D", "Slam_2", "Arrow_2", "V_6" }),
                 new CheckpointSection("Crown", new Vector2(3.8f, S3), new Rect(4.6f, S3, .2f, R0 - S3),
-                    new[] { "TL_1", "TL_2", "TL_3", "Inv_3", "Piston_3", "Hinge_3", "Slam_3", "Spikes_7", "Slam_3b" }),
+                    new[] { "Eye_C", "TL_1", "TL_2", "TL_3", "Inv_3", "Piston_3", "Hinge_3", "Slam_3", "Spikes_7", "Slam_3b" }),
             };
             var openings = new[] { O(SoloRoomOpeningKind.Pit, 5f, 7f, "Ground_A", "Ground_B", "Pit_1_Bottom", "Pit_1") };
             return new SoloRoomDefinition(0, 0f, 32f, elements.ToArray(), openings, System.Array.Empty<RequiredJump>(), null, null, null, sections);

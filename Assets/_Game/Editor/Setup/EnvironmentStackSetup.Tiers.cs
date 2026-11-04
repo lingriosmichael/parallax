@@ -59,6 +59,8 @@ namespace Parallax.Editor.Setup
             Sprite mote = EnvironmentKit.Sprite("ENV_Mote");
             Shader unlit = EnvironmentKit.UnlitMaterial != null ? EnvironmentKit.UnlitMaterial.shader : null;
             if (unlit != null && mote != null) Plain("Mote", unlit, mote.texture, changes);
+            // D-281: Obsidian's motes on their own cold sprite (the warm one, tinted cold, drew olive specks).
+            EnvironmentKit.ForEachBiome(() => { if (EnvironmentKit.Current == Biome.ObsidianVoid && unlit != null && EnvironmentKit.Sprite("ENV_Mote") is Sprite cold) Plain("MoteCold", unlit, cold.texture, changes); });
             EnsureVolumeProfile(changes);
             SoftenCatOutline(changes);
             AssetDatabase.SaveAssets();
@@ -223,8 +225,12 @@ namespace Parallax.Editor.Setup
             ForegroundFrame(c);
             if (c.Room.HasValue)
             {
-                Compose(new ComposeContext { Tier = c, Palette = c.Palette, LevelId = c.LevelId, Signature = LevelPalettes.Signature(c.LevelId) });
-                if (LevelPalettes.Signature(c.LevelId) != "Clear") NearTier(c);   // D-232
+                bool obsidian = EnvironmentKit.Current == Biome.ObsidianVoid;
+                var compose = new ComposeContext { Tier = c, Palette = c.Palette, LevelId = c.LevelId, Signature = LevelPalettes.Signature(c.LevelId) };
+                if (obsidian) ComposeObsidian(compose);   // D-281
+                else Compose(compose);
+                if (!obsidian && LevelPalettes.Signature(c.LevelId) != "Clear") NearTier(c);   // D-232
+                ForegroundTier(c);   // D-281, D-282
                 Outside(c);
                 // Phase 2 round 4: no arch fringe (Fringes). Critics, two rounds: "arcade strips hard-cut at their ends",
                 // "ghost pillars under the bridge like a broken reflection" (L008, L020); a floating floor shows its underside.
@@ -242,6 +248,7 @@ namespace Parallax.Editor.Setup
             // (SetPass ≤ 30 with post on, §2.5). The door's glow keeps the additive material.
             Material glow = EnvironmentKit.UnlitMaterial, rayMaterial = AdditiveMaterial("Ray") ?? EnvironmentKit.UnlitMaterial;
             Sprite disc = EnvironmentKit.Sprite("ENV_Glow"), ray = EnvironmentKit.Sprite("ENV_Ray");
+            if (EnvironmentKit.Current == Biome.ObsidianVoid) return;   // D-281: a planet, no halo; its rays are the composer's
             if (glow != null && disc != null)
             {
                 // Round 3 (critics on L010: "a daytime yellow glow blob in a night sky"): the halo takes the disc's own colour,
@@ -291,7 +298,7 @@ namespace Parallax.Editor.Setup
         /// with a fixed seed (the same look on every run).</summary>
         static void Motes(TierContext c)
         {
-            Material mote = PlainMaterial("Mote");
+            Material mote = PlainMaterial(EnvironmentKit.Current == Biome.ObsidianVoid ? "MoteCold" : "Mote");
             if (mote == null || c.Config.Motes <= 0) return;
             Transform frame = FrameRoot(c);
             var go = new GameObject("Motes");
@@ -427,6 +434,7 @@ namespace Parallax.Editor.Setup
         // 2026-10-18 (the developer, L003: "There is absolutely no reason for one to jump on this platform, its a platform that is
         // just there ... please just remove them"): no ENV_MidPillar. Painted as sharp as the play layer's stone, a vine-wrapped
         // pillar on the near tier read as a platform (L003) and as a column through the slabs (L007).
+        const int NearRowMax = 18;
         static readonly string[] NearPalette = { "ENV_MidArch_0", "ENV_MidTowers", "ENV_MidTree_1", "ENV_MidArch_1", "ENV_MidColonnade", "ENV_MidTree_0" };
 
         /// <summary>Ruins and trees at 1.3x, standing from below the lowest floor, spaced along the whole frame, on the Near
@@ -448,15 +456,17 @@ namespace Parallax.Editor.Setup
             float scale = c.Config.NearScale;
             Transform layer = null;
             float x = c.Frame.min.x + 1.5f + SoloRoomSkin.Hash(id, 8) * 3f;
-            for (int k = 0; x < c.Frame.max.x + 2f && k < 12; k++)
+            for (int k = 0; x < c.Frame.max.x + 2f && k < NearRowMax; k++)
             {
-                if (k >= NearPalette.Length) break;   // gauntlet: each painting once per level
+                // Gauntlet: each painting once per view. D-282: a long level comes back to the set, a full view on.
+                if (k >= NearPalette.Length) x += c.Travel.MaxViewWidth * 0.6f;
                 string slot = NearPalette[(start + k) % NearPalette.Length];
                 if (SignatureSlots(c.LevelId).Contains(slot)) { x += 2f; continue; }   // the mid distance already shows it
                 Sprite sprite = EnvironmentKit.Sprite(slot);
                 if (sprite == null) continue;
                 Vector2 size = (Vector2)sprite.bounds.size * scale;
-                var bottom = new Vector2(x + size.x * 0.5f, ground - 1.4f - SoloRoomSkin.Hash(id, 20 + k) * 1.2f);
+                float seen = c.Travel.Mid.x + (x + size.x * 0.5f - c.Travel.Mid.x) / def.Speed;
+                var bottom = new Vector2(x + size.x * 0.5f, Mathf.Min(ground, Footing(c, seen - size.x, seen + size.x)) - 1.4f - SoloRoomSkin.Hash(id, 20 + k) * 1.2f);
                 x += size.x * 0.85f + 2f + SoloRoomSkin.Hash(id, 40 + k) * 3f;
                 if (!FindLegalBase(slot, def.Speed, bottom, size, tops, c.Travel, out float legal)) { c.Changes.Add($"left out near {slot} (A2)"); continue; }
                 bottom.y = legal;
@@ -479,7 +489,17 @@ namespace Parallax.Editor.Setup
         /// <summary>2026-10-17 visual review (L010: "the level's ceiling is a pale grey-lavender strip with an icicle-like edge ...
         /// reads as frost"): the masonry's own broken course (unlit strips) in the stone's colour in shadow, as the masonry
         /// itself is (StoneShade's outside channel), not the grade's outside tint (navy by day, lavender at night).</summary>
-        static readonly Color OutsideStripTint = new(0.56f, 0.52f, 0.47f, 1f);
+        static readonly Color OutsideStripTint = new(0.34f, 0.26f, 0.19f, 1f);   // D-300: warm and dark like the masonry it edges (0.56 read as a grey band)
+        /// <summary>D-300: the strips are unlit, so a night level has to dim them itself (L010's read as a grey band over dark stone).</summary>
+        static Color OutsideStrip(TierContext c) => EnvironmentKit.Current == Biome.ObsidianVoid ? new Color(0.56f, 0.52f, 0.47f, 1f)   // (its cold stone keeps its own)
+            : StoneLit(OutsideStripTint, c);
+
+        /// <summary>D-304: unlit stone (these strips, the pits' back walls) takes the level's light by hand: it doesn't pass the stone's shaders.</summary>
+        internal static Color StoneLit(Color stone, TierContext c)
+        {
+            Color light = LevelPalettes.StoneLight(c.LevelId);
+            return light.a > 0f ? new Color(stone.r * light.r, stone.g * light.g, stone.b * light.b, stone.a) : stone;
+        }
 
         static void Outside(TierContext c)
         {
@@ -527,8 +547,17 @@ namespace Parallax.Editor.Setup
             // 2026-10-18 visual review (L013: "the start floor's rectangular sky windows"): and up into the air under the room's
             // lowest stone where that stops short of the room's bottom (SoloRoomSkin.UnderFill).
             List<Rect> underFill = SoloRoomSkin.UnderFill(room);
-            rects.AddRange(underFill);
             var strips = new List<(float line, bool facesRight, float a, float b)>();
+            // D-301: a fill's open end stops short behind a broken strip, as the masonry does wherever it meets the air.
+            foreach (Rect f in underFill)
+            {
+                bool Open(float x, float side) => x > x0 + 0.06f && x < x1 - 0.06f && !underFill.Any(o => o != f && Mathf.Abs((side > 0f ? o.xMin : o.xMax) - x) < 0.06f)
+                    && !all.Any(s => !s.Trap && s.Rect.Contains(new Vector2(x + side * 0.02f, f.center.y)));
+                bool openL = Open(f.xMin, -1f), openR = Open(f.xMax, 1f);
+                if (openL) strips.Add((f.xMin, false, f.yMin, f.yMax));
+                if (openR) strips.Add((f.xMax, true, f.yMin, f.yMax));
+                rects.Add(Rect.MinMaxRect(f.xMin + (openL ? OutsideInset : 0f), f.yMin, f.xMax - (openR ? OutsideInset : 0f), f.yMax));
+            }
             // The side bands start at the room walls' outer faces (1 u out): the strip over a side wall's top stays air, so the
             // top reads against it like any other (A1). Below the wall's top they're whole (the column stands in front).
             Band(frame.min.x, x0 - 1f, topL, true);
@@ -633,7 +662,7 @@ namespace Parallax.Editor.Setup
                     go.layer = c.LayerIndex;
                     go.transform.position = new Vector3((a + b) * 0.5f, yb + cd.above - cd.height * 0.5f, c.EnvRoot.position.z - 0.02f);
                     var sr = go.AddComponent<SpriteRenderer>();
-                    sr.sprite = capTop; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = OutsideStripTint;
+                    sr.sprite = capTop; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = OutsideStrip(c);
                     sr.drawMode = SpriteDrawMode.Tiled; sr.size = new Vector2(b - a, cd.height);
                     sr.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); sr.sortingOrder = -3;
                 }
@@ -651,7 +680,7 @@ namespace Parallax.Editor.Setup
                 go.layer = c.LayerIndex;
                 go.transform.position = new Vector3((x0 + x1) * 0.5f, content.max.y - ud.below + ud.height * 0.5f, c.EnvRoot.position.z);
                 var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = under; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = OutsideStripTint;
+                sr.sprite = under; sr.sharedMaterial = EnvironmentKit.UnlitMaterial; sr.color = OutsideStrip(c);
                 // (the room's width only, like the masonry it edges: past it its straight top stood over the air beside the columns)
                 sr.drawMode = SpriteDrawMode.Tiled; sr.size = new Vector2(x1 - x0, ud.height);
                 sr.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); sr.sortingOrder = -3; go.transform.position += new Vector3(0f, 0f, -0.02f);
@@ -669,11 +698,12 @@ namespace Parallax.Editor.Setup
                     b.transform.localScale = new Vector3((x1 - x0) / fade.bounds.size.x, 1.4f / fade.bounds.size.y, 1f);
                     var br = b.AddComponent<SpriteRenderer>();
                     br.sprite = fade; br.sharedMaterial = EnvironmentKit.UnlitMaterial; br.flipY = true;
-                    Color warm = c.Palette.SunLight; warm.a = 0.14f; br.color = warm;   // 0.28 lit a night roof's edge pale lavender (L010)
+                    Color warm = c.Palette.SunLight; warm.a = 0.05f; br.color = warm;   // 0.28 lit a night roof's edge pale lavender (L010); D-301: 0.14 washed the masonry over a room to a flat grey band (L024)
                     br.sortingLayerName = RealitySpace.SortingLayerName(c.Root.Id, SortingBand.Gameplay); br.sortingOrder = -3; b.transform.position += new Vector3(0f, 0f, -0.01f);
                 }
-                // Roots and ivy hanging from it one by one: six shapes, random lengths, flips and gaps.
-                for (float x = x0 + 0.3f * SoloRoomSkin.Hash(c.LevelId ?? "t", 500); x < x1; )
+                // Roots and ivy hanging from it one by one: six shapes, random lengths, flips and gaps. (D-281: none in Obsidian, whose
+                // drapes are empty sprites.)
+                for (float x = x0 + 0.3f * SoloRoomSkin.Hash(c.LevelId ?? "t", 500); x < x1 && EnvironmentKit.Current != Biome.ObsidianVoid; )
                 {
                     int i = Mathf.RoundToInt(x * 10f);
                     float pick = SoloRoomSkin.Hash(c.LevelId ?? "t", 510 + i);

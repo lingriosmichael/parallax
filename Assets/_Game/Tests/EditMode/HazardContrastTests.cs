@@ -144,6 +144,7 @@ namespace Parallax.Tests.EditMode
                     SpriteRenderer[] drawn = spikes.Blades.Count > 0 ? spikes.Blades.ToArray() : new[] { body };
                     list.Add(new Hazard { Name = art.name, Renderers = drawn, Pose = () => { greybox.enabled = true; spikes.Apply(); } });
                 }
+                else if (art is ThornArt thorns) list.Add(new Hazard { Name = art.name, Renderers = thorns.LitClusters.ToArray(), Pose = () => { thorns.Apply(); foreach (SpriteRenderer strip in thorns.Curtains) if (strip != null) strip.enabled = false; } });   // D-295: its lit row; the row behind it is shade
                 else if (art is ArrowArt arrow && arrow.Trap is ArrowTrap trap)
                 {
                     var greyboxArrow = (SpriteRenderer)so.FindProperty("greyboxArrow").objectReferenceValue;

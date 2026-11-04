@@ -38,6 +38,28 @@ namespace Parallax.Core
             return Mathf.Clamp(value, -1f, 1f);
         }
 
+        /// PAX-127 (D-322): how far along the stick's x (after Evaluate) the cat reaches full speed. Short, so a thumb that pushes
+        /// partway still runs at the speed the levels are built for, as a key press does.
+        public const float DefaultFullSpeedAt = .25f;
+
+        /// PAX-127 (D-322): Move scaled so `fullSpeedAt` and beyond is full speed. A fullSpeedAt of 0 or less is full speed at once.
+        public static float ToRun(float move, float fullSpeedAt)
+        {
+            if (move == 0f) return 0f;
+            if (fullSpeedAt <= 0f) return Mathf.Sign(move);
+            return Mathf.Clamp(move / fullSpeedAt, -1f, 1f);
+        }
+
+        /// PAX-127 (D-322): the stick's centre trails a thumb that goes past the ring, staying `radius` behind it, so a short
+        /// flick back reverses the cat. Inside the ring the centre stays put.
+        public static Vector2 Follow(Vector2 origin, Vector2 current, float radius)
+        {
+            Vector2 delta = current - origin;
+            float distance = delta.magnitude;
+            if (radius <= 0f || distance <= radius) return origin;
+            return current - delta / distance * radius;
+        }
+
         /// PAX-087 (D-089): the climb dead zone on the stick's y, higher than x's so a slightly diagonal run never climbs.
         public const float DefaultClimbDeadZone = .35f;
 

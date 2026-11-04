@@ -52,6 +52,28 @@ namespace Parallax.Tests.EditMode
             });
         }
 
+        // D-295's rule, in every level: growth where it's there when you arrive, metal where it comes out at you. Two pits never differ.
+        [TestCaseSource(nameof(Rooms))]
+        public void TheHazardRule_HoldsOnEveryRoom(string id)
+        {
+            InScratchScene(() =>
+            {
+                object room = Room(id);
+                Transform dressed = Build(room, art: true);
+                var setup = Type.GetType("Parallax.Editor.Art.TrapArtSetup, Parallax.Editor");
+                MethodInfo grows = setup.GetMethod("Grows", BindingFlags.NonPublic | BindingFlags.Static);
+                var arts = dressed.GetComponentsInChildren<TrapArt>(true).ToLookup(a => a.name);
+                foreach (object e in (System.Collections.IEnumerable)room.GetType().GetField("Elements").GetValue(room))
+                {
+                    string kind = e.GetType().GetField("Kind").GetValue(e).ToString(), name = (string)e.GetType().GetField("Name").GetValue(e);
+                    if (kind is not ("Hazard" or "HiddenSpikes")) continue;
+                    bool growth = (bool)grows.Invoke(null, new[] { room, e });
+                    Assert.AreEqual(growth, arts[name].Any(a => a is ThornArt), $"{id} {name}: growth {growth}");
+                    if (kind == "HiddenSpikes" && !growth) Assert.IsTrue(arts[name].Any(a => a is SpikeArt), $"{id} {name}: pop-up spikes are metal");
+                }
+            });
+        }
+
         [TestCaseSource(nameof(Rooms))]
         public void ValidateTrapSkins_PassesOnEveryRoom(string id)
         {
@@ -60,7 +82,10 @@ namespace Parallax.Tests.EditMode
                 Transform dressed = Build(Room(id), art: true);
                 List<string> errors = Validate(id, dressed, out int checkedCount);
                 Assert.IsEmpty(errors, string.Join("\n", errors));
-                int disguised = dressed.GetComponentsInChildren<RoomTrap>(true).Count(t => t is CollapsingFloorTrap || t is FallingBlockTrap || t is ShrinkingFloorTrap
+                // D-292: painted pieces look like what they are, so they wear no host's skin.
+                var painted = new HashSet<RoomTrap>(dressed.GetComponentsInChildren<TrapArt>(true)
+                    .Where(a => a is PaintedPlatformArt || a is FlipPlateArt || a is CrusherArt || (a is SolidArt solid && solid.Painted)).Select(a => a.Trap));
+                int disguised = dressed.GetComponentsInChildren<RoomTrap>(true).Where(t => !painted.Contains(t)).Count(t => t is CollapsingFloorTrap || t is FallingBlockTrap || t is ShrinkingFloorTrap
                     || (t is MovingTrap m && m.GetComponent<Hazard>() == null && Private(m, "kind").ToString() == "Solid") || (t is ArrowTrap a && Disguised(a)));
                 Assert.AreEqual(disguised, checkedCount, $"{id}: {disguised} disguised gated traps, {checkedCount} skins checked");
             });

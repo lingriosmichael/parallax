@@ -17,16 +17,24 @@ namespace Parallax.Editor.Art
         /// <summary>Builds the art for one element of a kind this file owns; returns its art object's name, or null.</summary>
         static string BuildKitElement(Transform artRoot, Transform roomRoot, SoloRoomDefinition room, SoloRoomElement e, Transform t, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
         {
-            if (t.TryGetComponent(out HiddenSpikesTrap hidden)) return BuildSpikes(artRoot, room, e, hidden, hidden.GetComponent<SpriteRenderer>(), true, rooms, config, layer, changes);
+            if (t.TryGetComponent(out HiddenSpikesTrap hidden))
+            {
+                if (Grows(room, e) && BuildThorns(artRoot, roomRoot, room, e, hidden.GetComponent<SpriteRenderer>(), config, rooms, layer, changes, hidden) is string pit) return pit;
+                return BuildSpikes(artRoot, room, e, hidden, hidden.GetComponent<SpriteRenderer>(), true, rooms, config, layer, changes);
+            }
             // PAX-A20: in Obsidian Void a lethal band is a laser, not spikes.
             bool lasers = config.LaserBeam != null && Parallax.Editor.Levels.Biomes.Of(room) == Parallax.Editor.Levels.Biome.ObsidianVoid;
             if (lasers && t.TryGetComponent(out PulseGateTrap gate)) return BuildGate(artRoot, e.Name, gate, config, rooms, layer, changes);
-            if (lasers && t.TryGetComponent(out TurretTrap turret) && config.TurretIdle != null) return BuildTurret(artRoot, e.Name, turret, config, rooms, layer, changes);
+            if (t.TryGetComponent(out TurretTrap turret) && config.TurretMount != null) return BuildTurret(artRoot, e.Name, turret, config, rooms, layer, changes);
+            if (t.TryGetComponent(out SpinnerTrap spinner) && config.SpinnerArm != null) return BuildSpinner(artRoot, spinner, e, config, rooms, layer, changes);
+            if (t.TryGetComponent(out PlateTrap pressure) && config.PressurePlate != null) return BuildPlate(artRoot, room, e, pressure, config, rooms, layer, changes);
             if (lasers && t.TryGetComponent(out TridentTrap trident)) return BuildTrident(artRoot, e.Name, trident, config, rooms, layer, changes);
             if (lasers && t.TryGetComponent(out SweeperTrap sweeper)) return BuildSweeper(artRoot, e.Name, sweeper, config, rooms, layer, changes);
             if (lasers && t.TryGetComponent(out ChaserTrap chaser)) return BuildSweeper(artRoot, e.Name, chaser, config, rooms, layer, changes);
             if (t.TryGetComponent(out MovingTrap mover))
             {
+                if (lasers && PaintedPlatform(artRoot, e.Name, mover, config, rooms, layer, changes) is string painted) return painted;
+                if (!lasers && SpikedCrusher(artRoot, e.Name, mover, config, rooms, layer, changes) is string crusher) return crusher;
                 if (mover.GetComponent<Hazard>() == null && (MovingTrapKind)ReadInt(mover, "kind") != MovingTrapKind.Hazard)
                     return BuildSolid(artRoot, roomRoot, room, e, mover, mover.GetComponent<SpriteRenderer>(), SolidArtKind.Mover, rooms, config, layer, changes);
                 return lasers ? BuildLaser(artRoot, e.Name, mover, mover.GetComponent<SpriteRenderer>(), ReadInt(mover, "warnTicks"), config, rooms, layer, changes, Chaser(config))
@@ -34,14 +42,15 @@ namespace Parallax.Editor.Art
             }
             if (t.TryGetComponent(out FallingBlockTrap block)) return BuildSolid(artRoot, roomRoot, room, e, block, block.GetComponent<SpriteRenderer>(), SolidArtKind.FallingBlock, rooms, config, layer, changes);
             if (t.TryGetComponent(out ShrinkingFloorTrap shrink)) return BuildSolid(artRoot, roomRoot, room, e, shrink, (SpriteRenderer)ReadObject(shrink, "visual"), SolidArtKind.Shrinker, rooms, config, layer, changes);
-            if (t.TryGetComponent(out GravityFlipTrap flip)) return BuildFlip(artRoot, e, flip, rooms, config, layer, changes);
-            if (t.TryGetComponent(out InverterTrap inverter)) return BuildInverter(artRoot, e, inverter, rooms, config, layer, changes);
+            if (t.TryGetComponent(out GravityFlipTrap flip)) return BuildFlip(artRoot, room, e, flip, rooms, config, layer, changes);
+            if (t.TryGetComponent(out InverterTrap inverter)) return BuildInverter(artRoot, room, e, inverter, rooms, config, layer, changes);
             if (t.TryGetComponent(out StormCloudTrap cloud)) return BuildCloud(artRoot, e, cloud, rooms, config, layer, changes);
             if (t.TryGetComponent(out ClimbVine vine) && vine.Snaps) return BuildVine(artRoot, e, vine, rooms, config, layer, changes);
             if (t.TryGetComponent(out DoorRetreatTrap retreat)) return BuildDoorRetreat(artRoot, room, e, retreat, rooms, config, layer, changes);
             if (t.TryGetComponent(out Hazard hazard) && t.GetComponent<RoomTrap>() == null)
-                return lasers ? BuildLaser(artRoot, e.Name, null, hazard.GetComponent<SpriteRenderer>(), 0, config, rooms, layer, changes)
-                    : BuildSpikes(artRoot, room, e, null, hazard.GetComponent<SpriteRenderer>(), false, rooms, config, layer, changes);
+                return BuildThorns(artRoot, roomRoot, room, e, hazard.GetComponent<SpriteRenderer>(), config, rooms, layer, changes)
+                    ?? (lasers ? BuildLaser(artRoot, e.Name, null, hazard.GetComponent<SpriteRenderer>(), 0, config, rooms, layer, changes)
+                    : BuildSpikes(artRoot, room, e, null, hazard.GetComponent<SpriteRenderer>(), false, rooms, config, layer, changes));
             return null;
         }
 
@@ -77,22 +86,53 @@ namespace Parallax.Editor.Art
             if (greybox == null) return null;
             Transform art = ArtObject(artRoot, name, greybox.transform.position, layer, changes);
             TurretArt presenter = SetupUtility.Ensure<TurretArt>(art.gameObject, changes);
+            SpriteRenderer mount = Child(art, "Mount", layer, changes);
+            mount.sprite = config.TurretMount; mount.sharedMaterial = config.TrapMaterial; mount.drawMode = SpriteDrawMode.Simple; mount.transform.localScale = Vector3.one;
+            mount.sortingOrder = greybox.sortingOrder + 3;
             SpriteRenderer body = Child(art, "Housing", layer, changes);
-            body.sprite = config.TurretIdle; body.sharedMaterial = config.TrapMaterial; body.drawMode = SpriteDrawMode.Simple;
-            body.sortingOrder = greybox.sortingOrder + 3;   // over its own beam's end
-            TrapKitSetup.Write(presenter, changes, ("trap", turret), ("rooms", rooms), ("seedName", name), ("body", body), ("greyboxBody", greybox),
-                ("idle", config.TurretIdle), ("locked", config.TurretLock), ("aimTicks", ReadInt(turret, "aimTicks")), ("lockTicks", ReadInt(turret, "lockTicks")), ("fireTicks", ReadInt(turret, "fireTicks")));
+            body.sprite = config.TurretEyeIdle; body.sharedMaterial = config.TrapMaterial; body.drawMode = SpriteDrawMode.Simple; body.transform.localScale = Vector3.one;
+            body.sortingOrder = greybox.sortingOrder + 4;   // over its mount and its own beam's end
+            bool hangs = Prop(turret, "ceilingMount")?.boolValue ?? false;
+            TrapKitSetup.Write(presenter, changes, ("trap", turret), ("rooms", rooms), ("seedName", name), ("body", body), ("greyboxBody", greybox), ("mount", mount), ("mountAngle", hangs ? 0f : 90f),
+                ("idle", config.TurretEyeIdle), ("locked", config.TurretEyeLock), ("aimTicks", ReadInt(turret, "aimTicks")), ("lockTicks", ReadInt(turret, "lockTicks")), ("fireTicks", ReadInt(turret, "fireTicks")));
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
             if (line == null) return art.name;
             Transform shot = ArtChild(art, "Shot", layer, changes);
             LaserArt beam = SetupUtility.Ensure<LaserArt>(shot.gameObject, changes);
             SpriteRenderer beamBody = Child(shot, "Beam", layer, changes);
-            beamBody.sprite = config.LaserBeam; beamBody.sharedMaterial = HazardMaterial(config); beamBody.drawMode = SpriteDrawMode.Tiled;
+            Sprite shotSprite = config.TurretBeam != null ? config.TurretBeam : config.LaserBeam;
+            beamBody.sprite = shotSprite; beamBody.sharedMaterial = HazardMaterial(config); beamBody.drawMode = SpriteDrawMode.Tiled;
             beamBody.sortingOrder = line.sortingOrder; beamBody.enabled = false;
             TrapKitSetup.Write(beam, changes, ("trap", turret), ("rooms", rooms), ("seedName", name + "_Shot"), ("body", beamBody), ("greyboxBody", line),
-                ("beam", config.LaserBeam), ("gateAlpha", 1f));
+                ("beam", shotSprite), ("gateAlpha", 1f), ("thinBeam", config.LaserCore));
+            BeamLight(shot, beam, beamBody, BeamCrimson, true, config, layer, changes);
             SetupUtility.SetArray(beam, "greybox", new Object[] { line }, changes);
             return art.name;
+        }
+
+        static readonly Color BeamCrimson = new(1f, 0.1f, 0.08f, 1f), BeamPale = new(0.55f, 0.82f, 1f, 1f);
+
+        /// <summary>D-294: a beam's light: a soft glow under its body and, for a line from a source (`ends`), a burn where it lands and a
+        /// flare at the source, drawn with no scene light so they read on any background.</summary>
+        static void BeamLight(Transform parent, LaserArt beam, SpriteRenderer body, Color tint, bool ends, TrapArtConfig config, int layer, List<string> changes)
+        {
+            if (config.LaserGlow == null) return;
+            SpriteRenderer Light(string name, Sprite sprite, int order)
+            {
+                SpriteRenderer r = Child(parent, name, layer, changes);
+                r.sprite = sprite; r.sharedMaterial = HazardMaterial(config); r.sortingOrder = order; r.enabled = false;
+                return r;
+            }
+            SpriteRenderer glow = Light("Glow", config.LaserGlow, body.sortingOrder - 1);
+            glow.drawMode = SpriteDrawMode.Tiled; glow.color = tint;
+            SpriteRenderer burn = null, flare = null;
+            if (ends && config.LaserBurn != null)
+            {
+                burn = Light("Burn", config.LaserBurn, body.sortingOrder + 1);
+                flare = Light("Flare", config.LaserBurn, body.sortingOrder + 1);
+            }
+            else { RemoveChild(parent, "Burn", changes); RemoveChild(parent, "Flare", changes); }
+            TrapKitSetup.Write(beam, changes, ("glow", glow), ("burn", burn), ("flare", flare));
         }
 
         /// <summary>D-276: a chasing laser's beam (pale blue-white), or the crimson one without it.</summary>
@@ -104,7 +144,7 @@ namespace Parallax.Editor.Art
         {
             Object[] lines = ReadObjects(trident, "lines");
             Transform art = ArtObject(artRoot, name, trident.transform.position, layer, changes);
-            Housing(art, config, 0.75f, layer, changes);
+            Housing(art, config, config.TridentEmitter, 1.3f, layer, changes);
             for (int i = 0; i < lines.Length; i++) BeamOver(art, "Beam" + i, name, trident, lines[i] as SpriteRenderer, config.LaserBeam, config, rooms, layer, changes);
             return art.name;
         }
@@ -119,17 +159,18 @@ namespace Parallax.Editor.Art
             Transform hub = ArtChild(art, "Hub", layer, changes);
             FollowTransform follow = SetupUtility.Ensure<FollowTransform>(hub.gameObject, changes);
             TrapKitSetup.Write(follow, changes, ("target", pivot), ("offset", Vector2.zero));
-            Housing(hub, config, 0.6f, layer, changes);
+            Housing(hub, config, config.ChaserHousing, 0.6f, layer, changes);
             for (int i = 0; i < arms.Length; i++) BeamOver(art, "Arm" + i, name, sweeper, arms[i] as SpriteRenderer, Chaser(config), config, rooms, layer, changes);
             return art.name;
         }
 
         // An OT-04 housing `width` units wide at the parent's origin, over its beams.
-        static void Housing(Transform parent, TrapArtConfig config, float width, int layer, List<string> changes)
+        static void Housing(Transform parent, TrapArtConfig config, Sprite painted, float width, int layer, List<string> changes)
         {
+            Sprite sprite = painted != null ? painted : config.TurretIdle;
             SpriteRenderer housing = Child(parent, "Housing", layer, changes);
-            housing.sprite = config.TurretIdle; housing.sharedMaterial = config.TrapMaterial; housing.drawMode = SpriteDrawMode.Simple; housing.sortingOrder = 5;
-            if (config.TurretIdle != null) housing.transform.localScale = Vector3.one * (width / config.TurretIdle.bounds.size.x);
+            housing.sprite = sprite; housing.sharedMaterial = config.TrapMaterial; housing.drawMode = SpriteDrawMode.Simple; housing.sortingOrder = 5;
+            if (sprite != null) housing.transform.localScale = Vector3.one * (width / sprite.bounds.size.x);
         }
 
         // A LaserArt in its own child of `art`, drawn over `line` (one of a trap's line renderers) at the line's alpha.
@@ -143,6 +184,7 @@ namespace Parallax.Editor.Art
             body.sortingOrder = line.sortingOrder; body.enabled = false;
             TrapKitSetup.Write(beam, changes, ("trap", trap), ("rooms", rooms), ("seedName", name + "_" + child), ("body", body), ("greyboxBody", line),
                 ("beam", sprite), ("gateAlpha", 1f));
+            BeamLight(t, beam, body, sprite == config.ChaserBeam ? BeamPale : BeamCrimson, true, config, layer, changes);
             SetupUtility.SetArray(beam, "greybox", new Object[] { line }, changes);
         }
 
@@ -153,13 +195,14 @@ namespace Parallax.Editor.Art
             Transform art = ArtObject(artRoot, name, greybox.transform.position, layer, changes);
             // A rebuild over a level built with spikes: the spike presenter and its blades go.
             if (art.TryGetComponent(out SpikeArt spikes)) { Object.DestroyImmediate(spikes); changes.Add("removed " + name + "'s spikes"); }
-            foreach (Transform old in art.Cast<Transform>().Where(c => c.name is not ("Beam" or "EmitterTop" or "EmitterBottom")).ToList()) RemoveChild(art, old.name, changes);
+            foreach (Transform old in art.Cast<Transform>().Where(c => c.name is not ("Beam" or "Glow" or "EmitterTop" or "EmitterBottom")).ToList()) RemoveChild(art, old.name, changes);
             LaserArt presenter = SetupUtility.Ensure<LaserArt>(art.gameObject, changes);
             SpriteRenderer body = Child(art, "Beam", layer, changes);
             body.sprite = sprite; body.sharedMaterial = HazardMaterial(config); body.drawMode = SpriteDrawMode.Tiled;
             body.sortingOrder = greybox.sortingOrder; body.enabled = greybox.enabled;
             TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", name), ("body", body), ("greyboxBody", greybox),
                 ("beam", sprite), ("warnTicks", warnTicks));
+            BeamLight(art, presenter, body, sprite == config.ChaserBeam ? BeamPale : BeamCrimson, false, config, layer, changes);
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
             return art.name;
         }
@@ -212,10 +255,14 @@ namespace Parallax.Editor.Art
         {
             if (!(ReadObject(mover, "spikes") is SpriteRenderer face) || face == null) return null;
             bool down = face.transform.localPosition.y < 0f;
-            return BuildSpikes(artRoot, e.Name + "_Spikes", mover, face, !down, down, 0, rooms, config, layer, changes, stout: Stout(room));
+            bool flips = ReadInt(mover, "flipTicks") > 0;
+            if (PaintedCrusher(mover, config) && Parallax.Editor.Levels.Biomes.Of(room) != Parallax.Editor.Levels.Biome.ObsidianVoid) return null;   // GT-05 paints its own spikes
+            if (flips && config.FlipPlate != null && Parallax.Editor.Levels.Biomes.Of(room) == Parallax.Editor.Levels.Biome.ObsidianVoid) return null;   // OT-21 paints its own blades
+            if (down && config.SpikedStrip != null && Parallax.Editor.Levels.Biomes.Of(room) != Parallax.Editor.Levels.Biome.ObsidianVoid) return BuildFaceStrip(artRoot, e.Name + "_Spikes", mover, face, config, rooms, layer, changes);
+            return BuildSpikes(artRoot, e.Name + "_Spikes", mover, face, !down, down, 0, rooms, config, layer, changes, stout: Stout(room), bold: true);
         }
 
-        static string BuildSpikes(Transform artRoot, string name, RoomTrap trap, SpriteRenderer greybox, bool rises, bool pointsDown, int pointsSide, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes, System.Func<float, float, float> reachOver = null, bool stout = false, System.Func<float, float, string> solidsAt = null)
+        static string BuildSpikes(Transform artRoot, string name, RoomTrap trap, SpriteRenderer greybox, bool rises, bool pointsDown, int pointsSide, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes, System.Func<float, float, float> reachOver = null, bool stout = false, System.Func<float, float, string> solidsAt = null, bool bold = false)
         {
             if (greybox == null || config.SpikeStrip == null) return null;
             Transform art = ArtObject(artRoot, name, greybox.transform.position, layer, changes);
@@ -228,7 +275,7 @@ namespace Parallax.Editor.Art
                 ("strip", config.SpikeStrip), ("trapMaterial", HazardMaterial(config)), ("pointsDown", pointsDown), ("pointsSide", pointsSide), ("rises", rises));
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
             SetupUtility.SetArray(presenter, "grit", grit.Cast<Object>().ToArray(), changes);
-            BuildBlades(art, presenter, name, greybox, pointsDown, pointsSide, config, layer, changes, reachOver, stout, solidsAt);
+            BuildBlades(art, presenter, name, greybox, pointsDown, pointsSide, config, layer, changes, reachOver, stout, solidsAt, bold);
             return art.name;
         }
 
@@ -238,9 +285,12 @@ namespace Parallax.Editor.Art
         /// overlap into one dense bed (the approved mock-up); the row is laid out on a strip shortened by the extra width, so
         /// the end blades still stay inside it. D-161 amendment 1: a front blade whose lean (SpikeArt.BladeLean) would carry its
         /// tip across the edge of a solid over the strip moves back by that lean, so its foot and tip stay on one side.</summary>
-        static void BuildBlades(Transform art, SpikeArt presenter, string name, SpriteRenderer greybox, bool pointsDown, int pointsSide, TrapArtConfig config, int layer, List<string> changes, System.Func<float, float, float> reachOver, bool stout, System.Func<float, float, string> solidsAt)
+        static void BuildBlades(Transform art, SpikeArt presenter, string name, SpriteRenderer greybox, bool pointsDown, int pointsSide, TrapArtConfig config, int layer, List<string> changes, System.Func<float, float, float> reachOver, bool stout, System.Func<float, float, string> solidsAt, bool bold = false)
         {
-            Sprite[] stoutSprites = config.SpikeBladesStout.Where(s => s != null).ToArray();
+            // D-318: a spiked hinge floor draws the bold blades in place of the stout ones (when the kit has them).
+            Sprite[] boldSprites = bold && config.SpikeBladesBold != null ? config.SpikeBladesBold.Where(s => s != null).ToArray() : new Sprite[0];
+            Sprite[] stoutSprites = boldSprites.Length > 0 ? boldSprites : config.SpikeBladesStout.Where(s => s != null).ToArray();
+            stout |= boldSprites.Length > 0;
             if (stout && stoutSprites.Length == 0) Debug.LogWarning($"TrapArtSetup: {name} asks for stout spikes but TrapArtConfig has no SpikeBladesStout; run PARALLAX/Art/Import Trap Kit. Drawing the standard blades.");
             stout &= stoutSprites.Length > 0;
             Sprite[] sprites = stout ? stoutSprites : config.SpikeBlades.Where(s => s != null).ToArray();
@@ -294,8 +344,23 @@ namespace Parallax.Editor.Art
                 }
             }
             for (int i = blades.Count; art.Find("Blade_" + i) != null; i++) RemoveChild(art, "Blade_" + i, changes);
+            // Gate 6: each blade's dark rim, at its order a hair further back than the back row (SpikeArt places it with its blade).
+            Sprite[] rimSprites = !stout ? new Sprite[0] : (boldSprites.Length > 0 ? config.SpikeRimsBold : config.SpikeRimsStout).Where(r => r != null).ToArray();
+            if (rimSprites.Length != sprites.Length) rimSprites = new Sprite[0];
+            var rims = new List<SpriteRenderer>();
+            for (int i = 0; rimSprites.Length > 0 && i < blades.Count; i++)
+            {
+                SpriteRenderer r = Child(art, "Rim_" + i, layer, changes);
+                r.sprite = rimSprites[variants[i]]; r.sharedMaterial = HazardMaterial(config); r.drawMode = SpriteDrawMode.Simple; r.color = Color.white;
+                r.sortingOrder = greybox.sortingOrder; r.enabled = greybox.enabled;
+                r.transform.localPosition = new Vector3(r.transform.localPosition.x, r.transform.localPosition.y, 0.002f);
+                rims.Add(r);
+            }
+            for (int i = rims.Count; art.Find("Rim_" + i) != null; i++) RemoveChild(art, "Rim_" + i, changes);
             SetupUtility.SetArray(presenter, "blades", blades.Cast<Object>().ToArray(), changes);
             SetupUtility.SetArray(presenter, "bladeSprites", sprites.Cast<Object>().ToArray(), changes);
+            SetupUtility.SetArray(presenter, "rims", rims.Cast<Object>().ToArray(), changes);
+            SetupUtility.SetArray(presenter, "rimSprites", rimSprites.Cast<Object>().ToArray(), changes);
             var so = new SerializedObject(presenter);
             SerializedProperty v = so.FindProperty("bladeVariant"), a = so.FindProperty("bladeAlong"), rr = so.FindProperty("bladeReach"), bk = so.FindProperty("bladeBack");
             v.arraySize = variants.Count; a.arraySize = along.Count; rr.arraySize = reaches.Count; bk.arraySize = back.Count;
@@ -391,7 +456,10 @@ namespace Parallax.Editor.Art
         static string BuildSolid(Transform artRoot, Transform roomRoot, SoloRoomDefinition room, SoloRoomElement e, RoomTrap trap, SpriteRenderer greybox, SolidArtKind kind, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
         {
             if (greybox == null) return null;
-            HostSkin skinLook = HostSkin.Of(HostRenderer(roomRoot, room, e, floorFirst: kind != SolidArtKind.FallingBlock));
+            bool hardLight = kind == SolidArtKind.Shrinker && config.RetractStrip != null && Parallax.Editor.Levels.Biomes.Of(room) == Parallax.Editor.Levels.Biome.ObsidianVoid;
+            HostSkin skinLook = hardLight ? HostSkin.WorldTiledFor(e.Name, config.RetractStrip, config.WorldTileMaterial, Color.white, greybox.sortingLayerName)
+                : HostSkin.Of(HostRenderer(roomRoot, room, e, floorFirst: kind != SolidArtKind.FallingBlock));
+            skinLook.Tint = SoloRoomSkin.MoverTint(room, e);
             Transform art = ArtObject(artRoot, e.Name, trap.transform.position, layer, changes);
             SolidArt presenter = SetupUtility.Ensure<SolidArt>(art.gameObject, changes);
             SpriteRenderer skin = Child(art, "Skin", layer, changes);
@@ -482,6 +550,19 @@ namespace Parallax.Editor.Art
             }
             else RemoveChild(skin.transform, "Knuckle", changes);
             TrapKitSetup.Write(presenter, changes, ("plate", plate), ("knuckle", knuckle), ("knuckleAlong", knuckleAlong));
+            // D-292: OT-23's cap at the end a hard-light floor shrinks back to.
+            SpriteRenderer cap = null;
+            if (hardLight && config.RetractCap != null)
+            {
+                cap = Child(art, "Cap", layer, changes);
+                cap.sprite = config.RetractCap; cap.sharedMaterial = config.TrapMaterial; cap.drawMode = SpriteDrawMode.Simple; cap.sortingOrder = greybox.sortingOrder + 2;
+                float k = greybox.size.y / config.RetractCap.bounds.size.y, half = greybox.size.x * .5f, capHalf = config.RetractCap.bounds.size.x * k * .5f;
+                bool atRight = e.Settings.Shrink.From == ShrinkFrom.Left;
+                cap.transform.localScale = new Vector3(atRight ? -k : k, k, 1f);
+                cap.transform.localPosition = new Vector3(atRight ? half + capHalf : -half - capHalf, 0f, 0f);
+            }
+            else RemoveChild(art, "Cap", changes);
+            TrapKitSetup.Write(presenter, changes, ("cap", cap));
             TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", e.Name), ("kind", (int)kind), ("skin", skin), ("greyboxBody", greybox),
                 ("restPivot", (Vector2)trap.transform.position), ("moveDirection", direction), ("landTick", landTick), ("moveTicks", moveTicks),
                 ("holdTicks", holdTicks), ("returnTicks", returnTicks), ("shrinkTicks", shrinkTicks), ("crack", crack), ("socket", socket),
@@ -489,6 +570,7 @@ namespace Parallax.Editor.Art
             WriteSkin(presenter, "hostSkin", skinLook, changes);
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greybox }, changes);
             SetupUtility.SetArray(presenter, "dust", dust.Cast<Object>().ToArray(), changes);
+            BuildPressFace(skin, room, e, greybox, kind, turns, layer, changes);
             return art.name;
         }
 
@@ -506,9 +588,69 @@ namespace Parallax.Editor.Art
             return (heap, mask, footprint);
         }
 
+        /// <summary>D-305: a free-standing block in The High Citadel is honest machinery: bronze over its stone (Pack B's SB-02). Never a disguise, whose
+        /// stone has to match its host (P10), and never a slab: a press, a piston or a lift's cab.</summary>
+        static void BuildPressFace(SpriteRenderer skin, SoloRoomDefinition room, SoloRoomElement e, SpriteRenderer greybox, SolidArtKind kind, bool turns, int layer, List<string> changes)
+        {
+            Vector2 size = greybox.size;
+            bool press = kind == SolidArtKind.Mover && !turns && Parallax.Editor.Levels.LevelLooks.District(Parallax.Editor.Levels.LevelLooks.LevelOf(room)) == 2
+                && SoloRoomSkin.MoverTint(room, e) != Color.white && Mathf.Min(size.x, size.y) >= PressMinSide;
+            int pick = size.y > size.x * 1.3f ? 2 : size.x > size.y * 1.3f ? 0 : 1;   // rails run along a piston, straps across a slab, the boss on a square face
+            Sprite sprite = press ? EnvironmentKit.Sprite("ENV_PressFace_" + pick) : null;
+            if (sprite == null) { RemoveChild(skin.transform, "Face", changes); return; }
+            SpriteRenderer face = Child(skin.transform, "Face", layer, changes);
+            face.sprite = sprite; face.sharedMaterial = EnvironmentKit.TileMaterial("Sprite"); face.drawMode = SpriteDrawMode.Simple;
+            face.sortingOrder = skin.sortingOrder + 1; face.transform.localPosition = new Vector3(0f, 0f, -0.002f);
+            face.transform.localScale = new Vector3(size.x / sprite.bounds.size.x, size.y / sprite.bounds.size.y, 1f);
+            ShownWith follow = SetupUtility.Ensure<ShownWith>(face.gameObject, changes);
+            TrapKitSetup.Write(follow, changes, ("owner", skin));
+            SetupUtility.SetArray(follow, "renderers", new Object[] { face }, changes);
+            follow.Apply();
+        }
+
+        const float PressMinSide = 1f;
+
+        // ---------- the orbs ----------
+
+        const float OrbHeight = 1f, OrbSurfaceReach = .6f;
+        /// <summary>D-303: orbs were the brightest thing on screen, over the door and the cat. They stay clear, not loud.</summary>
+        static readonly Color OrbCalm = new(.84f, .82f, .84f, 1f);
+
+        /// <summary>D-286 (the developer: "the same size and at the same height"): an orb draws OrbHeight off the floor or ceiling its zone
+        /// stands on, whatever the zone's height, so a level's orbs line up; a zone in mid-air keeps its orb at its centre. Art only: the
+        /// trigger stays where the layout put it, so no route changes. A zone that reaches both a floor and a ceiling takes the floor.</summary>
+        static float OrbOffset(SoloRoomDefinition room, SoloRoomElement e)
+        {
+            float bottom = e.Position.y - e.Size.y * .5f, top = e.Position.y + e.Size.y * .5f;
+            float? floor = null, ceiling = null;
+            foreach (SoloRoomElement s in room.Elements)
+            {
+                if (s.Kind is not (SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.PitBottom or SoloRoomElementKind.CollapsingFloor or SoloRoomElementKind.FakePlatform or SoloRoomElementKind.GripWall or SoloRoomElementKind.ShrinkingFloor)
+                    && !(s.Kind == SoloRoomElementKind.MovingTrap && s.Settings.MovingKind == MovingTrapKind.Solid)) continue;
+                if (Mathf.Abs(s.Position.x - e.Position.x) > s.Size.x * .5f) continue;
+                float solidTop = s.Position.y + s.Size.y * .5f, solidBottom = s.Position.y - s.Size.y * .5f;
+                if (Mathf.Abs(solidTop - bottom) <= OrbSurfaceReach && (floor == null || solidTop > floor)) floor = solidTop;
+                if (Mathf.Abs(solidBottom - top) <= OrbSurfaceReach && (ceiling == null || solidBottom < ceiling)) ceiling = solidBottom;
+            }
+            if (floor == null && ceiling == null) return 0f;
+            float y = floor != null ? floor.Value + OrbHeight : ceiling.Value - OrbHeight;
+            // Never into a solid, a mover's included (no art through covers): it stops short of one in its way, as L012's Orb_B under the Shelf.
+            const float half = FlipArt.RingSide * .5f;
+            foreach (SoloRoomElement s in room.Elements)
+            {
+                if (s.Kind is not (SoloRoomElementKind.Floor or SoloRoomElementKind.Ceiling or SoloRoomElementKind.Wall or SoloRoomElementKind.MovingTrap or SoloRoomElementKind.FallingBlock or SoloRoomElementKind.ShrinkingFloor)) continue;
+                if (s.Kind == SoloRoomElementKind.MovingTrap && s.Settings.MovingKind != MovingTrapKind.Solid) continue;
+                if (Mathf.Abs(s.Position.x - e.Position.x) >= s.Size.x * .5f + half) continue;
+                float solidTop = s.Position.y + s.Size.y * .5f, solidBottom = s.Position.y - s.Size.y * .5f;
+                if (solidBottom >= y + half || solidTop <= y - half) continue;
+                y = floor != null ? solidBottom - half : solidTop + half;
+            }
+            return y - e.Position.y;
+        }
+
         // ---------- gravity flips ----------
 
-        static string BuildFlip(Transform artRoot, SoloRoomElement e, GravityFlipTrap trap, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
+        static string BuildFlip(Transform artRoot, SoloRoomDefinition room, SoloRoomElement e, GravityFlipTrap trap, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
         {
             SpriteRenderer zone = trap.GetComponent<SpriteRenderer>();
             bool visible = zone != null && zone.color.a > 0f;
@@ -519,7 +661,7 @@ namespace Parallax.Editor.Art
             if (visible)
             {
                 ring = Child(art, "Glyph", layer, changes);
-                ring.sprite = config.GlyphRing; ring.sharedMaterial = config.TrapMaterial; ring.drawMode = SpriteDrawMode.Simple; ring.sortingOrder = zone.sortingOrder;
+                ring.sprite = config.GlyphRing; ring.sharedMaterial = config.TrapMaterial; ring.drawMode = SpriteDrawMode.Simple; ring.sortingOrder = zone.sortingOrder; ring.color = OrbCalm;
                 motes = Effects(art, "Mote", config.FlipMotes, new[] { config.Mote }, config.TrapMaterial, zone.sortingOrder + 1, layer, changes);
             }
             else { RemoveChild(art, "Glyph", changes); Effects(art, "Mote", 0, new[] { config.Mote }, config.TrapMaterial, 0, layer, changes); }
@@ -527,7 +669,7 @@ namespace Parallax.Editor.Art
             pulse.sprite = config.Ring; pulse.sharedMaterial = config.TrapMaterial; pulse.drawMode = SpriteDrawMode.Simple;
             pulse.sortingOrder = (zone != null ? zone.sortingOrder : 0) + EffectOrder; pulse.enabled = false;
             TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", e.Name), ("ring", ring), ("greyboxZone", visible ? zone : null),
-                ("glyphRing", config.GlyphRing), ("pulse", pulse), ("zoneSize", e.Size));
+                ("glyphRing", config.GlyphRing), ("pulse", pulse), ("zoneSize", e.Size), ("orbOffsetY", visible ? OrbOffset(room, e) : 0f));
             SetupUtility.SetArray(presenter, "greybox", visible ? new Object[] { zone } : new Object[0], changes);
             SetupUtility.SetArray(presenter, "motes", motes.Cast<Object>().ToArray(), changes);
             BuildFlipHalo(ring, layer, changes);
@@ -557,7 +699,7 @@ namespace Parallax.Editor.Art
 
         // ---------- the inverter ----------
 
-        static string BuildInverter(Transform artRoot, SoloRoomElement e, InverterTrap trap, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
+        static string BuildInverter(Transform artRoot, SoloRoomDefinition room, SoloRoomElement e, InverterTrap trap, RoomManager rooms, TrapArtConfig config, int layer, List<string> changes)
         {
             var greyOrb = (SpriteRenderer)ReadObject(trap, "orb");
             Transform art = ArtObject(artRoot, e.Name, trap.transform.position, layer, changes);
@@ -566,19 +708,19 @@ namespace Parallax.Editor.Art
             if (greyOrb != null)
             {
                 orb = Child(art, "Orb", layer, changes);
-                orb.sprite = config.InverterOrb; orb.sharedMaterial = config.TrapMaterial; orb.drawMode = SpriteDrawMode.Simple; orb.sortingOrder = greyOrb.sortingOrder;
+                orb.sprite = config.InverterOrb; orb.sharedMaterial = config.TrapMaterial; orb.drawMode = SpriteDrawMode.Simple; orb.sortingOrder = greyOrb.sortingOrder; orb.color = OrbCalm;
             }
             else RemoveChild(art, "Orb", changes);
             SpriteRenderer ring = Child(art, "CueRing", layer, changes), mark = Child(art, "CueMark", layer, changes);
             ring.sprite = config.CueRing; ring.sharedMaterial = config.TrapMaterial; ring.sortingOrder = trap.Ring != null ? trap.Ring.sortingOrder : -1; ring.enabled = false;
             mark.sprite = config.CueMark; mark.sharedMaterial = config.TrapMaterial; mark.sortingOrder = trap.Mark != null ? trap.Mark.sortingOrder : 1; mark.enabled = false;
             SpriteRenderer flare = Child(art, "Flare", layer, changes);
-            flare.sprite = config.Ring; flare.sharedMaterial = config.TrapMaterial; flare.drawMode = SpriteDrawMode.Simple;
+            flare.sprite = config.Ring; flare.sharedMaterial = config.TrapMaterial; flare.drawMode = SpriteDrawMode.Simple; flare.color = new Color(.45f, 1f, .7f, 1f);   // D-284: the orb's green
             flare.sortingOrder = (greyOrb != null ? greyOrb.sortingOrder : 0) + EffectOrder; flare.enabled = false;
             TrapKitSetup.Write(presenter, changes, ("trap", trap), ("rooms", rooms), ("seedName", e.Name), ("orb", orb), ("greyboxOrb", greyOrb),
                 ("ring", ring), ("greyboxRing", trap.Ring), ("mark", mark), ("greyboxMark", trap.Mark), ("orbSprite", config.InverterOrb),
                 ("ringSprite", config.CueRing), ("markSprite", config.CueMark), ("zoneSize", e.Size), ("ringSize", TrapKitSetup.CueRingSize),
-                ("markSize", TrapKitSetup.CueMarkSize), ("flare", flare));
+                ("markSize", TrapKitSetup.CueMarkSize), ("flare", flare), ("orbOffsetY", greyOrb != null ? OrbOffset(room, e) : 0f));
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greyOrb, trap.Ring, trap.Mark }.Where(o => o != null).ToArray(), changes);
             return art.name;
         }

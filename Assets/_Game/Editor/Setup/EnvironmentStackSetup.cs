@@ -333,13 +333,17 @@ namespace Parallax.Editor.Setup
             return true;
         }
 
-        /// <summary>The foreground rule (§3): over the camera's travel, a foreground piece's box lies only over solids or
-        /// outside the room's content (the air a cat can reach is inside the content and not in a solid).</summary>
+        /// <summary>The foreground rule (§3): at every camera that can show it, a foreground piece's box lies only over fixed stone or
+        /// outside the room's content (the air a cat can reach is inside the content and not in a solid). D-282: only those cameras, the
+        /// first and last that show it across and the travel's two heights: a long level's far ends shift a 1.1 layer by metres at
+        /// cameras that can't see the piece at all.</summary>
         public static bool ForegroundClear(Rect atMid, float speed, SoloRoomDefinition room, Travel travel)
         {
             Bounds content = SoloRoomBuilder.ComputeRoomBounds(room, 0f);
             List<Rect> solids = SoloRoomSkin.Solids(room).Where(s => !s.Trap).Select(s => s.Rect).ToList();
-            Vector2[] cameras = { travel.Min, travel.Max, new(travel.Min.x, travel.Max.y), new(travel.Max.x, travel.Min.y), travel.Mid };
+            float k = 1f - speed, seen = travel.MaxViewWidth * 0.5f + atMid.width * 0.5f, at = atMid.center.x - k * travel.Mid.x;
+            float from = Mathf.Clamp((at - seen) / (1f - k), travel.Min.x, travel.Max.x), to = Mathf.Clamp((at + seen) / (1f - k), travel.Min.x, travel.Max.x);
+            Vector2[] cameras = { new(from, travel.Min.y), new(from, travel.Max.y), new(to, travel.Min.y), new(to, travel.Max.y) };
             foreach (Vector2 cam in cameras)
             {
                 Vector2 offset = travel.Shifted(atMid.center, speed, cam) - atMid.center;

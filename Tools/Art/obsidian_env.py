@@ -26,6 +26,7 @@ from PIL import Image, ImageFilter
 sys.path.insert(0, str(Path(__file__).parent))
 import env_kit as ek  # noqa: E402
 import hazard_readable  # noqa: E402
+import obsidian_extra as ox  # noqa: E402
 import trap_process as tp  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -58,6 +59,8 @@ ISLANDS = [(16, 178, 446, 920), (467, 239, 741, 685), (773, 100, 1185, 946), (12
 SPIRES = {"ENV_FarSpire_0": (0, 0), "ENV_FarSpire_1": (2, 0), "ENV_FarSpire_2": (1, 0), "ENV_FarSpire_3": (2, 1)}
 MIDS = {"ENV_MidArch_0": (0, 0), "ENV_MidTowers": (1, 0), "ENV_MidArch_1": (0, 1), "ENV_MidPillar": (1, 1)}
 CLOUD_ALPHA = 0.5
+AERIAL = 0.2    # D-281: how much air the mid and near pieces carry
+FG_FEATHER = 70    # D-281 (source px): OV-26's corners are painted up to their cells' edges
 # Stage 4's props (D-275): OV-20's six ceiling fixtures (3 x 2 grid), drawn FIXTURE_H units tall, and OV-21's six tech props
 # (3 x 2), PROP_W units wide, are Obsidian-only slots the dressing places sparsely (ENV_Fixture_*, ENV_Prop_*); OV-22's two
 # holo-banners, OV-23's wreckage (top row) and circuit panels (bottom row, the debris at their foot cut away, PANEL_KEEP of the
@@ -205,12 +208,8 @@ def layers(gr):
     """Stage 3: the background pieces Obsidian levels draw (PAX-A20), each on its Golden Ruins slot's canvas."""
     out = {}
     sky = load("OV-01_sky_v1.png"); sky[..., 3] = 1.0
-    for name in ("ENV_Sky_Moon", "ENV_Sky_Dawn", "ENV_Sky_Dusk", "ENV_Sky_Ember", "ENV_Sky_Gold", "ENV_Sky_Jade", "ENV_Sky_Mist",
-                 "ENV_Sky_Noon", "ENV_Sky_Rose", "ENV_Sky_Storm", "ENV_Sky_Teal", "ENV_SkyPlate"):
-        g = gr(name)
-        out[name] = tp.resize(sky, g.shape[1], g.shape[0])
-    star = ek.glow_alpha(load("OV-02_star_v1.png"), 0.03, 0.7)
-    out["ENV_Sun"] = tp.resize(star, *gr("ENV_Sun").shape[1::-1])
+    out.update(ox.skies(sky, gr))     # D-281
+    out["ENV_Sun"] = ox.planet(load("Inspiration.png"), gr("ENV_Sun").shape[0])
     # Clouds and the soft bands: the void's mists, far to near.
     mists = {"far": load("OV-03c_mist_far_v1.png"), "mid": load("OV-03b_mist_mid_v1.png"), "near": load("OV-03a_mist_near_v1.png")}
     for name, m in (("ENV_Cloud_0", "far"), ("ENV_Cloud_1", "mid"), ("ENV_Cloud_2", "near"),
@@ -218,14 +217,14 @@ def layers(gr):
         b = band(mists[m], gr(name))
         b[..., 3] *= CLOUD_ALPHA   # the mists' bright wisps are busy behind the play layer: half strength
         out[name] = b
-    out["ENV_Haze"] = band(ek.glow_alpha(load("OV-06_haze_v1.png"), 0.04, 0.6), gr("ENV_Haze"))
-    out["ENV_Fog"] = band(load("OV-27_fog_v1.png"), gr("ENV_Fog"))
+    out["ENV_Haze"] = ox.soft_band(band(ek.glow_alpha(load("OV-06_haze_v1.png"), 0.04, 0.6), gr("ENV_Haze")), 180, 120)
+    out["ENV_Fog"] = ox.soft_band(band(load("OV-27_fog_v1.png"), gr("ENV_Fog")), 180, 260)
     out["ENV_Mist"] = fit_object(load("OV-03a_mist_near_v1.png"), gr("ENV_Mist"))
     # The far skyline: OV-04's four floating monoliths are the islands; OV-05's towers, bridge and crystal spire the spires.
     mono = load("OV-04_far_monoliths_v1.png")
     for i, box in enumerate(ISLANDS):
         x0, y0, x1, y1 = box
-        out[f"ENV_FarIsland_{i}"] = fit_object(mono[y0:y1, x0:x1], gr(f"ENV_FarIsland_{i}"))
+        out[f"ENV_FarIsland_{i}"] = fit_object(ox.colder(ox.feather(mono[y0:y1, x0:x1], 40), 0.6, RAMP), gr(f"ENV_FarIsland_{i}"))
     arch = load("OV-05_far_architecture_v1.png")
     for name, (c, r) in SPIRES.items():
         out[name] = fit_object(cell(arch, 3, 2, c, r), gr(name))
@@ -259,7 +258,7 @@ def layers(gr):
     # The foreground: OV-26's crystal corners and OV-26b's monolith (Golden Ruins' ferns, roots, branch and trunk).
     fg = load("OV-26_foreground_v1.png")
     for name, (c, r) in FOREGROUND.items():
-        out[name] = fit_object(cell(fg, 2, 2, c, r), gr(name))
+        out[name] = fit_object(ox.feather(ox.key_black(cell(fg, 2, 2, c, r)), FG_FEATHER), gr(name))
     out["ENV_FG_Trunk"] = fit_object(key_magenta(load("OV-26b_foreground_monolith_v1.png")), gr("ENV_FG_Trunk"))
     out["ENV_Mote"] = recolour(gr("ENV_Mote"))
     return out
@@ -279,6 +278,7 @@ def build():
         size = g.shape[1] // FILL_TILES
         a = tp.resize(a, size, size)
         a[..., 3] = 1.0
+        a = ox.desmear(a)     # D-281
         fills[key] = tile_to(a, g.shape[1], g.shape[0])
         out[f"ENV_Fill_{key}"] = fills[key]
         out[f"ENV_Fill_{key}_Recess"] = recess(fills[key])
@@ -351,6 +351,9 @@ def build():
     # ---- recoloured, and empty ----
     for name in RECOLOUR:
         out[name] = recolour(gr(name))
+    # D-281: the dark pocket behind the door and the rings stays dark (the ramp turned it into a pale disc).
+    halo = gr("ENV_Halo")
+    out["ENV_Halo"] = np.dstack([np.broadcast_to(RAMP[0], halo.shape[:2] + (3,)), halo[..., 3]])
     for name in EMPTY:
         out[name] = np.zeros_like(gr(name))
 
@@ -401,6 +404,20 @@ def build():
     for i, c in enumerate((1, 2)):
         panel = row_cell(wreck, WRECK_ROWS[1], 3, c)
         out[f"ENV_Glyph_{i}"] = fit_object(tp.trim(panel[:int(panel.shape[0] * PANEL_KEEP)], 0.05), gr(f"ENV_Glyph_{i}"), centre=True)
+
+    # ---- D-281: the portal, and the paintings no level showed ----
+    for name, a in ox.portal(load("OV-07a_mid_architecture_v1.png"), load("OV-01_sky_v1.png")).items():
+        out[name] = a
+        extra[name] = {"name": name, "file": name + ".png", "folder": "Kit", "kind": "dressing",
+                       "width": round(a.shape[1] / ek.WORLD_PPU, 4), "height": round(a.shape[0] / ek.WORLD_PPU, 4)}
+    for name, (a, width) in ox.pieces(load, ek.glow_alpha).items():
+        w = int(round(width * ek.HALF_PPU))
+        out[name] = tp.resize(a, w, max(1, int(round(a.shape[0] * w / a.shape[1]))))
+        extra[name] = {"name": name, "file": name + ".png", "folder": "Backgrounds/Kit", "kind": "piece",
+                       "width": round(w / ek.HALF_PPU, 4), "height": round(out[name].shape[0] / ek.HALF_PPU, 4)}
+
+    for name in [n for n in out if n.startswith("ENV_Mid")]:
+        out[name] = ox.aerial(out[name], AERIAL, RAMP[1])
 
     slots = {}
     for name, a in out.items():

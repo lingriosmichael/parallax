@@ -29,7 +29,7 @@ namespace Parallax.Editor.Levels
     //    west onto Lift_P, up and over to Ledge_D, under Arrow_D's lane (it shoots straight down on a beat).
     //  - Summit (section 1, east along a 4.5 u stone corridor, no lifts): Hinge_S stands up spiked behind the cat and chases it to
     //    Pit_S1; across it Crumble_S gives way under a cat that stops where it lands; Block_1-3 drop from the ceiling onto a cat that
-    //    slows under them; Inv_S, hidden over Pit_S2, turns the stick round in mid-leap (a cat still holding the way on falls
+    //    slows under them; Inv_S, over Pit_S2, turns the stick round in mid-leap (a cat still holding the way on falls
     //    short: let go or press back); past it Ceiling_F comes down over the last 12 u and the door slides back 5.5 u as the cat
     //    comes: chase it before the ceiling meets the floor.
     static class L030Layout
@@ -236,8 +236,8 @@ namespace Parallax.Editor.Levels
             for (int i = 0; i < BlockX.Length; i++)
                 elements.Add(E(SoloRoomElementKind.FallingBlock,$"Block_{i + 1}",(BlockX[i] + BlockW * .5f,C + .5f),(BlockW,1f),(BlockX[i] - .2f,(F + C) * .5f),(.4f,C - F),
                     new SoloRoomTrapSettings(delayTicks:BlockDelay,unitsPerTick:.37f,travelDistance:C - F)));   // a last step of 0.06 u (the kill test sees a cat under it)
-            // Inv_S, hidden over Pit_S2's middle at a leaping cat's height: the stick turns round for InvTicks in mid-air.
-            elements.Add(E(SoloRoomElementKind.Inverter,"Inv_S",((Pit2X0 + Pit2X1) * .5f,F + 1.6f),(.4f,1.6f),settings:new SoloRoomTrapSettings(new InverterSettings(InvTicks, disguised: true), new SoloRoomTrapSettings(delayTicks: 0))));
+            // Inv_S, over Pit_S2's middle at a leaping cat's height: the stick turns round for InvTicks in mid-air.
+            elements.Add(E(SoloRoomElementKind.Inverter,"Inv_S",((Pit2X0 + Pit2X1) * .5f,F + 1.6f),(.4f,1.6f),settings:new SoloRoomTrapSettings(new InverterSettings(InvTicks), new SoloRoomTrapSettings(delayTicks: 0))));
             // D-256 (the developer: "So many straight edges"): spiked, so the stone coming down ends in teeth, not one straight cut.
             // Ceiling_F, the last 12 u of the ceiling, comes down from a cat crossing FinaleX to 0.4 over the floor over FinaleTicks; the
             // door slides DoorRide east as the cat reaches DoorRetreatX. Chase it at a run.

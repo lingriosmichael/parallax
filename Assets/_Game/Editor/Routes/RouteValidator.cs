@@ -272,6 +272,11 @@ namespace Parallax.Editor.Routes
         /// <summary>D-079 (3)'s determinism, extended: replay `route` to the section's gate and die at once, and again dying
         /// delayTicks later; the recordTicks after the two rewinds (standing still) must match record for record, and at the
         /// rewind every element must look as it did at the gate, with the room clock back at the gate's room tick.</summary>
+        /// <summary>PAX-126 (D-321): after a respawn the room waits for the cat's first move, so a check that stands still after one
+        /// starts the room with a one-tick push of the stick up (it counts as a move; with no vine the cat stays where it is), then
+        /// lets go and runs `then`: the room runs from the respawn as it did before the rule.</summary>
+        static RouteStep[] FirstMove(RouteStep then) => new[] { R.Release(), R.ReleaseClimb(), R.Hold(Vertical.Up), R.For(1), R.ReleaseClimb(), then };
+
         public static RewindCheck CheckRewind(RouteSession session, SoloRoomDefinition room, Route route, string checkpointSection, int delayTicks, int recordTicks)
         {
             var check = new RewindCheck { Section = checkpointSection };
@@ -280,8 +285,8 @@ namespace Parallax.Editor.Routes
                 if (section.Name == checkpointSection && section.HasGate) marker = section.MarkerName;
             if (marker == null) { check.Difference = "no such section with a gate"; return check; }
 
-            ReplayResult a = RouteHarness.Replay(session, room, Route.FromSection(route, checkpointSection, 0, "rewind at the gate", R.Release(), R.ReleaseClimb(), R.For(recordTicks)));
-            ReplayResult b = RouteHarness.Replay(session, room, Route.FromSection(route, checkpointSection, delayTicks, "rewind later", R.Release(), R.ReleaseClimb(), R.For(recordTicks)));
+            ReplayResult a = RouteHarness.Replay(session, room, Route.FromSection(route, checkpointSection, 0, "rewind at the gate", FirstMove(R.For(recordTicks))));
+            ReplayResult b = RouteHarness.Replay(session, room, Route.FromSection(route, checkpointSection, delayTicks, "rewind later", FirstMove(R.For(recordTicks))));
             int ia = RewindIndex(a), ib = RewindIndex(b);
             check.Rewound = ia > 0 && ib > 0;
             if (!check.Rewound) { check.Difference = a.Failure ?? b.Failure ?? "no rewind happened"; return check; }
@@ -356,7 +361,7 @@ namespace Parallax.Editor.Routes
             for (int i = 1; i < sections.Length; i++)
             {
                 string name = sections[i].Name;
-                ReplayResult still = RouteHarness.Replay(session, room, Route.FromSection(routes.Solution, name, "stand still at " + name, R.Release(), R.ReleaseClimb(), R.For(RespawnSafeTicks)));
+                ReplayResult still = RouteHarness.Replay(session, room, Route.FromSection(routes.Solution, name, "stand still at " + name, FirstMove(R.For(RespawnSafeTicks))));
                 int rewind = RewindIndex(still);
                 var respawn = new RespawnResult { Section = name, Survived = -1 };
                 if (rewind <= 0) report.Errors.Add($"{levelId}: section '{name}': no rewind to stand still after ({still.Failure ?? "no death hold"}).");

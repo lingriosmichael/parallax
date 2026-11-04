@@ -177,3 +177,19 @@ ENV-01 (the painted sky) is now used.
 | `ENV_SkyPlate.png` | ENV-01 | sky | 1536 × 1024 | 15.62 × 10.41 | 98.333 | — |  |
 | `ENV_WaterPlane.png` | ENV-30, ENV_FarCity | band | 1480 × 375 | 15.05 × 3.81 | 98.333 | sideways |  |
 
+## Game UI (PAX-A09, 2026-11-01)
+
+Drawn by `Tools/Art/game_ui.py` into `Assets/_Game/Art/UI/Game/`; no paid generation. Imported by `PARALLAX/Setup/Levels/Game UI (PAX-A09)`: sprites, no mips, uncompressed, clamp. 100 PPU; sizes in the scene come from the menu. `TUI_Plate`, `TUI_Flourish`, `TUI_Soft`, `TUI_Vignette` and `TUI_FoliageR` are the title's (`Tools/Art/title_ui.py`).
+
+| Slot | Size | Pivot | Draw mode | Use |
+|---|---|---|---|---|
+| `GUI_Ring` | 384² | centre | simple | stick base, jump, pause, portrait ring |
+| `GUI_Knob` | 192² | centre | simple | stick knob |
+| `GUI_Chevron` | 192² | centre | simple | jump |
+| `GUI_Pause` | 128² | centre | simple | pause |
+| `GUI_Lock` | 128² | centre | simple, tinted | locked and paywalled cells |
+| `GUI_Diamond` | 64² | centre | simple, tinted | done mark, section gates, line's end |
+| `GUI_Dot` | 64² | centre | simple, tinted | the line's dot |
+| `GUI_Bar` | 8² | centre | simple or filled, tinted | the line |
+| `GUI_Portrait` | 256² | centre | simple | the cat's portrait, cut from `DesignImages/13_cat-character-sheet.png` |
+| `GUI_Panel` | 512×180 | centre | sliced, border 44 | a panel's solid plate |

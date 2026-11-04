@@ -12,12 +12,12 @@ namespace Parallax.Editor.Levels
     // gap closing ahead". The roof caving in behind is what kills a cat that hesitates.
     //  - Section 0, the cave-in: from the start the roof comes down behind the cat, column by column, a little slower than a run.
     //    Ahead, presses come down as the cat comes near: Press_1 and Press_2 close slowly (run under, don't stop; jump Pit_0a
-    //    between them, and hold the stick back through Inv_0, hidden past Press_2), Press_3 looks
+    //    between them, and hold the stick back through Inv_0, past Press_2), Press_3 looks
     //    the same but stops half way (a cat that stops for it is caught by the cave-in), Press_4 shuts fast and opens again: stop
     //    at its face, and go as it lifts, on the lead the cave-in left you. Then Press_5 (slow again) and Pit_0c to the checkpoint.
     //  - Section 1, the closing hall: the Lid, the whole hall's ceiling, comes down as the cat leaves the checkpoint (a slam: a cat
     //    that jumps into it as it comes down is crushed too). Jump Pit_A at once, run the glass over Pit_C, hold the stick back
-    //    through Inv_D and Inv_F (hidden), and out from under the Lid's end with a little head room left. The door is just past it.
+    //    through Inv_D and Inv_F, and out from under the Lid's end with a little head room left. The door is just past it.
     static class L038Layout
     {
         // The corridor: floor top 0, roof underside C. The roof columns (ColW wide, C tall) sit in the roof, between C and 2C.
@@ -35,7 +35,7 @@ namespace Parallax.Editor.Levels
         internal static readonly int[] PressSlow = { 80, 90, 0, 0, 85 };
         internal const float Press3Gap = 1f;
         internal const int Press3Ticks = 60, Press3Close = 150, Press4Drop = 30, Press4Hold = 40, Press4Rise = 25;
-        // Two laser pits to jump on the way (Pit_0a, Pit_0b), and Inv_0, hidden, between Press_2 and Press_3.
+        // Two laser pits to jump on the way (Pit_0a, Pit_0b), and Inv_0 between Press_2 and Press_3.
         internal const float Pit0aX0 = 16.5f, Pit0aX1 = 18.5f, Pit0bX0 = 34f, Pit0bX1 = 36f, Pit0cX0 = 61.5f, Pit0cX1 = 63.5f, Inv0X = 26f;
         internal static float ColX(int k) => k * ColW;
         internal static readonly float CaveEnd = ColX(Cols);
@@ -65,7 +65,7 @@ namespace Parallax.Editor.Levels
             Block(e, SoloRoomElementKind.Floor, "Floor_0c", Pit0bX1, Pit0cX0, Base, 0f);
             Pit(e, "Pit_0c", Pit0cX0, Pit0cX1);
             Block(e, SoloRoomElementKind.Floor, "Floor_0d", Pit0cX1, PitA0, Base, 0f);
-            e.Add(E(SoloRoomElementKind.Inverter, "Inv_0", (Inv0X, 1f), (.4f, 2f), settings: new SoloRoomTrapSettings(new InverterSettings(Inv0Ticks, disguised: true), new SoloRoomTrapSettings(delayTicks: 0))));
+            e.Add(E(SoloRoomElementKind.Inverter, "Inv_0", (Inv0X, 1f), (.4f, 2f), settings: new SoloRoomTrapSettings(new InverterSettings(Inv0Ticks), new SoloRoomTrapSettings(delayTicks: 0))));
             string last = null; int lastCol = -1;
             for (int k = 0; k < Cols; k++)
             {
@@ -101,8 +101,8 @@ namespace Parallax.Editor.Levels
                 e.Add(E(SoloRoomElementKind.CollapsingFloor, $"Glass_{i + 1}", (x0 + GlassW * .5f, -PitDepth * .5f), (GlassW, PitDepth), settings: new SoloRoomTrapSettings(delayTicks: GlassDelay)));
             }
             Block(e, SoloRoomElementKind.Floor, "Floor_2", PitC1, Width, Base, 0f);
-            e.Add(E(SoloRoomElementKind.Inverter, "Inv_D", (InvDX, 1f), (.4f, 2f), settings: new SoloRoomTrapSettings(new InverterSettings(InvTicks, disguised: true), new SoloRoomTrapSettings(delayTicks: 0))));
-            e.Add(E(SoloRoomElementKind.Inverter, "Inv_F", (InvFX, .6f), (.4f, 1.2f), settings: new SoloRoomTrapSettings(new InverterSettings(InvTicks, disguised: true), new SoloRoomTrapSettings(delayTicks: 0))));
+            e.Add(E(SoloRoomElementKind.Inverter, "Inv_D", (InvDX, 1f), (.4f, 2f), settings: new SoloRoomTrapSettings(new InverterSettings(InvTicks), new SoloRoomTrapSettings(delayTicks: 0))));
+            e.Add(E(SoloRoomElementKind.Inverter, "Inv_F", (InvFX, .6f), (.4f, 1.2f), settings: new SoloRoomTrapSettings(new InverterSettings(InvTicks), new SoloRoomTrapSettings(delayTicks: 0))));
 
             var s0 = new List<string> { "Inv_0" };
             for (int k = 0; k < Cols; k++) { int p = System.Array.IndexOf(PressCols, k); s0.Add(p >= 0 ? $"Press_{p + 1}" : $"Cave_{k + 1}"); }

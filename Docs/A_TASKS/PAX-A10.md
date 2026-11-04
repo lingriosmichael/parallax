@@ -3,6 +3,8 @@
 **Status:** Approved (last in Phase E). Starts after PAX-A09; screenshots only once PAX-A12, A13, V05 and V06 are in (the store shows the finished look).
 **Depends on:** PAX-A06, PAX-A09
 
+**Prompts:** `Docs/Art/CAT_AND_STORE_PROMPTS.md` (S-01 to S-03).
+
 ## Scope
 
 1. **App icon:** adaptive icon (foreground + background layers) and the 512 × 512 Play Store

@@ -38,7 +38,7 @@ namespace Parallax.Tests.EditMode
         // D-159: L001 is "Run!": the bridge falling behind the cat, Slam_1, Hinge_1 onto Spikes_H, Block_1, then the lower storey
         // with the cloud chasing, Crumble, Pop, and the door riding its lift over the pit (jumps over Spikes_H, Crumble, Pop and
         // the pit, each a timed step).
-        [TestCase("L001", new[] { 14, 36, 12, 18 }, new int[0], new[] { "Bridge_2=44", "Slam_1=6", "Hinge_1=20", "Block_1=16", "Crumble=24", "Pop=8", "Cloud=25", "Lift_D=45" }, new[] { "Door visible t474, complete t530" })]
+        [TestCase("L001", new[] { 14, 36, 12, 18 }, new int[0], new[] { "Bridge_2=44", "Slam_1=6", "Hinge_1=20", "Block_1=16", "Crumble=24", "Pop=8", "Lift_D=45" }, new[] { "Door visible t474, complete t530" })]
         // D-112: L002 re-pinned to its ferry crossing (the drop onto Ferry, the jump up to the door, Stone and Tread_3).
         // D-160: L002 is "Backwards": Invert a stride from the start, Hinge_1 onto Spikes_1, Flip_U1 onto the ceiling (CC_1, Lift_1,
         // Pop_C), up the shaft, Push_2 onto Spikes_C2, Flip_D2, then Hinge_W chasing over Pop_2 and Crumble to the door.
@@ -55,7 +55,7 @@ namespace Parallax.Tests.EditMode
         // D-116/D-119: L005 re-pinned: non-stop arrows, the corbel's 45-degree Arrow_X, S1's and the ground's riders, the crush
         // ledge (Ledge_D) at the ground's right end, the storm cloud on every floor.
         // D-126: Arrow_A every 100 ticks; the cat jumps its second shot where it waits for Arrow_X (window 25).
-        [TestCase("L005", new[] { 24, 25, 13, 19, 12, 32 }, new int[0], new[] { "Arrow_A=6", "Arrow_V2=6", "Arrow_B=6", "Arrow_C=6", "Arrow_D=6", "Floor_6=27", "Spikes_D=14", "Rise_D=0" }, new string[0])]
+        [TestCase("L005", new[] { 24, 25, 13, 19, 12, 32 }, new int[0], new[] { "Arrow_A=6", "Arrow_V2=6", "Arrow_B=6", "Arrow_C=6", "Arrow_D=6", "Floor_6=27", "Rise_D=0" }, new string[0])]
         // D-119: L006 re-pinned: Ride_7 over Pit_7 and the hinge floor Flip_8 (window 21; T7, T8). PAX-107: the lid 1.5 u longer
         // in all (the step-off dead end now lands on its spikes), the hinge 20 % faster, twice.
         // D-124: the way down is the climb onto Lift_G (no sweep, so no T3); the lid's gap (the step-off dead end into Pit_5).
@@ -68,7 +68,7 @@ namespace Parallax.Tests.EditMode
         // D-125: the ground walk's spikes and block (T15, T16); the storm at the cat's run, first strike 130, kept out of the right
         // tower (T7 recovers again); Ride_A and Ride_B 27 ticks later. Then Spikes_1 are shaft 1's spikes (no second row; T1 and
         // T10 a tick longer).
-        [TestCase("L007", new[] { 26, 13, 31 }, new int[0], new[] { "Floor_1=30", "Floor_2=21", "S2_End=39", "Spikes_G1=40", "Block_G=13", "S1_T4=30", "Spikes_5=9", "S1_T6=51", "Spikes_6b=32", "Tread_LD=19", "Tread_RF=19", "Ride_A=844", "Sink_S=19", "Ride_B=928", "Cloud=964", "Arrow_S=6" }, new[] { "Tread_RC visible t675, complete t1206" })]
+        [TestCase("L007", new[] { 26, 13, 31 }, new int[0], new[] { "Floor_1=30", "Floor_2=21", "S2_End=39", "Spikes_G1=40", "Block_G=13", "S1_T4=30", "Spikes_5=9", "S1_T6=51", "Spikes_6b=32", "Tread_LD=19", "Tread_RF=19", "Ride_A=844", "Sink_S=19", "Ride_B=928", "Arrow_S=6" }, new[] { "Tread_RC visible t675, complete t1206" })]
         // PAX-107: S1 runs to the east wall (no ledge down to the door, no pillar); Spikes_E is the dead end on its end. Then the
         // rebuild: S2's hinge floor and the waterfall shaft (window 13), S1's hinge floor, the chimney climb; no arrows, no Ride_B.
         // PAX-107 round four (D-123): the shaft 2 u wide under a mossy chimney, the maze east of it (the climb out recovers: M1-M4),
@@ -90,7 +90,7 @@ namespace Parallax.Tests.EditMode
         // PAX-107: L010 starts at S1's east end over a chasm (Ride_A, Sink_S), no stair, the storm faster.
         // D-125: Step_A and Hop_B over the start's hole (no Ride_A); the storm from the start at the cat's run, every 145; Drop_10
         // faster; Ride_E leaves as the cat boards (T8: the storm strikes a cat that waits for the next ride).
-        [TestCase("L010", new[] { 15 }, new int[0], new[] { "Step_A=34", "Hop_B=28", "Sink_S=57", "Block_1=10", "S1_2=31", "Drop_10=36", "Spikes_3=15", "Arrow_4=6", "Spikes_5=390", "Cloud=613", "Sink_E=48", "Cloud=758", "Spikes_D2=15", "Spikes_D2=24" }, new string[0])]
+        [TestCase("L010", new[] { 15 }, new int[0], new[] { "Step_A=34", "Hop_B=28", "Sink_S=57", "Block_1=10", "S1_2=31", "Drop_10=36", "Spikes_3=15", "Arrow_4=6", "Spikes_5=390", "Sink_E=48", "Spikes_D2=15", "Spikes_D2=24" }, new string[0])]
         public void RouteResults_AreUnchangedFromD079(string id, int[] windows, int[] margins, string[] leads, string[] recoveries)
         {
             object report = reports[id];

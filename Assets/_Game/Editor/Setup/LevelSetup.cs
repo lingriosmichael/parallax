@@ -244,7 +244,7 @@ namespace Parallax.Editor.Setup
             // D-236: a level's arrow variations (L028), picked on load.
             ArrowVariantSetup.Wire(parent, Parallax.Editor.Levels.LevelLooks.LevelOf(layout), death, changes);
             // D-277: the level's world picks its music.
-            MusicImport.Wire(scene, Parallax.Editor.Levels.Biomes.Of(layout), changes);
+            MusicImport.Wire(scene, MusicImport.TrackForLevel(Parallax.Editor.Levels.LevelLooks.LevelOf(layout)), changes);
             // D-248: L029's falling ceilings come down filled.
             CeilingFillSetup.Wire(parent, Parallax.Editor.Levels.LevelLooks.LevelOf(layout), layout, changes);
 
@@ -265,6 +265,7 @@ namespace Parallax.Editor.Setup
                 var worldFrame = new Bounds(worldCentre, contentFrame.size);
                 LevelCameraBuilder.BakeFrame(camera, worldFrame, changes);
                 LevelCameraBuilder.BakeLevelCamera(camera, Parallax.Editor.Levels.LevelLooks.LevelOf(layout), changes);
+                GameFeelSetup.BakeLevel(scene, Parallax.Editor.Levels.LevelLooks.LevelOf(layout), changes);   // PAX-V06: the level's world and air
                 LevelCameraBuilder.SetBackgroundVerticalPosition(root, worldFrame, changes);
                 // PAX-A15 §2.3: the level's background stack and grade, from its recipe (no-op without LevelLookConfig).
                 EnvironmentStackSetup.Build(root, camera.GetComponent<Camera>(), worldFrame, Parallax.Editor.Levels.LevelLooks.LevelOf(layout), layout, changes);

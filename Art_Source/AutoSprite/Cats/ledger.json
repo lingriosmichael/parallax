@@ -1276,9 +1276,61 @@
       ],
       "credits": 1,
       "jobs": []
+    },
+    "A/24_run_brake": {
+      "calls": [
+        {
+          "at": "2026-11-01T17:22:18Z",
+          "note": "generate v1 (turbo)",
+          "credits": 0,
+          "status": "refused",
+          "refund": "PLAN_REQUIRED before any generation; balance still 20 (2026-11-01)"
+        }
+      ],
+      "credits": 0,
+      "jobs": []
+    },
+    "A/25_wall_push": {
+      "calls": [
+        {
+          "at": "2026-11-01T17:22:18Z",
+          "note": "generate v1 (turbo)",
+          "credits": 0,
+          "status": "refused",
+          "refund": "PLAN_REQUIRED before any generation; balance still 20 (2026-11-01)"
+        }
+      ],
+      "credits": 0,
+      "jobs": []
+    },
+    "A/26_straight_jump": {
+      "calls": [
+        {
+          "at": "2026-11-01T17:22:19Z",
+          "note": "generate v1 (turbo)",
+          "credits": 0,
+          "status": "refused",
+          "refund": "PLAN_REQUIRED before any generation; balance still 20 (2026-11-01)"
+        }
+      ],
+      "credits": 0,
+      "jobs": []
+    },
+    "A/27_running_takeoff": {
+      "calls": [
+        {
+          "at": "2026-11-01T17:22:19Z",
+          "note": "generate v1 (turbo)",
+          "credits": 0,
+          "status": "refused",
+          "refund": "PLAN_REQUIRED before any generation; balance still 20 (2026-11-01)"
+        }
+      ],
+      "credits": 0,
+      "jobs": []
     }
   },
-  "balanceAfter": 1148,
-  "balanceAfterAt": "2026-09-29",
+  "balanceAfter": 20,
+  "balanceAfterAt": "2026-11-01",
   "budgetNote": "raised 300 -> 400 on 2026-09-29 for the PAX-A08 extras (both cats) and PAX-V06 effect sheets, developer said \"Do it\""
 }

@@ -18,7 +18,7 @@ namespace Parallax.Editor.Levels
     //  - S2 (east, section 1): Flood_2 starts as the cat leaves the checkpoint. Squeeze_2, the lower half of S3's slab, comes down
     //    over the walk as the cat comes under it: don't stop. Flood_2 is at S2's floor soon after: straight up Chimney C.
     //  - S3 (west): a hole 8 u long in the floor. Flip_3U puts the cat on the ceiling (S4's underside); upside down, jump Flip_3T, an
-    //    orb that would drop it into the hole; Inv_3, hidden past it, turns the stick round, so a cat still holding on walks back
+    //    orb that would drop it into the hole; Inv_3, past it, turns the stick round, so a cat still holding on walks back
     //    into Flip_3T. Flip_3D puts it back down by Chimney D, and the Surge rises up the chimney after it.
     //  - S4 (the top, east): Retract_4, over S3's hole, pulls back from under the cat over the flood; Bar_4 comes from behind at
     //    shin height (jump it) and sticks in the Sill by the door.
@@ -118,14 +118,14 @@ namespace Parallax.Editor.Levels
             e.Add(E(SoloRoomElementKind.MovingTrap,"Squeeze_2",((Sq2X0 + Sq2X1) * .5f,F[3] - 1.5f * Slab),(Sq2X1 - Sq2X0,Slab),(Sq2TrigX + .2f,(F[2] + F[4] - Slab) * .5f),(.4f,F[4] - Slab - F[2]),new SoloRoomTrapSettings(
                 new MovingFloorSettings(SurfaceMotion.Carry, slams: true),
                 new SoloRoomTrapSettings(offset:new Vector2(0f,-Sq2Drop),moveTicks:Sq2Ticks,holdTicks:9999,movingKind:MovingTrapKind.Solid))));
-            // The orbs, honest (drawn): Flip_3U on S3's floor, Flip_3T and Flip_3D on the ceiling (S4's underside); Inv_3 hidden.
+            // The orbs, honest (drawn): Flip_3U on S3's floor, Flip_3T and Flip_3D on the ceiling (S4's underside); Inv_3 between them.
             var up = new SoloRoomTrapSettings(gravityMode: GravityFlipMode.ForceUp, rearmOnExit: true, rendererEnabled: true);
             var down = new SoloRoomTrapSettings(gravityMode: GravityFlipMode.ForceDown, rearmOnExit: true, rendererEnabled: true);
             float ceil3 = F[4] - Slab;
             e.Add(E(SoloRoomElementKind.GravityFlip,"Flip_3U",(Flip3UX,F[3] + 1f),(1f,2f),settings:up));
             // Flip_3T is small (0.5 x 0.6), so a jump away from the ceiling (1.6) clears it at its height.
             e.Add(E(SoloRoomElementKind.GravityFlip,"Flip_3T",(Flip3TX,ceil3 - .3f),(.5f,.6f),settings:down));
-            e.Add(E(SoloRoomElementKind.Inverter,"Inv_3",(Inv3X,ceil3 - 1f),(.4f,2f),settings:new SoloRoomTrapSettings(new InverterSettings(Inv3Ticks, disguised: true), new SoloRoomTrapSettings(delayTicks:0))));
+            e.Add(E(SoloRoomElementKind.Inverter,"Inv_3",(Inv3X,ceil3 - 1f),(.4f,2f),settings:new SoloRoomTrapSettings(new InverterSettings(Inv3Ticks), new SoloRoomTrapSettings(delayTicks:0))));
             e.Add(E(SoloRoomElementKind.GravityFlip,"Flip_3D",(Flip3DX,ceil3 - .75f),(1f,1.5f),settings:down));
 
             // ---- S4: the top (Chimney D's pillar at its west end, Retract_4) ----

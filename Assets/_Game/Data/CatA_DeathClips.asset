@@ -76,12 +76,18 @@ MonoBehaviour:
       - {fileID: 705115065, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
       - {fileID: -43727612, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
       - {fileID: -1955256013, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
-      fps: 10
+      - {fileID: -1469365760, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: 661658519, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: -1031326836, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      fps: 15
       loop: 0
       strideUnits: []
       poseCentroids:
       - {x: 0.4077233, y: 0.63351816}
       - {x: 0.40453365, y: 0.651451}
+      - {x: 0.40198314, y: 0.63333404}
+      - {x: 0.4005344, y: 0.5890171}
+      - {x: 0.39877155, y: 0.5511038}
       - {x: 0.44439328, y: 0.27730727}
       - {x: 0.43821445, y: 0.19073766}
       - {x: 0.43707314, y: 0.17304854}
@@ -154,15 +160,19 @@ MonoBehaviour:
       - {fileID: -856183213, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
       - {fileID: 635296554, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
       - {fileID: -1321777265, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
-      fps: 10
+      - {fileID: -1060837904, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: -1875530917, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      fps: 14
       loop: 0
       strideUnits: []
       poseCentroids:
       - {x: 0.045622714, y: 0.37264842}
-      - {x: -0.0034068413, y: 0.6833561}
+      - {x: -0.005162815, y: 0.6828037}
       - {x: 0.004693604, y: 0.7698752}
       - {x: 0.0122827655, y: 0.7673532}
+      - {x: 0.012864257, y: 0.5503761}
       - {x: -0.012702026, y: 0.2675647}
+      - {x: 0.03577018, y: 0.2781816}
       - {x: 0.015558596, y: 0.21512154}
       entryFrames: 
       stanceFrames: 

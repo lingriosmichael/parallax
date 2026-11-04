@@ -35,6 +35,9 @@ namespace Parallax.Presentation
         [SerializeField] Sprite launcherSprite, arrowSprite, spearHeadSprite, spearShaftSprite;
         [Tooltip("2026-10-17: the whole painted spear at its one size (TRAP-05_spear); null draws the old head and repeating shaft.")]
         [SerializeField] Sprite spearWholeSprite;
+        [Tooltip("Premium plan gate 6: a soft dark rim behind the arrow, copying its pose (shade, so its lit edge reads on a mid-tone sky); null for none (a spear).")]
+        [SerializeField] SpriteRenderer rimArt;
+        [SerializeField] Sprite arrowRimSprite;
         [SerializeField] Material trapMaterial;
         [SerializeField] Vector2 launcherSize, arrowSize;
         [SerializeField] ArrowDirection direction;
@@ -167,6 +170,7 @@ namespace Parallax.Presentation
                 }
             }
             else DrawSpear(shiver);
+            DrawRim();
 
             Vector2 head = HeadPosition();
             if (glint != null)
@@ -230,6 +234,19 @@ namespace Parallax.Presentation
             shaftArt.color = Color.white;
             shaftArt.size = new Vector2(shaftLen, row);
             shaftArt.transform.position = centre + new Vector3(-sign * (size.x * 0.49f - shaftLen * 0.5f), 0f, 0f);
+        }
+
+        // Gate 6: the rim behind the arrow, on its exact pose.
+        void DrawRim()
+        {
+            if (rimArt == null) return;
+            rimArt.enabled = !spear && arrowArt.enabled && arrowRimSprite != null && arrowArt.sprite == arrowSprite;
+            if (!rimArt.enabled) return;
+            if (rimArt.sprite != arrowRimSprite) rimArt.sprite = arrowRimSprite;
+            rimArt.flipX = arrowArt.flipX;
+            Transform a = arrowArt.transform, r = rimArt.transform;
+            r.SetPositionAndRotation(new Vector3(a.position.x, a.position.y, r.position.z), a.rotation);
+            r.localScale = a.localScale;
         }
 
         // The head: the projectile's leading end, where the glint and the impact dust sit.

@@ -14,7 +14,7 @@ namespace Parallax.Editor.Levels
     //  - The top storey, east: Slam_1 comes down out of the roof on a cat that runs on (stop, let it go back up, pass);
     //    Hinge_1 stands up behind the cat and shoves it toward Spikes_H (jump them, don't stop); Block_1 drops out of the roof
     //    ahead (stop, then hop it); off the end, down to the lower storey.
-    //  - The lower storey, west, with the storm cloud chasing at a run: Crumble gives way (jump it), Pop springs up ahead (jump
+    //  - The lower storey, west, at a run: Crumble gives way (jump it), Pop springs up ahead (jump
     //    it), and the door rides its lift up and away over the pit as the cat comes to it: leap after it.
     // The chasm under the bridge is walled off by the Pier, so the only way down is the drop at the far end.
     static class L001Layout
@@ -57,9 +57,9 @@ namespace Parallax.Editor.Levels
             Block(elements, SoloRoomElementKind.Ceiling, "Cap_S", 11.8f, 13.3f, C2 + 1f, RoofTop);
             Block(elements, SoloRoomElementKind.Ceiling, "Roof_B", 13.3f, 32f, C2, RoofTop);
 
-            // The pits: the chasm under the bridge, Crumble's shaft, and the door's pit. The chasm is open air under a
-            // free-standing bridge, so it is no opening and has no back wall: the sky shows through it, before and after the
-            // bridge falls (the developer's rule, 2026-10-19). The two pits in the lower storey's ground show its recessed stone.
+            // The pits: the chasm under the bridge, Crumble's shaft, and the door's pit. The bridge passes for floor (D-298, D-300), so
+            // the chasm is a hole in a floor: stone under each tile until that tile falls, then the recessed back wall, not the sky.
+            // The two pits in the lower storey's ground show their recessed stone too.
             Pit(elements, "PitW", 0f, 6.5f, opening: false);
             Pit(elements, "PitC", 24f, 26f);
             // The door's pit is 1 u deep, so its spikes are in view from the lower storey: the lift carries the door over them.
@@ -99,12 +99,9 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_1",(26.75f,C2 + .5f),(1.5f,1f),(24.75f,(F2 + C2) * .5f),(.5f,C2 - F2),
                 new SoloRoomTrapSettings(delayTicks:2,unitsPerTick:.25f,travelDistance:C2 - F2)));
 
+            // D-291: Eye_1 hangs from the slab over the lower storey, where the cloud was: stop there and it hits.
+            elements.Add(Laser("Eye_1",23f,C1,Rect.MinMaxRect(16f,F1,31.5f,C1 - .2f),40));
             // ---------- The lower storey ----------
-            // The storm cloud wakes as the cat lands from the drop and chases it west, a little slower than a run (D-125 clouds
-            // run at 0.12 u a tick; this one at 0.1, so a cat that keeps running pulls ahead of its strikes, and one that stops is struck).
-            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(31f,2.05f),(2f,.8f),(31f,(F1 + C1) * .5f),(2f,C1 - F1),
-                new SoloRoomTrapSettings(new StormCloudSettings(new[] { new StormFloor(-100f, 2.05f, 15.5f, 31f) },
-                    followSpeed:.1f, firstStrikeDelay:70, strikePeriod:90, climbSpeed:.24f), new SoloRoomTrapSettings(delayTicks:0))));
             // Crumble fills its shaft and gives way 2 ticks after a touch: a cat that runs on falls onto PitC's spikes. Jump it.
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Crumble",(25f,-1.5f),(2f,3f),settings:new SoloRoomTrapSettings(delayTicks:2)));
             // Pop: spikes in the floor at x 18.5-20 spring up as the cat comes within 1.7 u of them (the trigger holds them too): jump them.

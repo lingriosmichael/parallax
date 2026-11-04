@@ -150,7 +150,7 @@ TextureImporter:
         width: 198
         height: 192
       alignment: 9
-      pivot: {x: 0.53865, y: 0.06055}
+      pivot: {x: 0.54875, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -172,7 +172,7 @@ TextureImporter:
         width: 198
         height: 192
       alignment: 9
-      pivot: {x: 0.53865, y: 0.06055}
+      pivot: {x: 0.54875, y: 0.06055}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -181,6 +181,50 @@ TextureImporter:
       bones: []
       spriteID: 86544a73cc21f09ff3e4f2188a8b955c
       internalID: -1432905433
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Apex_02
+      rect:
+        serializedVersion: 2
+        x: 396
+        y: 0
+        width: 198
+        height: 192
+      alignment: 9
+      pivot: {x: 0.54875, y: 0.06055}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a6a0635591744c1fb97e2398a1a4c9a0
+      internalID: 24631758
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Apex_03
+      rect:
+        serializedVersion: 2
+        x: 594
+        y: 0
+        width: 198
+        height: 192
+      alignment: 9
+      pivot: {x: 0.54875, y: 0.06055}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7cc878f9343c8d1f19c1bb23d9900661
+      internalID: 1320922696
       vertices: []
       indices: 
       edges: []
@@ -203,6 +247,8 @@ TextureImporter:
     nameFileIdTable:
       CatA_Apex_00: 79526870
       CatA_Apex_01: -1432905433
+      CatA_Apex_02: 24631758
+      CatA_Apex_03: 1320922696
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -15,6 +15,8 @@ namespace Parallax.Gameplay.Levels
         const string UnlockedPrefix = "PARALLAX_LEVEL_UNLOCKED_";
         const string BestPrefix = "PARALLAX_LEVEL_BEST_";
         const string HapticsKey = "PARALLAX_HAPTICS_ENABLED";
+        const string ReduceMotionKey = "PARALLAX_REDUCE_MOTION";
+        const string MusicVolumeKey = "PARALLAX_MUSIC_VOLUME", SoundVolumeKey = "PARALLAX_SOUND_VOLUME";
         const string WaitPrefix = "PARALLAX_LEVEL_WAIT_";
         const string PaidKey = "PARALLAX_FULL_UNLOCK";
         const string PaidValue = "granted";
@@ -47,6 +49,26 @@ namespace Parallax.Gameplay.Levels
         {
             get => PlayerPrefs.GetInt(HapticsKey, 1) == 1;
             set { PlayerPrefs.SetInt(HapticsKey, value ? 1 : 0); PlayerPrefs.Save(); }
+        }
+
+        /// <summary>D-314 (settings): the player's music and sound volumes, 0 to 1 over the mix (AudioCueBank); 1 by default.</summary>
+        public static float MusicVolume
+        {
+            get => Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumeKey, 1f));
+            set { PlayerPrefs.SetFloat(MusicVolumeKey, Mathf.Clamp01(value)); PlayerPrefs.Save(); }
+        }
+
+        public static float SoundVolume
+        {
+            get => Mathf.Clamp01(PlayerPrefs.GetFloat(SoundVolumeKey, 1f));
+            set { PlayerPrefs.SetFloat(SoundVolumeKey, Mathf.Clamp01(value)); PlayerPrefs.Save(); }
+        }
+
+        /// <summary>PAX-V06: Reduce motion turns off every feel effect (squash, dust, shake, bursts) but the minimal death flash.</summary>
+        public static bool ReduceMotion
+        {
+            get => PlayerPrefs.GetInt(ReduceMotionKey, 0) == 1;
+            set { PlayerPrefs.SetInt(ReduceMotionKey, value ? 1 : 0); PlayerPrefs.Save(); }
         }
 
         public static LevelProgress Load(IReadOnlyList<string> orderedLevelIds)

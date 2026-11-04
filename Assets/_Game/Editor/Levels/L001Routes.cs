@@ -5,8 +5,8 @@ using static Parallax.Editor.Routes.R;
 namespace Parallax.Editor.Levels
 {
     // D-159: level 1's routes ("Run!"). The solution runs the bridge as it falls, stops for Slam_1 and passes under it once it's
-    // back up, jumps Spikes_H ahead of Hinge_1, stops for Block_1 and hops it, drops to the lower storey, and runs west ahead of
-    // the cloud, jumping Crumble and Pop, to leap after the door as its lift carries it over the pit. Every betrayal is a way a
+    // back up, jumps Spikes_H ahead of Hinge_1, stops for Block_1 and hops it, drops to the lower storey, and runs west,
+    // jumping Crumble and Pop, to leap after the door as its lift carries it over the pit. Every betrayal is a way a
     // normal run meets a trap: stopping where the room says run, running where it says stop.
     static class L001Routes
     {
@@ -29,7 +29,7 @@ namespace Parallax.Editor.Levels
                 // Block_1: stop as it drops, hop onto it, and run off the slab's end to the lower storey.
                 Until(Fired("Block_1")), Release(), Until(Still()), Until(Stopped("Block_1")),
                 Hold(Right), Jump(), Until(GroundedOn("Block_1")), Until(GroundedOn("Ground_2")),
-                // The lower storey, ahead of the cloud: jump Crumble, jump Pop as it springs, leap after the door.
+                // The lower storey: jump Crumble, jump Pop as it springs, leap after the door.
                 Hold(Left), Until(XAtMost(26.8f)), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(GroundedOn("Ground_1")),
                 Until(Fired("Pop")), Jump().Timed(TimedMode.Shift), Until(Airborne()), Until(Grounded()),
                 Until(XAtMost(14.8f)), Jump().Timed(TimedMode.Shift), Until(RoomComplete()));
@@ -47,7 +47,7 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(GroundedOn(Ground_2))", "run on west", Hold(Left), Until(Dead())), revealedBy: "Crumble"),
                 new Betrayal("T6: Pop springs up under a cat that runs on", "Pop", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Fired(Pop))", "run on into Pop", Until(Dead()))),
-                new Betrayal("T7: the cloud strikes a cat that stops on the lower storey", "Cloud", DeathCause.Hazard,
+                new Betrayal("T7: Eye_1 shoots a cat that stops on the lower storey", "Eye_1", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Ground_2))", "stay where it lands", Release(), Until(Dead()))),
                 new Betrayal("T8: a cat that runs off the edge after the door falls into the pit", "PitD_Hazard", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X<=14.8)", "run off the edge", Until(Dead())), revealedBy: "Lift_D"),

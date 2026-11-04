@@ -87,7 +87,7 @@ namespace Parallax.Editor.Levels
             // Ground_2a's corner as Floor_4 went. The lift's riders pass under it (their tops at 1.56).
             elements.Add(E(SoloRoomElementKind.Wall,"S1_Lip",(7f,3.2f),(1f,1.6f)));
             elements.Add(E(SoloRoomElementKind.Inverter,"Invert_Drop",(5.375f,3.9f),(2.25f,1.2f),settings:new SoloRoomTrapSettings(
-                new InverterSettings(disguised:true),new SoloRoomTrapSettings(delayTicks:0))));
+                new InverterSettings(150),new SoloRoomTrapSettings(delayTicks:0))));
             // D-119: Pit_7 (x 10.5-15, wider than a jump) and its rider, Ride_7 (Carry): it waits at the west side and carries the
             // cat 3 u east (out over 40 ticks, 20 there, back over 40, every 160). Then the hinge floor, Flip_8 (x 15-17.5, flush
             // over Pit_8): a cat past it (its trigger is the space over Ground_2b, x 17.6-19.5) sets it off; 8 ticks later it swings

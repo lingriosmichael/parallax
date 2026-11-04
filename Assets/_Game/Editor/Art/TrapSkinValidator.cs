@@ -30,6 +30,7 @@ namespace Parallax.Editor.Art
             }
             foreach (SolidArt art in roomRoot.GetComponentsInChildren<SolidArt>(true))
             {
+                if (art.Painted) continue;
                 checkedCount++;
                 Check(levelId, roomRoot, art.name, art.HostSkin, art.Skin, art.Bodies[0].Greybox, errors);
             }
@@ -48,7 +49,7 @@ namespace Parallax.Editor.Art
             Transform hostTransform = roomRoot.Find(skin.HostName);
             SpriteRenderer host = hostTransform != null ? hostTransform.GetComponent<SpriteRenderer>() : null;
             if (host == null) errors.Add($"{levelId}: {art}'s host '{skin.HostName}' isn't in the room");
-            else if (skin.Difference(host) is string stale) errors.Add($"{levelId}: {art}'s recorded skin no longer matches its host '{skin.HostName}' ({stale}); rebuild the level");
+            else if (skin.Difference(host, host: true) is string stale) errors.Add($"{levelId}: {art}'s recorded skin no longer matches its host '{skin.HostName}' ({stale}); rebuild the level");
             if (skin.Difference(drawn) is string d) errors.Add($"{levelId}: {art} doesn't draw its host's skin before its reveal: {d}");
             if (drawn != null && greybox != null)
             {

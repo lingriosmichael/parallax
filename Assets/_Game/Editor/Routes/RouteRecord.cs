@@ -12,7 +12,7 @@ namespace Parallax.Editor.Routes
         public float X, Y, Vx, Vy;
         public bool Grounded, GravityUp, Dead, Holding, Complete;
         public string Ground;
-        public bool JumpPressed; public int Move;
+        public bool JumpPressed, JumpHeld; public int Move;
         // PAX-087 (D-089): the route's Climb this tick and whether the cat ended it on a vine (0/false with no vines).
         public int Climb; public bool IsClimbing;
         // PAX-105 (D-110): whether the cat ended the tick on a wall, and which side (+1 right, -1 left, 0 none). PAX-106 (D-110

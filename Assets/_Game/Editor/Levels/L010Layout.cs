@@ -15,7 +15,7 @@ namespace Parallax.Editor.Levels
     static class L010Layout
     {
         // PAX-107: Ride_E's place in its 150-tick rhythm: it leaves 31 ticks into each, just after a cat that comes straight
-        // down onto Ledge_E1 has boarded it (the storm follows the cat from the start, so it can't wait for the next ride).
+        // down onto Ledge_E1 has boarded it.
         internal const int RideEPhase = 31;
 
         public static SoloRoomDefinition Build()
@@ -87,20 +87,9 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Ride_E",(21.75f,11.5f),(1.5f,.5f),settings:new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Carry),
                 new SoloRoomTrapSettings(offset:new Vector2(3f,0f),moveTicks:40,holdTicks:20,returnTicks:40,repeatMode:TrapRepeatMode.Periodic,periodTicks:150,phaseTicks:RideEPhase,cooldownTicks:100,movingKind:MovingTrapKind.Solid))));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Sink_E",(26.5f,11.5f),(2f,.5f),settings:new SoloRoomTrapSettings(delayTicks:30)));
-            // PAX-103 (D-090 amendment, the developer's ruling: storms in L007 and L010): a storm over the ledges to the door. PAX-107
-            // (zaps 10 % faster: every 90 ticks; then the developer: "the cloud is always chasing the cat starting from the bottom
-            // floor"): it wakes as the cat starts (its trigger holds the start) and follows the cat at its run speed (0.12 u/tick),
-            // striking every 145 ticks (every 90 left no time for the floor traps to take a cat that stops; 145 puts the strikes
-            // after their falls and off the solution's waits)
-            // floor to floor (D-116): over S1 (under the shelf), and over the ledges to the door (under Roof_C, from Ledge_E1's west
-            // end, x 18.25, to
-            // x 29.5, clear of the door) once the cat is up there (upside down on the roof, it waits over Ledge_E1). Its first
-            // strike charges 154 ticks in. Waiting is what it punishes, all the way: Ride_E is home as the cat comes down onto
-            // Ledge_E1 and leaves soon after it boards; a cat that waits for the next ride is struck.
-            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(29f,8.55f),(2f,.8f),(30.5f,6.5f),(2f,3f),
-                new SoloRoomTrapSettings(new StormCloudSettings(new[] {
-                    new StormFloor(-100f, 8.55f, 1f, 31f),
-                    new StormFloor(11f, 14f, 18.25f, 29.5f) }, followSpeed:.12f, firstStrikeDelay:154, strikePeriod:145, climbSpeed:.24f), new SoloRoomTrapSettings(delayTicks:0))));
+            // D-291: the lasers where the cloud was: Eye_S under the shelf over S1, Eye_E under Roof_C over the ledges to the door (clear of the door's end).
+            elements.Add(Laser("Eye_S",13.35f,9f,Rect.MinMaxRect(17f,5f,22f,8.8f),0));
+            elements.Add(Laser("Eye_E",24f,16f,Rect.MinMaxRect(18f,11.75f,29.5f,15.8f),60));
             elements.Add(E(SoloRoomElementKind.Door,"Door",(30.5f,12.5f),(.6f,1.5f)));
             // Dead end (L4's lure): a flip floating over S1 sends a cat that jumps into it onto spikes under the slab above.
             elements.Add(E(SoloRoomElementKind.GravityFlip,"Flip_D2",(5.5f,7.8f),(1.5f,2f),settings:flip));
@@ -119,8 +108,7 @@ namespace Parallax.Editor.Levels
             // ticks after a cat lands on it (its trigger is its top strip; a cat walking across is off it in about 33), 6.5 u down
             // at 0.1 u a tick, carrying a cat that stays (it rests on it) through the fake ground into the pit's kill strip; it
             // comes back up after a hold. Slow, so its first ticks stay in the camera's view (D-083).
-            // PAX-107 (D-125, the storm at the cat's run): it goes 36 ticks after a landing (was 40) and sinks over 40 (was 65), so
-            // it takes a cat that stops on it before the storm's next strike does.
+            // PAX-107 (D-125): it goes 36 ticks after a landing (was 40) and sinks over 40 (was 65).
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Drop_10",(4.5f,4.5f),(3f,1f),(4.5f,5.28f),(3f,.56f),new SoloRoomTrapSettings(new MovingFloorSettings(SurfaceMotion.Slip),
                 new SoloRoomTrapSettings(delayTicks:36,offset:new Vector2(0f,-6.5f),moveTicks:40,holdTicks:60,returnTicks:60,repeatMode:TrapRepeatMode.Rearm,cooldownTicks:190,movingKind:MovingTrapKind.Solid))));
             var jumps = new[] {

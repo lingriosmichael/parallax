@@ -48,6 +48,8 @@ namespace Parallax.Gameplay.Player
         public Vector2 CarryShift { get; private set; }
         public Vector2 StepStartPosition { get; private set; }
         public bool IsFrozen { get; private set; }
+        /// <summary>D-293: this step's move command (presentation reads it; zero while frozen).</summary>
+        public float MoveCommand { get; private set; }
         public bool IsClimbing => climber != null && climber.IsClimbing;
         public ClimbVine ClimbedVine => climber?.Vine;
         /// <summary>PAX-105 (D-110): clinging to a wall, and on which side (+1 right, -1 left, 0 not clinging).</summary>
@@ -196,14 +198,20 @@ namespace Parallax.Gameplay.Player
             wallCling = new CatWallCling(body, bodyCollider, config, groundFilter);
         }
 
+        /// <summary>PAX-126 (D-321): this step's command moved, jumped or climbed (an unfrozen cat only). After a respawn the
+        /// room waits for the first step that does (RoomManager).</summary>
+        public bool ActedThisStep { get; private set; }
+
         public void Step(in CatCommand input, float dt)
         {
             // PAX-047 (D-058): frozen during a death hold — the command is drained by the
             // driver upstream (so no source's latched edges leak past the hold) but discarded
             // here; velocity/rotation/gravity stay exactly as Freeze() left them.
             JumpedThisStep = false;
+            ActedThisStep = !IsFrozen && (Mathf.Abs(input.Move) > ActThreshold || input.JumpPressed || Mathf.Abs(input.Climb) > ActThreshold);
             CarrierVelocity = CarryShift = Vector2.zero;
             if (body != null) StepStartPosition = body.position;
+            MoveCommand = IsFrozen ? 0f : input.Move;
             if (IsFrozen) return;
 
             SetCommand(input);
@@ -347,5 +355,7 @@ namespace Parallax.Gameplay.Player
 
         // D-207: how much faster than its floor (u/s) a riding cat may rise and still stand on it (physics' push overshoots a little).
         const float RideSpeedMargin = .5f;
+        // PAX-126 (D-321): a stick this far off centre (after the router's dead zone) counts as a move.
+        const float ActThreshold = .01f;
     }
 }

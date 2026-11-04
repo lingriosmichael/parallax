@@ -20,7 +20,7 @@ namespace Parallax.Editor.Setup
         static readonly Color InverterCyan = new(.20f, .85f, .90f, 1f);
         static readonly Color CueRingColor = new(.20f, .85f, .90f, .45f);
         static readonly Color CueMarkColor = new(.20f, .85f, .90f, 1f);
-        internal static readonly Vector2 CueRingSize = new(1.5f, 1.1f), CueMarkSize = new(.7f, .2f);
+        internal static readonly Vector2 CueRingSize = new(1.5f, 1.1f), CueMarkSize = new(.7f, .28f);
         internal const int CueRingSortingOrder = -1, CueMarkSortingOrder = 1;
 
         internal static InverterTrap BuildInverterCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, SoloRoomTrapSettings settings, Vector2 triggerLocalPosition, Vector2 triggerSize, List<string> changes, Vector2 elementPosition = default)

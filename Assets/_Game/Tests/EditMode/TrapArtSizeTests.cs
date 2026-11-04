@@ -66,12 +66,11 @@ namespace Parallax.Tests.EditMode
                             case InverterArt:
                                 if (so.FindProperty("orb").objectReferenceValue is SpriteRenderer orb && orb.sprite != null)
                                 {
-                                    // Without its breathing (a pure function of the room clock, the same everywhere).
-                                    Note("inverter orb", $"{id} {art.name}", new Vector2(orb.sprite.bounds.size.x * Mathf.Abs(orb.transform.lossyScale.x) / Breath(art), 0f));
+                                    Note("inverter orb", $"{id} {art.name}", new Vector2(orb.sprite.bounds.size.x * Mathf.Abs(orb.transform.lossyScale.x), 0f));
                                 }
                                 break;
                             case FlipArt:
-                                if (so.FindProperty("ring").objectReferenceValue is SpriteRenderer ring && ring.sprite != null && so.FindProperty("zoneSize").vector2Value is Vector2 zone && Mathf.Min(zone.x, zone.y) >= 0.95f)
+                                if (so.FindProperty("ring").objectReferenceValue is SpriteRenderer ring && ring.sprite != null)
                                     Note("flip ring", $"{id} {art.name}", Unrotated(ring));
                                 break;
                         }
@@ -142,6 +141,5 @@ namespace Parallax.Tests.EditMode
             r.sprite == null ? Vector2.zero : Vector2.Scale(r.sprite.bounds.size, new Vector2(Mathf.Abs(r.transform.lossyScale.x), Mathf.Abs(r.transform.lossyScale.y)));
 
         // InverterArt's breathing at the room's tick (0.92 + 0.08 sin(tick x 0.08)); in a freshly built room the tick is 0.
-        static float Breath(TrapArt art) => 0.92f;
     }
 }

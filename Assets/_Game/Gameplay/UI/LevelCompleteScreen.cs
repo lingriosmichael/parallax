@@ -36,6 +36,7 @@ namespace Parallax.Gameplay.UI
         [SerializeField] NextLevelButton nextLevelButton;
         [SerializeField] LevelsButton levelsButton;
         [SerializeField] GameObject pauseButton;
+        [SerializeField] GameObject playHud;
 
         readonly Dictionary<int, int> roomStartTick = new Dictionary<int, int>();
         readonly List<GameObject> spawnedRows = new List<GameObject>();
@@ -108,6 +109,7 @@ namespace Parallax.Gameplay.UI
             if (panel != null) panel.SetActive(true);
             // PAX-054 (D-073): the pause button can't be used once the level is complete.
             if (pauseButton != null) pauseButton.SetActive(false);
+            if (playHud != null) playHud.SetActive(false);
             PopulateRows(LastSummary, total);
             ConfigureNextLevelButton(total);
             ConfigureLevelsButton(total);
@@ -153,18 +155,22 @@ namespace Parallax.Gameplay.UI
             for (int i = 0; i < spawnedRows.Count; i++) if (spawnedRows[i] != null) Destroy(spawnedRows[i]);
             spawnedRows.Clear();
 
-            if (rowTemplate != null && rowsContainer != null)
+            // D-316: a level of one room (every level today) shows its total alone: its room's line only said it twice.
+            if (rowTemplate != null && rowsContainer != null && rowsData.Length > 1)
             {
                 for (int i = 0; i < rowsData.Length; i++)
                 {
                     Text row = Instantiate(rowTemplate, rowsContainer);
                     row.gameObject.SetActive(true);
-                    row.text = $"Room {rowsData[i].RoomNumber} — {rowsData[i].Deaths} death{(rowsData[i].Deaths == 1 ? "" : "s")}";
+                    row.text = $"Room {rowsData[i].RoomNumber} — {DeathsText(rowsData[i].Deaths, "no deaths")}";
                     spawnedRows.Add(row.gameObject);
                 }
             }
 
-            if (totalText != null) totalText.text = $"Total: {total} death{(total == 1 ? "" : "s")}";
+            if (totalText != null) totalText.text = total == 0 ? "No deaths" : rowsData.Length > 1 ? $"Total: {DeathsText(total, "")}" : DeathsText(total, "");
         }
+
+        // D-303: the title font's zero reads as a letter O, and "no deaths" is the better thing to say.
+        static string DeathsText(int deaths, string none) => deaths == 0 ? none : $"{deaths} death{(deaths == 1 ? "" : "s")}";
     }
 }

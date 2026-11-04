@@ -19,16 +19,16 @@ namespace Parallax.Editor.Setup
         // (the .meta is the art ticket's). A snap vine (configured settings) gets an Overlap trigger child from the
         // secondary box when it has one; with none it triggers on its own box.
         internal const string VineSpritePath = "Assets/_Game/Art/RealityA/Environment/A_OBJ_Vine.png";
-        internal const int VineSortingOrder = -1;
+        internal const int VineSortingOrder = -3;   // D-297: behind the stone it grows out of, in front of what's behind the room
         static readonly Color VinePlaceholder = new(.25f, .55f, .2f, 1f);
 
-        internal static ClimbVine BuildClimbVineCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, SoloRoomTrapSettings settings, Vector2 triggerLocalPosition, Vector2 triggerSize, List<string> changes)
+        internal static ClimbVine BuildClimbVineCore(Transform parent, RealityRoot root, string name, Vector2 position, Vector2 size, int roomId, RoomManager rooms, RoomDeath death, ObserverSet observers, SoloRoomTrapSettings settings, Vector2 triggerLocalPosition, Vector2 triggerSize, List<string> changes, float topReach = 0f)
         {
             GameObject go = CreateTrap<ClimbVine>(parent, root, name, position, size, Color.clear, roomId, rooms, death, observers, true, null, changes);
             BoxCollider2D box = go.GetComponent<BoxCollider2D>();
             SetupUtility.SetColliderSize(box, size, changes);
             if (!box.isTrigger) { box.isTrigger = true; changes.Add("set " + name + ".isTrigger"); }
-            SpriteRenderer[] segments = BuildVineSegments(go.transform, root, size, changes);
+            SpriteRenderer[] segments = BuildVineSegments(go.transform, root, size, changes, topReach);
             bool snaps = settings.IsConfigured;
             BoxCollider2D trigger = snaps && settings.TriggerSource == TrapTriggerSource.Overlap && triggerSize != Vector2.zero
                 ? CreateTrigger(go.transform, root, settings.TriggerName, triggerLocalPosition, triggerSize, changes) : null;
@@ -49,9 +49,9 @@ namespace Parallax.Editor.Setup
             return vine;
         }
 
-        static SpriteRenderer[] BuildVineSegments(Transform vine, RealityRoot root, Vector2 size, List<string> changes)
+        static SpriteRenderer[] BuildVineSegments(Transform vine, RealityRoot root, Vector2 size, List<string> changes, float topReach = 0f)
         {
-            if (SoloRoomSkin.Enabled && BuildSeamlessVine(vine, root, size, changes) is SpriteRenderer[] seamless) return seamless;
+            if (SoloRoomSkin.Enabled && BuildSeamlessVine(vine, root, size, changes, topReach) is SpriteRenderer[] seamless) return seamless;
             Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(VineSpritePath);
             if (sprite == null) Debug.LogError($"TrapKitSetup: no vine sprite at '{VineSpritePath}'; '{vine.name}' uses a placeholder colour.", vine);
             // Placeholder: one greybox segment the size of the box.
@@ -94,21 +94,21 @@ namespace Parallax.Editor.Setup
         }
 
         /// <summary>PAX-A15 §2.6 (PAX-A08's old item 15): the seamless vine from ENV-18, bottom to top: Segment_0 the tip,
-        /// Segment_1 the middle drawn Tiled (the kit sprite is Full Rect), Segment_2 the anchor, all centred on the grab
-        /// box, the anchor's top at the box's top. A vine under 3 u shrinks its anchor and tip to fit. Null when the kit's
-        /// vine sprites are missing (the stacked A02 vine is used).</summary>
-        static SpriteRenderer[] BuildSeamlessVine(Transform vine, RealityRoot root, Vector2 size, List<string> changes)
+        /// Segment_1 the middle drawn Tiled (the kit sprite is Full Rect), centred on the grab box. D-297 (the developer: "The top of
+        /// the vine should be a part of the ceiling. All vines should be like this"): no carved anchor: the middle goes on `topReach`
+        /// past the box's top, into the stone above, which draws over it. Only the drawing grows; the grab box doesn't. A vine under
+        /// 3 u shrinks its tip to fit. Null when the kit's vine sprites are missing (the stacked A02 vine is used).</summary>
+        static SpriteRenderer[] BuildSeamlessVine(Transform vine, RealityRoot root, Vector2 size, List<string> changes, float topReach = 0f)
         {
-            Sprite tip = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_VineTip"), mid = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_VineMid"), anchor = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_VineAnchor");
-            if (tip == null || mid == null || anchor == null) return null;
+            Sprite tip = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_VineTip"), mid = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_VineMid");
+            if (tip == null || mid == null) return null;
             float k = Mathf.Min(1f, size.y / 3.2f);
-            float half = size.y * .5f, tipH = tip.bounds.size.y * k, anchorH = anchor.bounds.size.y * k;
-            float midBottom = -half + tipH * 0.6f, midTop = half - anchorH * 0.5f;
+            float half = size.y * .5f, tipH = tip.bounds.size.y * k;
+            float midBottom = -half + tipH * 0.6f, midTop = half + topReach;
             var parts = new (Sprite sprite, Vector2 centre, Vector2 drawSize, bool tiled)[]
             {
                 (tip, new Vector2(0f, -half + tipH * .5f), tip.bounds.size * k, false),
                 (mid, new Vector2(0f, (midBottom + midTop) * .5f), new Vector2(mid.bounds.size.x, Mathf.Max(0.1f, midTop - midBottom)), true),
-                (anchor, new Vector2(0f, half - anchorH * .5f), anchor.bounds.size * k, false),
             };
             string layer = RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay);
             var renderers = new SpriteRenderer[parts.Length];

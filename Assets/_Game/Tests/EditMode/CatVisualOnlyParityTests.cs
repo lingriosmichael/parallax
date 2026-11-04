@@ -197,12 +197,13 @@ namespace Parallax.Tests.EditMode
             Assert.LessOrEqual(JumpPp(land, contact, land, contact + 1), onPp, $"{landing}[{contact}] -> [{contact + 1}] (phone px)");
         }
 
-        // PAX-A14 target 3: the gravity flip's roll, 4 drawn cels and 4 turned in-betweens, steps under 4 phone px a frame.
+        // PAX-A14 target 3: the gravity flip's roll, 4 drawn cels and 4 turned in-betweens (D-293: a 2-frame tuck and uncurl
+        // around them), steps under 4 phone px a frame.
         [Test]
         public void TheFlipRoll_StepsUnder4PhonePx_AFrame()
         {
             CatClip flip = PrefabClips().ForState(CatAnimState.Flip);
-            Assert.AreEqual(8, flip.Count, "Flip = 4 drawn cels + 4 in-betweens");
+            Assert.AreEqual(12, flip.Count, "Flip = tuck + 4 drawn cels + 4 in-betweens + uncurl");
             for (int i = 0; i + 1 < flip.Count; i++) Assert.LessOrEqual(JumpPp(flip, i, flip, i + 1), 4f, $"Flip[{i}] -> [{i + 1}] (phone px)");
         }
 

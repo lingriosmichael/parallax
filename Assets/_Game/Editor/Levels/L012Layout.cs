@@ -195,8 +195,8 @@ namespace Parallax.Editor.Levels
 
             // Handoff. Orb_G's inversion ends while the cat is over Pit_H. The door backs away west, past FakeFloor_D.
             elements.Add(E(SoloRoomElementKind.Inverter,"Orb_G",(12f,6.5f),(.6f,3f),settings:new SoloRoomTrapSettings(new InverterSettings(60),new SoloRoomTrapSettings(delayTicks:0))));
-            // Hall 1: Inv_H (unseen, 30 ticks) waits just past PK: a cat that keeps holding left runs back into it.
-            elements.Add(E(SoloRoomElementKind.Inverter,"Inv_H",(13.5f,1.5f),(.4f,3f),settings:new SoloRoomTrapSettings(new InverterSettings(30, disguised:true),new SoloRoomTrapSettings(delayTicks:0))));
+            // Hall 1: Inv_H (30 ticks, D-284: drawn) waits just past PK: a cat that keeps holding left runs back into it.
+            elements.Add(E(SoloRoomElementKind.Inverter,"Inv_H",(13.5f,1.5f),(.4f,3f),settings:new SoloRoomTrapSettings(new InverterSettings(30),new SoloRoomTrapSettings(delayTicks:0))));
             elements.Add(E(SoloRoomElementKind.FakePlatform,"FakeFloor_D",(6.1f,-1.25f),(1.8f,2.5f)));
             elements.Add(E(SoloRoomElementKind.FakePlatform,"Slot_Floor",(2.3f,-1.75f),(1.8f,3.5f)));
             elements.Add(E(SoloRoomElementKind.DoorRetreat,"Retreat",(9.2f,1.5f),(.4f,3f),settings:new SoloRoomTrapSettings(moveTicks:30,offset:new Vector2(-3.1f,0f))));

@@ -68,7 +68,7 @@ namespace Parallax.Editor.Levels
             ReleaseClimb(), Hold(Right), Jump(), Until(Landed()),
         };
 
-        // Storm and the finale: the snap swaps the controls (hold left to go east) and wakes the Cloud and Arrow_Hi; let
+        // Storm and the finale: the snap swaps the controls (hold left to go east) and wakes Arrow_Hi; let
         // Arrow_Hi's shot pass over, then jump Spikes_3; the controls come back; under Hang_C into the chimney and up it; west
         // along S4: stop as Slam_Fa comes down, hop onto it before Hinge_F arrives, wait for Slam_Fb, onto it, off it west onto
         // Door_Step as the door retreats; jump from the step onto Door_Ledge, short of Spikes_D.
@@ -125,8 +125,6 @@ namespace Parallax.Editor.Levels
                     B("hang on", MirrorPart, 32, Until(Dead())), revealedBy: "V_3"),
                 new Betrayal("T10 [B]: a cat that keeps holding right when the snap swaps the controls runs back west into V_3's gap onto Thorns_V", "Thorns_V", DeathCause.Hazard,
                     B("keep right", StormPart, 1, Until(Dead())), revealedBy: R.CatInverted),
-                new Betrayal("T11 [NW]: a cat that stops on S3 is struck by the Cloud", "Cloud", DeathCause.Hazard,
-                    B("stop", StormPart, 2, Release(), Until(Dead())), revealedBy: "Cloud"),
                 new Betrayal("T12 [NJ]: a cat that jumps as Arrow_Hi comes over it is struck", "Arrow_Hi", DeathCause.Hazard,
                     B("jump into it", StormPart, 2, Until(HiNear(4.5f)), Jump(), Until(Dead()))),
                 // Finale.

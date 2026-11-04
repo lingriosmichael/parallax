@@ -168,6 +168,18 @@ namespace Parallax.Editor.Art
                 shaft.sortingOrder = arrow.sortingOrder; shaft.flipX = arrow.flipX; shaft.enabled = false;
             }
             else RemoveChild(art, "Shaft", changes);
+            // Gate 6: an arrow's dark rim, its order a hair behind it (ArrowArt puts it on the arrow's pose). Not a spear's: its dark
+            // wood reads by its contrast with a pale sky, and a rim behind it took that away (L011's spears fell to 15 % at 3:1).
+            Sprite rimFor = spear ? null : config.ArrowRim;
+            SpriteRenderer rim = null;
+            if (rimFor != null)
+            {
+                rim = Child(art, "Rim", layer, changes);
+                rim.sprite = rimFor; rim.sharedMaterial = HazardMaterial(config); rim.drawMode = SpriteDrawMode.Simple; rim.color = Color.white;
+                rim.sortingOrder = arrow.sortingOrder; rim.enabled = false;
+                rim.transform.localPosition = new Vector3(0f, 0f, 0.002f);
+            }
+            else RemoveChild(art, "Rim", changes);
 
             // A disguised launcher's reveal: the slot drawn over its host skin from the fire tick (§12 R8).
             SpriteRenderer slot = null;
@@ -190,7 +202,7 @@ namespace Parallax.Editor.Art
                 ("trapMaterial", HazardMaterial(config)), ("launcherSize", e.Size), ("arrowSize", new Vector2(lane.Length, lane.Thickness)),
                 ("direction", (int)lane.Direction), ("tellTicks", lane.TellTicks), ("flightTicks", flight), ("glint", glint), ("slot", slot),
                 ("spear", spear), ("shaftArt", shaft), ("spearHeadSprite", config.SpearHead), ("spearShaftSprite", config.SpearShaft), ("spearWholeSprite", spear ? wholeSprite : null),
-                ("mouthArt", mouth), ("mouthSprite", mouthSprite));
+                ("mouthArt", mouth), ("mouthSprite", mouthSprite), ("rimArt", rim), ("arrowRimSprite", config.ArrowRim));
             WriteSkin(presenter, "hostSkin", hostLook, changes);
             SetupUtility.SetArray(presenter, "greybox", new Object[] { greyLauncher, greyArrow }, changes);
             SetupUtility.SetArray(presenter, "impact", impact.Cast<Object>().ToArray(), changes);
@@ -356,6 +368,7 @@ namespace Parallax.Editor.Art
             p.FindPropertyRelative("WorldTiled").boolValue = skin.WorldTiled;
             p.FindPropertyRelative("Tile").vector2Value = skin.Tile;
             p.FindPropertyRelative("UVRect").vector4Value = skin.UVRect;
+            p.FindPropertyRelative("Tint").colorValue = skin.Tint;
             if (so.ApplyModifiedPropertiesWithoutUndo()) changes.Add("wrote " + target.name + "." + field);
         }
 

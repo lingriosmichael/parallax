@@ -64,3 +64,15 @@ MonoBehaviour:
     Clip: {fileID: 8300000, guid: 4d92233dc33c343d08ebd21238c12936, type: 3}
   - Track: 1
     Clip: {fileID: 8300000, guid: 8a9719295fb4341329d5305d011215f4, type: 3}
+  - Track: 2
+    Clip: {fileID: 8300000, guid: e3b8356b576e04d85b558917854341b4, type: 3}
+  - Track: 3
+    Clip: {fileID: 8300000, guid: db91816dd677c470a9ba653930fcf83a, type: 3}
+  - Track: 4
+    Clip: {fileID: 8300000, guid: e5a0b296df54c492fbc09e0c302ad10d, type: 3}
+  - Track: 5
+    Clip: {fileID: 8300000, guid: 71ef3391397224781acde9793c287e94, type: 3}
+  - Track: 6
+    Clip: {fileID: 8300000, guid: 6e939e1883c1b4a0ba97ff41c4041ec0, type: 3}
+  - Track: 7
+    Clip: {fileID: 8300000, guid: 488f60015f8d84611a6dc4fb1779e565, type: 3}

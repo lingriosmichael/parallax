@@ -22,10 +22,18 @@ namespace Parallax.Tests.EditMode
     {
         sealed class FakeLocalHumanDriver : IObserverDriver
         {
+            /// <summary>PAX-126 (D-321): push the stick up each tick (a move, so a respawned room starts; the cat stays put).</summary>
+            public bool Acts;
+            ObserverContext observer;
             public InputSourceKind Kind => InputSourceKind.LocalHuman;
-            public void Activate(ObserverContext observer) { }
+            public void Activate(ObserverContext observer) => this.observer = observer;
             public void Deactivate() { }
-            public void FixedTick(int tick) { }
+            public void FixedTick(int tick)
+            {
+                if (!Acts || observer == null || observer.Cat == null) return;
+                var command = new CatCommand { Climb = 1f };
+                observer.Cat.Step(in command, 0.02f);
+            }
         }
 
         sealed class Rig
@@ -33,6 +41,7 @@ namespace Parallax.Tests.EditMode
             public GameObject RealityRootGo, CatGo, ObserverContextGo, ObserverSetGo, RoomManagerGo, RoomDeathGo, CheckpointManagerGo, CheckpointMarkerGo, RoomDoorGo, ScreenGo;
             public RealityRoot RealityRoot;
             public CatMotor2D Cat;
+            public FakeLocalHumanDriver Driver;
             public ObserverContext ObserverContext;
             public ObserverSet Observers;
             public RoomManager Rooms;
@@ -76,7 +85,8 @@ namespace Parallax.Tests.EditMode
                 SetPrivate(rig.ObserverContext, "reality", rig.RealityRoot);
                 SetPrivate(rig.ObserverContext, "cat", rig.Cat);
                 Invoke(rig.ObserverContext, "Awake");
-                rig.ObserverContext.SetDriver(new FakeLocalHumanDriver());
+                rig.Driver = new FakeLocalHumanDriver();
+                rig.ObserverContext.SetDriver(rig.Driver);
 
                 rig.ObserverSetGo = new GameObject("Observers");
                 rig.Observers = rig.ObserverSetGo.AddComponent<ObserverSet>();
@@ -184,6 +194,7 @@ namespace Parallax.Tests.EditMode
                 int completedCount = 0;
                 rig.Rooms.LevelCompleted += () => completedCount++;
 
+                rig.Driver.Acts = true;   // PAX-126 (D-321): after the respawn the room (and its door) waits for the cat's first move
                 rig.Tick();
 
                 Assert.AreEqual(1, completedCount, "LevelCompleted must fire exactly once");

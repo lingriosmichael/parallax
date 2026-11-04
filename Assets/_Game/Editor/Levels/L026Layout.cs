@@ -33,7 +33,7 @@ namespace Parallax.Editor.Levels
     //    the cat passes it: reach the door before it closes.
     //  - The spike wave: spikes pop out of the ceiling (the cat's floor) and retract in a wave running east, toward the cat, fast
     //    (SpikeWaveSpeed); two waves on different beats, so the gaps between them change. Jump it as it comes.
-    //  - Inv_R1, hidden on the way, swaps left and right for a moment.
+    //  - Inv_R1, on the way, swaps left and right for a moment.
     //  - Plate_2T, just past Plate_2B on F2, opens Trap_2 under the way on: into Spikes_T2 on F3's floor. Jump it too.
     //  - Dead ends: F2's west end past Hatch_2 (Riser_W) and F3's west end (Riser_F3) rise under a cat into the ceiling.
     static class L026Layout
@@ -165,8 +165,8 @@ namespace Parallax.Editor.Levels
                     elements.Add(E(SoloRoomElementKind.HiddenSpikes, $"Spike{(char)('A' + w)}_{k + 1}", (x, F1Ceil - .15f), (1f, .3f), settings: new SoloRoomTrapSettings(
                         revealDelayTicks: 0, repeatMode: TrapRepeatMode.Periodic, periodTicks: SpikeBeats[w], phaseTicks: phase, cooldownTicks: SpikeOut)));
                 }
-            // Inv_R1, hidden in the ceiling's band, swaps left and right a moment (D-230: Inv_R2, nearer the door, is gone: "Its too hard").
-            elements.Add(E(SoloRoomElementKind.Inverter, "Inv_R1", (22.3f, F1Ceil - 1f), (.4f, 2f), settings: new SoloRoomTrapSettings(new InverterSettings(45, disguised: true), new SoloRoomTrapSettings(delayTicks: 0))));
+            // Inv_R1, in the ceiling's band, swaps left and right a moment (D-230: Inv_R2, nearer the door, is gone: "Its too hard").
+            elements.Add(E(SoloRoomElementKind.Inverter, "Inv_R1", (22.3f, F1Ceil - 1f), (.4f, 2f), settings: new SoloRoomTrapSettings(new InverterSettings(45), new SoloRoomTrapSettings(delayTicks: 0))));
 
             // ---------- The orbs ----------
             elements.Add(E(SoloRoomElementKind.GravityFlip, "Flip_U", (13f, F3 + 1f), (1f, 2f), settings: new SoloRoomTrapSettings(gravityMode: GravityFlipMode.ForceUp, rearmOnExit: true, rendererEnabled: true)));

@@ -19,9 +19,8 @@ namespace Parallax.Editor.Levels
     //    Slam_2 comes down ahead (stop, hop it); Flip_U2 throws the cat onto the ceiling over Spikes_F2, where CC_2 gives way
     //    into a spiked recess (jump it); Flip_D2 drops it at the turn, where the controls come back.
     //  - Storm (section 1, S3, walked east): V_3 climbs over Thorns_V to S3 and snaps V3Snap ticks after the cat takes it. The
-    //    snap is the machine's second half: Inv_3 swaps the controls for 150 ticks, the Cloud wakes behind the cat and chases
-    //    it at a run, and Arrow_Hi starts firing along S3 at jump height (walk under its shot, then jump Spikes_3). The mossy
-    //    chimney climbs to S4, where the cloud follows.
+    //    snap is the machine's second half: Inv_3 swaps the controls for 150 ticks, and Arrow_Hi starts firing along S3 at jump height (walk under its shot, then jump Spikes_3). The mossy
+    //    chimney climbs to S4.
     //  - Finale (section 2, S4, walked west): Hinge_F stands up behind (spiked), Slam_Fa comes down ahead (stop, hop onto it),
     //    Spikes_F come up, Slam_Fb comes down onto them (the step), and the door retreats onto Door_Ledge as the cat comes off
     //    it: Spikes_D come up under a cat that chases it.
@@ -165,13 +164,12 @@ namespace Parallax.Editor.Levels
             // y 10.4. The bracket's underside (11.8) keeps the vine's top low enough that a jump off it doesn't reach S4, and clear
             // of the leap east onto S3.
             elements.Add(E(SoloRoomElementKind.Vine,"V_3",(1.6f,(S2 + .8f + VineTop) * .5f),(.6f,VineTop - S2 - .8f),(1.6f,(S2 + S4 - 1f) * .5f),(.6f,S4 - 1f - S2),new SoloRoomTrapSettings(delayTicks:V3Snap)));
-            // The snap: Inv_3 (its orb high in the gap) swaps the controls for 150 ticks; the Cloud wakes over SB_1 and chases at a
-            // run along S3, then (once the cat is up the chimney) along S4's east end; Arrow_Hi starts firing from Hang_C along S3
+            // The snap: Inv_3 (its orb high in the gap) swaps the controls for 150 ticks; Arrow_Hi starts firing from Hang_C along S3
             // at jump height (over a standing cat), to the room's west end, and never stops.
             elements.Add(E(SoloRoomElementKind.Inverter,"Inv_3",(.5f,S3 + 3f),(.6f,.8f),settings:new SoloRoomTrapSettings(new InverterSettings(150),Chain("V_3", 1))));
-            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(5f,S3 + 2.9f),(2f,.8f),settings:new SoloRoomTrapSettings(new StormCloudSettings(new[] {
-                    new StormFloor(-100f, S3 + 2.9f, 4.5f, 28f),
-                    new StormFloor(S4 - .1f, S4 + 2.9f, 24f, 29.5f) }, followSpeed:.12f, strikePeriod:90, climbSpeed:.24f), Chain("V_3", 25))));
+            // D-291: the lasers where the cloud was: Eye_S from S4's slab over S3, Eye_R from the roof over S4's east end.
+            elements.Add(Laser("Eye_S",20f,S4 - 1f,Rect.MinMaxRect(15f,S3,28f,S4 - 1.2f),0,105));
+            elements.Add(Laser("Eye_R",26f,Roof,Rect.MinMaxRect(24f,S4,27f,Roof - .2f),40,105));
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_Hi",(29.5f,10.5f),(.5f,.4f),settings:new SoloRoomTrapSettings(
                 new ArrowLane(ArrowDirection.Left,10.5f,0f,unitsPerTick:.5f,tellTicks:10),
                 new SoloRoomTrapSettings(delayTicks:HiDelay,triggerSource:TrapTriggerSource.Chain,chainSource:"V_3",repeatMode:TrapRepeatMode.Continuous,cooldownTicks:HiCool))));
@@ -200,7 +198,7 @@ namespace Parallax.Editor.Levels
             var sections = new[] {
                 CheckpointSection.Start("Works", new Vector2(3f, S1), new[] { "Hinge_0", "Lift_1", "Bridge_1", "Bridge_2", "Bridge_3", "Bridge_4", "Arrow_Lo", "G_1", "Spikes_A",
                     "Inv_2", "Spikes_N", "Slam_2", "Flip_U2", "CC_2", "Spikes_CC2", "Flip_D2" }),
-                new CheckpointSection("Storm", new Vector2(4.6f, S3), new Rect(3.6f, S3, .2f, S4 - 1f - S3), new[] { "V_3", "Inv_3", "Cloud", "Arrow_Hi" }),
+                new CheckpointSection("Storm", new Vector2(4.6f, S3), new Rect(3.6f, S3, .2f, S4 - 1f - S3), new[] { "V_3", "Inv_3", "Eye_S", "Eye_R", "Arrow_Hi" }),
                 new CheckpointSection("Finale", new Vector2(28.6f, S4), new Rect(29.25f, S4 - .9f, 2.5f, .6f),
                     new[] { "Hinge_F", "Slam_Fa", "Spikes_F", "Slam_Fb", "Retreat_F", "Spikes_D" }),
             };

@@ -91,6 +91,116 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &6803596056963617311
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5357339763494557139}
+  - component: {fileID: 8039793905841828466}
+  - component: {fileID: 8293348349518733918}
+  m_Layer: 0
+  m_Name: Shadow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5357339763494557139
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6803596056963617311}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7064627984492035233}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &8039793905841828466
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6803596056963617311}
+  m_Enabled: 0
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: -1713967147
+  m_SortingLayer: 3
+  m_SortingOrder: 6
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: 21300000, guid: 34bdee15c41784d15a6fd2c9c781856b, type: 3}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1.301695, y: 1.301695}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
+--- !u!114 &8293348349518733918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6803596056963617311}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4052f66796bd749eaa85cb144734a954, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Presentation.CatContactShadow
+  motor: {fileID: -6960851939468905688}
+  shadow: {fileID: 8039793905841828466}
+  reach: 1.6
+  width: 1.2
+  height: 0.28
+  strength: 0.75
 --- !u!1 &8383936889462940800
 GameObject:
   m_ObjectHideFlags: 0
@@ -126,6 +236,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4873193962058543826}
+  - {fileID: 5357339763494557139}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &8385464979377668759
@@ -340,6 +451,7 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 8539e4fa74c514689ac207c889603612, type: 2}
   bodyRenderer: {fileID: 4730088555036735516}
   outlineRenderer: {fileID: 4787466439438444801}
+  levelRim: {r: 0, g: 0, b: 0, a: 0}
   clips:
     clips:
     - slot: Idle
@@ -369,6 +481,42 @@ MonoBehaviour:
       - {x: -0.0076251915, y: 0.40492252}
       - {x: -0.006458109, y: 0.40652272}
       - {x: -0.005989791, y: 0.4072885}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: StandUp
+      state: 0
+      frames:
+      - {fileID: -1565728595, guid: 9ed89d1aa97c84b9cbbffaaa8da6b851, type: 3}
+      - {fileID: 1951752971, guid: 9ed89d1aa97c84b9cbbffaaa8da6b851, type: 3}
+      - {fileID: 1903083503, guid: 9ed89d1aa97c84b9cbbffaaa8da6b851, type: 3}
+      fps: 30
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.01532477, y: 0.4096138}
+      - {x: 0.029197486, y: 0.39052588}
+      - {x: 0.04859311, y: 0.47665608}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: WallPush
+      state: 0
+      frames:
+      - {fileID: 2090242500, guid: 4d085fe23251448a4bad5072c018d36c, type: 3}
+      - {fileID: -1227324984, guid: 4d085fe23251448a4bad5072c018d36c, type: 3}
+      - {fileID: -1997014866, guid: 4d085fe23251448a4bad5072c018d36c, type: 3}
+      fps: 6
+      loop: 1
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.047400676, y: 0.4720913}
+      - {x: 0.04728136, y: 0.47119904}
+      - {x: 0.04817443, y: 0.47332117}
       entryFrames: 
       stanceFrames: 
       landEntryFrames: 
@@ -597,17 +745,55 @@ MonoBehaviour:
       landEntryFrames: 
       switchFrames: 
       switchTargets: 
+    - slot: RiseStraight
+      state: 2
+      frames:
+      - {fileID: -1729539596, guid: d72db11888d994055b8e7fb1184ebb5b, type: 3}
+      - {fileID: -298303698, guid: d72db11888d994055b8e7fb1184ebb5b, type: 3}
+      - {fileID: 402791208, guid: d72db11888d994055b8e7fb1184ebb5b, type: 3}
+      fps: 12
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.050982185, y: 0.3125707}
+      - {x: -0.046212737, y: 0.31166828}
+      - {x: -0.042423513, y: 0.3248797}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Reach
+      state: 2
+      frames:
+      - {fileID: -973240601, guid: 6c65093861d5e40be9f3741ad4897183, type: 3}
+      - {fileID: -522333864, guid: 6c65093861d5e40be9f3741ad4897183, type: 3}
+      fps: 24
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.046212737, y: 0.31166828}
+      - {x: -0.042423513, y: 0.3248797}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
     - slot: Apex
       state: 9
       frames:
       - {fileID: 79526870, guid: 7dfbae34acdee4e8689d82beee8fd4ea, type: 3}
       - {fileID: -1432905433, guid: 7dfbae34acdee4e8689d82beee8fd4ea, type: 3}
+      - {fileID: 24631758, guid: 7dfbae34acdee4e8689d82beee8fd4ea, type: 3}
+      - {fileID: 1320922696, guid: 7dfbae34acdee4e8689d82beee8fd4ea, type: 3}
       fps: 12
       loop: 0
       strideUnits: []
       poseCentroids:
-      - {x: -0.04772554, y: 0.39390236}
-      - {x: -0.056275018, y: 0.40463263}
+      - {x: -0.04132995, y: 0.36840442}
+      - {x: -0.047724158, y: 0.39390236}
+      - {x: -0.056273635, y: 0.40463263}
+      - {x: -0.061450783, y: 0.42424396}
       entryFrames: 
       stanceFrames: 
       landEntryFrames: 
@@ -626,6 +812,70 @@ MonoBehaviour:
       - {x: -0.041255865, y: 0.4605688}
       - {x: -0.032731015, y: 0.46167797}
       - {x: -0.030135687, y: 0.45998928}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: FallStraight
+      state: 3
+      frames:
+      - {fileID: -1110961923, guid: ea5771235b2a5430195ed8dd430d332f, type: 3}
+      - {fileID: 583756754, guid: ea5771235b2a5430195ed8dd430d332f, type: 3}
+      - {fileID: 1463368258, guid: ea5771235b2a5430195ed8dd430d332f, type: 3}
+      fps: 12
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.049313128, y: 0.43238857}
+      - {x: -0.03679811, y: 0.43340224}
+      - {x: -0.03514017, y: 0.43641463}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: FallLoop
+      state: 3
+      frames:
+      - {fileID: 698957038, guid: eb3cf751100e642d1ae08b3f36051f1f, type: 3}
+      - {fileID: 2103974418, guid: eb3cf751100e642d1ae08b3f36051f1f, type: 3}
+      - {fileID: -569692526, guid: eb3cf751100e642d1ae08b3f36051f1f, type: 3}
+      - {fileID: 1011652387, guid: eb3cf751100e642d1ae08b3f36051f1f, type: 3}
+      - {fileID: 1400020006, guid: eb3cf751100e642d1ae08b3f36051f1f, type: 3}
+      - {fileID: -1296370483, guid: eb3cf751100e642d1ae08b3f36051f1f, type: 3}
+      - {fileID: -1317373964, guid: eb3cf751100e642d1ae08b3f36051f1f, type: 3}
+      - {fileID: 1440070259, guid: eb3cf751100e642d1ae08b3f36051f1f, type: 3}
+      fps: 12
+      loop: 1
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.030135687, y: 0.45998928}
+      - {x: -0.03409876, y: 0.46442097}
+      - {x: -0.032569688, y: 0.4618084}
+      - {x: -0.032119483, y: 0.46126142}
+      - {x: -0.031577334, y: 0.46565017}
+      - {x: -0.032119483, y: 0.46126142}
+      - {x: -0.032569688, y: 0.4618084}
+      - {x: -0.03409876, y: 0.46442097}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: StepDown
+      state: 3
+      frames:
+      - {fileID: 1442702721, guid: 0a677e584598f46fea47d280ecf9b376, type: 3}
+      - {fileID: -1425638644, guid: 0a677e584598f46fea47d280ecf9b376, type: 3}
+      - {fileID: 990876983, guid: 0a677e584598f46fea47d280ecf9b376, type: 3}
+      fps: 24
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: -0.025528, y: 0.41415983}
+      - {x: -0.026667837, y: 0.42492}
+      - {x: -0.027133686, y: 0.42846283}
       entryFrames: 
       stanceFrames: 
       landEntryFrames: 
@@ -730,12 +980,18 @@ MonoBehaviour:
       - {fileID: 705115065, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
       - {fileID: -43727612, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
       - {fileID: -1955256013, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
-      fps: 10
+      - {fileID: -1469365760, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: 661658519, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      - {fileID: -1031326836, guid: c9c8ae55857474427bd0a1f010054177, type: 3}
+      fps: 15
       loop: 0
       strideUnits: []
       poseCentroids:
       - {x: 0.4077233, y: 0.63351816}
       - {x: 0.40453365, y: 0.651451}
+      - {x: 0.40198314, y: 0.63333404}
+      - {x: 0.4005344, y: 0.5890171}
+      - {x: 0.39877155, y: 0.5511038}
       - {x: 0.44439328, y: 0.27730727}
       - {x: 0.43821445, y: 0.19073766}
       - {x: 0.43707314, y: 0.17304854}
@@ -764,6 +1020,28 @@ MonoBehaviour:
       - {x: -0.07130721, y: 0.1434033}
       - {x: 0.030804645, y: 0.106211886}
       - {x: 0.03577642, y: 0.1060098}
+      entryFrames: 
+      stanceFrames: 
+      landEntryFrames: 
+      switchFrames: 
+      switchTargets: 
+    - slot: Death_CrushedSide
+      state: 11
+      frames:
+      - {fileID: -303948910, guid: f02ab629823d84c71926128f45aa128d, type: 3}
+      - {fileID: -1146712477, guid: f02ab629823d84c71926128f45aa128d, type: 3}
+      - {fileID: 883362803, guid: f02ab629823d84c71926128f45aa128d, type: 3}
+      - {fileID: -1783819859, guid: f02ab629823d84c71926128f45aa128d, type: 3}
+      - {fileID: 1729246432, guid: f02ab629823d84c71926128f45aa128d, type: 3}
+      fps: 10
+      loop: 0
+      strideUnits: []
+      poseCentroids:
+      - {x: 0.011674852, y: 0.676334}
+      - {x: -0.02838702, y: 0.6640499}
+      - {x: -0.039056893, y: 0.65644974}
+      - {x: 0.06523468, y: 0.6948293}
+      - {x: 0.06998725, y: 0.6907106}
       entryFrames: 
       stanceFrames: 
       landEntryFrames: 
@@ -802,15 +1080,19 @@ MonoBehaviour:
       - {fileID: -856183213, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
       - {fileID: 635296554, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
       - {fileID: -1321777265, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
-      fps: 10
+      - {fileID: -1060837904, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      - {fileID: -1875530917, guid: bcabc928adde4480598e7e78fb7b115e, type: 3}
+      fps: 14
       loop: 0
       strideUnits: []
       poseCentroids:
       - {x: 0.045622714, y: 0.37264842}
-      - {x: -0.0034068413, y: 0.6833561}
+      - {x: -0.005162815, y: 0.6828037}
       - {x: 0.004693604, y: 0.7698752}
       - {x: 0.0122827655, y: 0.7673532}
+      - {x: 0.012864257, y: 0.5503761}
       - {x: -0.012702026, y: 0.2675647}
+      - {x: 0.03577018, y: 0.2781816}
       - {x: 0.015558596, y: 0.21512154}
       entryFrames: 
       stanceFrames: 
@@ -841,25 +1123,33 @@ MonoBehaviour:
       state: 13
       frames:
       - {fileID: 1410831197, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
+      - {fileID: 1029338024, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
+      - {fileID: -1649872245, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
       - {fileID: 969618047, guid: 9567685f8614d445d90fbe54692f77a0, type: 3}
       - {fileID: 1830681964, guid: 9567685f8614d445d90fbe54692f77a0, type: 3}
-      - {fileID: 1029338024, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
-      - {fileID: 325891750, guid: 9567685f8614d445d90fbe54692f77a0, type: 3}
-      - {fileID: -1649872245, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
-      - {fileID: 818368210, guid: 9567685f8614d445d90fbe54692f77a0, type: 3}
       - {fileID: 672375911, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
-      fps: 24
+      - {fileID: 325891750, guid: 9567685f8614d445d90fbe54692f77a0, type: 3}
+      - {fileID: 625414805, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
+      - {fileID: 818368210, guid: 9567685f8614d445d90fbe54692f77a0, type: 3}
+      - {fileID: -728134397, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
+      - {fileID: -483566231, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
+      - {fileID: 612677630, guid: 2927777c4d473469b8a02e6769228b5b, type: 3}
+      fps: 36
       loop: 0
       strideUnits: []
       poseCentroids:
-      - {x: -0.03835016, y: 0.4442874}
+      - {x: -0.03628183, y: 0.3621528}
+      - {x: -0.05477857, y: 0.3854081}
+      - {x: -0.038358357, y: 0.4442899}
       - {x: 0.003185181, y: 0.45550716}
       - {x: 0.040072437, y: 0.4711551}
-      - {x: 0.08035104, y: 0.48189685}
+      - {x: 0.08034284, y: 0.48189935}
       - {x: 0.0913029, y: 0.46101755}
-      - {x: 0.103395425, y: 0.43495542}
+      - {x: 0.10338723, y: 0.43495792}
       - {x: 0.09738243, y: 0.3979663}
-      - {x: 0.09035399, y: 0.36109987}
+      - {x: 0.09034579, y: 0.36110237}
+      - {x: 0.037432835, y: 0.3506326}
+      - {x: -0.0028834892, y: 0.3633605}
       entryFrames: 
       stanceFrames: 
       landEntryFrames: 
@@ -999,14 +1289,14 @@ MonoBehaviour:
       loop: 0
       strideUnits: []
       poseCentroids:
-      - {x: -0.0049542673, y: 0.5321164}
-      - {x: 0.0036297138, y: 0.61177844}
-      - {x: 0.021366462, y: 0.41627502}
-      - {x: 0.005090673, y: 0.42808115}
-      - {x: 0.0032701255, y: 0.45051703}
-      - {x: 0.0048252987, y: 0.45245624}
-      - {x: 0.008507479, y: 0.45470613}
-      - {x: 0.008611427, y: 0.45417193}
+      - {x: 0.021374661, y: 0.41627502}
+      - {x: 0.005098872, y: 0.42808115}
+      - {x: 0.0032783244, y: 0.45051703}
+      - {x: 0.0048334976, y: 0.45245624}
+      - {x: 0.008515678, y: 0.45470613}
+      - {x: 0.008619625, y: 0.45417193}
+      - {x: 0.008422205, y: 0.4547597}
+      - {x: 0.008608536, y: 0.4543195}
       entryFrames: 
       stanceFrames: 
       landEntryFrames: 
@@ -1016,6 +1306,7 @@ MonoBehaviour:
   signals: {fileID: 6642481349442126384}
   motor: {fileID: -6960851939468905688}
   observer: {fileID: 0}
+  feel: {fileID: 11400000, guid: 85e2590dba23d46e29dd972f6beaf897, type: 2}
 --- !u!114 &6642481349442126384
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -153,10 +153,10 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 192
-        height: 204
+        width: 198
+        height: 216
       alignment: 9
-      pivot: {x: 0.54506, y: 0.11581}
+      pivot: {x: 0.53865, y: 0.16493}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -173,12 +173,12 @@ TextureImporter:
       name: CatA_Flip_01
       rect:
         serializedVersion: 2
-        x: 192
+        x: 198
         y: 0
-        width: 192
-        height: 204
+        width: 198
+        height: 216
       alignment: 9
-      pivot: {x: 0.54506, y: 0.11581}
+      pivot: {x: 0.53865, y: 0.16493}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -195,12 +195,12 @@ TextureImporter:
       name: CatA_Flip_02
       rect:
         serializedVersion: 2
-        x: 384
+        x: 396
         y: 0
-        width: 192
-        height: 204
+        width: 198
+        height: 216
       alignment: 9
-      pivot: {x: 0.54506, y: 0.11581}
+      pivot: {x: 0.53865, y: 0.16493}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -217,12 +217,12 @@ TextureImporter:
       name: CatA_Flip_03
       rect:
         serializedVersion: 2
-        x: 576
+        x: 594
         y: 0
-        width: 192
-        height: 204
+        width: 198
+        height: 216
       alignment: 9
-      pivot: {x: 0.54506, y: 0.11581}
+      pivot: {x: 0.53865, y: 0.16493}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -231,6 +231,94 @@ TextureImporter:
       bones: []
       spriteID: 3f1023e80a83f65e84276db1001d96a6
       internalID: 672375911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Flip_04
+      rect:
+        serializedVersion: 2
+        x: 792
+        y: 0
+        width: 198
+        height: 216
+      alignment: 9
+      pivot: {x: 0.53865, y: 0.16493}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a71ad8ac0bc85fc1025b363d7e8ea0c9
+      internalID: 625414805
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Flip_05
+      rect:
+        serializedVersion: 2
+        x: 990
+        y: 0
+        width: 198
+        height: 216
+      alignment: 9
+      pivot: {x: 0.53865, y: 0.16493}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2581ef8ed045846a5df3551ebc56240
+      internalID: -728134397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Flip_06
+      rect:
+        serializedVersion: 2
+        x: 1188
+        y: 0
+        width: 198
+        height: 216
+      alignment: 9
+      pivot: {x: 0.53865, y: 0.16493}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a992b94cc6c6b9b0bc764e9806228dc4
+      internalID: -483566231
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Flip_07
+      rect:
+        serializedVersion: 2
+        x: 1386
+        y: 0
+        width: 198
+        height: 216
+      alignment: 9
+      pivot: {x: 0.53865, y: 0.16493}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 630a475987e338349c307fca56077836
+      internalID: 612677630
       vertices: []
       indices: 
       edges: []
@@ -255,6 +343,10 @@ TextureImporter:
       CatA_Flip_01: 1029338024
       CatA_Flip_02: -1649872245
       CatA_Flip_03: 672375911
+      CatA_Flip_04: 625414805
+      CatA_Flip_05: -728134397
+      CatA_Flip_06: -483566231
+      CatA_Flip_07: 612677630
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

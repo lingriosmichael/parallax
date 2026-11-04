@@ -206,7 +206,8 @@ def fx_flash(w=128, h=128):
 def fx_ring(w=128, h=128):
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
     r = np.hypot(xx - (w - 1) / 2, yy - (h - 1) / 2) / (w / 2)
-    a = np.exp(-((r - 0.8) ** 2) / (2 * 0.06 ** 2))
+    # D-294 (the developer: "a thin white arc"): a wide, faint band of light, not a drawn line.
+    a = 0.5 * np.exp(-((r - 0.72) ** 2) / (2 * 0.13 ** 2)) * np.clip((1 - r) / 0.12, 0, 1)
     return np.dstack([np.full((h, w), GOLD[0]), np.full((h, w), GOLD[1]), np.full((h, w), GOLD[2]), a])
 
 

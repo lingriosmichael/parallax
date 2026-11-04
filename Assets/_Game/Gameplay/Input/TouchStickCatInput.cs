@@ -14,8 +14,11 @@ namespace Parallax.Gameplay.Input
         [SerializeField] Rect stickZone = new Rect(0.00f, 0.00f, 0.5f, 0.6f);
         [SerializeField] Rect jumpZone = new Rect(0.78f, 0.00f, 0.22f, 0.45f);
         [SerializeField] Rect interactZone = new Rect(0.56f, 0.00f, 0.18f, 0.40f);
-        [SerializeField] float stickRadius = 0.12f;
+        [Tooltip("PAX-127 (D-322): the ring's radius, a share of the safe area's height. Renamed from stickRadius (0.12), so every scene takes this smaller ring without a setup menu.")]
+        [SerializeField] float ringRadius = 0.08f;
         [SerializeField] float deadZone = 0.15f;
+        [Tooltip("PAX-127 (D-322): how far along the stick's x, after the dead zone, the cat reaches full speed.")]
+        [SerializeField] float fullSpeedAt = VirtualStick.DefaultFullSpeedAt;
         [Tooltip("PAX-087 (D-089): dead zone on the stick's y for Climb, after the radial dead zone. Higher than x's so a slightly diagonal run never climbs.")]
         [SerializeField] float climbDeadZone = VirtualStick.DefaultClimbDeadZone;
         [SerializeField] StickProjection projection = StickProjection.CatRelative;
@@ -40,6 +43,13 @@ namespace Parallax.Gameplay.Input
         readonly List<ITouchReservedRegion> validReservedRegions = new List<ITouchReservedRegion>();
         bool jumpPressedLatch;
         bool interactPressedLatch;
+
+        // PAX-A09: what the on-screen stick and jump button draw. Read only; nothing here changes how a touch is claimed.
+        public bool StickHeld => stickFingerId >= 0;
+        public Vector2 StickOrigin => stickOrigin;
+        public Vector2 StickCurrent => stickCurrent;
+        public float StickRadiusPixels => ringRadius * Screen.safeArea.height;
+        public bool JumpHeld => jumpFingerIds.Count > 0;
 
         void Awake()
         {
@@ -79,6 +89,7 @@ namespace Parallax.Gameplay.Input
         {
             Rect safeArea = Screen.safeArea;
             var touches = Touch.activeTouches;
+            float radiusPixels = ringRadius * safeArea.height;
 
             activeIds.Clear();
 
@@ -127,6 +138,7 @@ namespace Parallax.Gameplay.Input
                 else if (id == stickFingerId)
                 {
                     stickCurrent = touch.screenPosition;
+                    stickOrigin = VirtualStick.Follow(stickOrigin, stickCurrent, radiusPixels);
                 }
             }
 
@@ -153,7 +165,6 @@ namespace Parallax.Gameplay.Input
             }
             for (int i = 0; i < staleIds.Count; i++) ignoredFingerIds.Remove(staleIds[i]);
 
-            float radiusPixels = stickRadius * safeArea.height;
             lastStickVector = stickFingerId >= 0
                 ? VirtualStick.Evaluate(stickOrigin, stickCurrent, radiusPixels, deadZone)
                 : Vector2.zero;
@@ -173,7 +184,7 @@ namespace Parallax.Gameplay.Input
 
             Vector2 up = -gravityReceiver.Direction;
             Vector2 catRight = new Vector2(up.y, -up.x);
-            currentMove = VirtualStick.ToMove(lastStickVector, catRight, projection);
+            currentMove = VirtualStick.ToRun(VirtualStick.ToMove(lastStickVector, catRight, projection), fullSpeedAt);
         }
 
         void EndFinger(int id)
@@ -228,7 +239,7 @@ namespace Parallax.Gameplay.Input
             {
                 DrawDot(stickOrigin, 10f, Color.white);
                 DrawDot(stickCurrent, 8f, Color.green);
-                DrawRing(stickOrigin, stickRadius * safeArea.height, Color.white);
+                DrawRing(stickOrigin, ringRadius * safeArea.height, Color.white);
             }
         }
 

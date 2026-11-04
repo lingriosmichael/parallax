@@ -33,10 +33,20 @@ MonoBehaviour:
   hardLandDistance: 2.75
   airGraceDrop: 0.03
   groundSinkTolerance: 0.01
+  ridingSpeedTolerance: 0.5
   speedLeadTolerance: 0.5
   turnHoldTime: 0.016666668
   fidgetDelay: 3
   climbStillSpeed: 0.02
   leapSpeedFraction: 0.5
+  wallHangReach: 0.177
+  wallSlideReach: 0.2365
+  wallJumpBackReach:
+  - 0.277
+  - 0.598
+  - 0.73
   outlineColorA: {r: 1, g: 0.86, b: 0.62, a: 0.15}
   outlineColorB: {r: 0.35, g: 0.85, b: 1, a: 1}
+  turnNarrowWidth: 0.35
+  turnOpenTime: 0.08
+  wallPushCommand: 0.2

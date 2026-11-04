@@ -61,7 +61,6 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Floor,"Ground_2b",(14.75f,-2f),(1.5f,4f)),
                 // 2026-10-18: the ground under the crush ledge is its own section (Rise_D, below), between Ground_2c and Ground_2d.
                 E(SoloRoomElementKind.Floor,"Ground_2c",(21.75f,-2f),(3.5f,4f)),
-                E(SoloRoomElementKind.Floor,"Ground_2c_Base",(25.5f,-2.5f),(4f,3f)),
                 E(SoloRoomElementKind.Floor,"Ground_2d",(29.75f,-2f),(4.5f,4f)),
             };
             // T1: an arrow along S2 at shin height, out of the pillar behind the cat. D-116 (the developer: "throw several arrows in
@@ -92,24 +91,15 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_D",(.25f,5.3f),(.5f,.4f),
                 settings:new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,5.3f,27f,unitsPerTick:.36f,disguised:true),
                 new SoloRoomTrapSettings(delayTicks:90,triggerSource:TrapTriggerSource.Chain,chainSource:"Arrow_C",repeatMode:TrapRepeatMode.Continuous,cooldownTicks:230))));   // D-119: then every 320
-            // D-116 (the developer: "if the cat tries to go underneath it gets squished. If it goes on top the platform starts to
-            // shrink but from the right, slowly sliding towards the spikes"): the crush ledge. A cat under it is crushed (it sinks
-            // for an 8-tick tell, then drops onto the ground); one on top starts it shrinking from its right end, over 150 ticks,
-            // down to its spiked left end; its trigger is the space over it (its top to S1's underside), so a cat it crushes from
-            // below doesn't start the shrink. The way past: onto it, left along it, and over the spikes off its end. D-119: it
-            // stands near the ground's right end (x 23.5-27.5, under S1_B3), right of where the drop off S1 comes down, clear of the pits.
-            // 2026-10-18 (the developer: "Make this platform slightly higher"): 0.25 u higher (y 1-1.5). And ("I want the floor from
-            // below to move up and squish you ... then it gives you a weird situation where spikes are just hanging in thin air.
-            // Once it moves up it stays up"): the ledge no longer drops; the ground under it rises (Rise_D, below).
-            elements.Add(E(SoloRoomElementKind.ShrinkingFloor,"Ledge_D",(25.5f,1.25f),(4f,.5f),(25.5f,2.75f),(4f,2.5f),new SoloRoomTrapSettings(
-                new ShrinkSettings(150,1.5f,ShrinkFrom.Right),new SoloRoomTrapSettings(delayTicks:0))));
-            // The ground's top unit under the ledge (x 23.5-27.5) rises 1 u into it, 8 ticks after a cat comes under it (the space
-            // between them is its trigger), crushing it against the ledge; it stays up.
-            elements.Add(E(SoloRoomElementKind.MovingTrap,"Rise_D",(25.5f,-.5f),(4f,1f),(25.5f,.5f),(4f,1f),new SoloRoomTrapSettings(
+            // The crush ledge (D-116; D-290, the developer: "I dont like that the platform shortens and reveals spikes. Remove them both"): a plain,
+            // fixed ledge (x 23.5-27.5, y 1-1.5). A cat that goes under it is crushed; the way past is over it.
+            elements.Add(E(SoloRoomElementKind.Floor,"Ledge_D",(25.5f,1.25f),(4f,.5f)));
+            // The ground under the ledge rises 1 u into it, 8 ticks after a cat comes under it (the space between them is its trigger), crushing it
+            // against the ledge; it stays up. D-290 (the developer: "If the floor goes up it shouldnt reveal empty space"): the section is the
+            // ground's whole depth, 4 u, so it never shows daylight under it.
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Rise_D",(25.5f,-2f),(4f,4f),(25.5f,.5f),(4f,1f),new SoloRoomTrapSettings(
                 new MovingFloorSettings(SurfaceMotion.Carry,crushPartner:"Ledge_D"),
                 new SoloRoomTrapSettings(delayTicks:8,offset:new Vector2(0f,1f),moveTicks:6,holdTicks:0,returnTicks:0,repeatMode:TrapRepeatMode.Once,movingKind:MovingTrapKind.Solid))));
-            // T7: spikes on the ledge's left end, as the cat comes over it; jump them off the end.
-            elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_D",(24.25f,1.65f),(1.5f,.3f),(25.5f,2.75f),(4f,2.5f),new SoloRoomTrapSettings(revealDelayTicks:6)));
             // D-119: the riders. On S1 each waits at its hole's west side and carries the cat 3 u east; on the ground each waits at
             // its pit's east side and carries it 3 u west (Carry, Periodic, one 150-tick rhythm each).
             elements.Add(Rider("Ride_S1",(10.25f,4.75f),3f,RideS1Phase));
@@ -118,14 +108,9 @@ namespace Parallax.Editor.Levels
             elements.Add(Rider("Ride_G1",(13.25f,-.25f),-3f,RideG1Phase));
             L001Layout.AddShaft(elements, 1, 9.5f, 14f);
             L001Layout.AddShaft(elements, 2, 15.5f, 20f);
-            // D-119 (the developer: "I asked for a cloud in level 5"): a storm cloud follows the cat floor to floor. PAX-107 (the
-            // developer: "make the cloud start appearing from the middle level, not from the top"; clouds 20 % faster, zap 10 %
-            // faster): it waits over S1 and wakes as the cat comes down onto S1_A, then follows it under S2 over S1 and under S1
-            // over the ground, at 0.12 u/tick (PAX-107, D-124: the cat's run), striking every 135 ticks, the first 80 ticks after it wakes (25-tick tell).
-            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(7f,8.3f),(2f,.8f),(2.25f,6f),(4.5f,2f),
-                new SoloRoomTrapSettings(new StormCloudSettings(new[] {
-                    new StormFloor(-100f, 3.3f, 10.6f, 30.9f),   // 2026-10-18: from x 10.6 (was 7.6), clear of S1_B1's deeper body
-                    new StormFloor(4.5f, 8.3f, 6.6f, 30.9f) }, followSpeed:.12f, firstStrikeDelay:80, strikePeriod:135, climbSpeed:.24f), new SoloRoomTrapSettings(delayTicks:0))));
+            // D-291: the lasers where the cloud was: Eye_U under S2 over S1 (clear of the nook, the wait for the arrows), Eye_L under S1 over the ground's east end.
+            elements.Add(Laser("Eye_U",18f,9f,Rect.MinMaxRect(7f,5f,27f,8.8f),0));
+            elements.Add(Laser("Eye_L",22f,4f,Rect.MinMaxRect(20f,0f,31f,3.8f),40));
             // T6: T1 of level 1 again, before the door.
             L001Layout.AddShaft(elements, 6, 4.2f, 5.8f);
             elements.Add(E(SoloRoomElementKind.FakePlatform,"Floor_6",(5f,-1.5f),(1.6f,3f)));

@@ -107,6 +107,23 @@ namespace Parallax.Tests.EditMode
 
         public void Tick() => ObserverSetFixedUpdate.Invoke(Observers, null);
 
+        /// <summary>PAX-126 (D-321): one tick in which the player pushes the stick up. It's a move by the rule, so a respawned room
+        /// starts on it; with no vine the cat stays where it is. Real input only (the commanding driver moves every tick anyway).</summary>
+        public void TickActing()
+        {
+            var sources = GetPrivate<List<ICatCommandSource>>(Router, "validSources");
+            var up = new StickUp();
+            sources.Add(up);
+            try { Tick(); }
+            finally { sources.Remove(up); }
+        }
+
+        sealed class StickUp : ICatCommandSource
+        {
+            public CatCommand Read() => new CatCommand { Climb = 1f };
+            public void ResetTransientState() { }
+        }
+
         /// <param name="realInput">true: LocalHumanDriver over the real router and sources.
         /// false: a driver that commands Move = 1 every tick.</param>
         public static PauseTestRig Build(bool realInput, int holdTicks = 30, bool withTrap = false)

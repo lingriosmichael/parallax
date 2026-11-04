@@ -115,13 +115,13 @@ namespace Parallax.Tests.EditMode
         // Kill at tick T; the hold steps T+1..T+HoldTicks and respawns at T+HoldTicks; the first
         // input-driven step is one tick later; a FallResetVolume kill can land one tick later still.
         [Test]
-        public void DeathToRegainedControl_WorstCase_IsWithinThreeQuartersOfASecond()
+        public void DeathToRegainedControl_WorstCase_IsWithinTheDevelopersLimit()   // D-298: 1.75 s (D-041's 0.75 s plus "an extra second")
         {
             RoomSafetyConfig config = AssetDatabase.LoadAssetAtPath<RoomSafetyConfig>("Assets/_Game/Data/RoomSafetyConfig.asset");
             Assert.NotNull(config, "Assets/_Game/Data/RoomSafetyConfig.asset not found.");
             int worstTicks = config.HoldTicks + 2;
             float seconds = TickTime.ToSeconds(worstTicks);
-            Assert.LessOrEqual(seconds, .75f, $"D-041: death to regained control is {worstTicks} ticks = {seconds:F3} s at {TickTime.TicksPerSecond:F2} Hz.");
+            Assert.LessOrEqual(seconds, 1.75f, $"D-298: death to regained control is {worstTicks} ticks = {seconds:F3} s at {TickTime.TicksPerSecond:F2} Hz.");
         }
 
         // ---------- helpers ----------

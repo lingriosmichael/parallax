@@ -78,7 +78,7 @@ namespace Parallax.Gameplay.Audio
             if (bed == null) return;
             float fade = bank.BedFadeIn > 0f ? Mathf.Clamp01((Time.unscaledTime - bedStart) / bank.BedFadeIn) : 1f;
             float paused = pause != null && pause.IsPaused ? bank.PausedBed : 1f;
-            bed.volume = bank.VolumeOf(AudioChannel.Music) * fade * paused;
+            bed.volume = Mix(AudioChannel.Music) * fade * paused;
             resumeClip = bed.clip;
             resumeSample = bed.timeSamples;
         }
@@ -111,12 +111,12 @@ namespace Parallax.Gameplay.Audio
             if (!limiter.TryStart((int)cue, Time.unscaledTime, length / pitch, spec.MaxVoices, spec.MinGap)) return false;
 
             float pan = worldX.HasValue && listener != null ? Mathf.Clamp((worldX.Value - listener.position.x) / panWidth, -0.6f, 0.6f) : 0f;
-            if (clip != null) StartSound(clip, 0f, pitch, spec.Volume * trim * distance * bank.VolumeOf(spec.Channel), pan);
+            if (clip != null) StartSound(clip, 0f, pitch, spec.Volume * trim * distance * Mix(spec.Channel), pan);
             // D-165: the cat's voice, at its own mastered level, on the cue's channel.
             foreach (VoiceLayer layer in voice)
             {
                 AudioClip sound = bank.VoiceClip(layer.Role, voiceTurns[(int)layer.Role]++);
-                if (sound != null) StartSound(sound, layer.Delay, pitch, layer.Volume * trim * distance * bank.VolumeOf(spec.Channel), pan);
+                if (sound != null) StartSound(sound, layer.Delay, pitch, layer.Volume * trim * distance * Mix(spec.Channel), pan);
             }
             cueStarts[(int)cue]++;
             plays++;
@@ -161,7 +161,7 @@ namespace Parallax.Gameplay.Audio
             source.spatialBlend = 0f;
             source.ignoreListenerPause = true;
             source.clip = clip;
-            source.volume = spec.Volume * trim * bank.VolumeOf(spec.Channel);
+            source.volume = spec.Volume * trim * Mix(spec.Channel);
             source.Play();
             Destroy(carry, clip.length + 0.1f);
             plays++;
@@ -261,5 +261,8 @@ namespace Parallax.Gameplay.Audio
                 foreach (T c in root.GetComponentsInChildren<T>(true))
                     yield return c;
         }
+
+        // D-314: the mix's channel volume, times the player's own setting (music, or sound for effects and the interface).
+        float Mix(AudioChannel channel) => bank.VolumeOf(channel) * (channel == AudioChannel.Music ? LevelProgressStore.MusicVolume : LevelProgressStore.SoundVolume);
     }
 }

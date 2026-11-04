@@ -22,7 +22,7 @@ namespace Parallax.Editor.Levels
     //    Steps rise 1.45 and alternate walls, so a hop reaches only the next lane and no jump grazes the step 2.9 above on its
     //    own side. Ledge_M, in the open middle of the shaft, is a fake; Core_W's
     //    west face is mossy from Spear_4 up. Spear_1 also fires Spear_Door, high by the door: you see it stick now and use it in the last act.
-    //  - Crossing (section 1): stepping onto the gallery wakes the Cloud, which chases the cat to the gallery's east end; the
+    //  - Crossing (section 1): stepping onto the gallery, the
     //    bridge (x 12-17.5) falls into the spikes piece by piece from the west behind a running cat (PAX-107 round thirteen).
     //    Spear_G, an arrow, sweeps the gallery from behind at shin height (jump it). Past the tunnel the cat drops
     //    into the Dip; the cut on the floor beyond it fires V1-V5 12 ticks apart from both walls, V1 at shin height over the
@@ -42,8 +42,6 @@ namespace Parallax.Editor.Levels
         // PAX-107 round thirteen: the bridge's pieces, Bridge_1's wait from Spear_G's launch, and each next piece's after the last.
         const int BridgeCount = 5, BridgeDelay = 24, BridgeStep = 15;
         const float BridgeWidth = 1.1f;
-        // PAX-107 round sixteen: the west end of the cloud's range over the top storey.
-        const float CloudTopMinX = 5.3f;
 
         public static SoloRoomDefinition Build()
         {
@@ -188,20 +186,11 @@ namespace Parallax.Editor.Levels
                     : E(SoloRoomElementKind.FallingBlock, "Bridge_" + (i + 1), (cx, 8.1f+h), (BridgeWidth, .5f),
                         settings:new SoloRoomTrapSettings(delayTicks:BridgeStep,unitsPerTick:.2f,travelDistance:8.35f+h,triggerSource:TrapTriggerSource.Chain,chainSource:"Bridge_" + i)));
             }
-            // PAX-107 round thirteen (the developer: "I want a cloud that starts chasing from here"): a storm cloud over the gallery
-            // wakes as the cat steps onto it from the Crossing's checkpoint and chases it at a run (0.12 u a tick, as every
-            // cloud since D-125) to the gallery's east end; it can't follow into the tunnel. 3.15 u over the gallery (under the
-            // pit floor above Gallery_W's west end); a cat that stops anywhere on the gallery is struck. PAX-107 round sixteen (the
-            // developer: "stop exactly where it is now, but then once the cat is in the very top floor, it continues to follow in
-            // the top floor from right to left"): it waits at the gallery's east end while the cat climbs the volley, and once
-            // the cat is up on the top storey (its centre at y 18.6 or above) it climbs over it (3.35 u over the storey, clear
-            // of Ledge_Hi and under the door's roof) on the chasm's west side (x 21: the wait for Spear_Gap, between Post_G and the
-            // chasm, has no room to step out of a strike) and follows it west to x 5.3, where its strikes stay clear of the door
-            // ledge.
-            elements.Add(E(SoloRoomElementKind.StormCloud, "Cloud", (6.5f, 11.5f+h), (2f, .8f), (6.95f, 9.725f+h), (.5f, 2.75f),
-                new SoloRoomTrapSettings(new StormCloudSettings(new[] {
-                    new StormFloor(-100f, 11.5f+h, 6.5f, 20.5f),
-                    new StormFloor(18.6f, 19f+h, CloudTopMinX, 21f) }, followSpeed:.12f, climbSpeed:.24f), new SoloRoomTrapSettings(delayTicks:0))));
+            // D-291: the lasers where the cloud was, each on a small roof low enough to be in view: Eye_G over the gallery, Eye_T over the top storey.
+            elements.Add(E(SoloRoomElementKind.Ceiling,"Eye_G_Roof",(14f,14.75f+h),(1.6f,.5f)));
+            elements.Add(Laser("Eye_G",14f,14.5f+h,Rect.MinMaxRect(7f,8.3f+h,11.5f,14.3f+h),50,105));
+            elements.Add(E(SoloRoomElementKind.Ceiling,"Eye_T_Roof",(13f,22.75f+h-3f),(1.6f,.5f)));
+            elements.Add(Laser("Eye_T",13f,22.5f+h-3f,Rect.MinMaxRect(5.3f,15.65f+h,20.8f,22.3f+h-3f),90,105));
             // The volley: the cut on the shaft floor fires V1 (shin height over the floor, over the Dip); V2-V5 follow 12 ticks apart. Spear_Top fires on entering its lane.
             elements.Add(Spear("V1", 28.25f, 7.2f+h, ArrowDirection.Left, 23.5f, 1f, (26f, 13.575f), (.4f, 8.95f), new SoloRoomTrapSettings(delayTicks:34)));
             elements.Add(Spear("V2", 23.25f, 8.15f+h, ArrowDirection.Right, 28f, 1f, default, default, Chain("V1")));
@@ -227,8 +216,8 @@ namespace Parallax.Editor.Levels
             };
             var sections = new[] {
                 CheckpointSection.Start("Foot", new Vector2(19.5f, 0f), new[] { "Riser", "Slab_1", "Slab_2", "Slab_3", "Slab_4", "Spear_1", "Spear_Door", "Foot_C", "Spear_2", "Spear_3", "Spear_4", "Spear_5", "Spear_6", "Spear_7", "Spear_8", "Ledge_M" }),
-                new CheckpointSection("Crossing", new Vector2(5.5f, 8.35f+h), new Rect(6.4f, 8.35f+h, .2f, 3.8f), new[] { "Spear_G", "Bridge_1", "Bridge_2", "Bridge_3", "Bridge_4", "Bridge_5", "Cloud", "V1", "V2", "V3", "V4", "V5", "Spear_K", "Spear_Top" }),
-                new CheckpointSection("Summit", new Vector2(25.7f, 15.65f+h), new Rect(24.9f, 15.65f+h, .2f, 7.35f), new[] { "Spear_Gap", "Lip", "Block_Door", "Spikes_D2" }),
+                new CheckpointSection("Crossing", new Vector2(5.5f, 8.35f+h), new Rect(6.4f, 8.35f+h, .2f, 3.8f), new[] { "Eye_G", "Spear_G", "Bridge_1", "Bridge_2", "Bridge_3", "Bridge_4", "Bridge_5", "V1", "V2", "V3", "V4", "V5", "Spear_K", "Spear_Top" }),
+                new CheckpointSection("Summit", new Vector2(25.7f, 15.65f+h), new Rect(24.9f, 15.65f+h, .2f, 7.35f), new[] { "Eye_T", "Spear_Gap", "Lip", "Block_Door", "Spikes_D2" }),
             };
             // Without their spears, the chasm and the pit are out of reach.
             var baits = new[] { new BaitGap("Chasm", 22.5f, 15.65f+h, 17.1f, 16.75f+h), new BaitGap("Pit", 8.5f, 15.65f+h, 3.5f, 16.65f+h) };

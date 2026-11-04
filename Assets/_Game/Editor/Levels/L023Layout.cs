@@ -22,6 +22,9 @@ namespace Parallax.Editor.Levels
     //  - Elevator, from the Rock, up high.
     //  - Arc curves down east; Stair steps down east; Rocket shoots up; Glide_2 slides down a long diagonal through the beat of
     //    Press_2; Zig runs a square wave (Lambda, a jump up over it, peaks into Spikes_L); Loop goes east and up to the east shore.
+    // D-299 (the developer: "5 more moving platforms... should lead to traps / deaths"): Trap_1-5, each a short jump off the true path, so
+    // a wrong guess costs a life, not just time. Trap_1 sinks into the lake; Trap_2 parks its rider under Press_3; Trap_3 and Trap_4 climb
+    // into thorns in the roof; Trap_5, the last and most tempting, carries its rider east into thorns on a hanging stone's face.
     static class L023Layout
     {
         internal const float Shore = 6.5f, Lake = 0f, Roof = 14f, Base = -1f, Width = 112f, ShoreE = 6.5f, RockTop = 1.5f;
@@ -45,6 +48,10 @@ namespace Parallax.Editor.Levels
         internal static readonly Vector2[] Bait1Path = { new(0f, 2.5f) }, Bait2Path = { new(-2f, 2f) }, Bait3Path = { new(0f, 2.5f) }, Bait4Path = { new(-3f, 0f) },
             Bait5Path = { new(3f, -2f) };
         internal const int DeadEndHold = 100;
+        // D-299: the five that kill. Trap_2 and Trap_5 park long enough for the press and the thorns to do it.
+        internal static readonly Vector2[] Trap1Path = { new(0f, -2.7f) }, Trap2Path = { new(5.5f, 0f) }, Trap3Path = { new(-4f, 3f) }, Trap4Path = { new(-1.5f, 3f) },
+            Trap5Path = { new(1.6f, 0f) };
+        internal const int TrapHold = 300, Press3Phase = 30;
 
         /// <summary>D-208: the ticks a platform takes along `points` at PlatformSpeed.</summary>
         internal static int Ticks(Vector2[] points) => Mathf.Max(1, Mathf.RoundToInt(TrapPath.Length(points) / PlatformSpeed));
@@ -84,6 +91,9 @@ namespace Parallax.Editor.Levels
             Mover(elements, "Glide", 11.5f, 8f, GlidePath, 140);
             // Skyway (periodic), over Glide's home: east under Hang_1, and back.
             Periodic(elements, "Skyway", 11.5f, 9.2f, SkyPath, SkyHold, SkyPhase);
+            // Trap_4, a jump up and west off Lift's top: up and west, its rider into Spikes_W in the roof.
+            Mover(elements, "Trap_4", 6.2f, 9.2f, Trap4Path, TrapHold);
+            Hanger(elements, "W", 4.7f, 12.5f);
             // Bait_4, under Glide's slope (a drop from Glide on its way down): west, back toward Lift's foot.
             Mover(elements, "Bait_4", 16f, 3f, Bait4Path, DeadEndHold);
 
@@ -112,12 +122,21 @@ namespace Parallax.Editor.Levels
             Mover(elements, "Stair", 59.5f, 4f, StairPath, 60);
             // Bait_2, a hop up from Stair's first step: up west, to nowhere.
             Mover(elements, "Bait_2", 62.5f, 5f, Bait2Path, DeadEndHold);
+            // Trap_1, a drop west off Arc's far end: straight down into the lake.
+            Mover(elements, "Trap_1", 54.5f, 2.8f, Trap1Path, TrapHold);
+            // Trap_3, a jump west off Rocket on its way up: up and west, its rider into Spikes_Q in the roof.
+            Mover(elements, "Trap_3", 64f, 7.8f, Trap3Path, TrapHold);
+            Hanger(elements, "Q", 60f, 11.2f);
             // Rocket: straight up.
             Mover(elements, "Rocket", 68f, 2f, RocketPath, 250);
             // Glide_2: a long diagonal down east from Rocket's top, through Press_2's beat.
             Mover(elements, "Glide_2", 70.5f, 10f, Glide2Path, 60);
             // Press_2 slams from its home (bottom 12.45) until its spikes are just over a rider's head where Glide_2 passes under it.
             elements.Add(E(SoloRoomElementKind.MovingTrap,"Press_2",(73f,12.75f),(2f,.6f),settings:Press(new Vector2(0f, -2.7f), Press2Phase)));
+
+            // Trap_2, a jump up off Glide_2 past Press_2: east, and it parks under Press_3, whose spikes stop just over a rider's head.
+            Mover(elements, "Trap_2", 77.5f, 9.5f, Trap2Path, TrapHold);
+            elements.Add(E(SoloRoomElementKind.MovingTrap,"Press_3",(83f,12.75f),(2f,.6f),settings:Press(new Vector2(0f, -2.3f), Press3Phase)));
 
             // ---------- To the shore ----------
             // Lambda, over Zig's home (a jump up from Glide_2's end): up east, then down east; at its peak its rider's head meets
@@ -128,11 +147,15 @@ namespace Parallax.Editor.Levels
             Mover(elements, "Zig", 89f, 4f, ZigPath, 60);
             // Bait_3, a hop up from Zig's high run: straight up, to nowhere.
             Mover(elements, "Bait_3", 96f, 8.4f, Bait3Path, DeadEndHold);
+            // Trap_5, a hop east off Bait_3, the shore in sight: east, into the thorns on Hang_E's west face. Hang_E stops short of Loop's rise.
+            Mover(elements, "Trap_5", 98.6f, 8.4f, Trap5Path, TrapHold);
+            Block(elements, SoloRoomElementKind.Wall, "Hang_E", 100.7f, 102.2f, 7f, Roof);
+            elements.Add(E(SoloRoomElementKind.Hazard,"Spikes_E",(100.55f,8.6f),(.3f,3.2f)));
             // Loop: east, then up to the east shore's top, then back west and down.
             Mover(elements, "Loop", 100.5f, 4f, LoopPath, 0, closed: true);
 
             var sections = new[] {
-                CheckpointSection.Start("Lake", new Vector2(2f, Shore), new[] { "Climb", "Lift", "Glide", "Skyway", "Bait_4", "Ferry", "Press_1", "Bait_1", "V", "Hopper", "Elevator", "Bait_5", "Arc", "Stair", "Bait_2", "Rocket", "Glide_2", "Press_2", "Lambda", "Zig", "Bait_3", "Loop" }),
+                CheckpointSection.Start("Lake", new Vector2(2f, Shore), new[] { "Climb", "Lift", "Glide", "Skyway", "Trap_4", "Bait_4", "Ferry", "Press_1", "Bait_1", "V", "Hopper", "Elevator", "Trap_1", "Trap_2", "Trap_3", "Trap_5", "Press_3", "Bait_5", "Arc", "Stair", "Bait_2", "Rocket", "Glide_2", "Press_2", "Lambda", "Zig", "Bait_3", "Loop" }),
                 new CheckpointSection("Shore", new Vector2(107f, ShoreE), new Rect(106f, ShoreE, .3f, 1.5f), new string[0]),
             };
             return new SoloRoomDefinition(0, 0f, Width, elements.ToArray(), System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>(), null, null, null, sections);

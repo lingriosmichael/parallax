@@ -242,6 +242,12 @@ def build():
     # D-161: the stout steel blades, repainted from the blades trap_v2 just wrote.
     import spike_steel
     spike_steel.build(emit, load_rgba)
+    # D-295: the thorns, the crystal and the iron spikes, which replace the steel blades just written.
+    import hazard_art
+    hazard_art.build(emit, load_rgba)
+    # D-312: Pack I's effects (PAX-V06's dust, debris, sparks, impacts and door burst).
+    import fx_pack
+    fx_pack.build(emit, load_rgba)
 
     return manifest
 

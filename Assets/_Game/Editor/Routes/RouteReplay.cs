@@ -357,7 +357,7 @@ namespace Parallax.Editor.Routes
                     X = b.center.x - Origin.x, Y = b.center.y - Origin.y, Vx = v.x, Vy = v.y,
                     GravityUp = down.y > 0f, Ground = "",
                     Dead = Death.IsHolding || Death.WasKilledThisTick(ObserverId.A, tick), Holding = Death.IsHolding, Complete = Rooms.LevelComplete,
-                    Move = Mathf.RoundToInt(command.Move), JumpPressed = command.JumpPressed,
+                    Move = Mathf.RoundToInt(command.Move), JumpPressed = command.JumpPressed, JumpHeld = command.JumpHeld,
                     Climb = Mathf.RoundToInt(command.Climb), IsClimbing = Cat.IsClimbing,
                     IsClinging = Cat.IsClinging, ClingSide = Cat.ClingSide,
                     FireTick = new int[Elements.Count + 2], Signature = new int[Elements.Count + 2],

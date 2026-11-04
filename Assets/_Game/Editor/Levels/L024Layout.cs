@@ -19,10 +19,10 @@ namespace Parallax.Editor.Levels
     //  - It shrinks lane by lane: 6 tall, then 5, then 4.2, then 3.6 in the last stretch.
     //  - Squeezes: a section of the face the cat walks on carries it toward the spiked face if it stops there (Drop_2, Lift_3,
     //    Drop_6); jaws close floor and ceiling together on their beat (Jaw_4, Jaw_5a, Jaw_5b, Jaw_6).
-    //  - Five short hidden inverters among them (Inv_3, Inv_4, Inv_5a, whose end box swaps the controls back just before Inv_5b swaps
+    //  - Five short inverters among them (Inv_3, Inv_4, Inv_5a, whose end box swaps the controls back just before Inv_5b swaps
     //    them again, and Inv_6), besides Inv_1 and Inv_F.
     //  - The closing hall: from the last orb to the door the ceiling slams down behind the cat, section by section, a little
-    //    slower than a run (Cave_1-9); Inv_F, hidden before the door, turns a cat that keeps holding right back into it.
+    //    slower than a run (Cave_1-9); Inv_F, before the door, turns a cat that keeps holding right back into it.
     //  Lanes: 1 floor (Flip_U1); 2 ceiling (Inv_1, Spin_1, Drop_2, Piston_1, Flip_D1); 3 floor (Piston_2, Lift_3, Spin_2, Inv_3,
     //  Piston_3, Flip_U2); 4 ceiling (Piston_4, Spin_3, Inv_4, Jaw_4, Flip_D3); 5 floor (Inv_5a, Spin_5, Jaw_5a, Inv_5b, Piston_5,
     //  Jaw_5b, Flip_U5); 6 ceiling (Drop_6, Piston_6, Inv_6, Spin_6, Jaw_6, Flip_D6); 7 floor (the closing hall, Inv_F, the door).
@@ -105,18 +105,18 @@ namespace Parallax.Editor.Levels
             Orb(elements, "Flip_U5", 70f, up, true);
             Orb(elements, "Flip_D6", 86f, down, false);
 
-            // ---- The inverters, all hidden ----
+            // ---- The inverters ----
             elements.Add(E(SoloRoomElementKind.Inverter,"Inv_1",(9f,Ceil(9f) - 1f),(.4f,2f),settings:new SoloRoomTrapSettings(
-                new InverterSettings(300,disguised:true,endPosition:new Vector2(20.2f,Mid(20.2f)),endSize:new Vector2(.4f,Ceil(20.2f))),new SoloRoomTrapSettings(delayTicks:0))));
+                new InverterSettings(300,endPosition:new Vector2(20.2f,Mid(20.2f)),endSize:new Vector2(.4f,Ceil(20.2f))),new SoloRoomTrapSettings(delayTicks:0))));
             Inverter(elements, "Inv_3", 33.3f, false, 70);
             Inverter(elements, "Inv_4", 50.7f, true, 60);
             // Inv_5a's end box, just past Jaw_5a, swaps the controls back; Inv_5b, just after it, swaps them again.
             elements.Add(E(SoloRoomElementKind.Inverter,"Inv_5a",(56.5f,Floor + 1f),(.4f,2f),settings:new SoloRoomTrapSettings(
-                new InverterSettings(200,disguised:true,endPosition:new Vector2(62.6f,Mid(62.6f)),endSize:new Vector2(.4f,Ceil(62.6f))),new SoloRoomTrapSettings(delayTicks:0))));
+                new InverterSettings(200,endPosition:new Vector2(62.6f,Mid(62.6f)),endSize:new Vector2(.4f,Ceil(62.6f))),new SoloRoomTrapSettings(delayTicks:0))));
             Inverter(elements, "Inv_5b", 63.4f, false, 70);
             Inverter(elements, "Inv_6", 77.3f, true, 60);
             elements.Add(E(SoloRoomElementKind.Inverter,"Inv_F",(100f,Floor + 1f),(.4f,2f),settings:new SoloRoomTrapSettings(
-                new InverterSettings(120,disguised:true),new SoloRoomTrapSettings(delayTicks:0))));
+                new InverterSettings(120),new SoloRoomTrapSettings(delayTicks:0))));
 
             // ---- Spinners and pistons, sized to their lane ----
             foreach (var (name, x, rate, start) in Spinners)
@@ -207,10 +207,10 @@ namespace Parallax.Editor.Levels
         static void Orb(List<SoloRoomElement> e, string name, float x, SoloRoomTrapSettings settings, bool onFloor) =>
             e.Add(E(SoloRoomElementKind.GravityFlip, name, (x, onFloor ? Floor + 1.5f : Ceil(x) - 1.5f), (1f, 2f), settings: settings));
 
-        // A short hidden inverter (D-210), standing on the floor (or hanging from the ceiling) at x, for `ticks`.
+        // A short inverter (D-210; drawn since D-284), standing on the floor (or hanging from the ceiling) at x, for `ticks`.
         static void Inverter(List<SoloRoomElement> e, string name, float x, bool onCeiling, int ticks) =>
             e.Add(E(SoloRoomElementKind.Inverter, name, (x, onCeiling ? Ceil(x) - 1f : Floor + 1f), (.4f, 2f), settings: new SoloRoomTrapSettings(
-                new InverterSettings(ticks, disguised: true), new SoloRoomTrapSettings(delayTicks: 0))));
+                new InverterSettings(ticks), new SoloRoomTrapSettings(delayTicks: 0))));
 
         // A piston: half the hall's height, home in one half; it slides `dy` into the other half over PistonMove, holds, and slides
         // back, on PistonPeriod. A slam: coming down it crushes a cat under it, going up it crushes one against the ceiling.

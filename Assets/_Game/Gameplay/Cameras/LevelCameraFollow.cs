@@ -33,6 +33,12 @@ namespace Parallax.Gameplay.Cameras
         float directionAnchorX;
         float lastDirection;
         bool warnedUnbakedFrame;
+        // PAX-V06: the shake drawn this frame, on top of the follow; taken off before the next step, so the follow (and the
+        // camera tell rule, which shares CameraMath.Step) never sees it.
+        Vector2 shown;
+
+        /// <summary>PAX-V06: a translational shake offset (never a rotation, D-020), set each frame by LevelFeel; zero by default.</summary>
+        public Vector2 ShakeOffset { get; set; }
 
         void Awake()
         {
@@ -75,7 +81,8 @@ namespace Parallax.Gameplay.Cameras
             // room resets. The room itself stays frozen (RoomManager gates its tick on RoomDeath.IsHolding).
             if (!HasBakedFrame()) return;
 
-            transform.position = ToVector3(Resolve(transform.position, immediate: false));
+            transform.position = ToVector3(Resolve((Vector2)transform.position - shown, immediate: false) + ShakeOffset);
+            shown = ShakeOffset;
         }
 
         public void SnapToTarget()
@@ -85,7 +92,8 @@ namespace Parallax.Gameplay.Cameras
             if (cam == null) return;
             if (!HasBakedFrame()) return;
 
-            transform.position = ToVector3(Resolve(transform.position, immediate: true));
+            transform.position = ToVector3(Resolve((Vector2)transform.position - shown, immediate: true));
+            shown = Vector2.zero;
             velocity = Vector2.zero;
             directionAnchorX = target.position.x;
         }

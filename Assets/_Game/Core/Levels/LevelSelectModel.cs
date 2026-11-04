@@ -2,6 +2,9 @@ using System.Collections.Generic;
 
 namespace Parallax.Core
 {
+    /// <summary>PAX-A09: what a level's cell shows.</summary>
+    public enum LevelCellState { Locked, Open, Done, Paywalled }
+
     /// <summary>PAX-053 (D-063) §2.3/§5.5: one entry per level, in list order, for the level
     /// select screen. Pure logic only - unlock/best-deaths rules stay in LevelProgress
     /// (PAX-050); this only shapes that data for display, so it needs no LevelListConfig
@@ -16,8 +19,9 @@ namespace Parallax.Core
         public readonly string BestDeathsText;
         // PAX-066 (D-279): not playable yet: tapping the row opens the unlock panel.
         public readonly bool IsPaywalled;
+        public readonly bool IsCompleted;
 
-        public LevelSelectEntry(string id, string sceneName, string displayName, bool isUnlocked, string bestDeathsText, bool isPaywalled = false)
+        public LevelSelectEntry(string id, string sceneName, string displayName, bool isUnlocked, string bestDeathsText, bool isPaywalled = false, bool isCompleted = false)
         {
             Id = id;
             SceneName = sceneName;
@@ -25,7 +29,10 @@ namespace Parallax.Core
             IsUnlocked = isUnlocked;
             BestDeathsText = bestDeathsText;
             IsPaywalled = isPaywalled;
+            IsCompleted = isCompleted;
         }
+
+        public LevelCellState State => IsPaywalled ? LevelCellState.Paywalled : !IsUnlocked ? LevelCellState.Locked : IsCompleted ? LevelCellState.Done : LevelCellState.Open;
     }
 
     public static class LevelSelectModel
@@ -44,7 +51,7 @@ namespace Parallax.Core
                 string bestText = best == LevelProgress.NeverCompleted ? "—" : best.ToString(System.Globalization.CultureInfo.InvariantCulture);
                 bool paywalled = entitlements != null && !entitlements.IsPlayable(id, now);
                 if (paywalled) bestText = "Locked";
-                entries[i] = new LevelSelectEntry(id, sceneName, displayName, progress.IsUnlocked(id), bestText, paywalled);
+                entries[i] = new LevelSelectEntry(id, sceneName, displayName, progress.IsUnlocked(id), bestText, paywalled, best != LevelProgress.NeverCompleted);
             }
             return entries;
         }

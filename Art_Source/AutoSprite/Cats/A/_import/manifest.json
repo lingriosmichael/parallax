@@ -451,18 +451,26 @@
       "IdleLook",
       "IdleEar",
       "IdleSit",
+      "StandUp",
+      "WallPush",
       "Run",
       "Turn",
       "TakeOff",
       "Rise",
+      "RiseStraight",
+      "Reach",
       "Apex",
       "Fall",
+      "FallStraight",
+      "FallLoop",
+      "StepDown",
       "Land",
       "HardLand",
       "Death",
       "Death_Pit",
       "Death_Spiked",
       "Death_Crushed",
+      "Death_CrushedSide",
       "Death_Arrow",
       "Respawn",
       "Flip",
@@ -475,24 +483,24 @@
       "HardLandContact",
       "FlipRoll"
     ],
-    "specksRemoved": 1420,
+    "specksRemoved": 1714,
     "detachedIslands": 0
   },
   "memoryASTC": {
     "block": "6x6",
-    "colourMB": 2.91,
-    "normalsMB": 2.91,
-    "totalMB": 5.83,
+    "colourMB": 3.62,
+    "normalsMB": 3.62,
+    "totalMB": 7.25,
     "climbSheetWithNormalsMB": 1.0
   },
   "onScreen": {
-    "maxViewHeight": 16.0,
+    "maxViewHeight": 8.888889,
     "screenHeight": 1080,
-    "levels": 20,
-    "pxPerUnitMin": 67.5,
-    "pxPerUnitMax": 88.9,
-    "baseCellPxOnScreenMin": 90.4,
-    "baseCellPxOnScreenMax": 119.1
+    "levels": 29,
+    "pxPerUnitMin": 121.5,
+    "pxPerUnitMax": 121.5,
+    "baseCellPxOnScreenMin": 162.8,
+    "baseCellPxOnScreenMax": 162.8
   },
   "slots": [
     {
@@ -685,6 +693,86 @@
       "detachedIslands": 0,
       "astc6x6Bytes": 135168,
       "note": "ends seated; V07 holds the last frame"
+    },
+    {
+      "slot": "StandUp",
+      "file": "CatA_StandUp.png",
+      "sourceClip": "12c_fidget_sit",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        15,
+        11,
+        7
+      ],
+      "frames": 3,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        576,
+        192
+      ],
+      "styleMatched": true,
+      "specksRemoved": 17,
+      "detachedIslands": 0,
+      "astc6x6Bytes": 49152,
+      "note": "the sit played backwards: any input cut from seated to Walk"
+    },
+    {
+      "slot": "WallPush",
+      "file": "CatA_WallPush.png",
+      "sourceClip": "03_walk",
+      "sourceSheet": "recut_64f_256.png",
+      "sourceFrames": [
+        29,
+        35,
+        41
+      ],
+      "frames": 3,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        204,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.513,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        612,
+        192
+      ],
+      "styleMatched": true,
+      "specksRemoved": 15,
+      "detachedIslands": 0,
+      "astc6x6Bytes": 52224,
+      "note": "pushing against a wall: three strides leaning in, walked slowly in place"
     },
     {
       "slot": "Walk",
@@ -921,15 +1009,96 @@
       "astc6x6Bytes": 58752
     },
     {
+      "slot": "RiseStraight",
+      "file": "CatA_RiseStraight.png",
+      "sourceClip": "04_jump_rise",
+      "sourceSheet": "raw_v2.png",
+      "sourceFrames": [
+        12,
+        15,
+        18
+      ],
+      "frames": 3,
+      "role": "air",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        228
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.20888
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        576,
+        228
+      ],
+      "styleMatched": true,
+      "specksRemoved": 26,
+      "detachedIslands": 0,
+      "astc6x6Bytes": 58368,
+      "note": "a jump with no run-up, and a geyser's launch: Rise turned to go up, not forward (cat_register `turn`)"
+    },
+    {
+      "slot": "Reach",
+      "file": "CatA_Reach.png",
+      "sourceClip": "04_jump_rise",
+      "sourceSheet": "raw_v2.png",
+      "sourceFrames": [
+        15,
+        18
+      ],
+      "frames": 2,
+      "role": "air",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        228
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.20888
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        384,
+        228
+      ],
+      "styleMatched": true,
+      "specksRemoved": 13,
+      "detachedIslands": 0,
+      "astc6x6Bytes": 38912,
+      "note": "the side view reaching up: bridges into the vine's back view, and out of it into a leap"
+    },
+    {
       "slot": "Apex",
       "file": "CatA_Apex.png",
       "sourceClip": "05_jump_apex",
       "sourceSheet": "raw_v1.png",
       "sourceFrames": [
         13,
+        13,
+        17,
         17
       ],
-      "frames": 2,
+      "frames": 4,
       "role": "air",
       "loop": false,
       "scale": 1.0,
@@ -938,11 +1107,11 @@
         192
       ],
       "pivotPx": [
-        106.652,
+        108.652,
         180.375
       ],
       "pivotNormalized": [
-        0.53865,
+        0.54875,
         0.06055
       ],
       "clippedPx": 0,
@@ -950,13 +1119,14 @@
       "vineKeyed": false,
       "wired": true,
       "sheetSize": [
-        396,
+        792,
         192
       ],
       "styleMatched": true,
-      "specksRemoved": 18,
+      "specksRemoved": 32,
       "detachedIslands": 0,
-      "astc6x6Bytes": 33792
+      "astc6x6Bytes": 67584,
+      "note": "turned frames each side of the two drawn ones, so the body swings from Rise's angle (40 degrees up) to Fall's (25 down) without a snap"
     },
     {
       "slot": "Fall",
@@ -996,6 +1166,129 @@
       "specksRemoved": 18,
       "detachedIslands": 0,
       "astc6x6Bytes": 49152
+    },
+    {
+      "slot": "FallStraight",
+      "file": "CatA_FallStraight.png",
+      "sourceClip": "06_jump_fall",
+      "sourceSheet": "recut_64f_256.png",
+      "sourceFrames": [
+        4,
+        12,
+        20
+      ],
+      "frames": 3,
+      "role": "air",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        576,
+        192
+      ],
+      "styleMatched": true,
+      "specksRemoved": 17,
+      "detachedIslands": 0,
+      "astc6x6Bytes": 49152,
+      "note": "a fall with no run-up: Fall turned level, paws under it"
+    },
+    {
+      "slot": "FallLoop",
+      "file": "CatA_FallLoop.png",
+      "sourceClip": "06_jump_fall",
+      "sourceSheet": "recut_64f_256.png",
+      "sourceFrames": [
+        20,
+        21,
+        22,
+        23,
+        24,
+        23,
+        22,
+        21
+      ],
+      "frames": 8,
+      "role": "air",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        192
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.06055
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": false,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        1536,
+        192
+      ],
+      "styleMatched": true,
+      "specksRemoved": 55,
+      "detachedIslands": 0,
+      "astc6x6Bytes": 131072,
+      "note": "a long fall: the end of the fall clip back and forth, so it isn't a frozen frame"
+    },
+    {
+      "slot": "StepDown",
+      "file": "CatA_StepDown.png",
+      "sourceClip": "03_walk",
+      "sourceSheet": "recut_64f_256.png",
+      "sourceFrames": [
+        35
+      ],
+      "frames": 3,
+      "role": "air",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        216
+      ],
+      "pivotPx": [
+        104.652,
+        180.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.16493
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        576,
+        216
+      ],
+      "styleMatched": true,
+      "specksRemoved": 24,
+      "detachedIslands": 0,
+      "astc6x6Bytes": 55296,
+      "note": "a walk off a ledge: a stride tipping nose-down into the fall's pose (06_jump_fall has no frame between; turned by cat_register `tilts`)"
     },
     {
       "slot": "Land",
@@ -1171,12 +1464,13 @@
       "sourceFrames": [
         13,
         14,
+        16,
         17,
         19,
         21,
         24
       ],
-      "frames": 6,
+      "frames": 9,
       "role": "ground",
       "loop": false,
       "scale": 1.0,
@@ -1197,16 +1491,16 @@
       "vineKeyed": false,
       "wired": true,
       "sheetSize": [
-        1584,
+        2376,
         204
       ],
       "styleMatched": true,
-      "specksRemoved": 55,
+      "specksRemoved": 98,
       "detachedIslands": 0,
-      "astc6x6Bytes": 143616,
+      "astc6x6Bytes": 215424,
       "reachUnits": 0.44,
       "reachShiftUnits": 0.44,
-      "note": "PAX-A14: the upright frames stood 0.44 u short of the spikes (Trap Lab room 0: spike edge x 5.00, cat root 4.56 at the kill); re-registered so frame 0's paws meet that edge"
+      "note": "PAX-A14: the upright frames stood 0.44 u short of the spikes (Trap Lab room 0: spike edge x 5.00, cat root 4.56 at the kill); re-registered so frame 0's paws meet that edge Two topple frames tilted from frame 16 (cat_register `tilts`): it went from upright to lying in one frame."
     },
     {
       "slot": "Death_Crushed",
@@ -1250,6 +1544,48 @@
       "detachedIslands": 0,
       "astc6x6Bytes": 101376,
       "note": "runs off both cell edges (clipped, reported)"
+    },
+    {
+      "slot": "Death_CrushedSide",
+      "file": "CatA_Death_CrushedSide.png",
+      "sourceClip": "13b_death_crushed",
+      "sourceSheet": "raw_v1.png",
+      "sourceFrames": [
+        11,
+        13,
+        15,
+        17,
+        19
+      ],
+      "frames": 5,
+      "role": "ground",
+      "loop": false,
+      "scale": 1.0,
+      "cell": [
+        192,
+        210
+      ],
+      "pivotPx": [
+        104.652,
+        194.375
+      ],
+      "pivotNormalized": [
+        0.54506,
+        0.0744
+      ],
+      "clippedPx": 0,
+      "sourceCutAtCellEdge": true,
+      "vineKeyed": false,
+      "wired": true,
+      "sheetSize": [
+        960,
+        210
+      ],
+      "styleMatched": true,
+      "specksRemoved": 34,
+      "detachedIslands": 0,
+      "astc6x6Bytes": 89600,
+      "note": "a crusher closing from the side: the pancake stood upright"
     },
     {
       "slot": "Death_Zapped",
@@ -1304,10 +1640,12 @@
         11,
         12,
         13,
+        14,
         15,
+        16,
         17
       ],
-      "frames": 6,
+      "frames": 8,
       "role": "ground",
       "loop": false,
       "scale": 1.0,
@@ -1328,13 +1666,14 @@
       "vineKeyed": false,
       "wired": true,
       "sheetSize": [
-        1224,
+        1632,
         198
       ],
       "styleMatched": true,
-      "specksRemoved": 53,
+      "specksRemoved": 62,
       "detachedIslands": 0,
-      "astc6x6Bytes": 107712
+      "astc6x6Bytes": 143616,
+      "note": "the whole fall, in-between frames in: thrown up, tumbling down, lying"
     },
     {
       "slot": "Respawn",
@@ -1382,40 +1721,44 @@
       "sourceClip": "21_gravity_twist",
       "sourceSheet": "raw_v1.png",
       "sourceFrames": [
+        5,
+        6,
         7,
         9,
         10,
-        12
+        12,
+        13,
+        14
       ],
-      "frames": 4,
+      "frames": 8,
       "role": "air",
       "loop": false,
       "scale": 1.0,
       "cell": [
-        192,
-        204
+        198,
+        216
       ],
       "pivotPx": [
-        104.652,
+        106.652,
         180.375
       ],
       "pivotNormalized": [
-        0.54506,
-        0.11581
+        0.53865,
+        0.16493
       ],
       "clippedPx": 0,
-      "sourceCutAtCellEdge": false,
+      "sourceCutAtCellEdge": true,
       "vineKeyed": false,
       "wired": true,
       "sheetSize": [
-        768,
-        204
+        1584,
+        216
       ],
       "styleMatched": true,
-      "specksRemoved": 19,
+      "specksRemoved": 44,
       "detachedIslands": 0,
-      "astc6x6Bytes": 69632,
-      "note": "the tucked roll only; code rotates the root"
+      "astc6x6Bytes": 152064,
+      "note": "tuck (5, 6), the tucked roll, uncurl (13, 14); code rotates the root"
     },
     {
       "slot": "Climb",
@@ -1572,44 +1915,44 @@
       "sourceClip": "16b_celebrate",
       "sourceSheet": "raw_v1.png",
       "sourceFrames": [
-        5,
-        7,
         9,
         11,
         13,
         15,
         17,
-        19
+        19,
+        21,
+        23
       ],
       "frames": 8,
       "role": "ground",
       "loop": false,
       "scale": 1.0,
       "cell": [
-        198,
+        192,
         192
       ],
       "pivotPx": [
-        106.652,
+        104.652,
         180.375
       ],
       "pivotNormalized": [
-        0.53865,
+        0.54506,
         0.06055
       ],
       "clippedPx": 0,
-      "sourceCutAtCellEdge": true,
+      "sourceCutAtCellEdge": false,
       "vineKeyed": false,
       "wired": true,
       "sheetSize": [
-        1584,
+        1536,
         192
       ],
       "styleMatched": true,
-      "specksRemoved": 74,
+      "specksRemoved": 76,
       "detachedIslands": 0,
-      "astc6x6Bytes": 135168,
-      "note": "level complete (celebrate)"
+      "astc6x6Bytes": 131072,
+      "note": "level complete: the proud stand, tail high (the hop before it read as pawing at the door)"
     },
     {
       "slot": "DoorEnter",
@@ -1752,19 +2095,23 @@
       "file": "CatA_FlipRoll.png",
       "bridgeFor": "Flip",
       "bridgePositions": [
-        1,
-        2,
+        3,
         4,
-        6
+        6,
+        8
       ],
       "kind": "roll",
       "sourceClip": "21_gravity_twist",
       "sourceSheet": "raw_v1.png",
       "sourceFrames": [
+        5,
+        6,
         7,
         9,
         10,
-        12
+        12,
+        13,
+        14
       ],
       "frames": 4,
       "role": "air",
@@ -1794,7 +2141,7 @@
       "styleMatched": true,
       "specksRemoved": 23,
       "detachedIslands": 0,
-      "note": "PAX-A14 target 3: roll cels turned between the drawn ones (-102, -45, -57 degrees): two between cels 0 and 1, one between 1-2 and 2-3. Flip = [0, r, r, 1, r, 2, r, 3]"
+      "note": "roll cels turned between the drawn ones. Flip = [tuck, tuck, 2, r, r, 3, r, 4, r, 5, uncurl, uncurl]"
     }
   ]
 }

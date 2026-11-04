@@ -102,9 +102,13 @@ namespace Parallax.Tests.EditMode
         }
 
         [TestCase("L001", MusicTrack.GoldenRuins)]
-        [TestCase("L030", MusicTrack.GoldenRuins)]
+        [TestCase("L005", MusicTrack.GoldenRuins)]
+        [TestCase("L006", MusicTrack.GoldenRuins2)]
+        [TestCase("L030", MusicTrack.GoldenRuins6)]
         [TestCase("L031", MusicTrack.ObsidianVoid)]
-        [TestCase("L060", MusicTrack.ObsidianVoid)]
+        [TestCase("L036", MusicTrack.ObsidianVoid2)]
+        [TestCase("L041", MusicTrack.ObsidianVoid)]
+        [TestCase("L060", MusicTrack.ObsidianVoid2)]
         [TestCase(null, MusicTrack.GoldenRuins)]
         public void ALevelsTrack_FollowsItsWorld(string levelId, MusicTrack expected) =>
             Assert.AreEqual(expected, Import.GetMethod("TrackForLevel").Invoke(null, new object[] { levelId }));

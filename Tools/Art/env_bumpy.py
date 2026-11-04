@@ -94,26 +94,28 @@ def courses(n, ppu, rng, height_range, level_range, joint_u=0.05):
     return depth
 
 
+def worn_edge(n, ppu, rng, low, high, chips):
+    """D-294 (the developer: the sides "look like torn paper"; square courses read as stair steps): a worn stone edge: a slow, soft
+    swell a block or two long, a few rounded chips out of it, and almost no fine detail. Periodic over n, between low and high."""
+    swell = fractal(n, rng, max(1, int(n / (2.0 * ppu))), max(2, int(n / (0.8 * ppu))), 1.3)
+    swell = (swell - swell.min()) / max(1e-4, swell.max() - swell.min())
+    y = np.arange(n, dtype=np.float32)
+    for _ in range(chips):
+        c, half, deep = rng.uniform(0, n), rng.uniform(0.16, 0.34) * ppu, rng.uniform(0.25, 0.5)
+        d = np.clip(wrap_dist(y, c, n) / half, 0, 1)
+        swell = swell + deep * 0.5 * (1 + np.cos(np.pi * d))
+    swell += 0.03 * fractal(n, rng, max(2, int(n / (0.5 * ppu))), max(3, int(n / (0.25 * ppu))), 1.4)
+    return np.clip(low + (high - low) * swell, 0, 1).astype(np.float32)
+
+
 def band_profile(n, ppu, rng):
-    """Walk band: 0 = the outer limit (proud by BAND_REACH), 1 = the inner limit. Shallow courses with chipped corners and a
-    rough edge (fractal), so the face reads as stacked, weathered blocks. Periodic over n."""
-    depth = courses(n, ppu, rng, (0.12, 0.32), (0.0, 1.0), 0.05)
-    # (round 4: no finer than 0.15 u, weaker: 0.07 u detail read as an even sawtooth, "torn paper")
-    depth += 0.12 * fractal(n, rng, n / (0.3 * ppu), n / (0.15 * ppu), 1.4)
-    return np.clip(depth, 0, 1).astype(np.float32)
+    """Walk band: 0 = the outer limit, 1 = the inner limit. Periodic over n."""
+    return worn_edge(n, ppu, rng, 0.0, 1.0, max(1, int(n / ppu / 2.5)))
 
 
 def deep_profile(n, ppu, rng):
-    """Below the band: bolder courses over the whole reach (a block set back, one standing out), a missing block now and
-    then, and a rougher fractal edge. Periodic over n."""
-    depth = courses(n, ppu, rng, (0.22, 0.6), (0.3, 1.0), 0.09)   # mostly set back (no false ledges), soft joints
-    y = np.arange(n, dtype=np.float32)
-    for _ in range(int(rng.integers(0, 3))):                   # a block fallen out: a deep pocket with a rough floor
-        c, half = rng.uniform(0, n), rng.uniform(0.06, 0.25) * ppu
-        d = wrap_dist(y, c, n)
-        depth = np.maximum(depth, np.where(d < half, 0.95 - 0.25 * (d / half) ** 4, 0))
-    depth += 0.1 * fractal(n, rng, n / (0.35 * ppu), n / (0.15 * ppu), 1.4)
-    return np.clip(depth, 0, 1).astype(np.float32)
+    """A broken end's edge over the deep reach, mostly set back (no false ledges). Periodic over n."""
+    return worn_edge(n, ppu, rng, 0.25, 0.9, max(1, int(n / ppu / 1.8)))
 
 
 def cut_strip(stone, reach_px, inner_px, blend_px, depth, rng, x0=None):
@@ -162,13 +164,13 @@ def cut_mask(h, reach_px, inner_px, blend_px, depth, rng, ledges=True):
     a[..., 3] = np.clip(x - cut[:, None] + 0.5, 0, 1) * np.clip((w - x) / blend_px, 0, 1)
     d = x - cut[:, None]
     turn = np.clip(1 - d / max(2.5 * reach_px, 14.0), 0, 1)
-    rim = np.clip(1 - d / 3.0, 0, 1)
+    rim = np.clip(1 - d / 9.0, 0, 1)   # D-294: a soft shadow turning away, not a dark outline
     # The broken face, lit from above: where the outline steps out going down (rows are top to bottom, so cut falls), the
     # stone below shows its upper face: a light band; where it steps back in, an overhang's underside: shade.
     slope = np.gradient(np.convolve(np.concatenate([cut[-4:], cut, cut[:4]]), np.ones(9) / 9, mode="same")[4:-4])
     up = np.clip(-slope / 1.5, 0, 1)[:, None] * np.clip(1 - d / 10.0, 0, 1)
     down = np.clip(slope / 1.5, 0, 1)[:, None] * np.clip(1 - d / 8.0, 0, 1)
-    shade = 1 - 0.18 * turn - 0.22 * rim + (0.35 if ledges else 0.2) * up - 0.25 * down
+    shade = 1 - 0.26 * turn - 0.1 * rim + (0.35 if ledges else 0.2) * up - 0.25 * down
     for _ in range(int(rng.integers(2, 5))):
         y0 = rng.uniform(10, h - 40)
         length, slope = rng.uniform(0.5, 1.0) * w, rng.uniform(0.3, 1.0)
@@ -501,19 +503,22 @@ def build(ek, play, slots, put, fills):
         n = stone.shape[0]
         for v in range(4):
             r = np.random.default_rng(1850 + v + 10 * len(suffix))
+            worn = band_profile(n, W, r)
             # 2026-10-17: inward only (0.5..1 of the profile), so nothing stands proud where the cat stands against the face.
-            put(play, f"ENV_SideChip_{suffix}_{v}", cut_mask(n, BAND_REACH * W, band_in, STRIP_BLEND * W, 0.5 + 0.5 * band_profile(n, W, r), r),
+            put(play, f"ENV_SideChip_{suffix}_{v}", cut_mask(n, BAND_REACH * W, band_in, STRIP_BLEND * W, 0.5 + 0.5 * worn, r),
                 W, kind="vstrip", normal=True, outside=BAND_REACH)
             # A moving trap's sides (its trims are plain sprites that travel with it, and its body is a whole rectangle): a
             # bumpy outline that only stands proud of the face (0..BAND_REACH), so no notch would show the body's straight edge.
             r = np.random.default_rng(1890 + v + 10 * len(suffix))
             # (driven by fractal noise, not courses: two equal courses in a row stood flat on the face for up to 0.6 u)
-            proud = fractal(n, r, max(1, int(n / W / 0.6)), max(2, int(n / W / 0.08)), 0.9)
+            proud = fractal(n, r, max(1, int(n / W / 0.9)), max(2, int(n / W / 0.3)), 0.9)
             proud = 0.08 + 0.84 * (proud - proud.min()) / max(1e-4, proud.max() - proud.min())
             put(play, f"ENV_SideIn_{suffix}_{v}", cut_strip(stone, TRAP_PROUD * W, band_in + (BAND_REACH - TRAP_PROUD) * W, STRIP_BLEND * W, 0.5 * proud, r),
                 W, kind="vstrip", normal=True, outside=TRAP_PROUD)
             r = np.random.default_rng(1870 + v + 10 * len(suffix))
-            put(play, f"ENV_SideDeep_{suffix}_{v}", cut_mask(n, DEEP_REACH * W, deep_in, STRIP_BLEND * W, deep_profile(n, W, r), r, ledges=False),
+            # D-294: the band's own outline, measured from this strip's deeper line: a face changing strips goes on along one edge
+            # (two outlines met in square steps).
+            put(play, f"ENV_SideDeep_{suffix}_{v}", cut_mask(n, DEEP_REACH * W, deep_in, STRIP_BLEND * W, 0.5 + 0.5 * BAND_REACH / DEEP_REACH * worn, r, ledges=False),
                 W, kind="vstrip", normal=True, outside=DEEP_REACH)
 
     # A fallen block's heap (SolidArt, once it has landed): two of each footprint shape.

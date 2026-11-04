@@ -10,6 +10,8 @@ SAMPLER(sampler_PaxShadeMap);
 float4 _PaxShadeRect;      // xy: the map's world minimum, zw: one over its world size
 half4 _PaxFaceShade;       // rgb: the face shadow's colour, a: its full strength
 half4 _PaxOutsideShade;    // rgb: the outside's shade colour, a: its full strength
+half4 _PaxStoneLight;      // rgb: the level's light on all its stone and plants (D-304), a: 1 where a level sets it, 0 leaves them as painted
+half _PaxShadeMul;         // 1: both colours multiply the stone, so its seams stay (D-301); 0: the stone blends to them
 
 float2 PaxShadeUV(float3 positionOS)
 {
@@ -18,9 +20,10 @@ float2 PaxShadeUV(float3 positionOS)
 
 half3 PaxShade(half3 albedo, float2 shadeUV)
 {
+    albedo = lerp(albedo, albedo * _PaxStoneLight.rgb, _PaxStoneLight.a);
     half2 s = SAMPLE_TEXTURE2D(_PaxShadeMap, sampler_PaxShadeMap, shadeUV).rg;
-    albedo = lerp(albedo, _PaxFaceShade.rgb, s.r * _PaxFaceShade.a);
-    return lerp(albedo, _PaxOutsideShade.rgb, s.g * _PaxOutsideShade.a);
+    albedo = lerp(albedo, lerp(_PaxFaceShade.rgb, albedo * _PaxFaceShade.rgb, _PaxShadeMul), s.r * _PaxFaceShade.a);
+    return lerp(albedo, lerp(_PaxOutsideShade.rgb, albedo * _PaxOutsideShade.rgb, _PaxShadeMul), s.g * _PaxOutsideShade.a);
 }
 
 #endif

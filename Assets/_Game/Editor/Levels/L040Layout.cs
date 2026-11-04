@@ -14,7 +14,7 @@ namespace Parallax.Editor.Levels
     //  - S0: Gate_0 on the walk; Hatch_0 over the hole pulls back as the cat comes to it.
     //  - S1: the glass run over Pit_1 (a laser in the slab): don't stop on it. The hole at the west end is open.
     //  - S2: Hatch_2 opens late, only as the beam comes down close over S2: wait at it, under the beam, and drop as it goes.
-    //  - S3 (section 1): the Beam is close behind from here on. Inv_3, hidden, turns the stick round; Gate_3 on the walk; Hatch_3
+    //  - S3 (section 1): the Beam is close behind from here on. Inv_3 turns the stick round; Gate_3 on the walk; Hatch_3
     //    pulls back as the cat comes to it.
     //  - S4: run the floor east to the door, in a notch in the tower's wall the Beam doesn't reach.
     static class L040Layout
@@ -91,7 +91,7 @@ namespace Parallax.Editor.Levels
                 new SoloRoomTrapSettings(delayTicks: Hatch2Delay, triggerSource: TrapTriggerSource.Chain, chainSource: "Beam"))));
 
             // ---------- Section 1 ----------
-            e.Add(E(SoloRoomElementKind.Inverter, "Inv_3", (Inv3X, F[3] + 1f), (.4f, 2f), settings: new SoloRoomTrapSettings(new InverterSettings(InvTicks, disguised: true), new SoloRoomTrapSettings(delayTicks: 0))));
+            e.Add(E(SoloRoomElementKind.Inverter, "Inv_3", (Inv3X, F[3] + 1f), (.4f, 2f), settings: new SoloRoomTrapSettings(new InverterSettings(InvTicks), new SoloRoomTrapSettings(delayTicks: 0))));
             e.Add(Gate("Gate_3", Gate3X, F[3], Gate3Phase));
             e.Add(Hatch("Hatch_3", HoleX0(3), F[3], Hatch3TrigX, ShrinkFrom.Right));
 

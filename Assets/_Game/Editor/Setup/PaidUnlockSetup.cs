@@ -98,17 +98,21 @@ namespace Parallax.Editor.Setup
             if (isNew) go.transform.SetSiblingIndex(Mathf.Max(0, canvas.childCount - (underPause ? 2 : 1)));
             PauseMenuSetup.SetAnchors((RectTransform)go.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, PanelName);
             var image = PauseMenuSetup.EnsureComponent<Image>(go, changes, PanelName);
-            if (image.color != new Color(0f, 0f, 0f, 0.92f)) { image.color = new Color(0f, 0f, 0f, 0.92f); changes.Add("set " + PanelName + " Image.color"); }
+            if (image.color != GameUiStyle.Dim) { image.color = GameUiStyle.Dim; changes.Add("set " + PanelName + " Image.color"); }
             var panel = PauseMenuSetup.EnsureComponent<UnlockPanel>(go, changes, PanelName);
 
-            Text title = Line(go.transform, "Title", 160f, 250f, changes);
-            PauseMenuSetup.ConfigureText(title, "Keep going?", 56, Color.white, changes, PanelName + "/Title");
-            Text status = Line(go.transform, "Status", 20f, 150f, changes);
-            PauseMenuSetup.ConfigureText(status, "", 34, Color.white, changes, PanelName + "/Status");
+            GameUiStyle.Plate(go.transform, new Vector2(1120f, 660f), changes);
+            Text title = Line(go.transform, "Title", 180f, 280f, changes);
+            PauseMenuSetup.ConfigureText(title, "Keep going?", 64, GameUiStyle.Gold, changes, PanelName + "/Title");
+            GameUiStyle.Type(title, GameUiStyle.Display, changes, PanelName + "/Title");
+            GameUiStyle.Flourish(go.transform, new Vector2(0.5f, 0.5f), 680f, new Vector2(0f, 160f), changes);
+            Text status = Line(go.transform, "Status", 30f, 140f, changes);
+            PauseMenuSetup.ConfigureText(status, "", 36, GameUiStyle.Ink, changes, PanelName + "/Status");
+            GameUiStyle.Type(status, GameUiStyle.Italic, changes, PanelName + "/Status");
 
-            Button unlock = Button(go.transform, "UnlockButton", "Unlock all levels", -340f, 680f, -70f, changes);
-            Button restore = Button(go.transform, "RestoreButton", "Restore purchase", -340f, 330f, -180f, changes);
-            Button close = Button(go.transform, "CloseButton", "Not now", 10f, 330f, -180f, changes);
+            Button unlock = Button(go.transform, "UnlockButton", "Unlock all levels", -340f, 680f, -60f, changes, true);
+            Button restore = Button(go.transform, "RestoreButton", "Restore purchase", -340f, 330f, -200f, changes);
+            Button close = Button(go.transform, "CloseButton", "Not now", 10f, 330f, -200f, changes);
             TrapKitSetup.Write(panel, changes, ("statusText", status), ("unlockLabel", unlock.transform.Find("Label").GetComponent<Text>()),
                 ("unlockButton", unlock), ("restoreButton", restore), ("closeButton", close));
 
@@ -119,11 +123,11 @@ namespace Parallax.Editor.Setup
         static Text Line(Transform panel, string name, float bottom, float top, List<string> changes)
         {
             GameObject go = PauseMenuSetup.EnsureChild(panel, name, changes);
-            PauseMenuSetup.SetAnchors((RectTransform)go.transform, new Vector2(0f, 0.5f), new Vector2(1f, 0.5f), new Vector2(40f, bottom), new Vector2(-40f, top), changes, PanelName + "/" + name);
+            GameUiStyle.Place((RectTransform)go.transform, new Vector2(0.5f, 0.5f), new Vector2(1000f, top - bottom), new Vector2(0f, (top + bottom) * 0.5f), changes, PanelName + "/" + name);
             return PauseMenuSetup.EnsureComponent<Text>(go, changes, PanelName + "/" + name);
         }
 
-        static Button Button(Transform panel, string name, string label, float left, float width, float y, List<string> changes) =>
-            PauseMenuSetup.EnsurePanelButton(panel, name, label, left, changes, width, y);
+        static Button Button(Transform panel, string name, string label, float left, float width, float y, List<string> changes, bool primary = false) =>
+            PauseMenuSetup.EnsurePanelButton(panel, name, label, left, changes, width, y, primary);
     }
 }

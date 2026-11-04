@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: IapConfig
   m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Levels.IapConfig
   productId: full_unlock
-  waitHours: 12
+  waitHours: 0
   editorPurchase: 0
   editorOwned: 0

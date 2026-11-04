@@ -117,12 +117,7 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Crumble",(25.25f,F2 - .5f),(1.5f,1f),settings:new SoloRoomTrapSettings(delayTicks:2)));
             elements.Add(E(SoloRoomElementKind.HiddenSpikes,"Spikes_Cr",(25.25f,F2 - .85f),(1.5f,.3f),settings:Chain("Crumble", 6)));
 
-            var sections = new[] {
-                CheckpointSection.Start("Lower", new Vector2(30.6f, F1), new[] { "Invert", "Hinge_1", "Flip_U1", "CC_1", "Spikes_CC1", "Lift_1", "Pop_C" }),
-                new CheckpointSection("Upper", new Vector2(2.5f, C2), new Rect(1f, F2 + 1f, 2.5f, .2f),
-                    new[] { "Push_2", "Flip_D2", "Hinge_W", "Pop_2", "Crumble", "Spikes_Cr" }, gravityUp: true),
-            };
-            return new SoloRoomDefinition(0, 0f, 32f, elements.ToArray(), System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>(), null, null, null, sections);
+            return new SoloRoomDefinition(0, 0f, 32f, elements.ToArray(), System.Array.Empty<SoloRoomOpening>(), System.Array.Empty<RequiredJump>());
         }
 
         static void Block(List<SoloRoomElement> e, SoloRoomElementKind kind, string name, float x0, float x1, float y0, float y1) =>

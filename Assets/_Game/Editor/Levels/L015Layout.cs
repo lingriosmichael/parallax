@@ -7,22 +7,17 @@ using static Parallax.Editor.Levels.LevelElementFactory;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-060 (D-093): level 15, "Hunted" (the storm cloud). The verb is KEEP MOVING, and find where you may stop. 64 x 14,
-    // left to right, one floor (top 0) with pits down to -3 and a ceiling at 9. The cloud wakes a step after the start and
-    // follows at 0.08 u a tick; it charges every 100 ticks and strikes where it stopped. A running cat (0.12) outruns it;
-    // a cat that stops is struck, unless it stands under real cover: a fixed roof (y 2.3-2.8, above a jump), which stops the
-    // strike on its top.
+    // PAX-060 (D-093): level 15, "Hunted". 64 x 14, left to right, one floor (top 0) with pits down to -3 and a ceiling at 9.
+    // D-285: the storm cloud it was built around is gone; its fixed roofs (y 2.3-2.8, above a jump) stay as the level's shape. D-287: Eye_C and Eye_R hunt the Run.
     //  - Open (section 0): jump the gap. Landing sets off Arrow_3 (disguised, shin height, from Post_C): jump it. The floor
-    //    ahead (Collapse_2) gives way as the cat lands: shelter under Overhang_B and wait out a strike until it comes back.
-    //    Dead end D1: back to the start alcove under Start_Roof.
+    //    ahead (Collapse_2) gives way as the cat lands: wait under Overhang_B until it comes back.
     //  - Shelter (section 1): past Roof_4 to Overhang_4, at the mover pit's lip. Wait under it for
-    //    Mover_M (Carry, 0.1 u a tick, faster than the cloud) to dock, ride it standing, step off onto Floor_D. Then the spear
+    //    Mover_M (Carry, 0.1 u a tick) to dock, ride it standing, step off onto Floor_D. Then the spear
     //    pit: walking on sets off Spear_P, which sticks in Floor_D's face as the one floor under Roof_S; standing on it sets
-    //    off Spear_B (90 ticks later) as the bridge; wait under the roof through a strike, then jump onto the bridge.
+    //    off Spear_B (90 ticks later) as the bridge; wait under the roof, then jump onto the bridge.
     //  - Run (section 2): the cave-in (Block_1-3 falling behind a running cat); the last block knocks out D3, the dance's
-    //    last platform, until the cooldown ends. The dance: on D1 and D2 over Pit_9, with nowhere to go on and no cover, hop
-    //    out from under each lock (back, when D3 is gone), then on over D3 onto P1 under Roof_9, which sets off Arrow_9
-    //    across P2: wait until it has stopped; then P2, and past the cloud's range. The
+    //    last platform, until the cooldown ends. The dance: on D1 and D2 over Pit_9, Eye_R aiming from above and nowhere to go on, hop
+    //    out of each shot to the other platform until D3 is back, then on over it onto P1 under Roof_9, which sets off Arrow_9 across P2: wait until it has stopped; then P2. The
     //    finale (D-154: Spear_10 removed): landing on Floor_F1 once set off Spear_10 along Floor_F2 below it, the way to the
     //    door; stop dead on Floor_F1, let it stick in its face, then go down over it and hop Curb_F to the door.
     static class L015Layout
@@ -32,6 +27,10 @@ namespace Parallax.Editor.Levels
         const float CoverY = 2.55f, CoverH = .5f;
         // D3's cooldown: from Block_3 knocking it out until it's back, through the dance's locks.
         const int DanceGateTicks = 257;
+        // D-287: Eye_R, the aiming laser over the dance: it aims EyeAim, locks EyeLock (its tell), fires EyeFire and rests, every EyePeriod (L021's beat).
+        internal const int EyeAim = 50, EyeLock = 12, EyeFire = 10, EyeRest = 33, EyePeriod = EyeAim + EyeLock + EyeFire + EyeRest, EyePhase = 20;   // two shots while D3 is away; the third goes off behind a cat on its way
+        const int EyeCPhase = 72;
+        const float EyeX = 50f, EyeRoofBottom = 5.5f;
 
         public static SoloRoomDefinition Build()
         {
@@ -60,23 +59,15 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Hazard,"Pit_S",(37f,-2.85f),(6f,.3f),hazardRole:Pit),
                 E(SoloRoomElementKind.PitBottom,"Pit9_Floor",(52.1f,-3.25f),(11.8f,.5f)),
                 E(SoloRoomElementKind.Hazard,"Pit_9",(52.1f,-2.85f),(11.8f,.3f),hazardRole:Pit),
-                // Cover (fixed roofs): the start alcove, Overhang_B, Roof_4, Overhang_4, Roof_S, Roof_9. Every roof under the
-                // cloud is real: a strike through a roof reads as a bug, not a trap (the developer's play, D-093 (4c)).
-                E(SoloRoomElementKind.Ceiling,"Start_Roof",(.9f,CoverY),(1.8f,CoverH)),
-                E(SoloRoomElementKind.Ceiling,"Overhang_B",(10.7f,CoverY),(2.2f,CoverH)),
-                E(SoloRoomElementKind.Ceiling,"Roof_4",(20.5f,CoverY),(2f,CoverH)),
-                E(SoloRoomElementKind.Ceiling,"Overhang_4",(24.25f,CoverY),(1.5f,CoverH)),
-                // PAX-107 (D-125): a roof over the Run section's checkpoint (Floor_E's west end, short of the cave-in's cut): the
-                // cloud at the cat's run is over the gate as the cat crosses it, and a cat respawned there must outlast a strike.
+                // D-298 (the developer: they "dont do absolutely anything"): the roofs were shelter from the storm cloud, which D-285 removed.
+                // Roof_R stays: Eye_C hangs from it.
                 E(SoloRoomElementKind.Ceiling,"Roof_R",(41.2f,CoverY),(1.2f,CoverH)),
-                E(SoloRoomElementKind.Ceiling,"Roof_S",(34.4f,CoverY),(1.6f,CoverH)),
-                // Roof_9 covers P1 (top 0.8), so it sits 0.8 higher than the others.
-                E(SoloRoomElementKind.Ceiling,"Roof_9",(54.5f,CoverY + .8f),(1.8f,CoverH)),
                 // Posts and curbs (arrow hosts and lane ends); Arrow_9's launcher is in Floor_F1.
                 E(SoloRoomElementKind.Wall,"Curb_B",(9.2f,.3f),(.4f,.6f)),
                 E(SoloRoomElementKind.Wall,"Post_C",(17.25f,.4f),(.5f,.8f)),
                 // The dance over Pit_9 (precision section "Dance"): D1 (x 47.2-48.2, top 0), D2 (49.2-50.2, top -0.9), D3 (the
                 // crumble, 51.5-52.5, top 0.2, below), then P1 (53.8-55.2, top 0.8, 1 u deep so its east face ends Arrow_9's lane).
+                E(SoloRoomElementKind.Ceiling,"Eye_Roof",(EyeX,EyeRoofBottom + .25f),(1.6f,.5f)),
                 E(SoloRoomElementKind.Floor,"D1",(47.7f,-.25f),(1f,.5f)),
                 E(SoloRoomElementKind.Floor,"D2",(49.7f,-1.15f),(1f,.5f)),
                 E(SoloRoomElementKind.Floor,"P1",(54.5f,.3f),(1.4f,1f)),
@@ -85,10 +76,6 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Wall,"Curb_F",(62.8f,.3f),(.4f,.6f)),
             };
 
-            // The cloud: wakes at the cut x 5-5.5; its centre ranges over x 2-55 (P2 from 56 is past it).
-            // PAX-107 (the developer: clouds 20 % faster, zap 10 % faster): follow 0.08 -> 0.096, strike every 100 -> 90 ticks; then (D-124) the cat's run, 0.12.
-            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(3f,7.6f),(2f,.8f),(5.25f,4.5f),(.5f,9f),
-                new SoloRoomTrapSettings(new StormCloudSettings(2f, 55f, followSpeed:.12f, strikePeriod:90), new SoloRoomTrapSettings(delayTicks:0))));   // PAX-107 (the developer: "it doesn't matter if it moves at same speed"): the cat's run, 0.12 u/tick
 
             // Open. Arrow_3's trigger is floor to ceiling from x 10.6 to its launcher (the cat enters it as it lands after the
             // gap), so it cuts the whole band for Collapse_2, chained from it. Collapse_2 (x 13-16.5; Pit_2 shows beyond it, before Post_C),
@@ -113,6 +100,17 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.FallingBlock,"Block_3",(45.5f,9.5f),(1.2f,.8f),settings:Drop(Chain("Block_2", 12))));
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"D3",(52f,-.05f),(1f,.5f),
                 settings:new SoloRoomTrapSettings(delayTicks:1,triggerSource:TrapTriggerSource.Chain,chainSource:"Block_3",repeatMode:TrapRepeatMode.Rearm,cooldownTicks:DanceGateTicks)));
+            // Eye_R (D-287: the developer asked for "the laser that follows you and aims at you" where the cloud was) hangs from Eye_Roof, low
+            // enough to be in view, and tracks a cat anywhere over the dance (x 46-53, short of P1): stand still and it hits; hop to the other platform as it locks and it misses.
+            float eyeMuzzle = EyeRoofBottom - .15f;
+            elements.Add(E(SoloRoomElementKind.Turret,"Eye_R",(EyeX,eyeMuzzle),(.6f,.6f),settings:new SoloRoomTrapSettings(
+                new TurretSettings(EyeAim,EyeLock,EyeFire,ceilingMount:true,aimZone:new Rect(46f - EyeX,-3f - eyeMuzzle,7f,3f + eyeMuzzle - .2f)),
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:EyePeriod,phaseTicks:EyePhase,cooldownTicks:EyeAim + EyeLock + EyeFire))));
+            // Eye_C hangs from Roof_R and watches the cave-in (x 42-46.5), on its own beat: it's aiming as the blocks come down behind a running cat. Its beam ends at the cave-in, short of D1.
+            float caveMuzzle = CoverY - CoverH * .5f - .15f;
+            elements.Add(E(SoloRoomElementKind.Turret,"Eye_C",(41.2f,caveMuzzle),(.6f,.6f),settings:new SoloRoomTrapSettings(
+                new TurretSettings(EyeAim,EyeLock,EyeFire,range:5.6f,ceilingMount:true,aimZone:new Rect(42f - 41.2f,-caveMuzzle,4.5f,caveMuzzle)),
+                new SoloRoomTrapSettings(repeatMode:TrapRepeatMode.Periodic,periodTicks:EyePeriod,phaseTicks:EyeCPhase,cooldownTicks:EyeAim + EyeLock + EyeFire))));
             // Arrow_9 crosses P2 once, from Floor_F1's west face to P1's east face (Stop_9 above it), set off by the cut at
             // x 54-54.4 as the cat jumps onto P1: a 50-tick tell the cat on P1 sees, then about 8 ticks across P2, where a cat
             // that hopped on at once has just landed. Wait under Roof_9 until it has stopped.
@@ -123,9 +121,9 @@ namespace Parallax.Editor.Levels
             // Spear_10 (disguised, from Curb_F along Floor_F2) is gone; the run ends over the shaft and Curb_F to the door.
 
             var sections = new[] {
-                CheckpointSection.Start("Open", new Vector2(2f, 0f), new[] { "Cloud", "Arrow_3", "Collapse_2" }),
+                CheckpointSection.Start("Open", new Vector2(2f, 0f), new[] { "Arrow_3", "Collapse_2" }),
                 new CheckpointSection("Shelter", new Vector2(18.5f, 0f), new Rect(17.9f, 0f, .2f, 9f), new[] { "Mover_M", "Spear_P", "Spear_B" }),
-                new CheckpointSection("Run", new Vector2(41.2f, 0f), new Rect(40.6f, 0f, .2f, 9f), new[] { "Block_1", "Block_2", "Block_3", "D3", "Arrow_9" }),
+                new CheckpointSection("Run", new Vector2(41.2f, 0f), new Rect(40.6f, 0f, .2f, 9f), new[] { "Block_1", "Block_2", "Block_3", "D3", "Eye_C", "Eye_R", "Arrow_9" }),
             };
             // D-083: the dance is a precision section (Floor_E's end to P1). Its bait gaps: with D3 gone, neither D2 (1.7 below
             // P1, above the jump's 1.6) nor D1 reaches P1.

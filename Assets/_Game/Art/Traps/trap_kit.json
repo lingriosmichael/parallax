@@ -1,6 +1,141 @@
 {
   "entries": [
     {
+      "normal": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 447,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 447,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 447,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 447,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-01_arm_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-01_arm.png",
+      "pivotX": 0.0436,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-02_hub_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-02_hub.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-04_strip_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-04_strip.png",
+      "pivotX": 0.5,
+      "pivotY": 1.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-05_crusher_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-05_crusher.png",
+      "pivotX": 0.5,
+      "pivotY": 1.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-07_head_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-07_head.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-07_ring_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-07_ring.png",
+      "pivotX": 0.5,
+      "pivotY": 0.92,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-07_shaft_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-07_shaft.png",
+      "pivotX": 0.5,
+      "pivotY": 1.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-08_plate_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-08_plate.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-10_eye_idle_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-10_eye_idle.png",
+      "pivotX": 0.415,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-10_eye_lock_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-10_eye_lock.png",
+      "pivotX": 0.415,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-10_mount_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-10_mount.png",
+      "pivotX": 0.5,
+      "pivotY": 0.71,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
       "normal": "Assets/_Game/Art/Traps/Bodies/HINGE_knuckle_n.png",
       "path": "Assets/_Game/Art/Traps/Bodies/HINGE_knuckle.png",
       "pivotX": 0.5,
@@ -17,6 +152,222 @@
       "placeholder": "",
       "ppu": 256,
       "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_10_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_10.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_11_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_11.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_4_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_4.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_5_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_5.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_6_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_6.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_7_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_7.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_8_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_8.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_9_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_9.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.05511811023622047,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_10_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_10.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_11_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_11.png",
+      "pivotX": 0.5,
+      "pivotY": 0.05555555555555555,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.05511811023622047,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_4_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_4.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043478260869565216,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_5_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_5.png",
+      "pivotX": 0.5,
+      "pivotY": 0.05511811023622047,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_6_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_6.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_7_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_7.png",
+      "pivotX": 0.5,
+      "pivotY": 0.05511811023622047,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_8_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_8.png",
+      "pivotX": 0.5,
+      "pivotY": 0.043209876543209874,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_9_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_9.png",
+      "pivotX": 0.5,
+      "pivotY": 0.05511811023622047,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
     },
     {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_0_n.png",
@@ -120,6 +471,114 @@
     {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_9_n.png",
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_9.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_10_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_10.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_11_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_11.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_4_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_4.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_5_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_5.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_6_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_6.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_7_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_7.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_8_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_8.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_9_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_9.png",
       "pivotX": 0.5,
       "pivotY": 0.0,
       "placeholder": "",
@@ -235,6 +694,78 @@
       "tiled": false
     },
     {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORNRIM_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/THORNRIM_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0345821325648415,
+      "placeholder": "",
+      "ppu": 340,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORNRIM_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/THORNRIM_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.03468208092485549,
+      "placeholder": "",
+      "ppu": 340,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORNRIM_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/THORNRIM_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.03418803418803419,
+      "placeholder": "",
+      "ppu": 340,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORNRIM_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/THORNRIM_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0345821325648415,
+      "placeholder": "",
+      "ppu": 340,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORN_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/THORN_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 340,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORN_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/THORN_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 340,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORN_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/THORN_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 340,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORN_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/THORN_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.0,
+      "placeholder": "",
+      "ppu": 340,
+      "tiled": false
+    },
+    {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher_n.png",
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-01_arrow_launcher.png",
       "pivotX": 0.5,
@@ -255,6 +786,15 @@
     {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow_n.png",
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow_rim_n.png",
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow_rim.png",
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
@@ -321,7 +861,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
-      "ppu": 128,
+      "ppu": 256,
       "tiled": false
     },
     {
@@ -330,7 +870,7 @@
       "pivotX": 0.5,
       "pivotY": 0.5,
       "placeholder": "",
-      "ppu": 128,
+      "ppu": 256,
       "tiled": false
     },
     {
@@ -383,6 +923,438 @@
       "path": "Assets/_Game/Art/Traps/Effects/CRUMBLE_edge.png",
       "pivotX": 0.5,
       "pivotY": 1.0,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_10_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_10.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_11_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_11.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_4_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_4.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_5_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_5.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_6_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_6.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_7_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_7.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_8_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_8.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_9_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_9.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_DoorBurst_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_DoorBurst.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_DustLand_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_DustLand_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_DustLand_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_DustLand_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_DustSkid_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_DustSkid_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_DustSkid_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_DustSkid_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Impact_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Impact_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Impact_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Impact_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Impact_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Impact_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Puff_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Puff_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Puff_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Puff_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Puff_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Puff_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Puff_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Puff_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_4_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_4.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_5_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_5.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_6_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_6.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_7_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_7.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Spark_0_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Spark_0.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Spark_1_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Spark_1.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Spark_2_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Spark_2.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Spark_3_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Spark_3.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 128,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/GT-11_beam_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/GT-11_beam.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/LASER_burn_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/LASER_burn.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": false
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/LASER_core_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/LASER_core.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "placeholder": "",
+      "ppu": 256,
+      "tiled": true
+    },
+    {
+      "normal": "Assets/_Game/Art/Traps/Effects/LASER_glow_n.png",
+      "path": "Assets/_Game/Art/Traps/Effects/LASER_glow.png",
+      "pivotX": 0.5,
+      "pivotY": 0.5,
       "placeholder": "",
       "ppu": 256,
       "tiled": true
@@ -659,16 +1631,18 @@
     }
   ],
   "flags": [
-    "Bodies/TRAP-01_arrow_launcher: black shading 28.8%",
-    "Bodies/TRAP-02_arrow: black shading 39.6%",
+    "Bodies/TRAP-02_arrow: black shading 41.9%",
+    "Bodies/TRAP-03_geyser_vent: black shading 2.5%",
     "Bodies/TRAP-04_spike_strip: black shading 43.0%",
-    "Bodies/TRAP-05_spear_head: black shading 31.7%",
-    "Bodies/TRAP-05_spear_shaft: black shading 21.3%",
+    "Bodies/TRAP-05_spear_head: black shading 21.4%",
+    "Bodies/TRAP-05_spear_shaft: black shading 7.7%",
+    "Bodies/TRAP-06_inverter_orb: cyan 2.2%",
+    "Effects/TRAP-11_block_crack: black shading 13.1%",
     "Bodies/TRAP-01_launcher_mouth: black shading 59.2%",
-    "Bodies/TRAP-02_arrow: black shading 43.5%",
-    "Bodies/TRAP-05_spear: black shading 31.4%",
-    "Bodies/TRAP-05_spear_head: black shading 39.5%",
-    "Bodies/TRAP-05_spear_shaft: black shading 25.2%",
+    "Bodies/TRAP-02_arrow: black shading 41.8%",
+    "Bodies/TRAP-05_spear: black shading 26.1%",
+    "Bodies/TRAP-05_spear_head: black shading 21.4%",
+    "Bodies/TRAP-05_spear_shaft: black shading 7.7%",
     "Bodies/SPIKE_blade_0: black shading 60.8%",
     "Bodies/SPIKE_blade_1: black shading 65.0%",
     "Bodies/SPIKE_blade_2: black shading 60.2%",
@@ -682,14 +1656,383 @@
     "Bodies/SPIKE_blade_10: black shading 58.9%",
     "Bodies/SPIKE_blade_11: black shading 58.3%",
     "Bodies/TRAP-03_geyser_vent: black shading 2.5%",
+    "Bodies/TRAP-06_inverter_orb: cyan 2.2%",
     "Bodies/HINGE_knuckle: black shading 8.7%",
     "Effects/CRACK_0: black shading 11.4%",
     "Effects/CRACK_1: black shading 13.1%",
     "Effects/CRACK_2: black shading 10.9%",
-    "Effects/TRAP-11_block_crack: black shading 13.1%"
+    "Effects/TRAP-11_block_crack: black shading 13.1%",
+    "Bodies/CRYSTAL_0: black shading 7.1%",
+    "Bodies/CRYSTAL_1: black shading 6.8%",
+    "Bodies/CRYSTAL_2: black shading 8.6%",
+    "Bodies/CRYSTAL_3: black shading 3.8%",
+    "Bodies/SPIKE_steel_0: black shading 22.9%",
+    "Bodies/SPIKE_steel_1: black shading 20.8%",
+    "Bodies/SPIKE_steel_2: black shading 21.9%",
+    "Bodies/SPIKE_steel_3: black shading 20.5%",
+    "Bodies/SPIKE_steel_4: black shading 5.7%",
+    "Bodies/SPIKE_steel_5: black shading 3.4%",
+    "Bodies/SPIKE_steel_6: black shading 20.0%",
+    "Bodies/SPIKE_steel_7: black shading 8.0%",
+    "Bodies/SPIKE_steel_8: black shading 16.2%",
+    "Bodies/SPIKE_steel_9: black shading 19.9%",
+    "Bodies/SPIKE_steel_10: black shading 15.7%",
+    "Bodies/SPIKE_steel_11: black shading 18.3%",
+    "Bodies/SPIKE_bold_0: black shading 6.0%",
+    "Bodies/SPIKE_bold_1: black shading 3.9%",
+    "Bodies/SPIKE_bold_2: black shading 3.6%",
+    "Bodies/SPIKE_bold_3: black shading 4.0%",
+    "Bodies/SPIKE_bold_4: black shading 3.6%",
+    "Bodies/SPIKE_bold_5: black shading 10.1%",
+    "Bodies/SPIKE_bold_6: black shading 2.8%",
+    "Bodies/SPIKE_bold_7: black shading 9.0%",
+    "Bodies/SPIKE_bold_8: black shading 8.0%",
+    "Bodies/SPIKE_bold_9: black shading 7.7%",
+    "Bodies/SPIKE_bold_10: black shading 3.5%",
+    "Bodies/SPIKE_bold_11: black shading 10.2%",
+    "Effects/FX_Shard_0: cyan 31.6%",
+    "Effects/FX_Shard_1: cyan 14.3%",
+    "Effects/FX_Shard_2: cyan 9.7%",
+    "Effects/FX_Shard_3: cyan 11.9%",
+    "Effects/FX_Shard_4: cyan 5.5%",
+    "Effects/FX_Shard_4: black shading 2.1%",
+    "Effects/FX_Shard_5: cyan 7.7%",
+    "Effects/FX_Shard_5: black shading 3.4%",
+    "Effects/FX_Shard_6: cyan 10.0%",
+    "Effects/FX_Shard_7: cyan 16.5%"
   ],
   "ppu": 128,
   "sprites": {
+    "Bodies/CRYSTAL_0": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_0_n.png",
+      "palette": {
+        "black": 0.0706,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_0.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 447,
+      "size_px": [
+        596,
+        359
+      ],
+      "sources": [
+        "Art_Source/Traps_Obsidian/HZ-03_crystal_shards_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/CRYSTAL_1": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_1_n.png",
+      "palette": {
+        "black": 0.068,
+        "cyan": 0.0006
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_1.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 447,
+      "size_px": [
+        729,
+        363
+      ],
+      "sources": [
+        "Art_Source/Traps_Obsidian/HZ-03_crystal_shards_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/CRYSTAL_2": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_2_n.png",
+      "palette": {
+        "black": 0.0865,
+        "cyan": 0.0011
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_2.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 447,
+      "size_px": [
+        507,
+        239
+      ],
+      "sources": [
+        "Art_Source/Traps_Obsidian/HZ-03_crystal_shards_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/CRYSTAL_3": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_3_n.png",
+      "palette": {
+        "black": 0.0381,
+        "cyan": 0.0005
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/CRYSTAL_3.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 447,
+      "size_px": [
+        556,
+        362
+      ],
+      "sources": [
+        "Art_Source/Traps_Obsidian/HZ-03_crystal_shards_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/GT-01_arm": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-01_arm_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-01_arm.png",
+      "pivot": [
+        0.0436,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        767,
+        159
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-01_spinner_arm_v2.png"
+      ],
+      "tiled": true
+    },
+    "Bodies/GT-02_hub": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-02_hub_n.png",
+      "palette": {
+        "black": 0.0022,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-02_hub.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        126,
+        128
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-02_spinner_hub_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/GT-04_strip": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-04_strip_n.png",
+      "palette": {
+        "black": 0.0013,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-04_strip.png",
+      "pivot": [
+        0.5,
+        1.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        340,
+        118
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-04_spiked_underside_v1.png"
+      ],
+      "tiled": true
+    },
+    "Bodies/GT-05_crusher": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-05_crusher_n.png",
+      "palette": {
+        "black": 0.003,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-05_crusher.png",
+      "pivot": [
+        0.5,
+        1.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        768,
+        219
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-05_spiked_crusher_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/GT-07_head": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-07_head_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-07_head.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        218,
+        114
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-07_pendulum_blade_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/GT-07_ring": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-07_ring_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-07_ring.png",
+      "pivot": [
+        0.5,
+        0.92
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        62,
+        112
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-07_pendulum_blade_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/GT-07_shaft": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-07_shaft_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-07_shaft.png",
+      "pivot": [
+        0.5,
+        1.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        40,
+        76
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-07_pendulum_blade_v1.png"
+      ],
+      "tiled": true
+    },
+    "Bodies/GT-08_plate": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-08_plate_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-08_plate.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        338,
+        47
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-08_pressure_plate_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/GT-10_eye_idle": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-10_eye_idle_n.png",
+      "palette": {
+        "black": 0.0002,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-10_eye_idle.png",
+      "pivot": [
+        0.415,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        123,
+        104
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-10_turret_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/GT-10_eye_lock": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-10_eye_lock_n.png",
+      "palette": {
+        "black": 0.0001,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-10_eye_lock.png",
+      "pivot": [
+        0.415,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        123,
+        104
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-10_turret_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/GT-10_mount": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/GT-10_mount_n.png",
+      "palette": {
+        "black": 0.0002,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/GT-10_mount.png",
+      "pivot": [
+        0.5,
+        0.71
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        230,
+        135
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-10_turret_v1.png"
+      ],
+      "tiled": false
+    },
     "Bodies/HINGE_knuckle": {
       "normal": "Assets/_Game/Art/Traps/Bodies/HINGE_knuckle_n.png",
       "palette": {
@@ -733,6 +2076,534 @@
         "Art_Source/Traps_ChatGPT/PILOT-07_slam_v2.png"
       ],
       "tiled": true
+    },
+    "Bodies/SPIKERIM_bold_0": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_0.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_bold_1": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_1.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_bold_10": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_10_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_10.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_bold_11": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_11_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_11.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_bold_2": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_2.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_bold_3": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_3_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_3.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_bold_4": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_4_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_4.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_bold_5": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_5_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_5.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_bold_6": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_6_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_6.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_bold_7": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_7_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_7.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_bold_8": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_8_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_8.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_bold_9": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_9_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_bold_9.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        174,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_0": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_0.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        67,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_1": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_1.png",
+      "pivot": [
+        0.5,
+        0.05511811023622047
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        64,
+        127
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_10": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_10_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_10.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        68,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_11": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_11_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_11.png",
+      "pivot": [
+        0.5,
+        0.05555555555555555
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        64,
+        126
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_2": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_2.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        67,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_3": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_3_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_3.png",
+      "pivot": [
+        0.5,
+        0.05511811023622047
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        64,
+        127
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_4": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_4_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_4.png",
+      "pivot": [
+        0.5,
+        0.043478260869565216
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        67,
+        161
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_5": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_5_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_5.png",
+      "pivot": [
+        0.5,
+        0.05511811023622047
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        64,
+        127
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_6": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_6_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_6.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        68,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_7": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_7_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_7.png",
+      "pivot": [
+        0.5,
+        0.05511811023622047
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        64,
+        127
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_8": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_8_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_8.png",
+      "pivot": [
+        0.5,
+        0.043209876543209874
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        68,
+        162
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKERIM_steel_9": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_9_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKERIM_steel_9.png",
+      "pivot": [
+        0.5,
+        0.05511811023622047
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        64,
+        127
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
     },
     "Bodies/SPIKE_blade_0": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_0_n.png",
@@ -998,10 +2869,274 @@
       ],
       "tiled": false
     },
+    "Bodies/SPIKE_bold_0": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_0_n.png",
+      "palette": {
+        "black": 0.0602,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_0.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_bold_1": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_1_n.png",
+      "palette": {
+        "black": 0.0394,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_1.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_bold_10": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_10_n.png",
+      "palette": {
+        "black": 0.0352,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_10.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_bold_11": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_11_n.png",
+      "palette": {
+        "black": 0.1015,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_11.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_bold_2": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_2_n.png",
+      "palette": {
+        "black": 0.0357,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_2.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_bold_3": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_3_n.png",
+      "palette": {
+        "black": 0.04,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_3.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_bold_4": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_4_n.png",
+      "palette": {
+        "black": 0.0363,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_4.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_bold_5": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_5_n.png",
+      "palette": {
+        "black": 0.1008,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_5.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_bold_6": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_6_n.png",
+      "palette": {
+        "black": 0.0282,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_6.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_bold_7": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_7_n.png",
+      "palette": {
+        "black": 0.0896,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_7.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_bold_8": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_8_n.png",
+      "palette": {
+        "black": 0.0803,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_8.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/SPIKE_bold_9": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_9_n.png",
+      "palette": {
+        "black": 0.0768,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_bold_9.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        160,
+        148
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v3.png"
+      ],
+      "tiled": false
+    },
     "Bodies/SPIKE_steel_0": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_0_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.2292,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_0.png",
@@ -1012,18 +3147,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        38,
+        53,
         148
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_0.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
       ],
       "tiled": false
     },
     "Bodies/SPIKE_steel_1": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_1_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.2079,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_1.png",
@@ -1034,18 +3169,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        47,
-        148
+        50,
+        113
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_1.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
       ],
       "tiled": false
     },
     "Bodies/SPIKE_steel_10": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_10_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.157,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_10.png",
@@ -1056,18 +3191,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        49,
+        54,
         148
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_10.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
       ],
       "tiled": false
     },
     "Bodies/SPIKE_steel_11": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_11_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.1833,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_11.png",
@@ -1078,18 +3213,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        43,
-        148
+        50,
+        112
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_11.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
       ],
       "tiled": false
     },
     "Bodies/SPIKE_steel_2": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_2_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.2192,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_2.png",
@@ -1100,18 +3235,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        32,
+        53,
         148
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_2.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
       ],
       "tiled": false
     },
     "Bodies/SPIKE_steel_3": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_3_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.2047,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_3.png",
@@ -1122,18 +3257,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        40,
-        148
+        50,
+        113
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_3.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
       ],
       "tiled": false
     },
     "Bodies/SPIKE_steel_4": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_4_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.0565,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_4.png",
@@ -1144,18 +3279,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        40,
-        148
+        53,
+        147
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_4.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
       ],
       "tiled": false
     },
     "Bodies/SPIKE_steel_5": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_5_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.034,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_5.png",
@@ -1166,18 +3301,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        39,
-        148
+        50,
+        113
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_5.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
       ],
       "tiled": false
     },
     "Bodies/SPIKE_steel_6": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_6_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.1998,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_6.png",
@@ -1188,18 +3323,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        36,
+        54,
         148
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_6.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
       ],
       "tiled": false
     },
     "Bodies/SPIKE_steel_7": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_7_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.0803,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_7.png",
@@ -1210,18 +3345,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        42,
-        148
+        50,
+        113
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_7.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
       ],
       "tiled": false
     },
     "Bodies/SPIKE_steel_8": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_8_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.1625,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_8.png",
@@ -1232,18 +3367,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        45,
+        54,
         148
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_8.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
       ],
       "tiled": false
     },
     "Bodies/SPIKE_steel_9": {
       "normal": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_9_n.png",
       "palette": {
-        "black": 0.0,
+        "black": 0.1986,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/SPIKE_steel_9.png",
@@ -1254,11 +3389,187 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        41,
-        148
+        50,
+        113
       ],
       "sources": [
-        "Assets/_Game/Art/Traps/Bodies/SPIKE_blade_9.png"
+        "Art_Source/Traps_ChatGPT/HZ-02_metal_spikes_v2.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/THORNRIM_0": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORNRIM_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/THORNRIM_0.png",
+      "pivot": [
+        0.5,
+        0.0345821325648415
+      ],
+      "placeholder": "",
+      "ppu": 340,
+      "size_px": [
+        716,
+        347
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-01_thorn_branches_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/THORNRIM_1": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORNRIM_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/THORNRIM_1.png",
+      "pivot": [
+        0.5,
+        0.03468208092485549
+      ],
+      "placeholder": "",
+      "ppu": 340,
+      "size_px": [
+        723,
+        346
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-01_thorn_branches_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/THORNRIM_2": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORNRIM_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/THORNRIM_2.png",
+      "pivot": [
+        0.5,
+        0.03418803418803419
+      ],
+      "placeholder": "",
+      "ppu": 340,
+      "size_px": [
+        761,
+        351
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-01_thorn_branches_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/THORNRIM_3": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORNRIM_3_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/THORNRIM_3.png",
+      "pivot": [
+        0.5,
+        0.0345821325648415
+      ],
+      "placeholder": "",
+      "ppu": 340,
+      "size_px": [
+        761,
+        347
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-01_thorn_branches_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/THORN_0": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORN_0_n.png",
+      "palette": {
+        "black": 0.0001,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/THORN_0.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 340,
+      "size_px": [
+        692,
+        323
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-01_thorn_branches_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/THORN_1": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORN_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/THORN_1.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 340,
+      "size_px": [
+        699,
+        322
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-01_thorn_branches_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/THORN_2": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORN_2_n.png",
+      "palette": {
+        "black": 0.0002,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/THORN_2.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 340,
+      "size_px": [
+        737,
+        327
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-01_thorn_branches_v3.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/THORN_3": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/THORN_3_n.png",
+      "palette": {
+        "black": 0.0007,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/THORN_3.png",
+      "pivot": [
+        0.5,
+        0.0
+      ],
+      "placeholder": "",
+      "ppu": 340,
+      "size_px": [
+        737,
+        323
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/HZ-01_thorn_branches_v3.png"
       ],
       "tiled": false
     },
@@ -1309,7 +3620,7 @@
     "Bodies/TRAP-02_arrow": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow_n.png",
       "palette": {
-        "black": 0.4353,
+        "black": 0.4182,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow.png",
@@ -1322,6 +3633,28 @@
       "size_px": [
         213,
         52
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/PILOT-02C_arrow_v1.png"
+      ],
+      "tiled": false
+    },
+    "Bodies/TRAP-02_arrow_rim": {
+      "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow_rim_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Bodies/TRAP-02_arrow_rim.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        223,
+        62
       ],
       "sources": [
         "Art_Source/Traps_ChatGPT/PILOT-02C_arrow_v1.png"
@@ -1367,15 +3700,13 @@
         301,
         45
       ],
-      "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-04_spike_strip_v1.png"
-      ],
+      "sources": [],
       "tiled": true
     },
     "Bodies/TRAP-05_spear": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_n.png",
       "palette": {
-        "black": 0.3135,
+        "black": 0.2605,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear.png",
@@ -1386,18 +3717,18 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        364,
-        73
+        366,
+        75
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/PILOT-02D_spear_v1.png"
+        "Art_Source/Traps_ChatGPT/TE-01_spear_v1.png"
       ],
       "tiled": false
     },
     "Bodies/TRAP-05_spear_head": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_head_n.png",
       "palette": {
-        "black": 0.3945,
+        "black": 0.214,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_head.png",
@@ -1409,17 +3740,17 @@
       "ppu": 256,
       "size_px": [
         162,
-        91
+        83
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/PILOT-02D_spear_v1.png"
+        "Art_Source/Traps_ChatGPT/TE-01_spear_v1.png"
       ],
       "tiled": false
     },
     "Bodies/TRAP-05_spear_shaft": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_shaft_n.png",
       "palette": {
-        "black": 0.252,
+        "black": 0.0769,
         "cyan": 0.0
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-05_spear_shaft.png",
@@ -1430,19 +3761,19 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        696,
+        772,
         104
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/PILOT-02D_spear_v1.png"
+        "Art_Source/Traps_ChatGPT/TE-01_spear_v1.png"
       ],
       "tiled": true
     },
     "Bodies/TRAP-06_inverter_orb": {
       "normal": "Assets/_Game/Art/Traps/Bodies/TRAP-06_inverter_orb_n.png",
       "palette": {
-        "black": 0.0018,
-        "cyan": 0.0
+        "black": 0.0016,
+        "cyan": 0.0218
       },
       "path": "Assets/_Game/Art/Traps/Bodies/TRAP-06_inverter_orb.png",
       "pivot": [
@@ -1452,11 +3783,11 @@
       "placeholder": "",
       "ppu": 256,
       "size_px": [
-        200,
-        181
+        253,
+        256
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/PILOT-09_inverter_orb_v1.png"
+        "Art_Source/Traps_ChatGPT/INV-01_direction_orb_v2.png"
       ],
       "tiled": false
     },
@@ -1472,13 +3803,13 @@
         0.5
       ],
       "placeholder": "",
-      "ppu": 128,
+      "ppu": 256,
       "size_px": [
-        39,
-        26
+        179,
+        68
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-07_inverter_cue_v1.png"
+        "Art_Source/Traps_ChatGPT/INV-01_direction_orb_v2.png"
       ],
       "tiled": false
     },
@@ -1494,13 +3825,13 @@
         0.5
       ],
       "placeholder": "",
-      "ppu": 128,
+      "ppu": 256,
       "size_px": [
-        192,
-        50
+        384,
+        99
       ],
       "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-07_inverter_cue_v1.png"
+        "Art_Source/Traps_ChatGPT/INV-01_direction_orb_v2.png"
       ],
       "tiled": false
     },
@@ -1636,6 +3967,1056 @@
       ],
       "tiled": true
     },
+    "Effects/FX_Debris_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        13,
+        11
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Debris_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        17,
+        16
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Debris_10": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_10_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_10.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        48,
+        22
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Debris_11": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_11_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_11.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        52,
+        18
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Debris_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        21,
+        20
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Debris_3": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_3_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_3.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        23,
+        20
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Debris_4": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_4_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_4.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        49,
+        42
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Debris_5": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_5_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_5.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        48,
+        46
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Debris_6": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_6_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_6.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        53,
+        47
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Debris_7": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_7_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_7.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        56,
+        53
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Debris_8": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_8_n.png",
+      "palette": {
+        "black": 0.0024,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_8.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        43,
+        16
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Debris_9": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Debris_9_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Debris_9.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        58,
+        19
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-02_debris_golden_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_DoorBurst": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_DoorBurst_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_DoorBurst.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        384,
+        372
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-05_door_burst_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_DustLand_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_DustLand_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_DustLand_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        27,
+        9
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-01_dust_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_DustLand_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_DustLand_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_DustLand_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        34,
+        14
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-01_dust_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_DustSkid_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_DustSkid_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_DustSkid_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        128,
+        19
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-01_dust_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_DustSkid_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_DustSkid_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_DustSkid_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        24,
+        7
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-01_dust_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Impact_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Impact_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Impact_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        260,
+        49
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-04_impact_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Impact_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Impact_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Impact_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        249,
+        31
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-04_impact_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Impact_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Impact_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Impact_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        384,
+        71
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-04_impact_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Puff_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Puff_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Puff_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        22,
+        27
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-01_dust_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Puff_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Puff_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Puff_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        15,
+        13
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-01_dust_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Puff_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Puff_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Puff_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        22,
+        17
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-01_dust_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Puff_3": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Puff_3_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Puff_3.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        32,
+        30
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-01_dust_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Shard_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.3158
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        8,
+        6
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Shard_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.1429
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        14,
+        11
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Shard_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_2_n.png",
+      "palette": {
+        "black": 0.013,
+        "cyan": 0.0974
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        18,
+        19
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Shard_3": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_3_n.png",
+      "palette": {
+        "black": 0.0123,
+        "cyan": 0.1189
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_3.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        27,
+        23
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Shard_4": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_4_n.png",
+      "palette": {
+        "black": 0.0206,
+        "cyan": 0.055
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_4.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        26,
+        23
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Shard_5": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_5_n.png",
+      "palette": {
+        "black": 0.0335,
+        "cyan": 0.0766
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_5.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        35,
+        24
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Shard_6": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_6_n.png",
+      "palette": {
+        "black": 0.0118,
+        "cyan": 0.1003
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_6.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        47,
+        24
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Shard_7": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Shard_7_n.png",
+      "palette": {
+        "black": 0.0179,
+        "cyan": 0.1649
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Shard_7.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        64,
+        24
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_SparkCyan_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        11,
+        9
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_SparkCyan_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        19,
+        14
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_SparkCyan_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        25,
+        20
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_SparkCyan_3": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_3_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkCyan_3.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        38,
+        23
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-06_obsidian_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_SparkFan_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        44,
+        20
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-03_sparks_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_SparkFan_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        63,
+        26
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-03_sparks_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_SparkFan_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        76,
+        34
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-03_sparks_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_SparkFan_3": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_3_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_SparkFan_3.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        90,
+        46
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-03_sparks_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Spark_0": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Spark_0_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Spark_0.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        20,
+        16
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-03_sparks_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Spark_1": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Spark_1_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Spark_1.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        32,
+        23
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-03_sparks_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Spark_2": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Spark_2_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Spark_2.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        44,
+        37
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-03_sparks_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/FX_Spark_3": {
+      "normal": "Assets/_Game/Art/Traps/Effects/FX_Spark_3_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/FX_Spark_3.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 128,
+      "size_px": [
+        63,
+        52
+      ],
+      "sources": [
+        "Art_Source/Effects/FX-03_sparks_v1.png"
+      ],
+      "tiled": false
+    },
+    "Effects/GT-11_beam": {
+      "normal": "Assets/_Game/Art/Traps/Effects/GT-11_beam_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/GT-11_beam.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        2225,
+        256
+      ],
+      "sources": [
+        "Art_Source/Traps_ChatGPT/GT-11_turret_beam_v2.png"
+      ],
+      "tiled": true
+    },
+    "Effects/LASER_burn": {
+      "normal": "Assets/_Game/Art/Traps/Effects/LASER_burn_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/LASER_burn.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        256,
+        256
+      ],
+      "sources": [],
+      "tiled": false
+    },
+    "Effects/LASER_core": {
+      "normal": "Assets/_Game/Art/Traps/Effects/LASER_core_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/LASER_core.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        1024,
+        256
+      ],
+      "sources": [],
+      "tiled": true
+    },
+    "Effects/LASER_glow": {
+      "normal": "Assets/_Game/Art/Traps/Effects/LASER_glow_n.png",
+      "palette": {
+        "black": 0.0,
+        "cyan": 0.0
+      },
+      "path": "Assets/_Game/Art/Traps/Effects/LASER_glow.png",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "placeholder": "",
+      "ppu": 256,
+      "size_px": [
+        64,
+        256
+      ],
+      "sources": [],
+      "tiled": true
+    },
     "Effects/TRAP-10_scorch": {
       "normal": "Assets/_Game/Art/Traps/Effects/TRAP-10_scorch_n.png",
       "palette": {
@@ -1653,9 +5034,7 @@
         154,
         23
       ],
-      "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-10_scorch_v1.png"
-      ],
+      "sources": [],
       "tiled": false
     },
     "Effects/TRAP-11_block_crack": {
@@ -1697,9 +5076,7 @@
         51,
         128
       ],
-      "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-12_geyser_steam_v1.png"
-      ],
+      "sources": [],
       "tiled": false
     },
     "Effects/TRAP-12_steam_1": {
@@ -1719,9 +5096,7 @@
         46,
         128
       ],
-      "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-12_geyser_steam_v1.png"
-      ],
+      "sources": [],
       "tiled": false
     },
     "Effects/TRAP-12_steam_2": {
@@ -1741,9 +5116,7 @@
         49,
         128
       ],
-      "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-12_geyser_steam_v1.png"
-      ],
+      "sources": [],
       "tiled": false
     },
     "Effects/TRAP-13_leaf_0": {
@@ -1763,9 +5136,7 @@
         22,
         24
       ],
-      "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-13_leaves_v1.png"
-      ],
+      "sources": [],
       "tiled": false
     },
     "Effects/TRAP-13_leaf_1": {
@@ -1785,9 +5156,7 @@
         21,
         24
       ],
-      "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-13_leaves_v1.png"
-      ],
+      "sources": [],
       "tiled": false
     },
     "Effects/TRAP-13_leaf_2": {
@@ -1807,9 +5176,7 @@
         21,
         24
       ],
-      "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-13_leaves_v1.png"
-      ],
+      "sources": [],
       "tiled": false
     },
     "Effects/TRAP-13_leaf_3": {
@@ -1829,9 +5196,7 @@
         24,
         24
       ],
-      "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-13_leaves_v1.png"
-      ],
+      "sources": [],
       "tiled": false
     },
     "Effects/TRAP-13_leaf_4": {
@@ -1851,9 +5216,7 @@
         21,
         24
       ],
-      "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-13_leaves_v1.png"
-      ],
+      "sources": [],
       "tiled": false
     },
     "Effects/TRAP-13_leaf_5": {
@@ -1873,9 +5236,7 @@
         22,
         24
       ],
-      "sources": [
-        "Art_Source/Traps_ChatGPT/TRAP-13_leaves_v1.png"
-      ],
+      "sources": [],
       "tiled": false
     },
     "Effects/bolt_segment": {

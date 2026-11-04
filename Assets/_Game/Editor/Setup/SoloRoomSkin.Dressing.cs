@@ -19,9 +19,26 @@ namespace Parallax.Editor.Setup
         /// in the draw order, so they batch (alternating atlases at one depth broke every batch).</summary>
         static float AtlasNudge(string slot) => 0f;   // round 9: all dressing in one atlas
 
+        const float HeroMinWidth = 4f, HeroMinHeight = 3.2f, HeroStep = 9f, HeroMinScale = 0.5f, CarvedMinScale = 0.38f;   // D-318: carved walls a size smaller on medium walls (they stayed bare)
+        // D-311: in Golden Ruins the grid, the gap and the twin's distance set how many, not a cap a room (it was 8: the biggest faces,
+        // often mostly off screen, took them all, and L022's main wall and L030's summit stayed bare). Pieces 1 u apart at least, and
+        // the same one never twice in one view (CarvedApart). Obsidian's machines keep their 8.
+        const int HeroMax = 64, MachineMax = 8, MaxCarved = 64;
+        const float HeroGap = 1f;
+        /// <summary>Gate 4: two of one carved wall are twins when one view could hold both: a view is about 20 x 9 u, so closer than
+        /// this across and up at once (it was a 24 u circle, which on a tall wall left every lower cell bare, L030's summit).</summary>
+        static readonly Vector2 CarvedApart = new(22f, 11f);
+        static readonly Vector2 CarvedCell = new(12f, 10f);
+        /// <summary>D-311: the carved walls (Pack A's relief and Pack A2's four), each once a room at most.</summary>
+        static readonly string[] CarvedWalls = { "ENV_HeroRelief", "ENV_HeroDoor", "ENV_HeroFrieze", "ENV_HeroArcade", "ENV_HeroNiche" };
+        /// <summary>D-310: the contact shadow under dressing lying on a floor (the door's foot colour, a little lighter).</summary>
+        static readonly Color ContactShade = new(0.08f, 0.05f, 0.03f, 0.5f);
+
         static void Dress(SoloRoomDefinition room, List<Solid> solids, List<Edge> edges, Placer place)
         {
-            LevelLooks.Dressing dress = LevelLooks.For(LevelLooks.LevelOf(room)).Dress;
+            string level = LevelLooks.LevelOf(room);
+            LevelLooks.Dressing dress = LevelLooks.For(level).Dress;
+            float plants = LevelLooks.PlantShare(level);   // D-307: Pack B's plants, in every district, most in The Overgrown Quarter
             List<Rect> keepOut = KeepOut(room);
             bool flips = room.Elements.Any(e => e.Kind == SoloRoomElementKind.GravityFlip);
             bool Clear(Rect r) => !keepOut.Any(k => k.Overlaps(r));
@@ -69,7 +86,7 @@ namespace Parallax.Editor.Setup
                     for (int i = 0; x < e.To && i < 40; i++)
                     {
                         float pick = Hash(e.Owner.Name, 405 + i);
-                        string slot = "ENV_Drape_" + (int)(Hash(e.Owner.Name, 400 + i) * 6f);
+                        string slot = Hash(e.Owner.Name, 401 + i) < 0.6f * plants ? "ENV_Ivy_" + (int)(Hash(e.Owner.Name, 402 + i) * 4f) : "ENV_Drape_" + (int)(Hash(e.Owner.Name, 400 + i) * 6f);
                         EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
                         if (def == null) { x += 0.5f; continue; }
                         // Lengths from a short tuft to a long curtain (a skewed spread, so most are short and a few run deep).
@@ -102,7 +119,7 @@ namespace Parallax.Editor.Setup
                     float x = e.From + 0.4f * Hash(e.Owner.Name, 600);
                     for (int i = 0; x < e.To && i < 30; i++)
                     {
-                        string slot = "ENV_Fern_" + (int)(Hash(e.Owner.Name, 610 + i) * 3f);
+                        string slot = Hash(e.Owner.Name, 612 + i) < plants ? "ENV_Leaf_" + (int)(Hash(e.Owner.Name, 611 + i) * 4f) : "ENV_Fern_" + (int)(Hash(e.Owner.Name, 610 + i) * 3f);
                         EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
                         if (def == null) { x += 1f; continue; }
                         float w = def.width * (0.7f + 0.5f * Hash(e.Owner.Name, 620 + i)), h = Mathf.Min(def.height * w / def.width, b.height - 1f);
@@ -120,7 +137,14 @@ namespace Parallax.Editor.Setup
                     Vector2 size = new(def.width * 0.6f, def.height * 0.6f);
                     float x = Hash(e.Owner.Name, 91) < 0.5f ? e.From + size.x * 0.6f : e.To - size.x * 0.6f;
                     var centre = new Vector2(x, e.Line + size.y * 0.5f - 0.08f);
-                    if (Clear(Box(centre, size))) { place(e.Owner, "Rubble_" + Idx(e), slot, centre, size, ZMoss); rubbleCount++; }
+                    if (Clear(Box(centre, size)))
+                    {
+                        place(e.Owner, "Rubble_" + Idx(e), slot, centre, size, ZMoss);
+                        // D-310: a soft contact shadow where it lies (the door's, squashed), so it sits on the stone, not pasted over it.
+                        if (place(e.Owner, "RubbleShade_" + Idx(e), "ENV_Halo", new Vector2(x, e.Line + 0.03f), new Vector2(size.x * 1.35f, 0.22f), ZMoss + 0.002f) is SpriteRenderer shade)
+                            shade.color = ContactShade;
+                        rubbleCount++;
+                    }
                 }
             }
 
@@ -137,7 +161,7 @@ namespace Parallax.Editor.Setup
                     for (int i = 0; x < e.To && i < 50; i++)
                     {
                         float pick = Hash(e.Owner.Name, 125 + i);
-                        string slot = "ENV_Drape_" + (int)(Hash(e.Owner.Name, 120 + i) * 6f);
+                        string slot = Hash(e.Owner.Name, 121 + i) < 0.35f * plants ? "ENV_Root_" + (int)(Hash(e.Owner.Name, 122 + i) * 3f) : "ENV_Drape_" + (int)(Hash(e.Owner.Name, 120 + i) * 6f);
                         EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
                         if (def == null) { x += 0.5f; continue; }
                         float h = 0.25f + 0.75f * Hash(e.Owner.Name, 130 + i) * Hash(e.Owner.Name, 135 + i);
@@ -165,6 +189,7 @@ namespace Parallax.Editor.Setup
 
             // Banners and glyph panels: on the biggest faces, at most two of each per room, largest first (ties by name).
             List<Solid> faces = solids.Where(s => s.Shape == Shape.Block).OrderByDescending(s => s.Rect.width * s.Rect.height).ThenBy(s => s.Name, System.StringComparer.Ordinal).ToList();
+            var banners = new List<Rect>();   // D-308: a hero wall keeps off them (one hung over the relief's head, L004)
             if (dress.Banners)
             {
                 int n = 0;
@@ -175,15 +200,82 @@ namespace Parallax.Editor.Setup
                     EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
                     float w = Mathf.Min(def.width, s.Rect.width * 0.9f), h = Mathf.Min(def.height * w / def.width, s.Rect.height - 1f);
                     var centre = new Vector2(s.Rect.center.x, s.Rect.yMax - 0.4f - h * 0.5f);
-                    if (Clear(Box(centre, new Vector2(w, h)))) { place(s, "Banner", slot, centre, new Vector2(w, h), ZPanel); n++; }
+                    if (Clear(Box(centre, new Vector2(w, h)))) { place(s, "Banner", slot, centre, new Vector2(w, h), ZPanel); banners.Add(Box(centre, new Vector2(w, h))); n++; }
                 }
             }
-            if (dress.Glyphs)
+            // D-305: hero walls (Pack A): one great feature set into the biggest fixed faces, a screen or so apart, so a wall is never only wallpaper.
+            if (LevelLooks.HeroWalls(level))
+            {
+                int n = 0, reliefs = 0;
+                // D-311: which carved wall stands where is a function of the world, not the room (rooms are built one at a time, and two
+                // rooms side by side showed twins): cell (i, j) of a 12 x 10 u grid takes piece (i + 2j) mod 5, so the same one comes back
+                // 24 u across or 20 u up at the nearest, never in one view. Within the room a twin still too near is left out, and each
+                // piece keeps bare stone round it. Obsidian's machines are as they were.
+                // Both scale with the level's view (the usual 1.8x zoom; L025's 1x camera sees about 36 u across).
+                int turn = (int)(Hash(level ?? "", 182) * CarvedWalls.Length);
+                float spread = level == null ? 1f : LevelCameras.ViewHeight(level, null) * 1.8f / LevelCameras.BaseViewHeight;
+                var heroes = new List<(string slot, Rect rect)>();
+                // Gate 4: the grid's piece first; when its twin already stands in view of this cell, the next of the five that doesn't
+                // (so a tall or crowded wall still gets its carving), and none when all five do.
+                string Carved(Vector2 at)
+                {
+                    int i = Mathf.FloorToInt(at.x / (CarvedCell.x * spread)), j = Mathf.FloorToInt(at.y / (CarvedCell.y * spread)), count = CarvedWalls.Length;
+                    for (int alt = 0; alt < count; alt++)
+                    {
+                        string c = CarvedWalls[((i + 2 * j + turn + alt) % count + count) % count];
+                        if (!heroes.Any(h => h.slot == c && Mathf.Abs(h.rect.center.x - at.x) < CarvedApart.x * spread && Mathf.Abs(h.rect.center.y - at.y) < CarvedApart.y * spread)) return c;
+                    }
+                    return null;
+                }
+                foreach (Solid s in faces.Where(s => !s.Trap && s.Rect.width >= HeroMinWidth && s.Rect.height >= HeroMinHeight))
+                {
+                    // D-311: rows rounded, not floored (a 14 u wall was one row, all of it under the lip).
+                    int cols = Mathf.Max(1, Mathf.FloorToInt(s.Rect.width / HeroStep)), rows = Mathf.Max(1, tech ? Mathf.FloorToInt(s.Rect.height / HeroStep) : Mathf.RoundToInt(s.Rect.height / HeroStep));
+                    for (int row = 0; row < rows; row++)
+                        for (int col = 0; col < cols && n < (tech ? MachineMax : HeroMax); col++)
+                        {
+                            var centre = new Vector2(s.Rect.xMin + s.Rect.width * (col + 0.5f) / cols + (Hash(s.Name, 181 + col) - 0.5f) * 2f, s.Rect.yMax - s.Rect.height * (row + 0.5f) / rows);
+                            // D-307: a carved wall is a find. Under a wall's lip they alternate with roots; lower down, where roots can't
+                            // grow, every cell is carved (D-311: those were the bare stretches of L022, L025, L030).
+                            // (In The Overgrown Quarter roots lead, under a wall's lip, and a carved wall only stands lower down.)
+                            bool relief = (row > 0 || LevelLooks.District(level) != 1 && (col + (int)(Hash(s.Name, 180) * 2f)) % 2 == 0) && reliefs < MaxCarved;
+                            string carved = relief && !tech ? Carved(centre) : null;
+                            if (carved == null && !tech) relief = false;   // each is too near its twin: roots, or bare stone
+                            // D-310: the machines cycle in the order they're placed (by grid cell, one stood beside its twin all through L039).
+                            string slot = tech ? "ENV_HeroMachine_" + (n + (int)(Hash(level ?? "", 180) * 3f)) % 3 : relief ? carved : "ENV_HeroRoots";
+                            EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
+                            if (def == null) continue;
+                            float k = Mathf.Min(1f, Mathf.Min((s.Rect.height - 0.4f) / def.height, (s.Rect.width - 0.4f) / def.width));   // a smaller one on a smaller wall
+                            if (k < (relief && !tech ? CarvedMinScale : HeroMinScale)) continue;
+                            var size = new Vector2(def.width * k, def.height * k);
+                            if (!relief && !tech)
+                            {
+                                if (row > 0) continue;   // roots only come down from a lip: mid-wall they had nothing to grow from
+                                centre.y = s.Rect.yMax - size.y * 0.5f - 0.35f;
+                            }
+                            // D-307: only what's visible keeps it off (a hidden trigger over the floor has nothing to do with a wall under it), and never a
+                            // trap's own stone, which leaves. Held inside its wall: at the edges it broke the corners that matter most.
+                            centre.x = Mathf.Clamp(centre.x, s.Rect.xMin + size.x * 0.5f + 0.2f, s.Rect.xMax - size.x * 0.5f - 0.2f);
+                            centre.y = Mathf.Clamp(centre.y, s.Rect.yMin + size.y * 0.5f + 0.1f, s.Rect.yMax - size.y * 0.5f - 0.4f);
+                            Rect hero = Box(centre, size);
+                            Rect spaced = Box(centre, size + Vector2.one * (tech ? 0f : HeroGap * 2f));
+                            if (ClearOfVisible(hero) && !banners.Any(o => o.Overlaps(hero)) && !solids.Any(o => o.Trap && o.Rect.Overlaps(hero)) && !heroes.Any(h => h.rect.Overlaps(spaced))
+                                && place(s, "Hero_" + n, slot, centre, new Vector2(Hash(s.Name, 195 + n) < 0.5f && !tech ? -size.x : size.x, size.y), ZPanel) != null)
+                            {
+                                if (!tech) heroes.Add((slot, hero));
+                                n++;
+                                if (relief && !tech) reliefs++;
+                            }
+                        }
+                }
+            }
+            // D-294 (the developer: "repeat on both sides, which looks stamped"): none in Golden Ruins, one at most in Obsidian Void.
+            if (dress.Glyphs && tech)
             {
                 int n = 0;
                 foreach (Solid s in faces.Where(s => s.Rect.width >= 3f && s.Rect.height >= 2.5f))
                 {
-                    if (n >= 2) break;
+                    if (n >= 1) break;
                     string slot = "ENV_Glyph_" + (int)(Hash(s.Name, 170) * 2f);
                     EnvironmentKit.Slot def = EnvironmentKit.Get(slot);
                     Vector2 size = new(def.width * 0.85f, def.height * 0.85f);

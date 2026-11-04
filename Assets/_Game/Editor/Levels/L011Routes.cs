@@ -44,7 +44,7 @@ namespace Parallax.Editor.Levels
                 Summon("Spear_6"), Hold(Right), Until(XAtLeast(1.8f)), Release(), Until(Still()), Jump(), Hold(Right), Until(GroundedOn("Spear_6_Shaft")), Release(), Until(Still()),
                 Summon("Spear_7"), Hold(Left), Until(XAtMost(4.2f)), Release(), Until(Still()), Jump(), Hold(Left), Until(GroundedOn("Spear_7_Shaft")), Release(), Until(Still()),
                 Summon("Spear_8"), Hold(Right), Until(XAtLeast(1.8f)), Release(), Until(Still()), Jump(), Hold(Right), Until(GroundedOn("Spear_8_Shaft")),
-                // Gallery: run east without stopping (the Cloud chases, the bridge falls behind you); Spear_G tells behind you: jump it;
+                // Gallery: run east without stopping (the bridge falls behind you); Spear_G tells behind you: jump it;
                 // hop the Curb, through the tunnel, drop.
                 Until(Moving("Spear_G")), Jump().Timed(TimedMode.Shift), Until(Grounded()),
                 Until(XAtLeast(18.4f)), Jump(), Until(Grounded()),
@@ -87,7 +87,7 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(GroundedOn(Spear_1_Shaft))", "jump as it glows", Release(), Until(Still()), Until(Fired("Spear_2")), Hold(Right), Jump(), Until(Dead()))),
                 new Betrayal("T3c [OL]: a cat that hops onto Ledge_M instead of firing the next step falls to the foot of the shaft", "Pit_Foot", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Spear_5_Shaft))", "hop onto the ledge", Release(), Until(Still()), Hold(Right), Jump(), For(12), Release(), Until(Dead())), revealedBy: "Ledge_M"),
-                new Betrayal("T3d [NW]: a cat that waits on the gallery once the cloud wakes is struck", "Cloud", DeathCause.Hazard,
+                new Betrayal("T3d [NW]: a cat that waits on the gallery is shot by Eye_G", "Eye_G", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Spear_8_Shaft))", "wait on the gallery", Until(XAtLeast(8f)), Release(), Until(Dead()))),
                 new Betrayal("T3e [NW]: a cat that stops on the bridge falls with it onto the spikes", "Spikes_E", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Moving(Spear_G))", "stop on the bridge", Jump(), Until(Airborne()), Until(Grounded()), Release(), Until(Dead())), revealedBy: "Bridge_4"),

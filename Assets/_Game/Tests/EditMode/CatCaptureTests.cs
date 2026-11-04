@@ -400,9 +400,10 @@ namespace Parallax.Tests.EditMode
             SetGrounded(motor, false);
             Transform root = motor.transform;
             presenter.Present(1f / 60f);
-            for (int i = 0; i < 5; i++) { root.position += new Vector3(0f, -0.1f, 0f); presenter.Present(1f / 60f); }
+            // D-293: long enough to pass StepDown; a body with no run-up falls straight.
+            for (int i = 0; i < 10; i++) { root.position += new Vector3(0f, -0.1f, 0f); presenter.Present(1f / 60f); }
             Assert.AreEqual(CatAnimState.Fall, presenter.State);
-            Assert.AreEqual("Fall", presenter.ClipName);
+            Assert.AreEqual("FallStraight", presenter.ClipName);
             SetGrounded(motor, true);
             presenter.Present(1f / 60f);
             Assert.AreEqual(CatAnimState.Fall, presenter.State, "item 2: the first grounded frame is the air pose's contact frame");

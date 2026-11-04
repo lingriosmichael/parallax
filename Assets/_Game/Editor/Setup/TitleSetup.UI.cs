@@ -110,6 +110,12 @@ namespace Parallax.Editor.Setup
             (Button start, _) = FramedButton(menuRect, "StartGame", font, "START GAME", 28, new Vector2(320f, 88f), new Vector2(-400f, 0f), false);
             (Button levels, _) = FramedButton(menuRect, "Levels", font, "LEVELS", 28, new Vector2(320f, 88f), new Vector2(400f, 0f), false);
             (GameObject confirm, Button confirmYes, Button confirmNo) = ConfirmPanel(canvasGO.transform, font, italic);
+            // D-314: the settings screen, from a quiet button in the top-right corner.
+            (Button settingsOpener, _) = FramedButton(canvasGO.transform, "Settings", font, "SETTINGS", 24, new Vector2(260f, 76f), Vector2.zero, false);
+            var openerRect = (RectTransform)settingsOpener.transform;
+            openerRect.anchorMin = openerRect.anchorMax = Vector2.one;
+            openerRect.anchoredPosition = new Vector2(-190f, -80f);
+            SettingsBox(canvasGO, font, italic, settingsOpener, changes);
 
             RectTransform coverRect = Rect(canvasGO.transform, "Cover", Vector2.zero, Vector2.zero, Vector2.zero);
             coverRect.anchorMin = Vector2.zero; coverRect.anchorMax = Vector2.one; coverRect.sizeDelta = Vector2.zero;
@@ -148,6 +154,32 @@ namespace Parallax.Editor.Setup
             (Button no, _) = FramedButton(box, "Cancel", font, "CANCEL", 28, new Vector2(280f, 84f), new Vector2(180f, -100f), false);
             panel.gameObject.SetActive(false);
             return (panel.gameObject, yes, no);
+        }
+
+        // D-314: the settings screen: a dimmed screen (it takes every tap), a box with its four settings (each a tap) and Close.
+        static void SettingsBox(GameObject canvas, Font font, Font italic, Button opener, List<string> changes)
+        {
+            RectTransform panel = Rect(canvas.transform, "SettingsPanel", Vector2.zero, Vector2.zero, Vector2.zero);
+            panel.anchorMin = Vector2.zero; panel.anchorMax = Vector2.one; panel.sizeDelta = Vector2.zero;
+            Image dim = panel.gameObject.AddComponent<Image>();
+            dim.color = new Color(0f, 0f, 0f, 0.6f);
+            RectTransform box = Rect(panel, "Box", new Vector2(0.5f, 0.5f), new Vector2(960f, 620f), Vector2.zero);
+            Image boxImage = Picture(box, ArtSprite("TUI_Plate"), Color.white);
+            boxImage.type = Image.Type.Sliced;
+            boxImage.raycastTarget = true;
+            RectTransform title = Rect(box, "Heading", new Vector2(0.5f, 0.5f), new Vector2(820f, 80f), new Vector2(0f, 220f));
+            Label(title.gameObject, font, "Settings", 52, FontStyle.Normal, Gold);
+            RectTransform rule = Rect(box, "Rule", new Vector2(0.5f, 0.5f), new Vector2(620f, 43f), new Vector2(0f, 160f));
+            Picture(rule, ArtSprite("TUI_Flourish"), new Color(1f, 0.86f, 0.56f, 0.95f));
+            (Button music, Text musicLabel) = FramedButton(box, "Music", font, "Music: 100%", 28, new Vector2(380f, 90f), new Vector2(-200f, 60f), false);
+            (Button sound, Text soundLabel) = FramedButton(box, "Sound", font, "Sound: 100%", 28, new Vector2(380f, 90f), new Vector2(200f, 60f), false);
+            (Button vibration, Text vibrationLabel) = FramedButton(box, "Vibration", font, "Vibration: On", 28, new Vector2(380f, 90f), new Vector2(-200f, -50f), false);
+            (Button motion, Text motionLabel) = FramedButton(box, "Motion", font, "Motion: Full", 28, new Vector2(380f, 90f), new Vector2(200f, -50f), false);
+            (Button close, _) = FramedButton(box, "Close", font, "CLOSE", 32, new Vector2(320f, 96f), new Vector2(0f, -190f), true);
+            panel.gameObject.SetActive(false);
+            var settings = canvas.AddComponent<SettingsPanel>();
+            TrapKitSetup.Write(settings, changes, ("panel", panel.gameObject), ("opener", opener), ("closeButton", close), ("musicButton", music), ("musicLabel", musicLabel),
+                ("soundButton", sound), ("soundLabel", soundLabel), ("vibrationButton", vibration), ("vibrationLabel", vibrationLabel), ("motionButton", motion), ("motionLabel", motionLabel));
         }
 
         // D-280: a gold-line plate, stretched by its corners. PLAY's is at full strength; the others are quieter. Under a finger it gives.

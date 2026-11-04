@@ -14,7 +14,7 @@ namespace Parallax.Editor.Levels
     {
         // From Tread_RC (it sinks 30 ticks after a landing: PAX-100, D-106) up the wall steps and left along S2 to the door.
         // PAX-104: Ride_A is phased to a cat that climbs at once: it's home as that cat comes down, and leaves ~20 ticks after
-        // it boards. A cat that comes later (one that rode Tread_RC down and up) waits up here, out of the storm, for Ride_A to
+        // it boards. A cat that comes later (one that rode Tread_RC down and up) waits up here for Ride_A to
         // come home again.
         static RouteStep[] AfterRC(bool waitForRideA) => new[] {
             Hold(Right), Until(XAtLeast(28.9f)), Release(), Until(Still()),
@@ -23,7 +23,7 @@ namespace Parallax.Editor.Levels
             .Concat(waitForRideA ? new[] { Until(Moving("Ride_A")), Until(Home("Ride_A")) } : new RouteStep[0])
             .Concat(new[] { Hold(Left), Jump(), Until(GroundedOn("S2_East")) }).Concat(AlongS2()).ToArray();
 
-        // PAX-102: S2 to the door: onto Ride_A (PAX-104: as it comes home, under the storm from here on), ride it over gap A,
+        // PAX-102: S2 to the door: onto Ride_A (PAX-104: as it comes home), ride it over gap A,
         // walk on off the sinking section, onto Ride_B, ride it over gap B, then wait out Arrow_S before the door.
         static RouteStep[] AlongS2() => new[] {
             Until(GroundedOn("Ride_A").And(XAtMost(22f))), Release(), Until(Still()), Until(Stopped("Ride_A")),
@@ -89,16 +89,10 @@ namespace Parallax.Editor.Levels
                     Route.PrefixOf(solution, "Until(Stopped(Ride_A))", "stop on the section", Hold(Left), Until(XAtMost(17.3f)), Release(), Until(Dead())), revealedBy: "Sink_S"),
                 new Betrayal("T12: a cat that runs on off Ride_B before it leaves falls into gap B", "Spikes_GapB", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Stopped(Ride_A))", "run on", Hold(Left), Until(Dead())), revealedBy: "Ride_B"),
-                // PAX-103: the storm. Waiting is what it punishes.
-                new Betrayal("T14: the storm strikes a cat that stops on S2_Mid instead of going on to Ride_B", "Cloud", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Stopped(Ride_A))", "stop on S2_Mid", Hold(Left), Until(XAtMost(14.2f)), Release(), Until(Dead())), revealedBy: "Cloud"),
                 new Betrayal("T13: Arrow_S's next shot hits a cat that stops in its lane before the door", "Arrow_S", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Stopped(Ride_B))", "stop in the lane", Hold(Left), Until(XAtMost(4f)), Release(), Until(Dead()))),
                 // PAX-100 (D-106): the sinking tread. A cat that waits on it rides it down and back up, then goes on.
-                // PAX-107: with the storm 20 % faster and striking 10 % more often, a cat that waits on Tread_RC to ride it down and
-                // back up is struck before it comes back (it recovered before). D-125: the storm at the cat's run no longer follows
-                // into the right tower (its S1 range ends at x 24.5), so that cat recovers again: it rides the tread down and back up,
-                // and waits for Ride_A up on Tread_RE.
+                // It rides the tread down and back up, and waits for Ride_A up on Tread_RE.
                 Betrayal.Recovers("T7: a cat that waits on Tread_RC sinks with it, rides it back up and goes on", "Tread_RC",
                     new Route("wait on the tread", Route.PrefixOf(solution, "Until(GroundedOn(Tread_RC))", "wait on the tread",
                         Release(), Until(Still()), Until(Moving("Tread_RC")), Until(Home("Tread_RC"))).Steps.Concat(AfterRC(waitForRideA: true)).ToArray())));

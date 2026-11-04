@@ -66,25 +66,34 @@ namespace Parallax.Editor.Setup
                 return;
             }
 
+            var center = new Vector2(0.5f, 0.5f);
             GameObject panelGO = EnsureChild(canvasGO.transform, PanelName, changes);
-            SetAnchors((RectTransform)panelGO.transform, Vector2.zero, Vector2.one, new Vector2(80f, 80f), new Vector2(-80f, -80f), changes, PanelName);
+            SetAnchors((RectTransform)panelGO.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, PanelName);
             var panelImage = EnsureComponent<Image>(panelGO, changes, "Image", PanelName);
-            SetColor(panelImage, new Color(0f, 0f, 0f, 0.85f), changes, $"{PanelName} Image");
+            SetColor(panelImage, GameUiStyle.Dim, changes, $"{PanelName} Image");
             SetActive(panelGO, false, changes, PanelName); // hidden until LevelCompleteScreen shows it
+            GameUiStyle.Plate(panelGO.transform, new Vector2(1240f, 620f), changes);
 
             GameObject titleGO = EnsureChild(panelGO.transform, TitleName, changes);
-            SetAnchors((RectTransform)titleGO.transform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(20f, -80f), new Vector2(-20f, -20f), changes, TitleName);
+            GameUiStyle.Place((RectTransform)titleGO.transform, center, new Vector2(1120f, 100f), new Vector2(0f, 215f), changes, TitleName);
             var titleText = EnsureComponent<Text>(titleGO, changes, "Text", TitleName);
-            ConfigureText(titleText, "Level complete", 48, TextAnchor.MiddleCenter, Color.white, changes, TitleName);
+            ConfigureText(titleText, "Level complete", 64, TextAnchor.MiddleCenter, GameUiStyle.Gold, changes, TitleName);
+            GameUiStyle.Type(titleText, GameUiStyle.Display, changes, TitleName);
+            GameUiStyle.Flourish(panelGO.transform, center, 760f, new Vector2(0f, 150f), changes);
+            ResultsCatOnRim(panelGO.transform, changes);
 
             GameObject rowsGO = EnsureChild(panelGO.transform, RowsContainerName, changes);
-            SetAnchors((RectTransform)rowsGO.transform, new Vector2(0f, 0f), new Vector2(1f, 1f), new Vector2(40f, 120f), new Vector2(-40f, -140f), changes, RowsContainerName);
+            // Every level has one room today, so this fits one line. A level with more would need a taller plate.
+            GameUiStyle.Place((RectTransform)rowsGO.transform, center, new Vector2(1000f, 60f), new Vector2(0f, 80f), changes, RowsContainerName);
             var layout = EnsureComponent<VerticalLayoutGroup>(rowsGO, changes, "VerticalLayoutGroup", RowsContainerName);
-            if (layout.spacing != 8f || !layout.childControlHeight || layout.childForceExpandHeight)
+            // Width too: a row is given no width of its own, and its text would wrap one letter to a line.
+            if (layout.spacing != 8f || !layout.childControlHeight || layout.childForceExpandHeight || !layout.childControlWidth || !layout.childForceExpandWidth)
             {
                 layout.spacing = 8f;
                 layout.childControlHeight = true;
                 layout.childForceExpandHeight = false;
+                layout.childControlWidth = true;
+                layout.childForceExpandWidth = true;
                 layout.childAlignment = TextAnchor.UpperCenter;
                 changes.Add($"configured {RowsContainerName} VerticalLayoutGroup");
             }
@@ -93,73 +102,28 @@ namespace Parallax.Editor.Setup
             var rowTemplateRect = (RectTransform)rowTemplateGO.transform;
             if (rowTemplateRect.sizeDelta != new Vector2(0f, 44f)) { rowTemplateRect.sizeDelta = new Vector2(0f, 44f); changes.Add($"sized {RowTemplateName}"); }
             var rowTemplateText = EnsureComponent<Text>(rowTemplateGO, changes, "Text", RowTemplateName);
-            ConfigureText(rowTemplateText, "Room 0 — 0 deaths", 32, TextAnchor.MiddleCenter, Color.white, changes, RowTemplateName);
+            ConfigureText(rowTemplateText, "Room 0 — 0 deaths", 34, TextAnchor.MiddleCenter, GameUiStyle.Quiet, changes, RowTemplateName);
+            GameUiStyle.Type(rowTemplateText, GameUiStyle.Body, changes, RowTemplateName);
             SetActive(rowTemplateGO, false, changes, RowTemplateName); // cloned per room at runtime, never shown itself
 
             GameObject totalGO = EnsureChild(panelGO.transform, TotalName, changes);
-            SetAnchors((RectTransform)totalGO.transform, new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(20f, 70f), new Vector2(-20f, 120f), changes, TotalName);
+            GameUiStyle.Place((RectTransform)totalGO.transform, center, new Vector2(1000f, 70f), new Vector2(0f, 15f), changes, TotalName);
             var totalText = EnsureComponent<Text>(totalGO, changes, "Text", TotalName);
-            ConfigureText(totalText, "Total: 0 deaths", 36, TextAnchor.MiddleCenter, Color.white, changes, TotalName);
+            ConfigureText(totalText, "Total: 0 deaths", 46, TextAnchor.MiddleCenter, GameUiStyle.Ink, changes, TotalName);
+            GameUiStyle.Type(totalText, GameUiStyle.Italic, changes, TotalName);
 
-            GameObject restartGO = EnsureChild(panelGO.transform, RestartButtonName, changes);
-            SetAnchors((RectTransform)restartGO.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-340f, 10f), new Vector2(-120f, 65f), changes, RestartButtonName);
-            var restartImage = EnsureComponent<Image>(restartGO, changes, "Image", RestartButtonName);
-            SetColor(restartImage, Color.white, changes, $"{RestartButtonName} Image");
-            var restartButtonComponent = EnsureComponent<Button>(restartGO, changes, "Button", RestartButtonName);
-            if (restartButtonComponent.navigation.mode != Navigation.Mode.None)
-            {
-                var navigation = restartButtonComponent.navigation;
-                navigation.mode = Navigation.Mode.None;
-                restartButtonComponent.navigation = navigation;
-                changes.Add($"set {RestartButtonName} Button.navigation.mode = None");
-            }
-            GameObject restartLabelGO = EnsureChild(restartGO.transform, "Label", changes);
-            SetAnchors((RectTransform)restartLabelGO.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, "RestartButton/Label");
-            var restartLabel = EnsureComponent<Text>(restartLabelGO, changes, "Text", "RestartButton/Label");
-            ConfigureText(restartLabel, "Restart", 32, TextAnchor.MiddleCenter, Color.black, changes, "RestartButton/Label");
-
-            var restartButton = EnsureComponent<RestartButton>(restartGO, changes, "RestartButton", RestartButtonName);
+            Button restartButtonComponent = EnsureFramedButton(panelGO.transform, RestartButtonName, "Restart", -390f, false, changes);
+            var restartButton = EnsureComponent<RestartButton>(restartButtonComponent.gameObject, changes, "RestartButton", RestartButtonName);
             WireField(restartButton, "button", restartButtonComponent, changes, "RestartButton.button = Button");
 
-            GameObject nextLevelGO = EnsureChild(panelGO.transform, NextLevelButtonName, changes);
-            SetAnchors((RectTransform)nextLevelGO.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(120f, 10f), new Vector2(340f, 65f), changes, NextLevelButtonName);
-            var nextLevelImage = EnsureComponent<Image>(nextLevelGO, changes, "Image", NextLevelButtonName);
-            SetColor(nextLevelImage, Color.white, changes, $"{NextLevelButtonName} Image");
-            var nextLevelButtonComponent = EnsureComponent<Button>(nextLevelGO, changes, "Button", NextLevelButtonName);
-            if (nextLevelButtonComponent.navigation.mode != Navigation.Mode.None)
-            {
-                var navigation = nextLevelButtonComponent.navigation;
-                navigation.mode = Navigation.Mode.None;
-                nextLevelButtonComponent.navigation = navigation;
-                changes.Add($"set {NextLevelButtonName} Button.navigation.mode = None");
-            }
-            GameObject nextLevelLabelGO = EnsureChild(nextLevelGO.transform, "Label", changes);
-            SetAnchors((RectTransform)nextLevelLabelGO.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, "NextLevelButton/Label");
-            var nextLevelLabel = EnsureComponent<Text>(nextLevelLabelGO, changes, "Text", "NextLevelButton/Label");
-            ConfigureText(nextLevelLabel, "Next level", 32, TextAnchor.MiddleCenter, Color.black, changes, "NextLevelButton/Label");
-
+            Button nextLevelButtonComponent = EnsureFramedButton(panelGO.transform, NextLevelButtonName, "Next level", 0f, true, changes);
+            GameObject nextLevelGO = nextLevelButtonComponent.gameObject;
             var nextLevelButton = EnsureComponent<NextLevelButton>(nextLevelGO, changes, "NextLevelButton", NextLevelButtonName);
             WireField(nextLevelButton, "button", nextLevelButtonComponent, changes, "NextLevelButton.button = Button");
             SetActive(nextLevelGO, false, changes, NextLevelButtonName); // shown only when LevelCompleteScreen finds a next level
 
-            GameObject levelsGO = EnsureChild(panelGO.transform, LevelsButtonName, changes);
-            SetAnchors((RectTransform)levelsGO.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(360f, 10f), new Vector2(580f, 65f), changes, LevelsButtonName);
-            var levelsImage = EnsureComponent<Image>(levelsGO, changes, "Image", LevelsButtonName);
-            SetColor(levelsImage, Color.white, changes, $"{LevelsButtonName} Image");
-            var levelsButtonComponent = EnsureComponent<Button>(levelsGO, changes, "Button", LevelsButtonName);
-            if (levelsButtonComponent.navigation.mode != Navigation.Mode.None)
-            {
-                var navigation = levelsButtonComponent.navigation;
-                navigation.mode = Navigation.Mode.None;
-                levelsButtonComponent.navigation = navigation;
-                changes.Add($"set {LevelsButtonName} Button.navigation.mode = None");
-            }
-            GameObject levelsLabelGO = EnsureChild(levelsGO.transform, "Label", changes);
-            SetAnchors((RectTransform)levelsLabelGO.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, "LevelsButton/Label");
-            var levelsLabel = EnsureComponent<Text>(levelsLabelGO, changes, "Text", "LevelsButton/Label");
-            ConfigureText(levelsLabel, "Levels", 32, TextAnchor.MiddleCenter, Color.black, changes, "LevelsButton/Label");
-
-            var levelsButton = EnsureComponent<LevelsButton>(levelsGO, changes, "LevelsButton", LevelsButtonName);
+            Button levelsButtonComponent = EnsureFramedButton(panelGO.transform, LevelsButtonName, "Levels", 390f, false, changes);
+            var levelsButton = EnsureComponent<LevelsButton>(levelsButtonComponent.gameObject, changes, "LevelsButton", LevelsButtonName);
             WireField(levelsButton, "button", levelsButtonComponent, changes, "LevelsButton.button = Button");
             // Shown on every level (including the last, which has no Next level button), so -
             // unlike NextLevelButton - it starts active, matching RestartButton's own pattern.
@@ -218,6 +182,36 @@ namespace Parallax.Editor.Setup
                 EditorSceneManager.MarkSceneDirty(canvasGO.scene);
             }
         }
+
+        // PAX-A09: the three buttons along the plate's foot, Next level the strong one in the middle.
+        static Button EnsureFramedButton(Transform panel, string name, string label, float x, bool primary, List<string> changes)
+        {
+            GameObject go = EnsureChild(panel, name, changes);
+            GameUiStyle.Place((RectTransform)go.transform, new Vector2(0.5f, 0.5f), primary ? new Vector2(380f, 112f) : new Vector2(340f, 92f), new Vector2(x, -165f), changes, name);
+            return GameUiStyle.Framed(go, label, primary ? 38 : 28, primary, changes);
+        }
+
+        // D-314: the results beat: the cat sitting on the plate's top rim, left of the title, over a soft warm halo (black on the
+        // dimmed level it would vanish). Its paws sit 6 % up its cell, so the cell's foot is set that far under the rim.
+        const float PlateTop = 310f, CatCell = 230f, CatX = -470f;
+        static void ResultsCatOnRim(Transform panel, List<string> changes)
+        {
+            var center = new Vector2(0.5f, 0.5f);
+            Sprite[] idle = CatFrames("CatA_Idle"), look = CatFrames("CatA_IdleLook");
+            if (idle.Length == 0) { Debug.LogError("LevelCompleteUISetup: no CatA_Idle frames for the results cat; run PARALLAX/Setup/Cat Visual."); return; }
+            // The halo is made first, so it draws behind the cat.
+            GameUiStyle.Picture(panel, "CatHalo", center, new Vector2(380f, 300f), new Vector2(CatX, PlateTop + 70f),
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Art/RealityA/Environment/Kit/ENV_Glow.png"), new Color(1f, 0.82f, 0.5f, 0.55f), changes);
+            Image cat = GameUiStyle.Picture(panel, "Cat", center, new Vector2(CatCell, CatCell), new Vector2(CatX, PlateTop + CatCell * 0.5f - CatCell * 0.06f), idle[0], Color.white, changes);
+            if (!cat.preserveAspect) { cat.preserveAspect = true; changes.Add("set Cat preserveAspect"); }
+            ResultsCat flipbook = EnsureComponent<ResultsCat>(cat.gameObject, changes, "ResultsCat", "Cat");
+            SetupUtility.SetArray(flipbook, "idle", idle, changes);
+            SetupUtility.SetArray(flipbook, "look", look, changes);
+        }
+
+        static Sprite[] CatFrames(string sheet) =>
+            System.Linq.Enumerable.ToArray(System.Linq.Enumerable.OrderBy(System.Linq.Enumerable.OfType<Sprite>(AssetDatabase.LoadAllAssetsAtPath("Assets/_Game/Art/Cats/CatA/" + sheet + ".png")),
+                s => int.TryParse(System.Text.RegularExpressions.Regex.Match(s.name, @"(\d+)$").Value, out int i) ? i : 0));
 
         static GameObject EnsureChild(Transform parent, string name, List<string> changes)
         {

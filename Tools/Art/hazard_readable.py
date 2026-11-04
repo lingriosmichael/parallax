@@ -195,13 +195,13 @@ def _rgb(hue, sat, val):
     return np.stack([r + m, g + m, b + m], axis=-1)
 
 
-def set_hue(a, mask, to_hue):
-    """Pixels in mask take hue `to_hue` (degrees), keeping their saturation and value. An image with nothing to move comes
+def set_hue(a, mask, to_hue, sat_scale=1.0, val_scale=1.0):
+    """Pixels in mask take hue `to_hue` (degrees), keeping their saturation and value (times the scales). An image with nothing to move comes
     back unchanged, and the input's dtype is kept, so untouched pixels stay bit-identical."""
     if not mask.any(): return a
     out = a.copy()
     hue, sat, val = _hsv(a[..., :3])
-    moved = _rgb(np.full_like(hue, to_hue), sat, val).astype(a.dtype)
+    moved = _rgb(np.full_like(hue, to_hue), sat * sat_scale, val * val_scale).astype(a.dtype)
     out[..., :3] = np.where(mask[..., None], moved, a[..., :3])
     return out
 

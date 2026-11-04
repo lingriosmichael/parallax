@@ -71,8 +71,7 @@ namespace Parallax.Editor.Levels
         static RouteStep[] Roof() => Steps(
             Hold(Right), Until(XAtLeast(4.0f)), Jump(), Until(Falling()), Hold(R.Down), Until(On("V8", 5.6f)), Release(), ReleaseClimb(),
             Down(Low3), Leap(Right, "V9", 8.4f),
-            // Slam_10 comes down V10's column: let it go back up.
-            Down(Low3), Until(Fired("Slam_10")), Until(Moving("Slam_10")), Until(Home("Slam_10")), Leap(Right, "V10", 11.2f),
+            Down(Low3), Leap(Right, "V10", 11.2f),
             Down(Low3), Leap(Right, "V11", 14f),
             Down(Low3), Hold(Right), Jump().Timed(TimedMode.Shift), Until(Landed()),
             // Slam_3: stop short, let it land, hop it.
@@ -120,8 +119,6 @@ namespace Parallax.Editor.Levels
                     Prefix(solution, "Until(Home(Lift_2))", "stop", Hold(Left), Until(XAtMost(5.5f)), Release(), Until(Dead())), revealedBy: "Hinge_3"),
                 // Roof.
                 Hang(solution, "V8", "Thorns_3"), Hang(solution, "V9", "Thorns_3"), Hang(solution, "V10", "Thorns_3b"), Hang(solution, "V11", "Thorns_3b"),
-                new Betrayal("T10 [W]: a cat that leaps to V10 at once meets Slam_10 coming down", "Slam_10", DeathCause.Hazard,
-                    Prefix(solution, "Until(on V9)", "leap at once", Release(), ReleaseClimb(), Hold(Right), Jump(), For(28), Hold(R.Down), Until(Dead())), revealedBy: "Slam_10"),
                 new Betrayal("T11 [BAIT]: a cat that walks on under the roof is slammed by Slam_3", "Slam_3", DeathCause.Hazard,
                     Prefix(solution, "Until(X>=18.5)", "walk on", Until(Dead())), revealedBy: "Slam_3"),
                 new Betrayal("T12 [NW]: a cat that stops at Spikes_5 meets Hinge_5's spikes", "Hinge_5", DeathCause.Hazard,

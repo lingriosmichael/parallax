@@ -38,7 +38,7 @@ namespace Parallax.Core
     public enum AudioChannel { Music, Sfx, Ui }
 
     /// <summary>D-277: the music loops, one per world. Title and LevelSelect play the first.</summary>
-    public enum MusicTrack { GoldenRuins, ObsidianVoid }
+    public enum MusicTrack { GoldenRuins, ObsidianVoid, GoldenRuins2, GoldenRuins3, GoldenRuins4, GoldenRuins5, GoldenRuins6, ObsidianVoid2 }
 
     /// <summary>PAX-064: how a cue plays: its channel and volume, how many copies may sound at once, and the shortest gap
     /// between two starts (a burst of the same event plays once).</summary>

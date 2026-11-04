@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using Parallax.Core;
 using Parallax.Gameplay.Checkpoints;
@@ -26,6 +27,16 @@ namespace Parallax.Editor.Setup
             return CatDeathKind.Spiked;
         }
 
+        /// <summary>How far above a vine's grab box its drawing goes on, into the first fixed stone over it (D-297), or past the room's top
+        /// with none. Trap solids don't count: they move, and the vine would end in the air.</summary>
+        static float VineTopReach(SoloRoomDefinition room, SoloRoomElement e)
+        {
+            const float IntoStone = 0.4f, PastRoom = 1.5f;
+            var box = new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size);
+            var over = SoloRoomSkin.Solids(room).Where(o => !o.Trap && o.Rect.xMin <= box.center.x && o.Rect.xMax >= box.center.x && o.Rect.yMax > box.yMax).Select(o => o.Rect.yMin).ToList();
+            return over.Count > 0 ? Mathf.Max(0f, over.Min() - box.yMax) + IntoStone : ComputeRoomBounds(room, 0f).max.y + PastRoom - box.yMax;
+        }
+
         static readonly Color Ground = new(.72f, .52f, .28f, 1f);
         static readonly Color Red = new(.85f, .12f, .10f, 1f);
         // PAX-111 (D-177): the warning ray's placeholder look: a faint thin red line.
@@ -51,6 +62,7 @@ namespace Parallax.Editor.Setup
         public static RoomSafetyConfig EnsureRoomSafetyConfig(string assetPath, List<string> changes)
         {
             var config = AssetDatabase.LoadAssetAtPath<RoomSafetyConfig>(assetPath);
+            if (config != null) TrapKitSetup.Write(config, changes, ("holdTicks", RoomSafetyConfig.DefaultHoldTicks));   // D-298
             if (config != null) return config;
             var created = ScriptableObject.CreateInstance<RoomSafetyConfig>();
             AssetDatabase.CreateAsset(created, assetPath);
@@ -352,7 +364,7 @@ namespace Parallax.Editor.Setup
                 case SoloRoomElementKind.Checkpoint: CheckpointSetup.BuildMarkerCore(parent, root, e.Name, checkpoints, observers, room.Id, position + Vector2.up * -config.ColliderBottom, Vector2.down, changes); break;
                 case SoloRoomElementKind.Door:
                 {
-                    RoomDoor door = RoomSetup.BuildDoorCore(parent, root, e.Name, rooms, room.Id, position, e.Size, new Color(.9f,.5f,1f,1f), -2, changes);
+                    RoomDoor door = RoomSetup.BuildDoorCore(parent, root, e.Name, rooms, room.Id, position, e.Size, new Color(.9f,.5f,1f,1f), -2, changes, Parallax.Editor.Levels.LevelLooks.DoorSlot(Parallax.Editor.Levels.LevelLooks.LevelOf(room)));
                     // PAX-099 (D-106): doors stand on real platforms in the layout; remove the art-only plinth an earlier build left.
                     Transform plinth = door.transform.Find("Plinth");
                     if (plinth != null) { Object.DestroyImmediate(plinth.gameObject); changes.Add("removed " + e.Name + " plinth"); }
@@ -374,7 +386,7 @@ namespace Parallax.Editor.Setup
                 case SoloRoomElementKind.Inverter: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildInverterCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes, e.Position), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.PulseGate: TrapKitSetup.ConfigurePulseGateTiming(TrapKitSetup.BuildPulseGateCore(parent, root, e.Name, position, e.Size, Red, room.Id, rooms, death, observers, e.Settings.Gate, -2, changes), e.Settings, parent, changes); break;   // PAX-112 (D-176)
                 case SoloRoomElementKind.Geyser: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildGeyserCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings.Geyser, changes), e.Settings, parent, changes); break;
-                case SoloRoomElementKind.Vine: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildClimbVineCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;
+                case SoloRoomElementKind.Vine: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildClimbVineCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes, VineTopReach(room, e)), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.ShrinkingFloor: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildShrinkingFloorCore(parent, root, e.Name, position, e.Size, Ground, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, TrapFloorSortingOrder, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.StormCloud: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildStormCloudCore(parent, root, room, e, rooms, death, observers, changes), e.Settings, parent, changes); break;
                 case SoloRoomElementKind.Spinner: TrapKitSetup.ConfigureTiming(TrapKitSetup.BuildSpinnerCore(parent, root, e.Name, position, e.Size, room.Id, rooms, death, observers, e.Settings, e.SecondaryPosition - e.Position, e.SecondarySize, changes), e.Settings, parent, changes); break;   // PAX-116 (D-187)

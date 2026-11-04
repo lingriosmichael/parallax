@@ -34,6 +34,16 @@ namespace Parallax.Presentation
         public Sprite[] SpikeBlades = new Sprite[0];
         [Tooltip("D-161: the stout steel blades (SPIKE_steel_*, Tools/Art/spike_steel.py), for levels whose look asks for them (LevelLooks.Look.StoutSpikes).")]
         public Sprite[] SpikeBladesStout = new Sprite[0];
+        [Tooltip("D-318: the bold blades (SPIKE_bold_*, HZ-02 v3) for spiked hinge floors: over the sky behind them the stout set missed 3:1. Empty = the stout set.")]
+        public Sprite[] SpikeBladesBold = new Sprite[0];
+        [Tooltip("D-295: what a fixed hazard is drawn with: thorn clusters (HZ-01), crystal in Obsidian Void (HZ-03). They never move.")]
+        public Sprite[] ThornClusters = new Sprite[0], CrystalClusters = new Sprite[0];
+        [Tooltip("Premium plan gate 6: a soft dark rim behind each lit thorn cluster (THORNRIM_*, one per cluster, in the same order), so the pale bark reads on a bright sky. Empty = no rim.")]
+        public Sprite[] ThornRims = new Sprite[0];
+        [Tooltip("Premium plan gate 6: the same rim behind the stout and the bold blades (SPIKERIM_steel_*, SPIKERIM_bold_*, in their blades' order). Empty = no rim.")]
+        public Sprite[] SpikeRimsStout = new Sprite[0], SpikeRimsBold = new Sprite[0];
+        [Tooltip("Premium plan gate 6: the same rim behind the arrow (TRAP-02_arrow_rim). None = no rim.")]
+        public Sprite ArrowRim;
         [Tooltip("D-161: how much wider (x) and taller (y) the stout blades draw than the standard ones (art only; hitboxes unchanged).")]
         public Vector2 StoutBladeScale = new(1.6f, 1.25f);
         [Tooltip("PAX-A18: a slam's iron striking plate, repeated along its bottom edge; and a hinge floor's knuckle at its pivot.")]
@@ -61,9 +71,19 @@ namespace Parallax.Presentation
         public Sprite TurretIdle, TurretLock;
         [Tooltip("OT-06's hard-light bar (drawn whole at its one size, as the spear is) and its launcher (OT-04's housing, small).")]
         public Sprite HardLightBar, BarLauncher;
-        [Tooltip("Stage 4: OT-13's rings (flip: arrows up and down; inverter: left and right), OT-10's striking edge (a slam's plate), OT-09's crack stages and broken edge (glass). In an Obsidian level they stand in for GlyphRing, InverterOrb, SlamPlate, Cracks and CrumbleEdge.")]
-        public Sprite FlipRing, InverterRing, ObsidianSlamPlate, GlassEdge;
+        [Tooltip("Stage 4: OT-10's striking edge (a slam's plate), OT-09's crack stages and broken edge (glass). In an Obsidian level they stand in for SlamPlate, Cracks and CrumbleEdge. The gravity and direction orbs are the same art in every world (D-284).")]
+        public Sprite ObsidianSlamPlate, GlassEdge;
         public Sprite[] GlassCracks = new Sprite[0];
+        [Header("D-292: the painted set (GT and OT sprites; ObsidianView swaps the turret)")]
+        [Tooltip("A turret's fixed mount, its eye dark and locked, and its beam. In an Obsidian level these are the Obsidian* ones.")]
+        public Sprite TurretMount, TurretEyeIdle, TurretEyeLock, TurretBeam;
+        [Tooltip("D-294: a thin aiming line's core, every beam's soft glow, and the burn where a beam lands.")]
+        public Sprite LaserCore, LaserGlow, LaserBurn;
+        public Sprite ObsidianTurretMount, ObsidianTurretEyeIdle, ObsidianTurretEyeLock;
+        [Tooltip("GT-01's blade, GT-02's hub, GT-07's ring, shaft and head, GT-08's plate, GT-04's spiked strip.")]
+        public Sprite SpinnerArm, SpinnerHub, PendulumRing, PendulumShaft, PendulumHead, PressurePlate, SpikedStrip, SpikedCrusher;
+        [Tooltip("OT-20's states, OT-22's states, OT-21's plate, OT-23's cap and strip, OT-24's emitter, OT-25's housing.")]
+        public Sprite PhaseLit, PhaseFade, PhaseOff, GlitchSolid, GlitchWarn, GlitchGhost, FlipPlate, RetractCap, RetractStrip, TridentEmitter, ChaserHousing;
         [Header("Code effects")]
         public Sprite BoltSegment, Flash, Ring, Mote;
         [Tooltip("Sprites that are still code-drawn placeholders for a ChatGPT body (the contact sheet marks them PLACEHOLDER).")]
@@ -99,9 +119,10 @@ namespace Parallax.Presentation
         {
             TrapArtConfig v = Instantiate(this);
             v.hideFlags = HideFlags.DontSave;
-            if (FlipRing != null) v.GlyphRing = FlipRing;
-            if (InverterRing != null) v.InverterOrb = InverterRing;
             if (ObsidianSlamPlate != null) v.SlamPlate = ObsidianSlamPlate;
+            if (ObsidianTurretMount != null) { v.TurretMount = ObsidianTurretMount; v.TurretEyeIdle = ObsidianTurretEyeIdle; v.TurretEyeLock = ObsidianTurretEyeLock; }
+            if (LaserBeam != null) v.TurretBeam = LaserBeam;
+            if (CrystalClusters.Length > 0) { v.ThornClusters = CrystalClusters; v.ThornRims = new Sprite[0]; }
             if (GlassEdge != null) v.CrumbleEdge = GlassEdge;
             if (GlassCracks.Length > 0) v.Cracks = GlassCracks;
             return v;

@@ -123,13 +123,13 @@ namespace Parallax.Tests.EditMode
             }
         }
 
-        // PAX-A14: the 26 A08 slots, plus the 3 bridge sheets whose frames play inside another clip (LandContact,
+        // PAX-A14: the 26 A08 slots and D-293's 8 (RiseStraight, Reach, FallStraight, FallLoop, StepDown, StandUp, WallPush, Death_CrushedSide), plus the 3 bridge sheets whose frames play inside another clip (LandContact,
         // HardLandContact, FlipRoll).
         [Test]
         public void TheManifest_HasAllTwentySixSlots_AndA14sThreeBridgeSheets()
         {
             Slot[] slots = Load().slots;
-            Assert.AreEqual(26, slots.Count(s => string.IsNullOrEmpty(s.bridgeFor)));
+            Assert.AreEqual(34, slots.Count(s => string.IsNullOrEmpty(s.bridgeFor)));
             CollectionAssert.AreEquivalent(new[] { "LandContact", "HardLandContact", "FlipRoll" }, slots.Where(s => !string.IsNullOrEmpty(s.bridgeFor)).Select(s => s.slot));
         }
 

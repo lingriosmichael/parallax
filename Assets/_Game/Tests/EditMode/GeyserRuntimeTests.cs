@@ -185,8 +185,13 @@ namespace Parallax.Tests.EditMode
             }
             Assert.AreEqual(GeyserPhase.Idle, trap.Phase, "the reset returns the geyser to idle");
             Assert.AreEqual(-1, trap.LatestFireTick);
-            // The next live tick is room tick 0: the cycle starts over from the phase.
-            for (int i = 0; i < Phase + Tell + 1; i++)
+            // PAX-126 (D-321): the room waits for the cat's first move, then that tick is room tick 0: the cycle starts over.
+            Step();
+            Assert.AreEqual(GeyserPhase.Idle, trap.Phase, "waiting: the geyser stays as the reset left it");
+            rig.TickActing();
+            Assert.AreEqual(0, rig.Rooms.RoomLifeTick, "the first move is room tick 0");
+            Assert.AreEqual(Expected(0), trap.Phase, "room tick 0");
+            for (int i = 1; i < Phase + Tell + 1; i++)
             {
                 Step();
                 Assert.AreEqual(Expected(rig.Rooms.RoomLifeTick), trap.Phase, $"room tick {rig.Rooms.RoomLifeTick}");

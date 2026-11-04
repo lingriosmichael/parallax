@@ -274,6 +274,32 @@ def load(name):
     return tp.load_rgba(SRC / f"{name}.png")
 
 
+def clean_fringe(a, size=7, limit=0.22):
+    """D-300: soft cuts left junk in a piece's see-through edge: a one-pixel ring of green, yellow and magenta where the rim's mask ran,
+    and dark specks. Against a sky it read as a hard line at the foot of the towers. Any pixel in the soft part (alpha under 0.97) that
+    isn't close to its neighbourhood's median colour takes the median. The opaque painting is untouched."""
+    from PIL import Image as _I, ImageFilter as _F
+    rgb = _I.fromarray((np.clip(a[..., :3], 0, 1) * 255 + 0.5).astype(np.uint8))
+    med = np.asarray(rgb.filter(_F.MedianFilter(size)), np.float32) / 255
+    out = a.copy()
+    bad = (a[..., 3] < 0.97) & (np.abs(a[..., :3] - med).max(axis=2) > limit)
+    out[..., :3][bad] = med[bad]
+    return out
+
+
+def soft_rim(a, px=14):
+    """D-282: a piece's pale mist fades out instead of stopping at a jagged cut (against open sky it read as a white outline). Only
+    pale pixels near the edge: the stone stays sharp."""
+    from scipy import ndimage
+    inner = ndimage.binary_erosion(a[..., 3] > 0.5, iterations=px).astype(np.float32)
+    fade = np.clip(ndimage.gaussian_filter(inner, px * 0.6) * 2, 0, 1)
+    rgb = a[..., :3]
+    pale = np.clip((rgb.mean(-1) - 0.42) / 0.2, 0, 1) * np.clip(1 - (rgb.max(-1) - rgb.min(-1)) / 0.6, 0, 1)
+    out = a.copy()
+    out[..., 3] *= 1 - pale * (1 - fade)
+    return out
+
+
 def build():
     play, layers, slots = {}, {}, {}
 
@@ -382,8 +408,9 @@ def build():
         for key, box in zip(keys, pieces):
             piece = fit_width(sheet[box[1]:box[3], box[0]:box[2]], round(width * WORLD_PPU))
             if src == "ENV-22":
-                # PAX-V08: the banners' red cloth is the danger colour; it turns a deep royal blue (hue 222).
-                piece = hazard_readable.set_hue(piece, hazard_readable.reddish(piece), 222.0)
+                # PAX-V08: the banners' red cloth is the danger colour. D-308 (the developer: "bronze"): a muted bronze-ochre, which
+                # ends the blue's clash with the warm stone and keeps red for danger.
+                piece = hazard_readable.set_hue(piece, hazard_readable.reddish(piece), 32.0, sat_scale=0.82, val_scale=0.7)
             put(play, key, piece, WORLD_PPU, kind="dressing")
 
     # Climb vine (PAX-A08's old item 15): top anchor, tiling middle, tip; 0.6 u wide like the grab box.
@@ -403,6 +430,10 @@ def build():
     put(layers, "ENV_SkyFade", vertical_fade(8, 256), HALF_PPU, kind="sky")
     put(layers, "ENV_White", np.ones((8, 8, 4), np.float32), HALF_PPU, kind="sky")
     sun = glow_alpha(load("ENV-02"), floor=0.04, ceil=0.8)
+    # D-304: neutral, so each palette's tint makes it a warm sun or a cool moon (tinted blue, the painted yellow kept an orange rim: L028).
+    sun = sun.copy()
+    sun_grey = sun[..., :3] @ np.array([0.3, 0.59, 0.11], np.float32)
+    sun[..., :3] = np.repeat(np.clip(sun_grey / np.percentile(sun_grey[sun[..., 3] > 0.5], 99), 0, 1)[..., None], 3, axis=2)
     put(layers, "ENV_Sun", tp.resize(sun, 640, 640), HALF_PPU, kind="piece")
     for key, src, band in (("ENV_CloudsFar", "ENV-03c", 260), ("ENV_CloudsMid", "ENV-03b", 260), ("ENV_CloudsNear", "ENV-03a", 260)):
         a = load(src)
@@ -433,8 +464,10 @@ def build():
                 # 0.1 goes, 0.1-0.35 ramps in, the island itself is unchanged.
                 piece = piece.copy()
                 piece[..., 3] *= np.clip((piece[..., 3] - 0.1) / 0.25, 0, 1)
-            put(layers, key, defringe(piece), HALF_PPU, kind="piece")
-    put(layers, "ENV_MidPillar", defringe(tp.trim(load("ENV-15"), 0.05)), HALF_PPU, kind="piece")
+            if not key.startswith(("ENV_MidTree", "ENV_MidColonnade")):
+                piece = soft_rim(piece)     # D-282
+            put(layers, key, clean_fringe(defringe(piece)), HALF_PPU, kind="piece")
+    put(layers, "ENV_MidPillar", clean_fringe(defringe(tp.trim(load("ENV-15"), 0.05))), HALF_PPU, kind="piece")
     aq = load("ENV-07c")
     rows = np.nonzero((aq[..., 3] > 0.02).any(axis=1))[0]
     import env_v2 as v2  # noqa: E402

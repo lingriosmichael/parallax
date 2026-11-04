@@ -11,7 +11,8 @@ namespace Parallax.Gameplay.UI
     /// begins while paused is ever claimed: its Began is reserved, and after the resume it has no
     /// new Began (TouchStickCatInput only claims a finger on its Began). Restart and Levels abandon the attempt: they load through
     /// LevelSceneLoader and record nothing - Levels deliberately does not reuse LevelsButton,
-    /// which records a completion. PAX-065 (D-278): Vibration flips the saved haptics setting; the game has no other settings screen.
+    /// which records a completion. PAX-065 (D-278): Vibration flips the saved haptics setting; PAX-V06: Motion flips Reduce motion (every feel effect but the
+    /// death flash). The game has no other settings screen.
     /// PAX-066 (D-279): Restore purchase asks the scene's store, and its label says how that went.</summary>
     [RequireComponent(typeof(RectTransform))]
     public sealed class PausePanel : MonoBehaviour, ITouchReservedRegion
@@ -22,6 +23,8 @@ namespace Parallax.Gameplay.UI
         [SerializeField] Button levelsButton;
         [SerializeField] Button vibrationButton;
         [SerializeField] Text vibrationLabel;
+        [SerializeField] Button motionButton;
+        [SerializeField] Text motionLabel;
         [SerializeField] StoreHost store;
         [SerializeField] Button restorePurchaseButton;
         [SerializeField] Text restorePurchaseLabel;
@@ -33,6 +36,8 @@ namespace Parallax.Gameplay.UI
             if (levelsButton != null) levelsButton.onClick.AddListener(GoToLevelSelect);
             if (vibrationButton != null) vibrationButton.onClick.AddListener(ToggleVibration);
             ShowVibration();
+            if (motionButton != null) motionButton.onClick.AddListener(ToggleMotion);
+            ShowMotion();
             if (restorePurchaseButton != null) restorePurchaseButton.onClick.AddListener(RestorePurchase);
             if (store != null && store.Service != null) store.Service.Changed += ShowRestore;
             ShowRestore();
@@ -44,6 +49,7 @@ namespace Parallax.Gameplay.UI
             if (restartButton != null) restartButton.onClick.RemoveListener(Restart);
             if (levelsButton != null) levelsButton.onClick.RemoveListener(GoToLevelSelect);
             if (vibrationButton != null) vibrationButton.onClick.RemoveListener(ToggleVibration);
+            if (motionButton != null) motionButton.onClick.RemoveListener(ToggleMotion);
             if (restorePurchaseButton != null) restorePurchaseButton.onClick.RemoveListener(RestorePurchase);
             if (store != null && store.Service != null) store.Service.Changed -= ShowRestore;
         }
@@ -87,6 +93,17 @@ namespace Parallax.Gameplay.UI
         void ShowVibration()
         {
             if (vibrationLabel != null) vibrationLabel.text = LevelProgressStore.HapticsEnabled ? "Vibration: On" : "Vibration: Off";
+        }
+
+        public void ToggleMotion()
+        {
+            LevelProgressStore.ReduceMotion = !LevelProgressStore.ReduceMotion;
+            ShowMotion();
+        }
+
+        void ShowMotion()
+        {
+            if (motionLabel != null) motionLabel.text = LevelProgressStore.ReduceMotion ? "Motion: Reduced" : "Motion: Full";
         }
 
         public bool ContainsScreenPoint(Vector2 screenPos) =>

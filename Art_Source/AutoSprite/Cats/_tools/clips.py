@@ -134,6 +134,21 @@ CLIPS.update({
         "The cat is blasted straight upward by a rush from below: body stretched vertical, head up, ears pinned "
         "back, legs tucked tight to the body, eyes squeezed shut, fur and tail streaming downward from the speed. "
         "Only the cat is shown, no water. It holds this pose with a small tremble. Seamless loop. "},
+    "24_run_brake": {"name": "Run brake", "loop": False, "fps": 16, "prompt":
+        "The cat bursts forward in two fast gallop strides, then slams on the brakes: front legs lock straight and plant far ahead, "
+        "shoulders drop, hindquarters sink low, the whole body leans back, tail flips up for balance. It skids to a stop and settles "
+        "standing still on all four paws. It stays near the centre of the frame. "},
+    "25_wall_push": {"name": "Wall push", "loop": True, "fps": 12, "prompt":
+        "The cat strains hard against an invisible wall just past its nose on the right: chest and forehead pressed forward, front paws "
+        "planted high, hind legs digging and driving in place, tail low and stiff. No wall or object is drawn. It stays in place. Seamless loop. "},
+    "26_straight_jump": {"name": "Straight jump", "loop": False, "fps": 16, "prompt":
+        "The cat crouches, then jumps straight UP on the spot with no forward travel: body stretched upright, head up, front legs reaching "
+        "overhead, hind legs trailing down, tail hanging. At the top it gathers, then drops straight down, all four legs reaching for the ground, "
+        "tail rising. It lands in the same spot. "},
+    "27_running_takeoff": {"name": "Running takeoff", "loop": False, "fps": 16, "prompt":
+        "The cat dashes forward low and fast, then leaps without slowing: hind legs bunch under the body and drive hard, front legs reach up "
+        "and forward, the body stretches into one long diagonal line leaving the ground, tail streaming behind. Ends in the air still rising. "
+        "It stays near the centre of the frame. "},
     "23_dizzy": {"name": "Dizzy", "loop": True, "fps": 12, "prompt":
         "The cat stands facing right, dizzy and wobbly: the head sways in slow small circles, eyes are spirals, "
         "legs a little unsteady, tail droops; three small stars circle above its head. Paws stay in place. "

@@ -48,6 +48,20 @@ PLATE_ROWS, PLATE_COLS, PLATE_H = (740, 905), (160, 1380), 0.3
 # (EDGE_ROWS), tiled along a glass floor's top, EDGE_H units tall.
 CRACK_BOXES = [(56, 164, 349, 574), (433, 103, 858, 577), (917, 100, 1485, 621)]
 CRACK_W, EDGE_ROWS, EDGE_H = 1.0, (672, 941), 0.22
+# OT-18 (on magenta): the mount and the eye, idle and locked (x0, x1, y0, y1). The mount's pivot is where the eye sits (the turret's
+# muzzle); the eye's is its ball's centre, so it turns in place.
+MOUNT_BOX, EYE_IDLE_BOX, EYE_LOCK_BOX = (10, 1150, 175, 810), (1222, 1712, 8, 416), (1222, 1712, 424, 834)
+MOUNT_W, EYE_W, MOUNT_PIVOT, EYE_PIVOT = 0.9, 0.48, (0.508, 0.69), (0.415, 0.5)
+# OT-20: lit, fading and off, one size each (the end caps line up).
+PHASE_X, PHASE_ROWS, PHASE_W = (70, 1705), ((55, 283), (340, 568), (625, 853)), 2.0
+# OT-21: the plate painted danger side up (the game turns it), its pivot on the plate's centre, under the blades.
+FLIP_PLATE_BOX, FLIP_PLATE_W, FLIP_PLATE_PIVOT = (44, 2124, 311, 678), 2.0, (0.5, 0.31)
+# OT-22: solid, warning and ghost, one box each with its flat top at the same row.
+GLITCH_BOXES, GLITCH_W, GLITCH_PIVOT = ((7, 727, 262, 502), (726, 1446, 262, 502), (1448, 2168, 262, 502)), 1.6, (0.5, 0.96)
+# OT-23: the emitter cap and the hard-light strip, its ends cross-faded so it tiles.
+RETRACT_CAP_BOX, RETRACT_STRIP_BOX, RETRACT_FADE, RETRACT_H = (24, 478, 230, 512), (500, 2164, 281, 477), 240, 0.5
+# OT-24: drawn TRIDENT_W wide, pivoted on its lenses' row (the trap's muzzle). OT-25: the core pulled toward pale blue-white, its beam's colour.
+TRIDENT_W, TRIDENT_PIVOT, CHASER_W, CHASER_PALE = 1.3, (0.5, 0.12), 0.6, 0.55
 
 
 def load(name):
@@ -181,7 +195,56 @@ def chaser_beam():
     return to_image(a)
 
 
+def cut(name, box):
+    x0, x1, y0, y1 = box
+    return key_magenta(load(name)[y0:y1, x0:x1])
+
+
+def cool(a):
+    """A see-through cyan piece on magenta keeps a purple cast: its red comes down to its green."""
+    out = a.copy()
+    out[..., 0] = np.minimum(out[..., 0], out[..., 1])
+    return out
+
+
+def turret_parts():
+    name = "OT-18_aiming_turret_v1.png"
+    px = lambda units: int(round(units * EMITTER_PPU))
+    return resized(cut(name, MOUNT_BOX), px(MOUNT_W)), resized(cut(name, EYE_IDLE_BOX), px(EYE_W)), resized(cut(name, EYE_LOCK_BOX), px(EYE_W))
+
+
+def phase_states():
+    x0, x1 = PHASE_X
+    width = int(round(PHASE_W * EMITTER_PPU))
+    return [resized(cool(cut("OT-20_phase_platform_v1.png", (x0, x1, y0, y1))), width) for y0, y1 in PHASE_ROWS]
+
+
+def glitch_states():
+    width = int(round(GLITCH_W * EMITTER_PPU))
+    return [resized(cool(cut("OT-22_glitch_platform_v1.png", b)), width) for b in GLITCH_BOXES]
+
+
+def retract_parts():
+    name = "OT-23_retract_floor_v1.png"
+    cap = trim(cut(name, RETRACT_CAP_BOX))
+    x0, x1, y0, y1 = RETRACT_STRIP_BOX
+    strip = seamless_x(load(name)[y0:y1, x0:x1], RETRACT_FADE)
+    h = int(round(RETRACT_H * EMITTER_PPU))
+    return resized(cap, int(round(cap.shape[1] * h / cap.shape[0]))), to_image(strip).resize((int(round(strip.shape[1] * h / strip.shape[0])), h), Image.LANCZOS)
+
+
+def chaser_housing():
+    a = trim(key_magenta(load("OT-25_chaser_housing_v1.png")))
+    lum = a[..., :3].max(axis=-1, keepdims=True)
+    a[..., :3] = a[..., :3] * (1 - CHASER_PALE * lum) + CHASER_CORE * CHASER_PALE * lum
+    return resized(a, int(round(CHASER_W * EMITTER_PPU)))
+
+
 def build():
+    mount, eye_idle, eye_lock = turret_parts()
+    phase_lit, phase_fade, phase_off = phase_states()
+    glitch_solid, glitch_warn, glitch_ghost = glitch_states()
+    retract_cap, retract_strip = retract_parts()
     sprites = {"OBS_laser_beam": (beam(), (0.5, 0.5), True, BEAM_TILE_H),
                "OBS_chaser_beam": (chaser_beam(), (0.5, 0.5), True, BEAM_TILE_H),
                "OBS_gate_top": (emitter(GATE_TOP), (0.5, 0.5), False, EMITTER_PPU),
@@ -193,7 +256,21 @@ def build():
                "OBS_flip_ring": (ring(RING_FLIP, RING_W), (0.5, 0.5), False, EMITTER_PPU),
                "OBS_inverter_ring": (ring(RING_INVERT, INVERT_W), (0.5, 0.5), False, EMITTER_PPU),
                "OBS_slam_plate": (plate(), (0.5, 0.0), True, EMITTER_PPU),
-               "OBS_glass_edge": (glass_edge(), (0.5, 1.0), True, EMITTER_PPU)}
+               "OBS_glass_edge": (glass_edge(), (0.5, 1.0), True, EMITTER_PPU),
+               "OBS_mount": (mount, MOUNT_PIVOT, False, EMITTER_PPU),
+               "OBS_eye_idle": (eye_idle, EYE_PIVOT, False, EMITTER_PPU),
+               "OBS_eye_lock": (eye_lock, EYE_PIVOT, False, EMITTER_PPU),
+               "OBS_phase_lit": (phase_lit, (0.5, 0.5), False, EMITTER_PPU),
+               "OBS_phase_fade": (phase_fade, (0.5, 0.5), False, EMITTER_PPU),
+               "OBS_phase_off": (phase_off, (0.5, 0.5), False, EMITTER_PPU),
+               "OBS_flip_plate": (resized(cut("OT-21_flip_plate_v1.png", FLIP_PLATE_BOX), int(round(FLIP_PLATE_W * EMITTER_PPU))), FLIP_PLATE_PIVOT, False, EMITTER_PPU),
+               "OBS_glitch_solid": (glitch_solid, GLITCH_PIVOT, False, EMITTER_PPU),
+               "OBS_glitch_warn": (glitch_warn, GLITCH_PIVOT, False, EMITTER_PPU),
+               "OBS_glitch_ghost": (glitch_ghost, GLITCH_PIVOT, False, EMITTER_PPU),
+               "OBS_retract_cap": (retract_cap, (0.5, 0.5), False, EMITTER_PPU),
+               "OBS_retract_strip": (retract_strip, (0.5, 0.5), True, EMITTER_PPU),
+               "OBS_trident": (resized(trim(key_magenta(load("OT-24_trident_emitter_v1.png"))), int(round(TRIDENT_W * EMITTER_PPU))), TRIDENT_PIVOT, False, EMITTER_PPU),
+               "OBS_chaser_housing": (chaser_housing(), (0.5, 0.5), False, EMITTER_PPU)}
     for i, c in enumerate(cracks()):
         sprites[f"OBS_crack_{i}"] = (c, (0.5, 0.5), False, EMITTER_PPU)
     entries, files = [], {}

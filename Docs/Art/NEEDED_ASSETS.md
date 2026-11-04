@@ -1,5 +1,7 @@
 # Needed assets (PAX-V07, updated by PAX-A14)
 
+**Prompts for the cat art below:** `Docs/Art/CAT_AND_STORE_PROMPTS.md`.
+
 This lists only art that is still visibly wrong after V07's code fixes and A14's offline art pass (2026-09-30: the
 consistency pass and in-betweens made from the existing frames; nothing generated). V07 doesn't hide art in code (ruled 2026-09-30):
 no pose is drawn off its registered pivot, and every entry below shows in game as described.

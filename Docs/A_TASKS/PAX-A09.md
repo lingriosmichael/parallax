@@ -1,6 +1,6 @@
 # PAX-A09 · UI art: title, level select, in-level UI, font
 
-**Status:** Approved (Phase E, after PAX-V06). Updated 2026-09-27 to the premium target.
+**Status:** Approved (Phase E, after PAX-V06). Updated 2026-09-27 to the premium target. **Built 2026-11-01 (D-283), except settings** (§3), which waits on the roadmap's settings decision. Title and font came first (D-280).
 **Depends on:** PAX-053, PAX-054, PAX-A06 (Reality A look)
 **Decisions:** Vision §7–8 (serious, surreal, warm; not childish), D-094.
 **Target:** `DesignImages/15_premium-mobile-ui.png` and `Docs/Art/LOOK_AND_FEEL.md`: the world is the screen; minimal thin white line icons; circular translucent buttons; a cat portrait with a thin progress line top-left; pause top-right; no heavy panels during play.

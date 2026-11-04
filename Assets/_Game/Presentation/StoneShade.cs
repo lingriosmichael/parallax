@@ -12,7 +12,7 @@ namespace Parallax.Presentation
     public sealed class StoneShade : MonoBehaviour
     {
         static readonly int MapId = Shader.PropertyToID("_PaxShadeMap"), RectId = Shader.PropertyToID("_PaxShadeRect"),
-            FaceId = Shader.PropertyToID("_PaxFaceShade"), OutsideId = Shader.PropertyToID("_PaxOutsideShade");
+            FaceId = Shader.PropertyToID("_PaxFaceShade"), OutsideId = Shader.PropertyToID("_PaxOutsideShade"), MultiplyId = Shader.PropertyToID("_PaxShadeMul"), StoneLightId = Shader.PropertyToID("_PaxStoneLight");
 
         [Tooltip("The world rectangle the map covers (clamped past it).")]
         [SerializeField] Rect area;
@@ -21,6 +21,10 @@ namespace Parallax.Presentation
         [SerializeField] byte[] texels = new byte[0];
         [Tooltip("Each shadow's colour, and its full strength as alpha.")]
         [SerializeField] Color faceShade, outsideShade;
+        [Tooltip("D-301: the shadows multiply the stone, keeping its seams, instead of blending it to their colours.")]
+        [SerializeField] bool multiplies;
+        [Tooltip("D-304: the level's light on all its stone and plants (clear: as painted). In the shaders, so a disguise and its host always match.")]
+        [SerializeField] Color stoneLight = Color.clear;
 
         Texture2D map;
 
@@ -36,9 +40,9 @@ namespace Parallax.Presentation
             return new Vector2(texels[k] / 255f, texels[k + 1] / 255f);
         }
 
-        public void Configure(Rect worldArea, int texelsWide, int texelsHigh, byte[] data, Color face, Color outside)
+        public void Configure(Rect worldArea, int texelsWide, int texelsHigh, byte[] data, Color face, Color outside, bool multiply = false, Color light = default)
         {
-            area = worldArea; width = texelsWide; height = texelsHigh; texels = data; faceShade = face; outsideShade = outside;
+            area = worldArea; width = texelsWide; height = texelsHigh; texels = data; faceShade = face; outsideShade = outside; multiplies = multiply; stoneLight = light;
             if (isActiveAndEnabled) Apply();
         }
 
@@ -51,6 +55,7 @@ namespace Parallax.Presentation
             {
                 Shader.SetGlobalColor(FaceId, Color.clear);
                 Shader.SetGlobalColor(OutsideId, Color.clear);
+                Shader.SetGlobalColor(StoneLightId, Color.clear);
             }
             Release();
         }
@@ -74,6 +79,8 @@ namespace Parallax.Presentation
             Shader.SetGlobalVector(RectId, new Vector4(area.xMin, area.yMin, 1f / area.width, 1f / area.height));
             Shader.SetGlobalColor(FaceId, faceShade);
             Shader.SetGlobalColor(OutsideId, outsideShade);
+            Shader.SetGlobalFloat(MultiplyId, multiplies ? 1f : 0f);
+            Shader.SetGlobalColor(StoneLightId, stoneLight);
         }
 
         void Release()

@@ -112,6 +112,10 @@ namespace Parallax.Gameplay.Rooms
         bool Glitches => glitch && HasPath;
         bool Flips => flipTicks > 0;
         bool Phases => phaseOnTicks > 0;
+        bool phaseWarning;
+
+        /// <summary>D-292: it's about to go (a phase platform) or to jump (a glitch platform), for its art.</summary>
+        public bool InWarning => phaseWarning || (ghost != null && ghost.enabled);
 
         // PAX-122 (D-201): a phase platform's state (TrapPath.PhaseState) `since` ticks after its fire, gone outside its timing's effect.
         int PhaseAt(int since) => TrapPath.PhaseState(IsTimingEffectActive ? since : -1, phaseOnTicks, phaseWarnTicks);
@@ -120,6 +124,7 @@ namespace Parallax.Gameplay.Rooms
         void ShowPhase(int state, int since)
         {
             box.enabled = state > 0;
+            phaseWarning = state == 2;
             if (look != null) look.enabled = state == 1 || (state == 2 && since % 2 == 0);
         }
 

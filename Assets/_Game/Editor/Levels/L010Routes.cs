@@ -9,7 +9,7 @@ namespace Parallax.Editor.Levels
     // the roof (wait for it in the alcove); T5 (L8) is the chain T1's landing set off: spikes on the roof, in view since
     // then (jump them); T6 (L2, L1) is the door backing away over a roof section that gives way (jump it). The floating
     // flip (L4's lure) is the dead end. PAX-107: the start is at S1's east end, over a chasm: Ride_A and Sink_S first. Then
-    // Step_A and Hop_B over the hole instead of Ride_A, and the storm from the start.
+    // Step_A and Hop_B over the hole instead of Ride_A.
     static class L010Routes
     {
         public static RoomRoutes Build()
@@ -57,13 +57,10 @@ namespace Parallax.Editor.Levels
                 new Betrayal("T5: the spikes the block's landing brought up meet a cat that walks on past the stub", "Spikes_5", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X>=7.8)", "walk on", Jump(), Until(Airborne()), Until(Grounded()), Until(Dead()))),
                 // PAX-102: the rider and the sinking section on the way to the door.
-                new Betrayal("T8: a cat that waits on Ledge_E1 for the next ride is struck by the storm", "Cloud", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Ledge_E1))", "wait for the next ride", Release(), Until(Dead())), revealedBy: "Cloud"),
                 new Betrayal("T9: Sink_E gives way under a cat that stops where Ride_E set it down, into the chasm", "Chasm_Hazard", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X>=24.6)", "stop on the section", Hold(Right), Until(XAtLeast(26.3f)), Release(), Until(Dead())), revealedBy: "Sink_E"),
-                // PAX-103: the storm. A cat that stops short of the door is struck.
-                new Betrayal("T10: the storm strikes a cat that stops on Ledge_E3 short of the door", "Cloud", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=24.6)", "stop short of the door", Hold(Right), Until(XAtLeast(28.4f)), Release(), Until(Dead())), revealedBy: "Cloud"),
+                new Betrayal("T8: Eye_E shoots a cat that waits on Ledge_E1 for the next ride", "Eye_E", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(Ledge_E1))", "wait for the next ride", Release(), Until(Dead()))),
                 new Betrayal("Dead end: the flip floating over S1 sends a cat that jumps into it onto spikes under the slab", "Spikes_D2", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Home(Spikes_3))", "jump into the flip", Hold(Left), Until(XAtMost(7f)), Jump(), Until(Dead()))),
                 new Betrayal("Dead end: the floating flip, jumped into at its far edge", "Spikes_D2", DeathCause.Hazard,

@@ -15,7 +15,7 @@ namespace Parallax.Editor.Levels
     //  - Swing (V1, V2): Spin_1 turns between them.
     //  - Crumbles: Pad_3 (a checkpoint), then two crumbling stones over the spikes, GD_5 blowing down between them on its beat.
     //  - V3, V4, then Mid_Ledge: Slam_1 and Slam_2 drop from the roof on their beats (a checkpoint before them).
-    //  - V5, V6 with Swing_1 swinging between them, then Ledge_3 (a checkpoint): Inv_1, hidden at its east end, swaps left and right
+    //  - V5, V6 with Swing_1 swinging between them, then Ledge_3 (a checkpoint): Inv_1, at its east end, swaps left and right
     //    just before the jump over Pit_3 onto Ledge_4.
     //  - V7, V8 with Spin_2 between them, onto Ledge_E: Slam_D drops from the roof in front of the door as the cat runs at it.
     // Every checkpoint stands at the middle of its pillar (or, on Mid_Ledge, clear of the slams).
@@ -105,8 +105,8 @@ namespace Parallax.Editor.Levels
             Vine(elements, "V6", V6X);
 
             // ---------- Inverter ----------
-            // Inv_1, hidden at Ledge_3's east end, swaps left and right for 45 ticks as the cat comes to jump Pit_3 (Canyon_4).
-            elements.Add(E(SoloRoomElementKind.Inverter,"Inv_1",(52.3f,Ledge + 1f),(.4f,2f),settings:new SoloRoomTrapSettings(new InverterSettings(45, disguised: true),new SoloRoomTrapSettings(delayTicks:0))));
+            // Inv_1, at Ledge_3's east end, swaps left and right for 45 ticks as the cat comes to jump Pit_3 (Canyon_4).
+            elements.Add(E(SoloRoomElementKind.Inverter,"Inv_1",(52.3f,Ledge + 1f),(.4f,2f),settings:new SoloRoomTrapSettings(new InverterSettings(45),new SoloRoomTrapSettings(delayTicks:0))));
 
             // ---------- Last vines ----------
             Vine(elements, "V7", V7X);

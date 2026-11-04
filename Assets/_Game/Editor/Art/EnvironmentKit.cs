@@ -136,6 +136,7 @@ namespace Parallax.Editor.Art
             "ENV_Glow", "ENV_Halo", "ENV_SlabEnd", "ENV_PostCap", "ENV_PostBase", "ENV_VineAnchor", "ENV_VineTip", "ENV_VineMid",
             "ENV_Drape_3", "ENV_Drape_4", "ENV_Drape_5",   // gauntlet round 9: more ivy shapes (same atlas, so they batch)
             "ENV_Fern_0", "ENV_Fern_1", "ENV_Fern_2",      // gauntlet: foot ferns, fixed in the world
+            "ENV_Leaf_0", "ENV_Leaf_1", "ENV_Leaf_2", "ENV_Leaf_3", "ENV_Ivy_0", "ENV_Ivy_1", "ENV_Ivy_2", "ENV_Ivy_3", "ENV_Root_0", "ENV_Root_1", "ENV_Root_2",   // D-305
             "ENV_CapEnd_0", "ENV_CapEnd_1", "ENV_CapEnd_2", "ENV_CapEnd_3", "ENV_SlabEndThick",   // PAX-A18 W3: broken corner and thick ends
             "ENV_ThickUnderEnd", "ENV_ThickUnderShortEnd", "ENV_LipVinesEnd",   // 2026-10-16: broken and ragged ends
             "ENV_GripTuft_0", "ENV_GripTuft_1", "ENV_GripTuft_2",   // PAX-A20: Obsidian's grip panels (no Golden Ruins twin)

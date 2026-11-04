@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7095c88a732a4e8eaf1d5413b9cc060, type: 3}
   m_Name: RoomSafetyConfig
   m_EditorClassIdentifier: Parallax.Gameplay::Parallax.Gameplay.Rooms.RoomSafetyConfig
-  holdTicks: 30
+  holdTicks: 80
   boundsMargin: 2

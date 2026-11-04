@@ -17,7 +17,8 @@ namespace Parallax.Tests.EditMode
     // production seam instead: LevelSelectSetup.BuildRowTemplate (the exact method BuildUI calls)
     // must build a row carrying a LayoutElement with a positive preferredHeight, since that is
     // what LevelSelectSetup.BuildUI:169-183's VerticalLayoutGroup (childControlHeight = true)
-    // needs to size the row from - not Unity's layout system in the abstract.
+    // needs to size the row from - not Unity's layout system in the abstract. PAX-A09: Content is a grid of cells now, so the height is no longer what
+    // sizes a row, but the seam stays.
     public sealed class LevelSelectLayoutTests
     {
         static readonly Type LevelSelectSetupType = Type.GetType("Parallax.Editor.Setup.LevelSelectSetup, Parallax.Editor");
@@ -55,10 +56,10 @@ namespace Parallax.Tests.EditMode
             Assert.Greater(layoutElement.preferredHeight, 0f, "the row's LayoutElement.preferredHeight must be positive.");
         }
 
-        // The rows were 0 wide, so Level Select drew nothing: Content's VerticalLayoutGroup must control and stretch
-        // the rows' width. Builds Content through the menu's own seams, lays it out, and reads the row's width.
+        // The rows were 0 wide, so Level Select drew nothing. PAX-A09: they're cells now: Content's grid sizes every one, whatever the template's own size.
+        // Builds Content through the menu's own seams, lays it out, and reads the cell's size.
         [Test]
-        public void ContentLayout_StretchesEachRowToContentsWidth()
+        public void ContentLayout_SizesEachCellFromTheGrid()
         {
             Assert.NotNull(LevelSelectSetupType, "Parallax.Editor.Setup.LevelSelectSetup not found.");
             MethodInfo configure = LevelSelectSetupType.GetMethod("ConfigureContentLayout", BindingFlags.Public | BindingFlags.Static);
@@ -70,15 +71,29 @@ namespace Parallax.Tests.EditMode
             var contentRect = (RectTransform)contentGo.transform;
             contentRect.sizeDelta = new Vector2(800f, 600f);
             var changes = new List<string>();
-            configure.Invoke(null, new object[] { contentGo, changes });
+            var grid = (GridLayoutGroup)configure.Invoke(null, new object[] { contentGo, changes });
             var row = (LevelSelectRow)buildRow.Invoke(null, new object[] { contentGo.transform, changes });
             row.gameObject.SetActive(true);   // the runtime clones are active; the template itself is hidden
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
 
             var rowRect = (RectTransform)row.transform;
-            Assert.AreEqual(800f, rowRect.rect.width, .01f, "each row must stretch to Content's width (it was 0, so Level Select showed nothing).");
-            Assert.AreEqual(100f, rowRect.rect.height, .01f, "each row keeps its LayoutElement height.");
+            Assert.AreEqual(grid.cellSize.x, rowRect.rect.width, .01f, "each cell takes the grid's width (a row was once 0 wide, so Level Select showed nothing).");
+            Assert.AreEqual(grid.cellSize.y, rowRect.rect.height, .01f, "each cell takes the grid's height.");
+        }
+
+        // A scene built before PAX-A09 has the old list on Content; two layout groups on one object fight.
+        [Test]
+        public void ContentLayout_ReplacesTheOldList()
+        {
+            MethodInfo configure = LevelSelectSetupType.GetMethod("ConfigureContentLayout", BindingFlags.Public | BindingFlags.Static);
+            contentGo = new GameObject("Content", typeof(RectTransform));
+            contentGo.AddComponent<VerticalLayoutGroup>();
+
+            configure.Invoke(null, new object[] { contentGo, new List<string>() });
+
+            Assert.IsNull(contentGo.GetComponent<VerticalLayoutGroup>());
+            Assert.IsNotNull(contentGo.GetComponent<GridLayoutGroup>());
         }
 
         [Test]

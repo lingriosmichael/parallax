@@ -32,6 +32,10 @@ namespace Parallax.Core
             if (Count > 0) deaths[Current]++;
         }
 
+        /// <summary>PAX-A09: how far along the HUD's line a section starts, 0 to 1. The last section runs to the door, so the line has one more
+        /// stretch than it has gates.</summary>
+        public static float LineFraction(int section, int count) => count < 1 ? 0f : System.Math.Clamp(section / (float)count, 0f, 1f);
+
         public int DeathsIn(int index) => index >= 0 && index < Count ? deaths[index] : 0;
 
         /// <summary>R6: "PARALLAX_SECTIONS room=&lt;id&gt; &lt;name&gt;=&lt;deaths&gt; ... total=&lt;n&gt;", in section order.</summary>

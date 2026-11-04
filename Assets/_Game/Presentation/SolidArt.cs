@@ -39,7 +39,11 @@ namespace Parallax.Presentation
         [SerializeField] SpriteRenderer rubble;
         [Tooltip("The heap's scale: the block's size over the footprint its sprite was drawn for.")]
         [SerializeField] Vector2 rubbleScale = Vector2.one;
+        [Tooltip("D-292: a hard-light floor's fixed emitter cap (OT-23), shown with the room; null otherwise.")]
+        [SerializeField] SpriteRenderer cap;
 
+        /// <summary>D-292: it wears its own painted strip (a hard-light floor), no host's skin.</summary>
+        public bool Painted => cap != null;
         public override RoomTrap Trap => trap;
         public HostSkin HostSkin => hostSkin;
         public SpriteRenderer Skin => skin;
@@ -63,6 +67,7 @@ namespace Parallax.Presentation
             if (crack != null) into.Add(new Effect("crack", crack));
             if (socket != null) into.Add(new Effect("hole", socket));
             if (rubble != null) into.Add(new Effect("rubble", rubble));
+            if (cap != null) into.Add(new Effect("cap", cap));
             string group = kind == SolidArtKind.FallingBlock ? "land" : kind == SolidArtKind.Shrinker ? "erode" : "move";
             foreach (SpriteRenderer d in dust) into.Add(new Effect(group, d));
         }
@@ -171,7 +176,9 @@ namespace Parallax.Presentation
                         break;
                     case SolidArtKind.Mover:          // at the leading edge on the ticks it moves out or back (TrapMotion.MovingOffset)
                         int holdEnd = moveTicks + holdTicks;
-                        bool goingOut = s >= 1 && s <= moveTicks, goingBack = returnTicks > 0 && s > holdEnd && s <= holdEnd + returnTicks;
+                        // (D-303: not on a tick it stands still: a death on its first tick holds it at rest, L024 Piston_5)
+                        bool moved = (at - restPivot).sqrMagnitude > 1e-8f;
+                        bool goingOut = moved && s >= 1 && s <= moveTicks, goingBack = moved && returnTicks > 0 && s > holdEnd && s <= holdEnd + returnTicks;
                         int into = goingOut ? s - 1 : s - holdEnd - 1;
                         if (goingOut || goingBack) p = TrapArtMath.Puff(seed, 800 + i * 31 + into / TrapArtMath.SolidDustTicks, into % TrapArtMath.SolidDustTicks, TrapArtMath.SolidDustTicks, 0.35f);
                         Vector2 lead = goingBack ? -moveDirection : moveDirection;

@@ -102,6 +102,16 @@ namespace Parallax.Gameplay.Presentation
         [Tooltip("Unlit outline colour for Reality B.")]
         [SerializeField] Color outlineColorB = new Color(0.35f, 0.85f, 1f, 1f);
 
+        [Tooltip("D-293: a ground turn: the drawing opens from this share of its width, so the mirror reads as a pivot.")]
+        [SerializeField, Range(.05f, 1f)] float turnNarrowWidth = .35f;
+        [Tooltip("D-293: seconds it takes to open to full width.")]
+        [SerializeField, Min(0f)] float turnOpenTime = .08f;
+        [Tooltip("D-293: the move command (0..1) that counts as pushing against what's stopping the cat.")]
+        [SerializeField, Range(0f, 1f)] float wallPushCommand = .2f;
+
+        public float TurnNarrowWidth => turnNarrowWidth;
+        public float TurnOpenTime => turnOpenTime;
+        public float WallPushCommand => wallPushCommand;
         public float MinFps => minFps;
         public float MaxFps => maxFps;
         public float ReferenceSpeed => referenceSpeed;

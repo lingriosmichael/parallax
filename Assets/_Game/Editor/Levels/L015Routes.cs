@@ -7,9 +7,8 @@ using static Parallax.Editor.Routes.R;
 
 namespace Parallax.Editor.Levels
 {
-    // PAX-060 (D-093): level 15's routes. The cat waits under cover (a fixed roof), or dances out from under the cloud's
-    // locks where there is none (the Run's dance); everywhere else it keeps moving. Waits are on the layout's own clocks: an
-    // element's fire tick (the cloud's locks, the spears, Arrow_3, Arrow_9) or its pose (Collapse_2, D3 and Mover_M home or away).
+    // PAX-060 (D-093): level 15's routes. The cat waits on the layout's own clocks: an element's fire tick (the spears,
+    // Arrow_3, Arrow_9) or its pose (Collapse_2, D3 and Mover_M home or away); everywhere else it keeps moving.
     static class L015Routes
     {
         // At least `ticks` room ticks since the element last fired.
@@ -39,27 +38,21 @@ namespace Parallax.Editor.Levels
             Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(35.3f)), Jump(), Until(GroundedOn("Spear_B_Shaft")), Until(XAtLeast(38.6f)), Jump(), Until(XAtLeast(41f)),
         };
 
-        // The cloud's charges (its locks) come at its wake + 50 + 90 k (PAX-107: it strikes every 90).
-        static RouteCondition Lock(int k) => Since("Cloud", 50 + 90 * k);
+        // D-287: Eye_R locks on its beat.
+        static RouteCondition EyeLocks() => new("Eye_R locks", v => ((v.Last.RoomLifeTick - L015Layout.EyePhase - L015Layout.EyeAim) % L015Layout.EyePeriod + L015Layout.EyePeriod) % L015Layout.EyePeriod == 0);
+        const int DanceHops = 2;
 
-        // The solution's dance (PAX-107, D-125: the cloud at the cat's run catches up at every lock): the lock at 770 comes
-        // over D1 (hop on to D2), the one at 860 over D2 with D3 still gone (hop back to D1), the one at 950 over D1 (hop on to
-        // D2 again); D3 is back before the next.
-        static readonly int[] DanceLocks = { 8, 9, 10 };
-        // The dead ends reach the dance about 150 ticks later, so D3 comes back later too: from the lock at 950 to the one at 1130.
-        static readonly int[] LateDanceLocks = { 10, 11, 12 };
-
-        // Run: through the cave-in (Block_3 knocks out D3) and onto D1. The dance: at each of `locks`, the cloud has caught up
-        // and locks over the cat's platform; hop out from under it to the other one (D1 down to D2, or D2 back up to D1). When
-        // D3 is back, on over D2 and D3 onto P1 under Roof_9; when Arrow_9 has stopped, over Stop_9 to P2 and up onto Floor_F1;
-        // stop there (D-154: no Spear_10 any more); then down over the shaft, over Curb_F, to the door.
-        static RouteStep[] Run(int[] locks)
+        // Run: through the cave-in (Block_3 knocks out D3) and onto D1. The dance: as Eye_R locks on the cat's platform, hop out of its
+        // shot to the other one (D1 down to D2, or D2 back up to D1), `hops` times. When D3 is back, on over D2 and D3 onto P1 under Roof_9;
+        // when Arrow_9 has stopped, over Stop_9 to P2 and up onto Floor_F1; stop there (D-154: no Spear_10 any more); then down over the
+        // shaft, over Curb_F, to the door.
+        static RouteStep[] Run(int hops)
         {
             var steps = new List<RouteStep> { Until(XAtLeast(45.8f)), Jump(), Until(XAtLeast(47.3f)), Release(), Until(GroundedOn("D1")), Until(Still()) };
             bool onD1 = true;
-            foreach (int k in locks)
+            for (int k = 0; k < hops; k++)
             {
-                steps.Add(Until(Lock(k)));
+                steps.Add(Until(EyeLocks()));
                 steps.AddRange(onD1
                     ? new[] { Hold(Right).Timed(TimedMode.Shift), Until(XAtLeast(48.9f)), Release(), Until(GroundedOn("D2")), Until(Still()) }
                     : new[] { Hold(Left).Timed(TimedMode.Shift), Jump(), Until(XAtMost(48f)), Release(), Until(GroundedOn("D1")), Until(Still()) });
@@ -83,20 +76,13 @@ namespace Parallax.Editor.Levels
 
         public static RoomRoutes Build()
         {
-            var solution = new Route("L015 solution", Open().Concat(Shelter()).Concat(Run(DanceLocks)).ToArray());
+            var solution = new Route("L015 solution", Open().Concat(Shelter()).Concat(Run(DanceHops)).ToArray());
             Route FromShelter(string name, params RouteStep[] then) =>
                 Route.FromSection(solution, "Shelter", name, new[] { Release(), Until(Grounded()), For(5), Hold(Right) }.Concat(then).ToArray());
             Route FromRun(string name, params RouteStep[] then) =>
                 Route.FromSection(solution, "Run", name, new[] { Release(), Until(Grounded()), For(5), Hold(Right) }.Concat(then).ToArray());
 
             return new RoomRoutes(solution,
-                new Betrayal("T1 [NW]: a cat that stops at the gap is struck", "Cloud", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(X>=6.3)", "stop at the gap", Release(), Until(Dead())), revealedBy: "Cloud"),
-                Betrayal.Recovers("Dead end D1 [LW]: a cat that turns back to the start alcove waits out a strike there, then goes on", "Cloud",
-                    new Route("the start alcove", new RouteStep[] { Hold(Right), Until(XAtLeast(5.6f)), Hold(Left), Until(XAtMost(.9f)), Release(), Until(Still()),
-                        Until(Since("Cloud", 130)) }.Concat(Untimed(Open())).Concat(Untimed(Shelter())).Concat(Untimed(Run(LateDanceLocks))).ToArray())),
-                new Betrayal("T2 [B]: a cat that waits at the edge where the floor went, out from under the overhang, is struck", "Cloud", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Grounded)", "wait at the edge", Hold(Right), Until(XAtLeast(12.4f)), Release(), Until(Dead())), revealedBy: "Cloud"),
                 new Betrayal("T2 [B]: a cat that jumps the arrow and walks on falls where the floor went", "Pit_2", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Grounded)", "walk on", Hold(Right), Until(Dead())), revealedBy: "Collapse_2"),
                 new Betrayal("T3 [J]: a cat that stays down under the overhang is struck by Arrow_3", "Arrow_3", DeathCause.Hazard,
@@ -104,24 +90,14 @@ namespace Parallax.Editor.Levels
                 new Betrayal("T4b [NJ]: a cat that jumps the mover's pit falls into it", "Pit_M", DeathCause.Hazard,
                     FromShelter("jump the pit", Until(XAtLeast(24.2f)), Release(), Until(Still()), Until(Home("Mover_M")), Hold(Right), Until(XAtLeast(24.6f)), Jump(), Until(Dead())),
                     revealedBy: "Mover_M"),
-                Betrayal.Recovers("Dead end D2 [LW]: a cat that stays on Mover_M rides it back and out again, then steps off", "Mover_M",
-                    new Route("ride it back", Untimed(Open()).Concat(new RouteStep[] {
-                        Until(XAtLeast(24.2f)), Release(), Until(Still()), Until(Home("Mover_M")), Hold(Right), Until(GroundedOn("Mover_M")), Release(),
-                        Until(Moving("Mover_M")), Until(Stopped("Mover_M")), Until(Home("Mover_M")), Until(Moving("Mover_M")), Until(Stopped("Mover_M")),
-                        Hold(Right), Until(GroundedOn("Floor_D")) }).Concat(Untimed(Shelter().SkipWhile(s => s.Label != "Until(GroundedOn(Floor_D))").Skip(1).ToArray()))
-                        .Concat(Untimed(Run(LateDanceLocks))).ToArray())),
                 new Betrayal("T5 [NJ]: a cat that jumps for the far side before the bridge falls into Pit_S", "Pit_S", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(Spear_P +16)", "jump early", Hold(Right), Until(XAtLeast(35.3f)), Jump(), Until(Dead())), revealedBy: "Spear_P"),
-                new Betrayal("T5b [OL]: a cat that waits on Floor_D's edge instead of the planted spear is struck", "Cloud", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Spear_P +16)", "wait at the edge", Hold(Right), Until(XAtLeast(32.5f)), Release(), Until(Dead())), revealedBy: "Cloud"),
                 new Betrayal("T7 [NW]: a cat that stops under the cave-in is crushed by Block_1", "Block_1", DeathCause.Hazard,
                     FromRun("stop early", Until(XAtLeast(42.9f)), Release(), Until(Dead()))),
                 new Betrayal("T7 [NW]: a cat that stops at the cave-in's end is crushed by Block_3", "Block_3", DeathCause.Hazard,
                     FromRun("stop late", Until(XAtLeast(45.3f)), Release(), Until(Dead()))),
-                new Betrayal("T11 [NW]: a cat that stays on D2 through the lock is struck", "Cloud", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Cloud +860)", "stay on D2", Until(Dead())), revealedBy: "Cloud"),
-                new Betrayal("T12 [B]: a cat that dodges the lock forward, where D3 was, falls into Pit_9", "Pit_9", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Cloud +860)", "dodge forward", Hold(Right), Jump(), Until(Dead())), revealedBy: "D3"),
+                new Betrayal("T11 [NW]: a cat that stays on D2 as Eye_R locks is shot", "Eye_R", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(GroundedOn(D2))", "stay on D2", Until(Dead()))),
                 new Betrayal("T13 [NJ]: a cat that jumps for P1 from D2 while D3 is gone falls into Pit_9", "Pit_9", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(D2))", "jump for P1", Hold(Right), Jump(), Until(Dead())), revealedBy: "D3"),
                 new Betrayal("T9 [W]: a cat that goes on from P1 without waiting meets Arrow_9", "Arrow_9", DeathCause.Hazard,

@@ -32,6 +32,9 @@ namespace Parallax.Gameplay.Rooms
 
         protected override CatDeathKind DeclaredDeathKind => CatDeathKind.Spiked;
 
+        /// <summary>D-292: where it's aiming (degrees), for its eye's art.</summary>
+        public float AimAngle => angle;
+
         protected override void Awake()
         {
             base.Awake();
@@ -76,13 +79,23 @@ namespace Parallax.Gameplay.Rooms
             if (line == null) return;
             line.enabled = phase >= 0 && phase <= 2 && Seen;
             if (!line.enabled) return;
-            float width = phase == 2 ? beamWidth : aimWidth;
-            line.transform.position = (Vector3)(Muzzle + Direction * (length * .5f)) + new Vector3(0f, 0f, line.transform.position.z);
+            float width = phase == 2 ? beamWidth : aimWidth, drawn = Drawn(phase);
+            line.transform.position = (Vector3)(Muzzle + Direction * (drawn * .5f)) + new Vector3(0f, 0f, line.transform.position.z);
             line.transform.rotation = Quaternion.Euler(0f, 0f, angle);
-            line.size = new Vector2(length, width);   // a sliced sprite: its drawn size, not a scale
+            line.size = new Vector2(drawn, width);   // a sliced sprite: its drawn size, not a scale
             Color c = phase == 0 ? aimColor : phase == 1 ? lockColor : fireColor;
             if (phase == 1 && (RoomLifeTick - LatestFireTick) % 2 == 1) c.a *= .5f;
             line.color = c;
+        }
+
+        // D-294: drawn only (the kill reads `length`): an aiming line ends on the cat it's on, like a sight, never running on across
+        // its body; a fired beam goes on to the first solid.
+        float Drawn(int phase)
+        {
+            if (phase == 2 || !TryGetLocalHumanColliderBounds(observers, out Bounds cat)) return length;
+            Vector2 to = (Vector2)cat.center - Muzzle;
+            float along = Vector2.Dot(to, Direction), across = Mathf.Abs(to.x * Direction.y - to.y * Direction.x);
+            return along > 0f && along < length && across < cat.extents.y ? along : length;
         }
 
         protected override void OnLiveRoomStep()

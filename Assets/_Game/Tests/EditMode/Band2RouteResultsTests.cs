@@ -42,7 +42,7 @@ namespace Parallax.Tests.EditMode
         // T_West: 1813 ticks); Stop_Hi is gone (the high ledge's lead is 6, the Lip's 27).
         // D-153 amendment 7: the Gallery's underside meets the risen Riser, so a rider is crushed 3 ticks sooner (lead 85).
         [TestCase("L011", 1813, new[] { 34, 32, 30, 30, 44, 16 },
-            new[] { "Riser=85", "Slab_1=14", "Spear_1=8", "Foot_C=21", "Spear_2=8", "Ledge_M=133", "Cloud=72", "Bridge_4=55", "V1=8", "Spear_K=8", "Spear_Top=8", "Spear_Gap=12", "Lip=27", "Block_Door=7", "Spikes_D2=6" }, new string[0])]
+            new[] { "Riser=85", "Slab_1=14", "Spear_1=8", "Foot_C=21", "Spear_2=8", "Ledge_M=133", "Bridge_4=55", "V1=8", "Spear_K=8", "Spear_Top=8", "Spear_Gap=12", "Lip=27", "Block_Door=7", "Spikes_D2=6" }, new string[0])]
         // PAX-107 (the developer: "Level 12 to have some more traps"): Drop_3 (T11), Hinge_2 (T12) and Piston_1 (T13); the
         // Handoff checkpoint moves to x 8.3 (gate 7.9), off Hinge_2.
         // The developer's next notes: Block_E slides on into PB after it lands (T3, and T6 is now pushed); hall 4's run gains
@@ -90,8 +90,8 @@ namespace Parallax.Tests.EditMode
         // checkpoint; L018's first strike 58 ticks after the wake.
         // D-154 (the developer's play, 2026-10-17): the finale's Spear_10 removed; the solution no longer waits it out (1238 ticks).
         [TestCase("L015", 1238, new[] { 21, 51, 34, 51, 51, 40, 22, 25, 39, 51, 51 },
-            new[] { "Cloud=74", "Cloud=164", "Collapse_2=62", "Arrow_3=12", "Mover_M=146", "Spear_P=86", "Cloud=524", "Block_1=24", "Block_3=24", "Cloud=884", "D3=181", "D3=113", "Arrow_9=50" },
-            new[] { "Cloud visible t25, complete t1408", "Mover_M visible t2, complete t1408" })]
+            new[] { "Collapse_2=62", "Arrow_3=12", "Mover_M=146", "Spear_P=86", "Block_1=24", "Block_3=24", "D3=181", "D3=113", "Arrow_9=50" },
+            new[] { "Mover_M visible t2, complete t1408" })]
         // PAX-060 half B (L016-L020, as built and accepted pending play; D-093 (4b)).
         // PAX-107 (D-142): L016 replaced by "Flipside" (three corridors, flips between floor and ceiling).
         // D-145: the hinge floors are faster (Hinge_1 4 u in 20 ticks, Hinge_3 3 u in 36, both a 3-tick swing), Hinge_3's spikes
@@ -113,7 +113,7 @@ namespace Parallax.Tests.EditMode
         // PAX-107 (D-148): L018 rebuilt ("Eye of the Storm": three corridors, the cloud floor to floor, three inverters). V_6 hangs
         // from Roof_A, so a cat resting at its top falls further (lead 37).
         [TestCase("L018", 1139, new[] { 12, 39, 13, 16, 38, 17, 35, 16, 27 },
-            new[] { "Hinge_0=35", "Collapse_1=11", "Slam_1=6", "Cloud=164", "Lift_1=8", "Arrow_1=10", "Cloud=344", "Spikes_E=89", "Hinge_2=15", "Slam_2=6", "G_D=470", "Arrow_2=10", "V_6=37", "TL_2=11", "Piston_3=62", "Slam_3=6", "Hinge_3=26", "Cloud=1064", "Spikes_7=53", "V_6=11" },
+            new[] { "Hinge_0=35", "Collapse_1=11", "Slam_1=6", "Lift_1=8", "Arrow_1=10", "Spikes_E=89", "Hinge_2=15", "Slam_2=6", "G_D=470", "Arrow_2=10", "V_6=37", "TL_2=11", "Piston_3=62", "Slam_3=6", "Hinge_3=26", "Spikes_7=53", "V_6=11" },
             new string[0])]
         // PAX-107 (D-149): L019 rebuilt on L016's frame (three corridors), most of it played with the hands swapped: Invert from
         // the start to its end box in the jump off Crumb_1, Orb_2 on its timer (it runs out in the jump onto the bridge), Orb_L on
@@ -124,7 +124,7 @@ namespace Parallax.Tests.EditMode
         // PAX-107 (D-150): L020 rebuilt ("The Machine" on the L014/L016 model: four storeys 4.5 u apart, two inverters).
         [TestCase("L020", 1224, new[] { 16, 39, 19, 35, 31, 51, 20, 50, 21 },
             new[] { "Hinge_0=7", "Lift_1=8", "Bridge_1=17", "Arrow_Lo=10", "Spikes_A=7", "Cat.Inverted=28", "Spikes_N=16", "Slam_2=7", "CC_2=8", "Cat.Inverted=214",
-                "V_3=34", "Cat.Inverted=373", "Cloud=74", "Arrow_Hi=10", "Hinge_F=24", "Slam_Fa=6", "Spikes_F=26", "Spikes_D=25" },
+                "V_3=34", "Cat.Inverted=373", "Arrow_Hi=10", "Hinge_F=24", "Slam_Fa=6", "Spikes_F=26", "Spikes_D=25" },
             new string[0])]
         // D-200-D-203: L021 "Vent Tower": four storeys 5.5 apart climbed on vents, each with a ceiling turret (Eye_A, Eye_B, Eye_C);
         // Swing_A, Swing_B and Spin_B; Stone_C, a phase platform over Spikes_C; V4 under GD, the lie, watched by Eye; the falling
@@ -159,7 +159,7 @@ namespace Parallax.Tests.EditMode
             new string[0])]
         // D-194: L027 "Updraft": the canyon; V1/V2 by Spin_1, G_3 to V4, GD_5, V5, Ledge_G, Rest_6, V7-V10 with Cloud chasing.
         [TestCase("L027", 701, new[] { 19, 26, 43, 47, 25, 26, 26, 26 },
-            new[] { "V1=33", "V5=36", "Ledge_G=89", "V2=32", "V4=33", "Cloud=244", "V7=33", "V8=36", "V9=36", "V10=9" },
+            new[] { "V1=33", "V5=36", "Ledge_G=89", "V2=32", "V4=33", "V7=33", "V8=36", "V9=36", "V10=9" },
             new string[0])]
         // D-191, D-209: L028 "Glitch": the spiral; Press_A, Spin_A, Loop_A, Spin_B, Crush_1-3 sliding out of the ceiling (holes in the
         // inner corridor's floor while they're down), Lift_L, Spin_E.

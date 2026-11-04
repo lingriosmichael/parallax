@@ -43,7 +43,8 @@ namespace Parallax.Editor.Setup
                 case 12: kind = "inverter"; isKind = e => e.Kind == SoloRoomElementKind.Inverter; return true;
                 case 13: kind = "geyser"; isKind = e => e.Kind == SoloRoomElementKind.Geyser; return true;
                 case 14: kind = "vine"; isKind = e => e.Kind == SoloRoomElementKind.Vine; return true;
-                case 15: kind = "storm cloud"; isKind = e => e.Kind == SoloRoomElementKind.StormCloud; return true;
+                // Level 15 (D-285: no clouds): a spear or a falling block.
+                case 15: kind = "spear or falling block"; isKind = e => e.Kind == SoloRoomElementKind.FallingBlock || e.Kind == SoloRoomElementKind.Arrow && e.Settings.Arrow.Spear; return true;
                 // Level 16 (flips and vines): a gravity flip or a vine.
                 case 16: kind = "gravity flip or vine"; isKind = e => e.Kind is SoloRoomElementKind.GravityFlip or SoloRoomElementKind.Vine; return true;
                 // Level 17 (spears and chains): a spear, or any trap a chain sets off.
@@ -51,13 +52,13 @@ namespace Parallax.Editor.Setup
                     kind = "spear or chained trap";
                     isKind = e => e.Kind == SoloRoomElementKind.Arrow && e.Settings.Arrow.Spear || e.Settings.IsConfigured && e.Settings.TriggerSource == TrapTriggerSource.Chain;
                     return true;
-                case 18: kind = "storm cloud, geyser or vine"; isKind = e => e.Kind is SoloRoomElementKind.StormCloud or SoloRoomElementKind.Geyser or SoloRoomElementKind.Vine; return true;
+                case 18: kind = "geyser or vine"; isKind = e => e.Kind is SoloRoomElementKind.Geyser or SoloRoomElementKind.Vine; return true;
                 case 19: kind = "spear or inverter"; isKind = e => e.Kind == SoloRoomElementKind.Arrow && e.Settings.Arrow.Spear || e.Kind == SoloRoomElementKind.Inverter; return true;
                 // Level 20, the exam: every band-2 element.
                 case 20:
-                    kind = "spear, inverter, geyser, vine or storm cloud";
+                    kind = "spear, inverter, geyser or vine";
                     isKind = e => e.Kind == SoloRoomElementKind.Arrow && e.Settings.Arrow.Spear || e.Kind is SoloRoomElementKind.Inverter or SoloRoomElementKind.Geyser
-                        or SoloRoomElementKind.Vine or SoloRoomElementKind.StormCloud;
+                        or SoloRoomElementKind.Vine;
                     return true;
                 default: kind = null; isKind = null; return false;
             }

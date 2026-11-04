@@ -327,6 +327,61 @@ MonoBehaviour:
   - {fileID: 21300000, guid: fec0b6eae27764f629aded084a319eac, type: 3}
   - {fileID: 21300000, guid: e9a89219adcc543f184d110301c4d2c8, type: 3}
   - {fileID: 21300000, guid: d6421f6dbf179440ebbaf4b6dd53fb35, type: 3}
+  SpikeBladesBold:
+  - {fileID: 21300000, guid: 3e1001f1c65774d6cabb4121b065a2cf, type: 3}
+  - {fileID: 21300000, guid: ce0cb67db84f74d449677bb1b67b70d3, type: 3}
+  - {fileID: 21300000, guid: d071b04bd77b14f61a7e3f9fd44e2bd5, type: 3}
+  - {fileID: 21300000, guid: 25da2b61ddc404696974927ca029169f, type: 3}
+  - {fileID: 21300000, guid: 7dc8f042f3dec4732bdaff9fe7b2cddf, type: 3}
+  - {fileID: 21300000, guid: b628fefe855b643b1b4455f6b3cd0424, type: 3}
+  - {fileID: 21300000, guid: efc7f7727965f4d85b32813846fdc7ab, type: 3}
+  - {fileID: 21300000, guid: eda9249a525b14bccb59fb1929aa8409, type: 3}
+  - {fileID: 21300000, guid: 130a25c23c9374b57b93211cbf32e1ee, type: 3}
+  - {fileID: 21300000, guid: 9dee766184f1d410795807d5b939a700, type: 3}
+  - {fileID: 21300000, guid: 67000defefb8d4846aeba7fbd512efe5, type: 3}
+  - {fileID: 21300000, guid: 6c2501a7c289e4dc0b7b57eb8c584e1b, type: 3}
+  ThornClusters:
+  - {fileID: 21300000, guid: 902e1112ab5eb4660b180947ae043810, type: 3}
+  - {fileID: 21300000, guid: 3dae6e1be552840b4ac1502c2e570ff1, type: 3}
+  - {fileID: 21300000, guid: d7e546e2104584500813ef88be805fba, type: 3}
+  - {fileID: 21300000, guid: 8029f972908c541b0bcda0a201104560, type: 3}
+  CrystalClusters:
+  - {fileID: 21300000, guid: 964c5333ed5f24fe681b813745d7845f, type: 3}
+  - {fileID: 21300000, guid: 48e7d76e96d6447d38668e91ef187345, type: 3}
+  - {fileID: 21300000, guid: 5715aab789d044f76979187be5469ff5, type: 3}
+  - {fileID: 21300000, guid: 8e96a487d94394b7fba2420076d87ea7, type: 3}
+  ThornRims:
+  - {fileID: 21300000, guid: 9fed03d0bdbc949e5a45ef4200ad1bb3, type: 3}
+  - {fileID: 21300000, guid: 7f9b1f73d7ae842ad8def87c84c0f480, type: 3}
+  - {fileID: 21300000, guid: 2abf8bcd6d71243eead7b3e6a9668ae7, type: 3}
+  - {fileID: 21300000, guid: 97891dfbc6d564368aaf83c46962d79b, type: 3}
+  SpikeRimsStout:
+  - {fileID: 21300000, guid: 1033bebd1d85744629264cfbfeede915, type: 3}
+  - {fileID: 21300000, guid: 14d26cef849b0469bbeb0bd2d8ff4d7c, type: 3}
+  - {fileID: 21300000, guid: baf973a82434e4b72b5ad6373fefc1de, type: 3}
+  - {fileID: 21300000, guid: 01ec34ebba89246e4888c34b67de0480, type: 3}
+  - {fileID: 21300000, guid: 0e25deb6f279b49a3a160df8af19bded, type: 3}
+  - {fileID: 21300000, guid: 4cad7c808de1e466a84aba967f37e498, type: 3}
+  - {fileID: 21300000, guid: 6db450c521a00423a9a0a1e69b246283, type: 3}
+  - {fileID: 21300000, guid: 14154eb8e6c8c4aebab869c69ca96694, type: 3}
+  - {fileID: 21300000, guid: f8fbc7b8004c2444c9ac23c17b6aea8f, type: 3}
+  - {fileID: 21300000, guid: 9d5a75026162f46f589ea114aaf79b6e, type: 3}
+  - {fileID: 21300000, guid: b86ab4d9069494a7a8614d6069215cb0, type: 3}
+  - {fileID: 21300000, guid: f412454ecc9d9448f8b037d79f7c8c70, type: 3}
+  SpikeRimsBold:
+  - {fileID: 21300000, guid: e4237fb9457f64c1d9295d2d97c14dc2, type: 3}
+  - {fileID: 21300000, guid: 7b3537c7c23be471cbf090e4958066a7, type: 3}
+  - {fileID: 21300000, guid: b83c4651ee7864b9a98d7e3d6222218c, type: 3}
+  - {fileID: 21300000, guid: 08a212bcdaaba43e0a894a0375928d75, type: 3}
+  - {fileID: 21300000, guid: 5bf831372f4bf4f7eb1cbd61aca8f094, type: 3}
+  - {fileID: 21300000, guid: 21348dba5c1a0403e9b06275bf88c4bb, type: 3}
+  - {fileID: 21300000, guid: a9486f884ccdc4b5e9b6367233dc8dd8, type: 3}
+  - {fileID: 21300000, guid: 5bd4cceaabc3d4a8dabb19635a872348, type: 3}
+  - {fileID: 21300000, guid: 01b135292344e4ff9a20b9bee9162f03, type: 3}
+  - {fileID: 21300000, guid: 2ad03ac57fb844ae7835c4e1d4b2db53, type: 3}
+  - {fileID: 21300000, guid: c27d33497998446b2b35c140aab4ba1e, type: 3}
+  - {fileID: 21300000, guid: 71ae43ac99003448da97a2b7ae4553f9, type: 3}
+  ArrowRim: {fileID: 21300000, guid: 2043cb004934d4d6b85a2ef2ebf27b7b, type: 3}
   StoutBladeScale: {x: 1.6, y: 1.25}
   SlamPlate: {fileID: 21300000, guid: 04b240e4aeedc498b9c4e295c293d471, type: 3}
   HingeKnuckle: {fileID: 21300000, guid: 3de11f71a6922435b8bb1929214650f3, type: 3}
@@ -364,14 +419,41 @@ MonoBehaviour:
   TurretLock: {fileID: 21300000, guid: 4c39d68d5a72e4755ab68db4852198ec, type: 3}
   HardLightBar: {fileID: 21300000, guid: 866e499cd84bf473aa5e53d6ea98eacc, type: 3}
   BarLauncher: {fileID: 21300000, guid: d6aafd59011a14be98e244f3aa4c31be, type: 3}
-  FlipRing: {fileID: 21300000, guid: aa5140bed79624e72b60c28450034090, type: 3}
-  InverterRing: {fileID: 21300000, guid: f873791f499084df0b47fc64e3327ea6, type: 3}
   ObsidianSlamPlate: {fileID: 21300000, guid: 1e6f7eeab24ef4592ba3149b7ea53a22, type: 3}
   GlassEdge: {fileID: 21300000, guid: 86779db59b6d6403ebe98ebb1dd11ce3, type: 3}
   GlassCracks:
   - {fileID: 21300000, guid: 6e8f3f2e167924a48ab2f9cfd947a18e, type: 3}
   - {fileID: 21300000, guid: 582829eb755654ab3bcbba84af631900, type: 3}
   - {fileID: 21300000, guid: fb3198e8014514a498c0d100d6bec53f, type: 3}
+  TurretMount: {fileID: 21300000, guid: 032ee29d0d018489e8d2499dd92219c9, type: 3}
+  TurretEyeIdle: {fileID: 21300000, guid: b2945856ac9204c04a28067818b42af9, type: 3}
+  TurretEyeLock: {fileID: 21300000, guid: f1855fb260ff444099e1b077c29a3a87, type: 3}
+  TurretBeam: {fileID: 21300000, guid: e2ca2d90aa2714f9cb5362ce182b6329, type: 3}
+  LaserCore: {fileID: 21300000, guid: 268aa809209f3403c95d1f47f01488be, type: 3}
+  LaserGlow: {fileID: 21300000, guid: 84b036b7cb61848a18b48127b8863999, type: 3}
+  LaserBurn: {fileID: 21300000, guid: 1eb304babc58d4d91b5e8b92d5d32e83, type: 3}
+  ObsidianTurretMount: {fileID: 21300000, guid: 1036111f0d6cd43879b16a8719fee9e1, type: 3}
+  ObsidianTurretEyeIdle: {fileID: 21300000, guid: 0def0aa16cd33495faef7651a94cf562, type: 3}
+  ObsidianTurretEyeLock: {fileID: 21300000, guid: 02e3037551e314c7b87a2d0014c01546, type: 3}
+  SpinnerArm: {fileID: 21300000, guid: 4af57f18aea25496f9d4a978409b3403, type: 3}
+  SpinnerHub: {fileID: 21300000, guid: 081356878ce9b459ebfc6bf17bd2b64d, type: 3}
+  PendulumRing: {fileID: 21300000, guid: 2e22642015a0f49dea22943c9355e565, type: 3}
+  PendulumShaft: {fileID: 21300000, guid: 315965b5d258e4c96ab0a07e344a6195, type: 3}
+  PendulumHead: {fileID: 21300000, guid: 7149bb0a2cb854cf3857ca2fea30a1fa, type: 3}
+  PressurePlate: {fileID: 21300000, guid: 9ce9d70a4e0544264ab8f32d64b85e78, type: 3}
+  SpikedStrip: {fileID: 21300000, guid: c5ed451e7716a4729b80c6699d8439c6, type: 3}
+  SpikedCrusher: {fileID: 21300000, guid: ad47d0ea65f3d43a5829994c6009a291, type: 3}
+  PhaseLit: {fileID: 21300000, guid: 60bd092ef22d348a7846b9872931fd8c, type: 3}
+  PhaseFade: {fileID: 21300000, guid: 96ecb3932adbe49a191eeff39d683b41, type: 3}
+  PhaseOff: {fileID: 21300000, guid: 98a41ca7f69e6441baad41c441869b91, type: 3}
+  GlitchSolid: {fileID: 21300000, guid: 7072c70693edf42ba9388e3ee4f41ff8, type: 3}
+  GlitchWarn: {fileID: 21300000, guid: 64409f8ead24c476383c2e8760ca207a, type: 3}
+  GlitchGhost: {fileID: 21300000, guid: ecd7032b0cfb34ca3a7972ab85d84413, type: 3}
+  FlipPlate: {fileID: 21300000, guid: 515147507a0ab43bf97bf10b158391f1, type: 3}
+  RetractCap: {fileID: 21300000, guid: 283ca222f5fa74371b57abcaaec0ba2b, type: 3}
+  RetractStrip: {fileID: 21300000, guid: 9553cd372db8a47348387b6af871344d, type: 3}
+  TridentEmitter: {fileID: 21300000, guid: 444fcd73c73494e279d87fc814352be0, type: 3}
+  ChaserHousing: {fileID: 21300000, guid: a7b48af19e2174c8697ca97c6d6e0b88, type: 3}
   BoltSegment: {fileID: 21300000, guid: 58184e33e00b2446691a28f2465a351b, type: 3}
   Flash: {fileID: 21300000, guid: 8cd6b88e883b14f788c1853d42b408f5, type: 3}
   Ring: {fileID: 21300000, guid: b1adc11c646c74c2cb323eba244fa8a3, type: 3}

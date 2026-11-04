@@ -376,23 +376,47 @@ namespace Parallax.Editor.Setup
                 var config = AssetDatabase.LoadAssetAtPath<LevelLookConfig>(LevelLookConfig.AssetPath);
                 // 2026-10-17: the outside's neutral dark, no longer the sprite's navy (round 5, critics: "a navy/purple translucent
                 // overlay on the walls"; with the shadow now on every strip too, the navy turned whole undersides blue).
-                return new Color(ShadeNavy.r * 0.9f, ShadeNavy.g * 0.66f, ShadeNavy.b * 0.37f, config != null ? config.FaceShadeAlpha : 0.8f);
+                if (EnvironmentKit.Current == Biome.ObsidianVoid) return new Color(ObsidianShade.r, ObsidianShade.g, ObsidianShade.b, config != null ? config.FaceShadeAlpha : 0.8f);   // D-281
+                // D-301: a warm multiply (StoneShade.multiplies): blending to one grey at half strength read as mist on every wall's foot (L025).
+                return GoldenFaceMultiply;
             }
         }
 
         /// <summary>The outside masonry's shade: the navy turned a neutral dark (round 5, critics: "a navy/purple translucent
-        /// overlay on the walls"), a quarter stronger than a face's.</summary>
+        /// overlay on the walls").</summary>
         static Color OutsideShade
         {
             get
             {
-                var config = AssetDatabase.LoadAssetAtPath<LevelLookConfig>(LevelLookConfig.AssetPath);
-                return new Color(ShadeNavy.r * 0.9f, ShadeNavy.g * 0.66f, ShadeNavy.b * 0.37f, Mathf.Min(1f, (config != null ? config.FaceShadeAlpha : 0.8f) * 1.25f));
+                if (EnvironmentKit.Current == Biome.ObsidianVoid) return new Color(ObsidianShade.r, ObsidianShade.g, ObsidianShade.b, ObsidianOutside);   // D-281
+                // D-282: warm shadow on the warm stone (this neutral dark read as a cold grey wash along the foot of every long level).
+                // D-301: a multiply (StoneShade.multiplies), as blending to one colour flattened the masonry to a grey band (L024).
+                return GoldenOutsideMultiply;
             }
         }
 
-        /// <summary>ENV_FaceShadeSolid's colour.</summary>
-        static readonly Color ShadeNavy = new(0.102f, 0.122f, 0.22f, 1f);
+        /// <summary>D-281: Obsidian's stone falls into deep blue. The neutral dark above is made for warm stone: over this cold stone it
+        /// read as flat grey, lighter than the room's own walls. The outside masonry keeps a little of its stone's seams.</summary>
+        static readonly Color ObsidianShade = new(0.016f, 0.03f, 0.066f, 1f);
+        const float ObsidianOutside = 0.68f;
+        /// <summary>D-301: a free-standing mover's stone. It has no face shadow of its own (the room's map is fixed in the world and the
+        /// mover isn't), so its skin is multiplied down to the walls' warmth, which keeps its stone's texture.</summary>
+        static readonly Color FreeMoverTint = new(0.74f, 0.66f, 0.57f, 1f);
+        static readonly Color GoldenOutsideMultiply = new(0.46f, 0.40f, 0.34f, 1f), GoldenFaceMultiply = new(0.58f, 0.50f, 0.43f, 1f);
+
+        /// <summary>D-301 (L008, L024, L028: a press hanging in the air was pale, cold stone beside warm walls): what a moving solid's skin
+        /// is multiplied by. White for one set in stone, which has to match its host (P10), and in Obsidian Void.</summary>
+        public static Color MoverTint(SoloRoomDefinition room, SoloRoomElement e)
+        {
+            if (Biomes.Of(room) == Biome.ObsidianVoid || e.Kind != SoloRoomElementKind.MovingTrap || e.Settings.MovingKind != MovingTrapKind.Solid) return Color.white;
+            var rest = new Rect(room.Origin + e.Position - e.Size * 0.5f, e.Size);
+            List<Solid> solids = Solids(room);
+            bool Beside(bool left) => solids.Any(o => !o.Trap && Mathf.Abs((left ? o.Rect.xMax : o.Rect.xMin) - (left ? rest.xMin : rest.xMax)) < 0.05f
+                && Mathf.Min(o.Rect.yMax, rest.yMax) - Mathf.Max(o.Rect.yMin, rest.yMin) >= 0.5f * rest.height);
+            bool Seated(bool above) => solids.Any(o => !o.Trap && Mathf.Abs((above ? o.Rect.yMin : o.Rect.yMax) - (above ? rest.yMax : rest.yMin)) < 0.05f && o.Rect.xMin < rest.xMax && o.Rect.xMax > rest.xMin);
+            bool walled = Beside(true) || Beside(false);
+            return (walled && (Seated(true) || Seated(false))) || (Beside(true) && Beside(false)) ? Color.white : FreeMoverTint;
+        }
 
         static Material WorldTileMaterial()
         {
@@ -588,6 +612,7 @@ namespace Parallax.Editor.Setup
                             SpriteRenderer end = Add(s, "SlabEnd_R", rightSlot.name, new Vector2(r.xMax - endW * 0.5f + endOut, cyr), new Vector2(endW, hr), Vector2.zero, Vector4.zero, true, ZCap - 0.001f, false);
                             if (end != null) { end.flipX = true; end.color = slabTint; }
                         }
+                        if (s.Trap && s.Kind == SoloRoomElementKind.CollapsingFloor && LevelLooks.FarFaceDepth.Contains(LevelLooks.LevelOf(room))) FarDepth(s);
                         break;
                     }
                     case Shape.SlimPost:
@@ -603,6 +628,24 @@ namespace Parallax.Editor.Setup
                         break;
                 }
                 if (!s.Trap) HoleRims(s);
+            }
+
+            // D-310: a tile's depth on the face no cat reaches (L034's floor tiles hang it under them, its ceiling tiles stand it over
+            // them): a trim of the tile, so it shatters with it. Tiled in its own UV, as a moving trap's trims are.
+            void FarDepth(Solid s)
+            {
+                EnvironmentKit.Slot depth = EnvironmentKit.Get("ENV_StoneDepth");
+                if (depth == null) return;
+                Rect r = s.Rect;
+                bool under = r.center.y < content.center.y;
+                var size = new Vector2(r.width - 0.04f, depth.height);
+                var centre = new Vector2(r.center.x, under ? r.yMin - depth.height * 0.5f + 0.02f : r.yMax + depth.height * 0.5f - 0.02f);
+                SpriteRenderer d = Add(s, "Depth", depth.name, centre, size, Vector2.zero, Vector4.zero, false, ZUnder, false);
+                if (d == null) return;
+                d.transform.localScale = Vector3.one;
+                d.drawMode = SpriteDrawMode.Tiled;
+                d.size = size;
+                d.flipY = !under;
             }
 
             // 2026-10-17 (the developer: "when things fall from the ceiling everything is straight"): the hole a falling block
@@ -729,7 +772,7 @@ namespace Parallax.Editor.Setup
             // PAX-A16 round 2: a thick stone underside with its cornice and long ivy, where ThickUnderFits says it may hang.
             bool Thick(Solid s, Edge e)
             {
-                if (thickUnder == null || !ThickUnderFits(e, solids, flips, visualKeepOut)) return false;
+                if (thickUnder == null || !ThickUnderFits(e, solids, flips, visualKeepOut) || FacesUnderFill(e, room)) return false;
                 float h = thickUnder.height, from = e.From, to = e.To, cy = e.Line + 0.04f - h * 0.5f;
                 bool shortened = thickUnder.name == "ENV_ThickUnderShort";
                 // 2026-10-16 ("All edges need to be a bit bumpy"): a broken end where the solid's side is open at its foot (the
@@ -993,7 +1036,7 @@ namespace Parallax.Editor.Setup
                     texels[2 * k + 1] = (byte)Mathf.RoundToInt(outside[k] * 255f);
                 }
                 Transform holder = Child(env, "StoneShade", layer);
-                SetupUtility.Ensure<StoneShade>(holder.gameObject, changes).Configure(area, w, h, texels, LevelShade, OutsideShade);
+                SetupUtility.Ensure<StoneShade>(holder.gameObject, changes).Configure(area, w, h, texels, LevelShade, OutsideShade, EnvironmentKit.Current != Biome.ObsidianVoid, LevelPalettes.StoneLight(LevelLooks.LevelOf(room)));
             }
 
             void AddVertical(Solid s, string name, string slot, EnvironmentKit.Slot def, Rect r, float k, string kind)
@@ -1252,6 +1295,8 @@ namespace Parallax.Editor.Setup
 
         /// <summary>The deepest a gap under the room's lowest fixed stone may be and still be filled by the masonry under the room.</summary>
         public const float MaxUnderFill = 2f;
+        /// <summary>D-301: how deep a stone is to count as ground rather than a bridge.</summary>
+        const float GroundDepth = 2f;
         static SoloRoomElement[] underFillFor;
         static List<Rect> underFill;
 
@@ -1286,8 +1331,13 @@ namespace Parallax.Editor.Setup
                 if (!float.IsNaN(runTop) && x - runFrom > 0.04f) fills.Add(Rect.MinMaxRect(runFrom, bottom, Mathf.Min(x, x1), runTop));
                 runFrom = x; runTop = top;
             }
-            // Only a gap walled at both ends (fixed stone down to the room's bottom, another fill, or the room's side): under a
-            // bridge over an open chasm the air is the chasm's.
+            // D-301: a long room's summed steps can pass the room's end before the step that closes the last run.
+            if (!float.IsNaN(runTop) && x1 - runFrom > 0.04f) fills.Add(Rect.MinMaxRect(runFrom, bottom, x1, runTop));
+            // Only a gap walled at an end (fixed stone down to the room's bottom, another fill, or the room's side): under a bridge
+            // over an open chasm the air is the chasm's. D-301 (L007, L022, L023, L025, L027, L030: the floor's hanging strip cut off by
+            // the view's bottom edge): or under ground, not a bridge. A cliff going down to the room's bottom is stone, between two
+            // chasms too, and its open ends break like any face (EnvironmentStackSetup.Outside).
+            bool OnGround(Rect f) => solids.Any(s => !s.Trap && s.Rect.height >= GroundDepth && Mathf.Abs(s.Rect.yMin - f.yMax) < 0.05f && s.Rect.xMin < f.xMax && s.Rect.xMax > f.xMin);
             bool Walled(Rect f, bool left)
             {
                 float edge = left ? f.xMin : f.xMax;
@@ -1297,7 +1347,7 @@ namespace Parallax.Editor.Setup
             }
             for (bool dropped = true; dropped;)
             {
-                List<Rect> keep = fills.Where(f => Walled(f, true) && Walled(f, false)).ToList();
+                List<Rect> keep = fills.Where(f => OnGround(f) || (Walled(f, true) && Walled(f, false))).ToList();
                 dropped = keep.Count < fills.Count;
                 fills = keep;
             }

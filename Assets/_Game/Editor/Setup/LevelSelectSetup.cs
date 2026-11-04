@@ -25,6 +25,9 @@ namespace Parallax.Editor.Setup
         const string CanvasName = "Canvas";
         const string RowsContainerName = "Rows";
         const string RowTemplateName = "RowTemplate";
+        const string SkyPath = "Assets/_Game/Art/RealityA/Environment/Backgrounds/Kit/ENV_SkyPlate.png";
+        // PAX-A09: 75 by 56 dp on the Pixel 8a, and five lines of nine fill a 16:9 screen with no scrolling.
+        static readonly Vector2 CellSize = new Vector2(176f, 136f), CellGap = new Vector2(16f, 14f);
 
         public static bool RefusesToRun(string activeSceneName) => activeSceneName != RequiredSceneName;
 
@@ -154,8 +157,11 @@ namespace Parallax.Editor.Setup
 
             EnsureComponent<GraphicRaycaster>(canvasGO, changes, "GraphicRaycaster", CanvasName);
 
+            BuildBackdrop(canvasGO.transform, changes);
             GameObject rowsGO = EnsureChild(canvasGO.transform, RowsContainerName, changes);
-            SetAnchors((RectTransform)rowsGO.transform, Vector2.zero, Vector2.one, new Vector2(80f, 40f), new Vector2(-80f, -40f), changes, RowsContainerName);
+            // D-314: under the chapter tabs.
+            SetAnchors((RectTransform)rowsGO.transform, Vector2.zero, Vector2.one, new Vector2(80f, 40f), new Vector2(-80f, -292f), changes, RowsContainerName);
+            KeepAt(rowsGO.transform, 9, changes);
             var scrollRect = EnsureComponent<ScrollRect>(rowsGO, changes, "ScrollRect", RowsContainerName);
 
             GameObject viewportGO = EnsureChild(rowsGO.transform, "Viewport", changes);
@@ -187,23 +193,124 @@ namespace Parallax.Editor.Setup
             WireField(controller, "levelList", levelList, changes, "LevelSelectController.levelList = LevelListConfig");
             WireField(controller, "rowsContainer", contentRect, changes, "LevelSelectController.rowsContainer = Content");
             WireField(controller, "rowTemplate", row, changes, "LevelSelectController.rowTemplate = RowTemplate");
+            WireField(controller, "chapters", BuildChapters(canvasGO.transform, levelList, changes), changes, "LevelSelectController.chapters = LevelChapters");
+
+            // D-314: the screen opens out of black (ScreenReveal), over everything; it never takes a tap and turns itself off.
+            Image reveal = GameUiStyle.Picture(canvasGO.transform, "Reveal", new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero, null, new Color(0.03f, 0.02f, 0.01f, 1f), changes);
+            SetAnchors((RectTransform)reveal.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, "Reveal");
+            EnsureComponent<ScreenReveal>(reveal.gameObject, changes, "ScreenReveal", "Reveal");
+            if (reveal.transform.GetSiblingIndex() != canvasGO.transform.childCount - 1) { reveal.transform.SetAsLastSibling(); changes.Add("moved Reveal on top"); }
         }
 
-        // Builder seam: Content's VerticalLayoutGroup. It controls both axes: height from each row's LayoutElement,
-        // and width stretched to Content's. Without childControlWidth, the rows kept the template's 0 width and the
-        // list drew nothing (PAX-053 bug, fixed after PAX-059a).
-        public static VerticalLayoutGroup ConfigureContentLayout(GameObject contentGO, List<string> changes)
+        // D-314: Level Select in chapters, one per district of ten levels: the tabs under the heading, and each chapter's landmark
+        // rising from the foot of the screen over the sky, tinted to the chapter's time of day (as its levels are lit).
+        static readonly (string name, string art, Color sky)[] ChapterLooks =
         {
-            var layout = EnsureComponent<VerticalLayoutGroup>(contentGO, changes, "VerticalLayoutGroup", "Content");
-            if (layout.spacing != 12f || !layout.childControlHeight || layout.childForceExpandHeight || !layout.childControlWidth || !layout.childForceExpandWidth)
+            ("The Gardens", "Assets/_Game/Art/RealityA/Environment/Backgrounds/Kit/ENV_Landmark_0.png", new Color(1f, 0.95f, 0.86f, 1f)),
+            ("The Overgrown Quarter", "Assets/_Game/Art/RealityA/Environment/Backgrounds/Kit/ENV_Landmark_1.png", new Color(1f, 0.8f, 0.64f, 1f)),
+            ("The High Citadel", "Assets/_Game/Art/RealityA/Environment/Backgrounds/Kit/ENV_Landmark_2.png", new Color(0.78f, 0.86f, 1f, 1f)),
+            ("Obsidian Void", "Assets/_Game/Art/ObsidianVoid/Environment/Backgrounds/Kit/ENV_VoidHeart.png", new Color(0.62f, 0.56f, 0.92f, 1f)),
+        };
+        const int ChapterSize = 10;
+        const float TabWidth = 400f, TabGap = 16f;
+
+        static LevelChapters BuildChapters(Transform canvas, LevelListConfig levelList, List<string> changes)
+        {
+            int levels = levelList != null ? levelList.Levels.Count : 0;
+            int count = Mathf.Max(1, Mathf.CeilToInt(levels / (float)ChapterSize));
+            GameObject tabsGO = EnsureChild(canvas, "Chapters", changes);
+            GameUiStyle.Place((RectTransform)tabsGO.transform, new Vector2(0.5f, 1f), new Vector2(count * (TabWidth + TabGap), 76f), new Vector2(0f, -226f), changes, "Chapters");
+            var tabs = new Button[count];
+            for (int i = 0; i < count; i++)
             {
-                layout.spacing = 12f;
-                layout.childControlHeight = true;
-                layout.childForceExpandHeight = false;
-                layout.childControlWidth = true;
-                layout.childForceExpandWidth = true;
+                string name = i < ChapterLooks.Length ? ChapterLooks[i].name : "Chapter " + (i + 1);
+                GameObject tab = EnsureChild(tabsGO.transform, "Chapter_" + i, changes);
+                GameUiStyle.Place((RectTransform)tab.transform, new Vector2(0.5f, 0.5f), new Vector2(TabWidth, 76f), new Vector2((i - (count - 1) * 0.5f) * (TabWidth + TabGap), 0f), changes, tab.name);
+                tabs[i] = GameUiStyle.Framed(tab, name, 26, false, changes);
+            }
+            Transform background = canvas.Find("Background");
+            LevelChapters chapters = EnsureComponent<LevelChapters>(canvas.gameObject, changes, "LevelChapters", CanvasName);
+            var serialized = new SerializedObject(chapters);
+            SerializedProperty list = serialized.FindProperty("chapters"), tabList = serialized.FindProperty("tabs");
+            list.arraySize = count;
+            tabList.arraySize = count;
+            for (int i = 0; i < count; i++)
+            {
+                SerializedProperty c = list.GetArrayElementAtIndex(i);
+                bool known = i < ChapterLooks.Length;
+                c.FindPropertyRelative("Name").stringValue = known ? ChapterLooks[i].name : "Chapter " + (i + 1);
+                c.FindPropertyRelative("Count").intValue = Mathf.Min(ChapterSize, levels - i * ChapterSize);
+                c.FindPropertyRelative("Art").objectReferenceValue = known ? AssetDatabase.LoadAssetAtPath<Sprite>(ChapterLooks[i].art) : null;
+                c.FindPropertyRelative("Sky").colorValue = known ? ChapterLooks[i].sky : Color.white;
+                tabList.GetArrayElementAtIndex(i).objectReferenceValue = tabs[i];
+            }
+            serialized.FindProperty("art").objectReferenceValue = canvas.Find("ChapterArt")?.GetComponent<Image>();
+            serialized.FindProperty("sky").objectReferenceValue = background != null ? background.GetComponent<Image>() : null;
+            if (serialized.ApplyModifiedPropertiesWithoutUndo()) changes.Add($"set LevelChapters ({count} chapters)");
+            return chapters;
+        }
+
+        // PAX-A09: the sky of the title's world, darkened so the gold stands on it, with the title's leaves in the corners and a heading. Behind the
+        // cells, and behind the unlock panel, which stays on top.
+        static void BuildBackdrop(Transform canvas, List<string> changes)
+        {
+            var center = new Vector2(0.5f, 0.5f);
+            Sprite sky = AssetDatabase.LoadAssetAtPath<Sprite>(SkyPath);
+            Image back = GameUiStyle.Picture(canvas, "Background", center, Vector2.zero, Vector2.zero, sky, Color.white, changes);
+            var fitter = EnsureComponent<AspectRatioFitter>(back.gameObject, changes, "AspectRatioFitter", "Background");
+            float aspect = sky != null ? sky.rect.width / sky.rect.height : 1.5f;
+            if (fitter.aspectMode != AspectRatioFitter.AspectMode.EnvelopeParent || !Mathf.Approximately(fitter.aspectRatio, aspect))
+            {
+                fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+                fitter.aspectRatio = aspect;
+                changes.Add("set Background to fill the screen");
+            }
+            Image shade = GameUiStyle.Picture(canvas, "Shade", center, Vector2.zero, Vector2.zero, null, new Color(0.09f, 0.05f, 0.03f, 0.56f), changes);
+            SetAnchors((RectTransform)shade.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, "Shade");
+            // D-314: the chapter's landmark, rising from the foot of the screen behind the cells (LevelChapters sets its sprite).
+            Image chapterArt = GameUiStyle.Picture(canvas, "ChapterArt", new Vector2(0.5f, 0f), new Vector2(900f, 560f), new Vector2(0f, 300f), null, new Color(1f, 1f, 1f, 0.9f), changes);
+            Image vignette = GameUiStyle.Picture(canvas, "Vignette", center, Vector2.zero, Vector2.zero, GameUiStyle.Title("TUI_Vignette"), Color.white, changes);
+            SetAnchors((RectTransform)vignette.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, changes, "Vignette");
+            Image left = GameUiStyle.Picture(canvas, "Foliage_L", Vector2.zero, new Vector2(720f, 272f), new Vector2(320f, 120f), GameUiStyle.Title("TUI_FoliageR"), Color.white, changes);
+            Image right = GameUiStyle.Picture(canvas, "Foliage_R", new Vector2(1f, 0f), new Vector2(720f, 272f), new Vector2(-320f, 120f), GameUiStyle.Title("TUI_FoliageR"), Color.white, changes);
+            if (right.transform.localScale.x > 0f) { right.transform.localScale = new Vector3(-1f, 1f, 1f); changes.Add("mirrored Foliage_R"); }
+
+            GameObject heading = EnsureChild(canvas, "Heading", changes);
+            GameUiStyle.Place((RectTransform)heading.transform, new Vector2(0.5f, 1f), new Vector2(1000f, 100f), new Vector2(0f, -86f), changes, "Heading");
+            var headingText = EnsureComponent<Text>(heading, changes, "Text", "Heading");
+            ConfigureText(headingText, "Levels", 66, TextAnchor.MiddleCenter, GameUiStyle.Gold, changes, "Heading");
+            GameUiStyle.Type(headingText, GameUiStyle.Display, changes, "Heading");
+            GameUiStyle.Shade(heading, 0.65f, new Vector2(0f, -3f), changes, "Heading");
+            Image rule = GameUiStyle.Flourish(canvas, new Vector2(0.5f, 1f), 620f, new Vector2(0f, -150f), changes);
+
+            Transform chapterTabs = canvas.Find("Chapters");
+            Transform[] order = chapterTabs != null
+                ? new[] { back.transform, shade.transform, chapterArt.transform, vignette.transform, left.transform, right.transform, heading.transform, rule.transform, chapterTabs }
+                : new[] { back.transform, shade.transform, chapterArt.transform, vignette.transform, left.transform, right.transform, heading.transform, rule.transform };
+            for (int i = 0; i < order.Length; i++) KeepAt(order[i], i, changes);
+        }
+
+        static void KeepAt(Transform child, int index, List<string> changes)
+        {
+            if (child.GetSiblingIndex() == index) return;
+            child.SetSiblingIndex(index);
+            changes.Add($"moved {child.name} to {index}");
+        }
+
+        // Builder seam: PAX-A09: Content's grid of cells. It wraps to the screen's width, so a 20:9 phone fits a column more than 16:9, and Content's
+        // ContentSizeFitter takes its height from however many lines that makes.
+        public static GridLayoutGroup ConfigureContentLayout(GameObject contentGO, List<string> changes)
+        {
+            var oldList = contentGO.GetComponent<VerticalLayoutGroup>();
+            if (oldList != null) { Object.DestroyImmediate(oldList); changes.Add("removed Content VerticalLayoutGroup"); }
+            var layout = EnsureComponent<GridLayoutGroup>(contentGO, changes, "GridLayoutGroup", "Content");
+            if (layout.cellSize != CellSize || layout.spacing != CellGap || layout.constraint != GridLayoutGroup.Constraint.Flexible || layout.childAlignment != TextAnchor.UpperCenter)
+            {
+                layout.cellSize = CellSize;
+                layout.spacing = CellGap;
+                layout.constraint = GridLayoutGroup.Constraint.Flexible;
                 layout.childAlignment = TextAnchor.UpperCenter;
-                changes.Add("configured Content VerticalLayoutGroup");
+                changes.Add("configured Content GridLayoutGroup");
             }
             return layout;
         }
@@ -215,32 +322,41 @@ namespace Parallax.Editor.Setup
         {
             GameObject rowTemplateGO = EnsureChild(contentParent, RowTemplateName, changes);
             var rowRect = (RectTransform)rowTemplateGO.transform;
-            if (rowRect.sizeDelta != new Vector2(0f, 100f)) { rowRect.sizeDelta = new Vector2(0f, 100f); changes.Add($"sized {RowTemplateName}"); }
-            // Content's VerticalLayoutGroup has childControlHeight = true, so it sizes every row
-            // from LayoutUtility.GetPreferredHeight - without a LayoutElement, a row with no
-            // Text/Image content of its own (an Image with a null sprite has preferred height 0)
-            // collapses to zero height regardless of rowRect.sizeDelta above.
+            if (rowRect.sizeDelta != CellSize) { rowRect.sizeDelta = CellSize; changes.Add($"sized {RowTemplateName}"); }
             var rowLayoutElement = EnsureComponent<LayoutElement>(rowTemplateGO, changes, "LayoutElement", RowTemplateName);
-            if (!Mathf.Approximately(rowLayoutElement.preferredHeight, 100f)) { rowLayoutElement.preferredHeight = 100f; changes.Add($"set {RowTemplateName} LayoutElement.preferredHeight = 100"); }
+            if (!Mathf.Approximately(rowLayoutElement.preferredHeight, CellSize.y)) { rowLayoutElement.preferredHeight = CellSize.y; changes.Add($"set {RowTemplateName} LayoutElement.preferredHeight"); }
 
+            var center = new Vector2(0.5f, 0.5f);
+            // The glow goes first, so it stays under the cell's type: only the level that's next has one.
+            Image glow = GameUiStyle.Picture(rowTemplateGO.transform, "Glow", center, CellSize * 1.5f, Vector2.zero, GameUiStyle.Title("TUI_Soft"), new Color(1f, 0.72f, 0.34f, 0.3f), changes);
             var rowImage = EnsureComponent<Image>(rowTemplateGO, changes, "Image", RowTemplateName);
-            SetColor(rowImage, Color.white, changes, $"{RowTemplateName} Image");
-            var rowButton = EnsureComponent<Button>(rowTemplateGO, changes, "Button", RowTemplateName);
+            GameUiStyle.Paint(rowImage, GameUiStyle.Title("TUI_Plate"), Color.white, true, changes, RowTemplateName);
+            GameUiStyle.Slice(rowImage, changes, RowTemplateName);
+            if (!Mathf.Approximately(rowImage.pixelsPerUnitMultiplier, 1.6f)) { rowImage.pixelsPerUnitMultiplier = 1.6f; changes.Add($"set {RowTemplateName} corner size"); }
+            var rowButton = GameUiStyle.Tap(rowTemplateGO, rowImage, changes);
 
             GameObject nameGO = EnsureChild(rowTemplateGO.transform, "Name", changes);
-            SetAnchors((RectTransform)nameGO.transform, new Vector2(0f, 0f), new Vector2(0.7f, 1f), new Vector2(20f, 0f), new Vector2(0f, 0f), changes, "Name");
+            SetAnchors((RectTransform)nameGO.transform, new Vector2(0f, 0.3f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero, changes, "Name");
             var nameText = EnsureComponent<Text>(nameGO, changes, "Text", "Name");
-            ConfigureText(nameText, "Level", 40, TextAnchor.MiddleLeft, Color.black, changes, "Name");
+            ConfigureText(nameText, "1", 50, TextAnchor.MiddleCenter, GameUiStyle.Gold, changes, "Name");
+            GameUiStyle.Type(nameText, GameUiStyle.Body, changes, "Name");
 
             GameObject bestGO = EnsureChild(rowTemplateGO.transform, "Best", changes);
-            SetAnchors((RectTransform)bestGO.transform, new Vector2(0.7f, 0f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(-20f, 0f), changes, "Best");
+            SetAnchors((RectTransform)bestGO.transform, new Vector2(0f, 0f), new Vector2(1f, 0.42f), Vector2.zero, Vector2.zero, changes, "Best");
             var bestText = EnsureComponent<Text>(bestGO, changes, "Text", "Best");
-            ConfigureText(bestText, "—", 36, TextAnchor.MiddleRight, Color.black, changes, "Best");
+            ConfigureText(bestText, "", 26, TextAnchor.MiddleCenter, GameUiStyle.Quiet, changes, "Best");
+            GameUiStyle.Type(bestText, GameUiStyle.Italic, changes, "Best");
+
+            Image lockIcon = GameUiStyle.Picture(rowTemplateGO.transform, "Lock", center, new Vector2(60f, 60f), Vector2.zero, GameUiStyle.Art("GUI_Lock"), Color.white, changes);
+            Image doneMark = GameUiStyle.Picture(rowTemplateGO.transform, "Done", new Vector2(1f, 1f), new Vector2(26f, 26f), new Vector2(-26f, -24f), GameUiStyle.Art("GUI_Diamond"), GameUiStyle.Gold, changes);
 
             var row = EnsureComponent<LevelSelectRow>(rowTemplateGO, changes, "LevelSelectRow", RowTemplateName);
             WireField(row, "button", rowButton, changes, "LevelSelectRow.button = Button");
             WireField(row, "nameText", nameText, changes, "LevelSelectRow.nameText = Name");
             WireField(row, "bestDeathsText", bestText, changes, "LevelSelectRow.bestDeathsText = Best");
+            WireField(row, "lockIcon", lockIcon, changes, "LevelSelectRow.lockIcon = Lock");
+            WireField(row, "doneMark", doneMark, changes, "LevelSelectRow.doneMark = Done");
+            WireField(row, "glow", glow, changes, "LevelSelectRow.glow = Glow");
             SetActive(rowTemplateGO, false, changes, RowTemplateName); // cloned per level at runtime, never shown itself
             return row;
         }

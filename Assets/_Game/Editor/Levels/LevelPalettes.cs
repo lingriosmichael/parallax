@@ -59,6 +59,18 @@ namespace Parallax.Editor.Levels
             return new Color(c.r / m, c.g / m, c.b / m, 1f);
         }
 
+        /// <summary>D-304: how each sky lights the stone and the plants on it. The review's main fault was warm sunlit stone under every sky, moonlight
+        /// included. Set in the stone's shaders (StoneShade), never on the cat or the hazards.</summary>
+        static readonly Dictionary<string, Color> StoneLights = new()
+        {
+            ["GoldenHour"] = new(1f, 0.96f, 0.88f), ["Dawn"] = new(0.92f, 0.9f, 0.95f), ["MorningMist"] = new(0.96f, 0.93f, 0.95f), ["JadeCanopy"] = new(0.9f, 0.96f, 0.82f),
+            ["HighNoon"] = new(1f, 0.98f, 0.94f), ["RoseDusk"] = new(0.98f, 0.84f, 0.85f), ["AmberStorm"] = new(0.8f, 0.74f, 0.68f), ["Twilight"] = new(0.72f, 0.68f, 0.84f),
+            ["Ember"] = new(1f, 0.76f, 0.6f), ["BlueHour"] = new(0.6f, 0.72f, 0.82f), ["Moonlit"] = new(0.44f, 0.52f, 0.76f),
+        };
+
+        /// <summary>A level's StoneLights colour; clear (as painted) for a palette with none, Obsidian Void's.</summary>
+        public static Color StoneLight(string levelId) => StoneLights.TryGetValue(For(levelId).Name, out Color c) ? c : Color.clear;
+
         static Color H(string hex) => ColorUtility.TryParseHtmlString(hex, out Color c) ? c : Color.magenta;
 
         static Palette P(string name, string sky, string top, string horizon, string haze, string clouds, string sun, string ambient, string sunLight,
@@ -69,6 +81,17 @@ namespace Parallax.Editor.Levels
             AmbientIntensity = ambientI, SunIntensity = sunI, Temperature = temp, Tint = tint, Saturation = sat,
             Shadows = H(shadows), Highlights = H(highlights), Exposure = exposure, FarHaze = farHaze, Fog = fog,
             Moon = name == "Moonlit",   // round 3: the night palette's disc is a moon (a smaller cool halo, no sunbeams)
+        };
+
+        /// <summary>D-281: an Obsidian Void palette: a sky plate of OV-01 and its colour lean, a pale horizon the black cat reads against,
+        /// the planet in place of the sun, and cold light on stone that would otherwise fall to black. Never a warm or red light
+        /// (crimson is danger, D-172). `sunX`: the planet's place across the view.</summary>
+        static Palette V(string name, string sky, string top, string horizon, string haze, string light, float sat, float farHaze, float sunX, float fog = 0.3f) => new()
+        {
+            Name = name, Sky = sky, SkyTop = H(top), Horizon = H(horizon), Haze = H(haze), Clouds = H(haze), Sun = Color.white,
+            Ambient = H(light), SunLight = H(light), CatLight = Color.Lerp(H(light), Color.white, 0.55f),
+            AmbientIntensity = 0.92f, SunIntensity = 0.7f, CatIntensity = 0.7f, Saturation = sat, Contrast = 14f, Exposure = 0.1f,
+            Shadows = H(top), Highlights = H(haze), FarHaze = farHaze, Fog = fog, Moon = true, SunAt = new Vector2(sunX, 0.66f), SunSize = 3.8f,
         };
 
         public static readonly IReadOnlyDictionary<string, Palette> ByName = new Dictionary<string, Palette>
@@ -97,34 +120,46 @@ namespace Parallax.Editor.Levels
             // Moonlit: deep blue night, silver rims; the door's glow is the warm light.
             // Round 5: a lighter horizon and haze (the black cat stood on dark ruins in a dark sky, contrast 2).
             ["Moonlit"] = P("Moonlit", "Moon", "#0E1630", "#4E6690", "#7486AC", "#8A9AB8", "#C4D2F2", "#5A6A98", "#B8C8F0", 0.62f, 0.8f, -18f, 0f, -10f, "#2A3E6A", "#A8B8D8", 0.3f, 0.6f, 0.3f),
+            // D-281: Obsidian Void, seven colours of the same cold night.
+            // D-316: each its own fog (all were 0.3), less far haze and more of its own colour: a milky veil made L031-L040 look alike.
+            ["VoidCobalt"] = V("VoidCobalt", "Moon", "#060B1C", "#2C4C80", "#86BCF0", "#B4C8EC", 8f, 0.34f, 0.72f, 0.18f),
+            ["VoidTeal"] = V("VoidTeal", "Teal", "#051218", "#1C5868", "#7CDCE4", "#B0DCE4", 8f, 0.34f, 0.3f, 0.2f),
+            ["VoidIndigo"] = V("VoidIndigo", "Dusk", "#080A20", "#30387E", "#9CA8F4", "#BCC0F0", 8f, 0.34f, 0.66f, 0.18f),
+            ["VoidViolet"] = V("VoidViolet", "Rose", "#0E0820", "#4A3480", "#BCA0F4", "#CCBCF0", 7f, 0.28f, 0.34f, 0.16f),   // D-310: L033's lower half read as a lavender wash
+            ["VoidSteel"] = V("VoidSteel", "Storm", "#0A0E14", "#3C4C5C", "#AEC2D2", "#C4D0DC", 2f, 0.36f, 0.74f, 0.22f),
+            ["VoidIce"] = V("VoidIce", "Dawn", "#081424", "#3C6E9A", "#BCE8FA", "#CCE4F4", 5f, 0.3f, 0.28f, 0.2f),
+            ["VoidJade"] = V("VoidJade", "Jade", "#06141A", "#1E5A5E", "#8CE4D4", "#B4E0DC", 7f, 0.22f, 0.7f, 0.14f),   // D-307: L037's fog flattened it; D-310: still milky in its second half
         };
 
         /// <summary>Each level's palette and signature (L001–L010 the full pass; L011–L020 the same system, its own variants).</summary>
         static readonly Dictionary<string, (string palette, string signature)> Levels = new()
         {
+            // D-304: the skies run as a journey, not at random. The Gardens: one day, dawn to moonlight.
             ["L001"] = ("Dawn", "Colonnade"), ["L002"] = ("GoldenHour", "Aqueduct"), ["L003"] = ("JadeCanopy", "GreatTree"),
-            ["L004"] = ("HighNoon", "Temple"), ["L005"] = ("RoseDusk", "FloatingIsles"), ["L006"] = ("MorningMist", "Waterfalls"),
-            ["L007"] = ("AmberStorm", "Towers"), ["L008"] = ("Twilight", "Temple"), ["L009"] = ("Ember", "Ruins"),
+            ["L004"] = ("HighNoon", "Temple"), ["L005"] = ("MorningMist", "FloatingIsles"), ["L006"] = ("AmberStorm", "Waterfalls"),
+            ["L007"] = ("RoseDusk", "Towers"), ["L008"] = ("Twilight", "Temple"), ["L009"] = ("Ember", "Ruins"),
             ["L010"] = ("Moonlit", "FloatingIsles"),
-            ["L011"] = ("GoldenHour", "Ruins"), ["L012"] = ("MorningMist", "Colonnade"), ["L013"] = ("Dawn", "Waterfalls"),
-            ["L014"] = ("RoseDusk", "FloatingIsles"), ["L015"] = ("JadeCanopy", "Aqueduct"), ["L016"] = ("HighNoon", "Towers"),
-            ["L017"] = ("Twilight", "Ruins"), ["L018"] = ("AmberStorm", "GreatTree"), ["L019"] = ("Ember", "Temple"),
+            // The Overgrown Quarter: a day under the canopy, ending in blue hour.
+            ["L011"] = ("MorningMist", "Ruins"), ["L012"] = ("Dawn", "Colonnade"), ["L013"] = ("JadeCanopy", "Waterfalls"),
+            ["L014"] = ("HighNoon", "FloatingIsles"), ["L015"] = ("JadeCanopy", "Aqueduct"), ["L016"] = ("GoldenHour", "Towers"),
+            ["L017"] = ("AmberStorm", "Ruins"), ["L018"] = ("RoseDusk", "GreatTree"), ["L019"] = ("Ember", "Temple"),
             ["L020"] = ("BlueHour", "Aqueduct"),
-            // D-232 (the developer: "I prefer a clear background in this level instead of the shaded part"): L027 keeps the default
-            // palette and shows no ruins (Clear: the sky and the far skyline only).
-            ["L027"] = ("GoldenHour", "Clear"),
+            // The High Citadel: the climb through the night, to sunrise at the summit.
+            // D-282: L021-L030 had no entry, so all ten shared one sepia afternoon: each now has its own light and row.
+            ["L021"] = ("MorningMist", "Towers"), ["L022"] = ("HighNoon", "Temple"), ["L023"] = ("AmberStorm", "FloatingIsles"),
+            ["L024"] = ("RoseDusk", "Colonnade"), ["L025"] = ("Ember", "GreatTree"), ["L026"] = ("Twilight", "Temple"),
+            // D-232 (the developer: "I prefer a clear background in this level instead of the shaded part"): L027 shows no ruins near the
+            // play (Clear: the sky and the far skyline only).
+            ["L027"] = ("BlueHour", "Clear"),
+            ["L028"] = ("Moonlit", "Towers"), ["L029"] = ("Dawn", "Aqueduct"),
             // D-252 (the developer, of Lift_H: "Cat looks like it is sliding when its moving on a platform"): the shaded ruin wall
             // behind L030's chasm topped out level with the lift, so the lift read as a block sliding along the ground. Clear too.
             ["L030"] = ("GoldenHour", "Clear"),
-            // D-262: L031-L035 open Obsidian Void (D-172). Until PAX-A20's biome switch they wear the Golden Ruins kit, so a night
-            // sky over a clear background is what sets the new world apart for now.
-            ["L031"] = ("Moonlit", "Clear"), ["L032"] = ("Moonlit", "Clear"), ["L033"] = ("Moonlit", "Clear"),
-            ["L034"] = ("Moonlit", "Clear"), ["L035"] = ("Moonlit", "Clear"),
-            ["L036"] = ("Moonlit", "Clear"),
-            ["L037"] = ("Moonlit", "Clear"),
-            ["L038"] = ("Moonlit", "Clear"),
-            ["L039"] = ("Moonlit", "Clear"),
-            ["L040"] = ("Moonlit", "Clear"),
+            // D-281: Obsidian Void's own palettes and rows (EnvironmentStackSetup.Obsidian), in place of D-262's placeholder "Moonlit, Clear".
+            ["L031"] = ("VoidCobalt", "Citadel"), ["L032"] = ("VoidTeal", "Voidfalls"), ["L033"] = ("VoidViolet", "Rings"),
+            ["L034"] = ("VoidIce", "Crystals"), ["L035"] = ("VoidIndigo", "Colonnade"), ["L036"] = ("VoidSteel", "Citadel"),
+            ["L037"] = ("VoidJade", "Span"), ["L038"] = ("VoidIce", "Monoliths"), ["L039"] = ("VoidViolet", "Crystals"),   // D-307: lifted, they were the two darkest levels
+            ["L040"] = ("VoidCobalt", "Voidfalls"),
         };
 
         public static Palette For(string levelId) =>

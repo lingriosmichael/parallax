@@ -212,7 +212,13 @@ namespace Parallax.Editor.Art
             Ref("SpikeStrip", S("Bodies/TRAP-04_spike_strip"));
             Ref("LauncherMouth", S("Bodies/TRAP-01_launcher_mouth"));
             Refs("SpikeBlades", Many("SPIKE_blade_", "/Bodies").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());
+            Refs("ThornClusters", Many("THORN_", "/Bodies").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());   // D-295
+            Refs("ThornRims", Many("THORNRIM_", "/Bodies").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());   // gate 6
+            Refs("CrystalClusters", Many("CRYSTAL_", "/Bodies").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());
             Refs("SpikeBladesStout", Many("SPIKE_steel_", "/Bodies").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());   // D-161
+            Refs("SpikeBladesBold", Many("SPIKE_bold_", "/Bodies").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());   // D-318
+            Refs("SpikeRimsStout", Many("SPIKERIM_steel_", "/Bodies").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());   // gate 6
+            Refs("SpikeRimsBold", Many("SPIKERIM_bold_", "/Bodies").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());
             Ref("SlamPlate", S("Bodies/SLAM_plate"));
             Ref("HingeKnuckle", S("Bodies/HINGE_knuckle"));
             Refs("Cracks", Many("CRACK_").Where(s => s != null && !s.name.EndsWith("_n")).ToArray());
@@ -220,6 +226,7 @@ namespace Parallax.Editor.Art
             Ref("SpearHead", S("Bodies/TRAP-05_spear_head"));
             Ref("SpearShaft", S("Bodies/TRAP-05_spear_shaft"));
             Ref("SpearWhole", S("Bodies/TRAP-05_spear"));
+            Ref("ArrowRim", S("Bodies/TRAP-02_arrow_rim"));   // gate 6
             Ref("InverterOrb", S("Bodies/TRAP-06_inverter_orb"));
             Ref("CueRing", S("Bodies/TRAP-07_cue_ring"));
             Ref("CueMark", S("Bodies/TRAP-07_cue_mark"));
@@ -234,6 +241,7 @@ namespace Parallax.Editor.Art
             Ref("Ring", S("Effects/ring"));
             Ref("Mote", S("Effects/mote"));
             Ref("LaserBeam", S("Obsidian/OBS_laser_beam"));   // PAX-A20
+            Ref("LaserCore", S("Effects/LASER_core")); Ref("LaserGlow", S("Effects/LASER_glow")); Ref("LaserBurn", S("Effects/LASER_burn"));   // D-294
             Ref("ChaserBeam", S("Obsidian/OBS_chaser_beam"));   // D-276
             Ref("GateEmitterTop", S("Obsidian/OBS_gate_top"));
             Ref("GateEmitterBottom", S("Obsidian/OBS_gate_bottom"));
@@ -241,9 +249,16 @@ namespace Parallax.Editor.Art
             Ref("TurretLock", S("Obsidian/OBS_turret_lock"));
             Ref("HardLightBar", S("Obsidian/OBS_bar"));
             Ref("BarLauncher", S("Obsidian/OBS_bar_launcher"));
-            Ref("FlipRing", S("Obsidian/OBS_flip_ring"));
-            Ref("InverterRing", S("Obsidian/OBS_inverter_ring"));
             Ref("ObsidianSlamPlate", S("Obsidian/OBS_slam_plate"));
+            // D-292: the painted set.
+            Ref("TurretMount", S("Bodies/GT-10_mount")); Ref("TurretEyeIdle", S("Bodies/GT-10_eye_idle")); Ref("TurretEyeLock", S("Bodies/GT-10_eye_lock")); Ref("TurretBeam", S("Effects/GT-11_beam"));
+            Ref("ObsidianTurretMount", S("Obsidian/OBS_mount")); Ref("ObsidianTurretEyeIdle", S("Obsidian/OBS_eye_idle")); Ref("ObsidianTurretEyeLock", S("Obsidian/OBS_eye_lock"));
+            Ref("SpinnerArm", S("Bodies/GT-01_arm")); Ref("SpinnerHub", S("Bodies/GT-02_hub")); Ref("SpikedStrip", S("Bodies/GT-04_strip"));
+            Ref("PendulumRing", S("Bodies/GT-07_ring")); Ref("PendulumShaft", S("Bodies/GT-07_shaft")); Ref("PendulumHead", S("Bodies/GT-07_head")); Ref("PressurePlate", S("Bodies/GT-08_plate")); Ref("SpikedCrusher", S("Bodies/GT-05_crusher"));
+            Ref("PhaseLit", S("Obsidian/OBS_phase_lit")); Ref("PhaseFade", S("Obsidian/OBS_phase_fade")); Ref("PhaseOff", S("Obsidian/OBS_phase_off"));
+            Ref("GlitchSolid", S("Obsidian/OBS_glitch_solid")); Ref("GlitchWarn", S("Obsidian/OBS_glitch_warn")); Ref("GlitchGhost", S("Obsidian/OBS_glitch_ghost"));
+            Ref("FlipPlate", S("Obsidian/OBS_flip_plate")); Ref("RetractCap", S("Obsidian/OBS_retract_cap")); Ref("RetractStrip", S("Obsidian/OBS_retract_strip"));
+            Ref("TridentEmitter", S("Obsidian/OBS_trident")); Ref("ChaserHousing", S("Obsidian/OBS_chaser_housing"));
             Ref("GlassEdge", S("Obsidian/OBS_glass_edge"));
             Refs("GlassCracks", Many("OBS_crack_", "/Obsidian"));
             string[] placeholders = manifest.entries.Where(e => !string.IsNullOrEmpty(e.placeholder)).Select(e => Path.GetFileNameWithoutExtension(e.path)).OrderBy(n => n, System.StringComparer.Ordinal).ToArray();

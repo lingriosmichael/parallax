@@ -31,6 +31,9 @@ namespace Parallax.Presentation
         [Tooltip("PAX-A18 (D-151): the blades, one renderer each (empty: the tiled strip), with their variant sprite and their centre along the strip (local units, 0 = the middle), laid out by SpikeLayout when built.")]
         [SerializeField] SpriteRenderer[] blades = new SpriteRenderer[0];
         [SerializeField] Sprite[] bladeSprites = new Sprite[0];
+        [Tooltip("Premium plan gate 6: a soft dark rim behind each blade (one per blade, empty for none), with its variant's sprite: shade, so the lit iron reads on a mid-tone sky. It follows its blade.")]
+        [SerializeField] SpriteRenderer[] rims = new SpriteRenderer[0];
+        [SerializeField] Sprite[] rimSprites = new Sprite[0];
         [SerializeField] int[] bladeVariant = new int[0];
         [SerializeField] float[] bladeAlong = new float[0];
         [Tooltip("The tallest blade's drawn height (world units): every strip's blades draw at this one size (a strip thinner than the standard one draws them smaller, a taller one stretches them to its height).")]
@@ -170,7 +173,8 @@ namespace Parallax.Presentation
             for (int i = 0; i < blades.Length; i++)
             {
                 SpriteRenderer b = blades[i];
-                if (!Mirror(b, greyboxBody)) continue;
+                SpriteRenderer rim = i < rims.Length ? rims[i] : null;
+                if (!Mirror(b, greyboxBody)) { if (rim != null) rim.enabled = false; continue; }
                 int v = i < bladeVariant.Length ? bladeVariant[i] : 0;
                 Sprite sprite = bladeSprites.Length > 0 ? bladeSprites[Mathf.Clamp(v, 0, bladeSprites.Length - 1)] : strip;
                 if (b.sprite != sprite) b.sprite = sprite;
@@ -191,6 +195,13 @@ namespace Parallax.Presentation
                 float along = i < bladeAlong.Length ? bladeAlong[i] : 0f;
                 Vector2 foot = baseLine + across * along;
                 b.transform.position = new Vector3(foot.x, foot.y, b.transform.position.z);
+                if (rim == null || rimSprites.Length == 0) continue;
+                Sprite rimSprite = rimSprites[Mathf.Clamp(v, 0, rimSprites.Length - 1)];
+                if (rim.sprite != rimSprite) rim.sprite = rimSprite;
+                rim.enabled = b.enabled; rim.flipY = b.flipY;
+                rim.transform.rotation = b.transform.rotation;
+                rim.transform.localScale = b.transform.localScale;
+                rim.transform.position = new Vector3(foot.x, foot.y, rim.transform.position.z);
             }
         }
 

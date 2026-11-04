@@ -285,6 +285,72 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: CatA_Death_Spiked_06
+      rect:
+        serializedVersion: 2
+        x: 1584
+        y: 0
+        width: 264
+        height: 204
+      alignment: 9
+      pivot: {x: 0.39641, y: 0.06189}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4831a039f9a4d7afc262aa8b72a6f43d
+      internalID: -1469365760
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Death_Spiked_07
+      rect:
+        serializedVersion: 2
+        x: 1848
+        y: 0
+        width: 264
+        height: 204
+      alignment: 9
+      pivot: {x: 0.39641, y: 0.06189}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4014ca63c7a8b0dbefe897b59cc24b79
+      internalID: 661658519
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Death_Spiked_08
+      rect:
+        serializedVersion: 2
+        x: 2112
+        y: 0
+        width: 264
+        height: 204
+      alignment: 9
+      pivot: {x: 0.39641, y: 0.06189}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6c9a57788aa5bfc8bc4149b8d6140739
+      internalID: -1031326836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -307,6 +373,9 @@ TextureImporter:
       CatA_Death_Spiked_03: 705115065
       CatA_Death_Spiked_04: -43727612
       CatA_Death_Spiked_05: -1955256013
+      CatA_Death_Spiked_06: -1469365760
+      CatA_Death_Spiked_07: 661658519
+      CatA_Death_Spiked_08: -1031326836
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

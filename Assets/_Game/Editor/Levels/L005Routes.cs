@@ -30,8 +30,8 @@ namespace Parallax.Editor.Levels
                 Hold(Right), Until(XAtLeast(16.4f)), Release(), Until(Stopped("Ride_S2")),
                 Hold(Right), Until(GroundedOn("S1_B3")),
                 Until(XAtLeast(26.3f)), Jump(), Until(GroundedOn("Ground_2d")), Release(), Until(Still()),
-                // D-116: onto the crush ledge, left along it, and over its spikes off its end.
-                Hold(Left), Until(XAtMost(30.4f)), Jump().Timed(TimedMode.Shift), Until(GroundedOn("Ledge_D")), Until(XAtMost(25.9f)), Jump().Timed(TimedMode.Shift), Until(GroundedOn("Ground_2c")),
+                // D-116, D-290: onto the crush ledge, left along it, and off its end.
+                Hold(Left), Until(XAtMost(30.4f)), Jump().Timed(TimedMode.Shift), Until(GroundedOn("Ledge_D")), Until(GroundedOn("Ground_2c")),
                 // D-119: the ground's pits, each on its rider.
                 Until(XAtMost(19.1f)), Release(), Until(Stopped("Ride_G2")),
                 Hold(Left), Until(XAtMost(13.1f)), Release(), Until(Stopped("Ride_G1")),
@@ -53,8 +53,6 @@ namespace Parallax.Editor.Levels
                 new Betrayal("T6: the last floor before the door drops a cat that runs on", "Pit6_Hazard", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(X<=6.5)", "run on", Until(Dead())), revealedBy: "Floor_6"),
                 // D-116: the crush ledge.
-                new Betrayal("T7: spikes come up on the ledge's end under a cat that runs on along it", "Spikes_D", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Ledge_D))", "run on", Until(Dead()))),
                 new Betrayal("Dead end: the floor under the ledge rises into a cat that walks under it", "Rise_D", DeathCause.Hazard,
                     Route.PrefixOf(solution, "Until(GroundedOn(Ground_2d))", "under the ledge", Hold(Left), Until(Dead()))));
         }

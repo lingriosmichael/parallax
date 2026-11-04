@@ -9,7 +9,8 @@ Called by trap_process.build() after the older bodies, so each sprite here repla
 isn't saved yet leaves the older sprite as it was.
 """
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter
+from scipy import ndimage
 
 import hazard_readable as hr
 
@@ -24,13 +25,24 @@ VENT_TONE = np.array([0.92, 0.88, 0.82], np.float32)
 LAUNCHER_U = 0.7          # the launcher's carved frame (square); its niche adds about 0.1 u a side
 ARROW_U = (0.8, 0.16)     # the arrow, pointing right
 SPEAR_HEAD_U = 0.6        # the spear's blade and collar, along its length
-SUNLIT_WOOD = np.array([0.86, 0.66, 0.44], np.float32)   # the spear shaft's highlight
+SUNLIT_WOOD = np.array([0.96, 0.8, 0.58], np.float32)   # the spear shaft's highlight (gate 6: lighter, so it clears 3:1 over L017's dark stone; over a pale sky the dark wood reads)
 SPEAR_U, SPEAR_TALL_U = 1.4, 0.26   # 2026-10-17: the whole spear, one size everywhere (ArrowLane.SpearLane's default length)
 BLADE_H_U = 0.594         # the tallest spike blade (a 0.3 u strip x 1.1 x 1.8, D-101/D-105)
 VENT_U = (1.0, 0.3)
 CLOUD_U = (2.0, 0.8)
-ORB_U = 0.78   # 2026-10-17 (the developer: "Inverters make them slightly bigger"): was 0.6
 FLIP_U = 1.0
+ORB_U = FLIP_U   # D-286: the two orbs are one size (was 0.78)
+# D-292: the painted set's cuts and sizes. GT-01's pivot is its collar, GT-10's are as OT-18's (obsidian_traps.py).
+ARM_H_U, ARM_PIVOT = 0.62, (0.0436, 0.5)
+HUB_U, PLATE_U, STRIP_H_U, CRUSHER_U = 0.5, 1.32, 0.46, 3.0
+MOUNT_BOX, EYE_IDLE_BOX, EYE_LOCK_BOX = (10, 1160, 165, 850), (1225, 1712, 8, 414), (1225, 1712, 424, 832)
+MOUNT_U, EYE_U, MOUNT_PIVOT, EYE_PIVOT = 0.9, 0.48, (0.5, 0.71), (0.415, 0.5)
+PENDULUM_U, PENDULUM_RING_Y, PENDULUM_SHAFT_Y, PENDULUM_HEAD_Y, PENDULUM_SHAFT_X = 0.85, 470, (520, 830), 1040, (430, 594)
+BEAM_ROWS = (250, 470)
+CUE_MARK_U = (0.7, 0.28)   # the mark over the cat (TrapKitSetup.CueMarkSize)
+CUE_RING_U = (1.5, 0.39)  # the halo behind it
+CUE_GREEN = np.array([0.07, 0.84, 0.49], np.float32)   # the direction orb's emerald (INV-01)
+CUE_MINT = np.array([0.8, 1.0, 0.9], np.float32)
 SLAM_PLATE_H_U = 0.16     # the slam's iron striking plate, along its bottom edge
 HINGE_U = 0.42            # the hinge floor's knuckle (its height)
 CRACK_U = (1.0, 1.0)
@@ -60,6 +72,143 @@ def fit_box(a, w_u, h_u):
     h, w = a.shape[:2]
     k = min(w_u * HI_PPU / w, h_u * HI_PPU / h)
     return resize(a, w * k, h * k)
+
+
+def key_magenta(a):
+    """Painted on flat magenta: red and blue high and green low goes clear, and any magenta cast is pulled down to green's level."""
+    out = a.copy()
+    rgb = out[..., :3]
+    spill = np.clip(np.minimum(rgb[..., 0], rgb[..., 2]) - rgb[..., 1], 0, 1)
+    out[..., 3] = np.minimum(out[..., 3], 1 - np.clip((spill - 0.35) / 0.25, 0, 1))
+    out[..., 0] -= spill
+    out[..., 2] -= spill
+    return np.clip(out, 0, 1)
+
+
+def key_blue(a):
+    """Painted on flat blue (Pack E): blue beating red and green goes clear, and what's left has no cast of it."""
+    out = a.copy()
+    top = np.maximum(out[..., 0], out[..., 1])
+    out[..., 3] = np.minimum(out[..., 3], 1 - np.clip((out[..., 2] - top - 0.05) / 0.25, 0, 1))
+    out[..., 2] = np.minimum(out[..., 2], top * 0.9 + 0.02)
+    return out
+
+
+def key_trim(a, box=None):
+    if box:
+        x0, x1, y0, y1 = box
+        a = a[y0:y1, x0:x1]
+    a = key_magenta(a)
+    ys, xs = np.nonzero(a[..., 3] > 0.03)
+    return a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+
+
+def block_on_magenta(a):
+    """A keyed piece back on magenta, for key_trim to trim it (its colours are already clean)."""
+    out = a.copy()
+    out[..., 3] = 1.0
+    out[a[..., 3] <= 0.0] = (1.0, 0.0, 1.0, 1.0)
+    return out
+
+
+def seamless_x(a, fade):
+    w = a.shape[1] - fade
+    out = a[:, :w].copy()
+    t = np.linspace(0, 1, fade, dtype=np.float32)[None, :, None]
+    out[:, :fade] = a[:, w:w + fade] * (1 - t) + a[:, :fade] * t
+    return out
+
+
+def laser_beam(a):
+    """GT-11 on black: a tile one unit tall along x, brightness as alpha, its ends cross-faded, its yellow pulled toward crimson."""
+    a = seamless_x(a[BEAM_ROWS[0]:BEAM_ROWS[1], :, :3], 260)
+    alpha = np.clip((a.max(-1, keepdims=True) - 0.04) / 0.5, 0, 1)
+    rgb = a / np.maximum(a.max(-1, keepdims=True), 1e-3)
+    rgb[..., 1] = np.minimum(rgb[..., 1], rgb[..., 2] + (rgb[..., 1] - rgb[..., 2]) * 0.55)
+    out = np.dstack([rgb, alpha]).astype(np.float32)
+    k = HI_PPU / out.shape[0]
+    return resize(out, out.shape[1] * k, HI_PPU)
+
+
+# D-294: the colours a laser passes through from its centre out: it must read on a bright sky (a dark crimson edge, drawn over it)
+# and on black stone (a white-hot core).
+BEAM_HOT, BEAM_RED, BEAM_DEEP = np.array([1.0, 0.96, 0.9], np.float32), np.array([1.0, 0.13, 0.08], np.float32), np.array([0.5, 0.02, 0.05], np.float32)
+
+
+def beam_core(h=256, w=1024):
+    """A thin aiming line's tile, one unit tall: white-hot, then crimson, then a dark edge fading out, breathing a little along x."""
+    y = np.abs(np.linspace(-1, 1, h, dtype=np.float32))[:, None]
+    x = np.arange(w, dtype=np.float32)[None, :] / w * 2 * np.pi
+    breathe = 1 + 0.08 * np.sin(x * 3) + 0.05 * np.sin(x * 7 + 1.3)
+    d = y / breathe
+    hot = np.clip(1 - d / 0.26, 0, 1)[..., None]
+    red = np.clip((d - 0.2) / 0.34, 0, 1)[..., None]
+    rgb = (BEAM_HOT * hot + BEAM_RED * (1 - hot)) * (1 - red) + BEAM_DEEP * red
+    return np.dstack([rgb, np.clip((1 - d) / 0.28, 0, 1)]).astype(np.float32)
+
+
+def beam_glow(h=256, w=64):
+    """A soft glow's tile, white (the renderer tints it), even along x and gone at its edges."""
+    y = np.linspace(-1, 1, h, dtype=np.float32)[:, None]
+    a = np.exp(-(y / 0.42) ** 2) * np.clip((1 - np.abs(y)) / 0.2, 0, 1)
+    return np.dstack([np.ones((h, w, 3), np.float32), np.repeat(a, w, axis=1)]).astype(np.float32)
+
+
+def beam_burn(n=256):
+    """Where a beam lands: a white-hot point in a crimson bloom, with a few uneven rays."""
+    yy, xx = np.mgrid[0:n, 0:n].astype(np.float32)
+    dx, dy = (xx - (n - 1) / 2) / (n / 2), (yy - (n - 1) / 2) / (n / 2)
+    r, angle = np.hypot(dx, dy), np.arctan2(dy, dx)
+    rng = np.random.default_rng(2940)
+    rays = np.zeros_like(r)
+    for _ in range(9):
+        at, reach, sharp = rng.uniform(-np.pi, np.pi), rng.uniform(0.55, 1.0), rng.uniform(40, 120)
+        off = np.angle(np.exp(1j * (angle - at)))
+        rays = np.maximum(rays, np.exp(-sharp * off ** 2) * np.clip(1 - r / reach, 0, 1))
+    bloom = np.exp(-(r / 0.42) ** 2)
+    a = np.clip(0.75 * bloom + 0.9 * rays, 0, 1) * np.clip((1 - r) / 0.2, 0, 1)
+    hot = np.clip(1 - r / 0.2, 0, 1)[..., None]
+    rgb = BEAM_HOT * hot + BEAM_RED * (1 - hot)
+    return np.dstack([rgb, a]).astype(np.float32)
+
+
+def cue_mark(orb):
+    """The orb's painted arrow, lifted off its glass: its red channel, which the green glass hardly has. A dark halo keeps it on a bright sky."""
+    h, w = orb.shape[:2]
+    a = orb[int(h * 0.36):int(h * 0.64), int(w * 0.18):int(w * 0.82)]
+    shape = np.clip((a[..., 0] * a[..., 3] - 0.42) / 0.3, 0, 1)
+    pad = a.shape[0] // 6
+    shape = np.pad(shape, pad)
+    # Only the arrow: the wisps' brightest crests pass the same test, but they don't touch it.
+    solid = Image.fromarray(((shape > 0) * 255).astype(np.uint8), "L").copy()
+    y0, x0 = np.unravel_index(np.argmax(shape), shape.shape)
+    ImageDraw.floodfill(solid, (int(x0), int(y0)), 128)
+    shape = shape * (np.asarray(solid) == 128)
+    img = Image.fromarray((shape * 255).astype(np.uint8), "L")
+    halo = np.asarray(img.filter(ImageFilter.MaxFilter(9)).filter(ImageFilter.GaussianBlur(5))).astype(np.float32) / 255 * 0.7
+    alpha = 1 - (1 - shape) * (1 - halo)
+    keep = np.maximum(alpha, 1e-3)[..., None]
+    rgb = (CUE_MINT * shape[..., None] + np.array([0.02, 0.2, 0.12], np.float32) * (alpha - shape)[..., None]) / keep
+    return trim_alpha(np.dstack([rgb, alpha]))
+
+
+def trim_alpha(a):
+    ys, xs = np.nonzero(a[..., 3] > 0.03)
+    return a[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+
+
+def cue_ring():
+    """Drawn, not painted: a thin halo around the cat's feet, a bright line in a soft glow."""
+    w, h = int(CUE_RING_U[0] * HI_PPU), int(CUE_RING_U[1] * HI_PPU)
+    y, x = np.mgrid[0:h, 0:w].astype(np.float32) + 0.5
+    ox, oy = x - w / 2, y - h / 2
+    r = np.maximum(np.hypot(ox / (w / 2 - 20), oy / (h / 2 - 20)), 1e-3)
+    d = np.abs(1 - 1 / r) * np.hypot(ox, oy)    # along the ray from the centre, so the glow is one width all the way round
+    line = np.exp(-(d / 2.2) ** 2)
+    glow = np.exp(-(d / 8) ** 2) * 0.55
+    alpha = np.maximum(line, glow)
+    rgb = CUE_GREEN + (CUE_MINT - CUE_GREEN) * line[..., None]
+    return np.dstack([rgb, alpha]).astype(np.float32)
 
 
 def column_runs(mask):
@@ -116,7 +265,10 @@ def ragged_vignette(h, w, rng, inset=0.2, soft=0.16, jitter=0.07):
     return np.clip((d - edge) / soft + 0.5, 0, 1).astype(np.float32)
 
 
-def iron_edge(a, tip=None, outer_px=4, lit_px=3, tip_px=4, wrap_x=False, shade_px=2, steel=STEEL, core=1.0):
+ARROW_EDGE = np.array([1.0, 0.98, 0.94], np.float32)
+
+
+def iron_edge(a, tip=None, outer_px=4, lit_px=3, tip_px=4, wrap_x=False, shade_px=2, steel=STEEL, core=1.0, lit_colour=None):
     """D-108 for dark forged iron (the developer, 2026-10-16: keep the spikes dark, not cream): a dark outer line; a light
     rim on the LIT side only (light from the upper left: the pixels whose outside lies above or to the left), so the
     blade stays near-black with a bright edge where the sun catches it; and a light-crimson glow on the rim around the
@@ -134,7 +286,7 @@ def iron_edge(a, tip=None, outer_px=4, lit_px=3, tip_px=4, wrap_x=False, shade_p
     # dark enough that the blade still reads as iron, not a pale border.
     shade = sil & hr._dilate(~sil, shade_px, wrap_x) & ~lit
     out[..., :3] = np.where(shade[..., None], out[..., :3] * 0.1 + steel * 0.9, out[..., :3])
-    out[..., :3] = np.where(lit[..., None], out[..., :3] * 0.1 + LIT * 0.9, out[..., :3])
+    out[..., :3] = np.where(lit[..., None], out[..., :3] * 0.1 + (LIT if lit_colour is None else lit_colour) * 0.9, out[..., :3])
     if tip is not None:
         tipmask = np.zeros_like(sil)
         tipmask[outer_px:outer_px + tip.shape[0], outer_px:outer_px + tip.shape[1]] = tip if not wrap_x else tip[:, :tipmask.shape[1]]
@@ -182,6 +334,12 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
     def put(name, a, tiled=False, normal=True, pivot=(0.5, 0.5), source=None):
         emit(name, a, pivot=pivot, normal=normal, tiled=tiled, sources=[source] if source else [], ppu=HI_PPU)
 
+    def projectile_rim(a):
+        """Gate 6: the soft dark rim behind an arrow, as hazard_art's behind the thorns and blades (about 0.02 u). Padded evenly, so its
+        centre pivot matches the arrow's."""
+        from hazard_art import rim
+        return rim(a, (2, 3))[0]
+
     # ---- the launcher (2A): its frame in the wall, the slot facing right, the slot's lips edged crimson ----
     if (s := src("PILOT-02A_launcher_v1")):
         a = clean_alpha(trim(load_rgba(s)))
@@ -224,7 +382,7 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         mouth[..., :3] = np.where(slot[..., None], mouth[..., :3] * 0.5, mouth[..., :3])
         lips = mouth_mask & ~slot
         mouth[..., :3] = np.where(lips[..., None], np.clip(mouth[..., :3] * 0.4 + LAUNCHER_LIP * 0.6, 0, 1), mouth[..., :3])
-        put("Bodies/TRAP-01_launcher_mouth", iron_edge(mouth, tip=None, outer_px=4, lit_px=3, shade_px=3, steel=BRIGHT_STEEL), source=s)
+        put("Bodies/TRAP-01_launcher_mouth", iron_edge(mouth, tip=None, outer_px=4, lit_px=5, shade_px=5, steel=BRIGHT_STEEL), source=s)   # D-303: wider edges, for dark walls (L015)
         # The frame under the mouth is plain carved stone (filled from the stone around it), so the mouth is the only place
         # the slot exists: hidden, the frame shows unbroken stone there; shown, the dark slot reads against that stone.
         frame = a.copy()
@@ -249,18 +407,24 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         h, w = a.shape[:2]
         xx = np.mgrid[0:h, 0:w][1]
         a[..., :3] = a[..., :3] * 0.55
-        put("Bodies/TRAP-02_arrow", iron_edge(a, tip=(xx >= w * 0.78) | (xx <= w * 0.14), lit_px=5, shade_px=5, steel=BRIGHT_STEEL), source=s)
+        # D-303: its edges near white: the game's grade lifts blacks to about L 0.03, so on a mid-tone wall (L 0.12) only a light edge can reach
+        # 3:1, and this one missed by a hair (HazardContrastTests: L004 Arrow_Run, 2.97:1).
+        # D-318: a wider lit edge (8 px read 28 % at 3:1 mid-lane in L004's Arrow_Run, 10 px 30 %).
+        arrow = iron_edge(a, tip=(xx >= w * 0.78) | (xx <= w * 0.14), lit_px=12, shade_px=7, steel=ARROW_EDGE, lit_colour=ARROW_EDGE)
+        put("Bodies/TRAP-02_arrow", arrow, source=s)
+        put("Bodies/TRAP-02_arrow_rim", projectile_rim(arrow), normal=False, source=s)   # gate 6: its dark rim (ArrowArt's Rim)
 
     # ---- the spear (2D): the blade and collar as the head; a straight run of the shaft, repeated ----
-    if (s := src("PILOT-02D_spear_v1")):
-        a = clean_alpha(trim(load_rgba(s)))
+    # D-312: Pack E's TE-01 (on blue, its collar from 72 % of its length) replaces the pilot when it's saved.
+    def spear(s, a, head_from, metal_from, tone=0.58, rim=3):
+        a = clean_alpha(trim(a))
         op = a[..., 3] > 0.5
         thick = op.sum(axis=0)
         shaft_t = float(np.median(thick[thick > 0]))
-        # The head: the blade and its iron collar, the right 23% of the painted spear, a little shorter than painted (x0.6):
+        # The head: the blade and its iron collar (the pilot's right 23%), a little shorter than painted (x0.6):
         # the painted blade is slender, and in game the head sits on a 0.4 u thick shaft the cat can stand on.
         w = a.shape[1]
-        head = trim(a[:, int(w * 0.77):])
+        head = trim(a[:, int(w * head_from):])
         head = resize(head, head.shape[1] * 0.6, head.shape[0])
         k = SPEAR_HEAD_U * HI_PPU / max(1, head.shape[1])
         head = resize(head, head.shape[1] * k, head.shape[0] * k)
@@ -279,7 +443,7 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         # Darkened to 0.65 with a 4 px rim: with 0.8 and a 2 px rim, L017 V1 and L019 Spear_1 read under 30 % at 3:1 (the dark
         # wood over L019's dark drapery); darker wood barely helped (0.52: 28 %) and lost the painting, the wider rim reads there.
         # 0.58 (was 0.65) once the pits' back walls were lightened (L015 Spear_B over one: 28 % at 0.65).
-        whole[..., :3] = whole[..., :3] * 0.58
+        whole[..., :3] = whole[..., :3] * tone
         # The shaft is round, lit from the upper left: a band of sunlit wood along its top (0.22-0.38 of its thickness down,
         # fading out by 0.14 and 0.46), so it also reads over dark stone (L019 Spear_1: 28 % at 3:1 without it); on the collar
         # and blade (from 0.5-0.6 of the length) it's a thinner steel glint along the bevel.
@@ -289,13 +453,13 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         top = np.where(has, sil.argmax(axis=0), 0)[None, :]
         bot = np.where(has, wh - 1 - sil[::-1].argmax(axis=0), 0)[None, :]
         f = (rows - top) / np.maximum(1, bot - top)
-        metal = np.clip((wx - ww * 0.5) / (ww * 0.1), 0.0, 1.0)
+        metal = np.clip((wx - ww * metal_from) / (ww * 0.1), 0.0, 1.0)
         # Narrower on the metal (a thin bevel line, the bindings kept); 0.2 on the wood (0.16 read 29 % over L015's lightened pit).
         reach, soft = 0.2 - 0.11 * metal, 0.08 - 0.03 * metal
-        band = (np.clip((reach - np.abs(f - 0.3)) / soft, 0.0, 1.0) * 0.85 * sil)[..., None]
+        band = (np.clip((reach - np.abs(f - 0.3)) / soft, 0.0, 1.0) * 0.95 * sil)[..., None]
         glint = SUNLIT_WOOD * (1 - metal[..., None]) + BRIGHT_STEEL * metal[..., None]
         whole[..., :3] = whole[..., :3] * (1 - band) + glint * band
-        put("Bodies/TRAP-05_spear", iron_edge(whole, tip=wx >= ww * 0.86, outer_px=3, lit_px=4, shade_px=4, steel=BRIGHT_STEEL), pivot=(0.5, 0.5), source=s)
+        put("Bodies/TRAP-05_spear", iron_edge(whole, tip=wx >= ww * 0.86, outer_px=rim, lit_px=rim + 1, shade_px=4, steel=BRIGHT_STEEL), pivot=(0.5, 0.5), source=s)
         put("Bodies/TRAP-05_spear_head", iron_edge(head, tip=xx >= hw * 0.55, lit_px=5, shade_px=5, steel=BRIGHT_STEEL), pivot=(0.5, 0.5), source=s)
         # The shaft: the most even stretch between a quarter and a half of the length.
         x0, x1 = int(w * 0.22), int(w * 0.48)
@@ -310,6 +474,12 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         seg[:, :band] = seg[:, :band] * t + seg[:, -band:] * (1 - t)
         seg = seg[:, :-band]
         put("Bodies/TRAP-05_spear_shaft", iron_edge(seg, wrap_x=True, lit_px=15, shade_px=15, steel=BRIGHT_STEEL), tiled=True, source=s)
+
+    if (s := src("TE-01_spear_v1")):
+        # Darker wood and a wider rim than the pilot's: at 0.58 and 3 px, L011's Spear_Gap read 26 % at 3:1 over its pale sky.
+        spear(s, key_blue(load_rgba(s)), 0.72, 0.68, tone=0.5, rim=4)
+    elif (s := src("PILOT-02D_spear_v1")):
+        spear(s, load_rgba(s), 0.77, 0.5)
 
     # ---- the spike blades (1R's row and 01's five shapes): each blade on its own, at one scale; the tip edged crimson ----
     def cut_blades(path, socket):
@@ -360,10 +530,54 @@ def build(emit, load_rgba, clean_alpha, trim, chatgpt):
         grey = cloud[..., :3].mean(-1, keepdims=True)
         cloud[..., :3] = np.clip((cloud[..., :3] * 0.6 + grey * 0.4) * np.array([0.68, 0.7, 0.78], np.float32), 0, 1)
         put("Bodies/TRAP-09_storm_cloud", cloud, source=s)
-    if (s := src("PILOT-09_inverter_orb_v1")):
-        put("Bodies/TRAP-06_inverter_orb", fit_box(clean_alpha(trim(load_rgba(s))), ORB_U, ORB_U), source=s)
+    # D-284: the direction orb, one art in every world. The cue on the cat follows it: the mark is the orb's own arrow, the ring its green.
+    if (s := src("INV-01_direction_orb_v2")):
+        orb = clean_alpha(trim(load_rgba(s)))
+        put("Bodies/TRAP-06_inverter_orb", fit_box(orb, ORB_U, ORB_U), source=s)
+        put("Bodies/TRAP-07_cue_mark", fit_box(cue_mark(orb), CUE_MARK_U[0], CUE_MARK_U[1]), normal=False, source=s)
+        put("Bodies/TRAP-07_cue_ring", cue_ring(), normal=False, source=s)
     if (s := src("PILOT-13_flip_orb_v1")):
         put("Bodies/TRAP-08_glyph_ring", fit_box(clean_alpha(trim(load_rgba(s))), FLIP_U, FLIP_U), normal=False, source=s)
+
+    # ---- D-292: the painted set ----
+    if (s := src("GT-01_spinner_arm_v2")):
+        arm = key_trim(load_rgba(s))
+        put("Bodies/GT-01_arm", fit_box(arm, 99, ARM_H_U), tiled=True, pivot=ARM_PIVOT, source=s)
+    if (s := src("GT-02_spinner_hub_v1")):
+        put("Bodies/GT-02_hub", fit_box(key_trim(load_rgba(s)), HUB_U, HUB_U), source=s)
+    if (s := src("GT-04_spiked_underside_v1")):
+        strip = seamless_x(clean_alpha(key_magenta(load_rgba(s))), 80)
+        put("Bodies/GT-04_strip", fit_h(strip, STRIP_H_U), tiled=True, pivot=(0.5, 1.0), source=s)
+    if (s := src("GT-05_spiked_crusher_v1")):
+        # The painting's loose chips float off it: only the block itself goes in.
+        block = key_trim(load_rgba(s))
+        lab, n = ndimage.label(block[..., 3] > 0.5)
+        block[..., 3] *= lab == 1 + int(np.argmax(ndimage.sum(block[..., 3] > 0.5, lab, range(1, n + 1))))
+        put("Bodies/GT-05_crusher", fit_box(key_trim(block_on_magenta(block)), CRUSHER_U, CRUSHER_U), pivot=(0.5, 1.0), source=s)
+    if (s := src("GT-07_pendulum_blade_v1")):
+        p = load_rgba(s)
+        k = PENDULUM_U / (p.shape[1] - 132)
+        part = lambda box: key_trim(p, box)
+        def scaled(a): return resize(a, a.shape[1] * k * HI_PPU, a.shape[0] * k * HI_PPU)
+        put("Bodies/GT-07_ring", scaled(part((300, 724, 0, PENDULUM_RING_Y))), pivot=(0.5, 0.92), source=s)
+        shaft = key_magenta(p[PENDULUM_SHAFT_Y[0]:PENDULUM_SHAFT_Y[1], PENDULUM_SHAFT_X[0]:PENDULUM_SHAFT_X[1]])
+        mid = shaft.shape[0] // 2
+        shaft = np.concatenate([shaft[mid:], shaft[:mid]], 0)
+        put("Bodies/GT-07_shaft", scaled(shaft), tiled=True, pivot=(0.5, 1.0), source=s)
+        put("Bodies/GT-07_head", scaled(part((0, p.shape[1], PENDULUM_HEAD_Y, p.shape[0]))), pivot=(0.5, 0.0), source=s)
+    if (s := src("GT-08_pressure_plate_v1")):
+        put("Bodies/GT-08_plate", fit_box(key_trim(load_rgba(s)), PLATE_U, PLATE_U), source=s)
+    if (s := src("GT-10_turret_v1")):
+        t = load_rgba(s)
+        put("Bodies/GT-10_mount", fit_box(key_trim(t, MOUNT_BOX), MOUNT_U, MOUNT_U), pivot=MOUNT_PIVOT, source=s)
+        put("Bodies/GT-10_eye_idle", fit_box(key_trim(t, EYE_IDLE_BOX), EYE_U, EYE_U), pivot=EYE_PIVOT, source=s)
+        put("Bodies/GT-10_eye_lock", fit_box(key_trim(t, EYE_LOCK_BOX), EYE_U, EYE_U), pivot=EYE_PIVOT, source=s)
+    if (s := src("GT-11_turret_beam_v2")):
+        put("Effects/GT-11_beam", laser_beam(load_rgba(s)), tiled=True, normal=False, source=s)
+    # D-294: a laser's light, made here: a thin line's hot core, a soft glow, and the burn where it lands.
+    put("Effects/LASER_core", beam_core(), tiled=True, normal=False)
+    put("Effects/LASER_glow", beam_glow(), tiled=True, normal=False)
+    put("Effects/LASER_burn", beam_burn(), normal=False)
 
     # ---- the slam's iron striking plate (7): its bottom band, repeated along a slam's width ----
     if (s := src("PILOT-07_slam_v2")):

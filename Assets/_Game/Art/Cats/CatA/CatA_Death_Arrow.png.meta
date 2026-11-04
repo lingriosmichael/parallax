@@ -288,6 +288,50 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: CatA_Death_Arrow_06
+      rect:
+        serializedVersion: 2
+        x: 1224
+        y: 0
+        width: 204
+        height: 198
+      alignment: 9
+      pivot: {x: 0.513, y: 0.07891}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5bb1e063ab2754f5deea16c8a8fca305
+      internalID: -1060837904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CatA_Death_Arrow_07
+      rect:
+        serializedVersion: 2
+        x: 1428
+        y: 0
+        width: 204
+        height: 198
+      alignment: 9
+      pivot: {x: 0.513, y: 0.07891}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed5ca1e9b26dd2e87817e26fd6efb359
+      internalID: -1875530917
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -310,6 +354,8 @@ TextureImporter:
       CatA_Death_Arrow_03: -856183213
       CatA_Death_Arrow_04: 635296554
       CatA_Death_Arrow_05: -1321777265
+      CatA_Death_Arrow_06: -1060837904
+      CatA_Death_Arrow_07: -1875530917
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

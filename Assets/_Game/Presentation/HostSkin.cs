@@ -27,8 +27,12 @@ namespace Parallax.Presentation
         public bool WorldTiled;
         public Vector2 Tile;
         public Vector4 UVRect;
+        /// <summary>D-301: multiplies what this art draws, not the host's colour (a free-standing mover, in stone that isn't in the room's
+        /// shade). Unset (zero) on anything that matches its host.</summary>
+        public Color Tint;
 
         public bool IsSet => Sprite != null;
+        Color Drawn => Tint.a > 0f ? Color * Tint : Color;
         static MaterialPropertyBlock Block => block ??= new MaterialPropertyBlock();
 
         public static bool IsWorldTileMaterial(Material m) => m != null && m.shader != null && m.shader.name == WorldTileShader;
@@ -75,7 +79,7 @@ namespace Parallax.Presentation
             if (WorldTiled) { ApplyWorldTiled(renderer, size, renderer.transform.position); return; }
             renderer.sprite = Sprite;
             if (Material != null) renderer.sharedMaterial = Material;
-            renderer.color = Color;
+            renderer.color = Drawn;
             renderer.drawMode = DrawMode;
             if (DrawMode != SpriteDrawMode.Simple) renderer.size = size;
             renderer.sortingLayerName = SortingLayer;
@@ -88,7 +92,7 @@ namespace Parallax.Presentation
             if (renderer == null || !IsSet) return;
             renderer.sprite = Sprite;
             renderer.sharedMaterial = Material;
-            renderer.color = Color;
+            renderer.color = Drawn;
             // Sliced to its size, its transform untouched (a host's transform carries its collider): the shader replaces the
             // mesh's UVs with world ones, so the mesh only has to cover the area.
             renderer.drawMode = SpriteDrawMode.Sliced;
@@ -109,13 +113,13 @@ namespace Parallax.Presentation
 
         /// <summary>Null when `renderer` draws as this skin (same sprite, material, colour, draw mode, sorting layer and, for a
         /// Tiled skin, the same tiling phase; for a world-tiled one, the same tile, sampled where it stands); otherwise what
-        /// differs.</summary>
-        public string Difference(SpriteRenderer renderer)
+        /// differs. `host`: `renderer` is the host itself, so the skin's Tint isn't expected on it.</summary>
+        public string Difference(SpriteRenderer renderer, bool host = false)
         {
             if (renderer == null) return "no renderer";
             if (renderer.sprite != Sprite) return $"sprite '{Name(renderer.sprite)}', host '{Name(Sprite)}'";
             if (Material != null && renderer.sharedMaterial != Material) return $"material '{Name(renderer.sharedMaterial)}', host '{Name(Material)}'";
-            if (renderer.color != Color) return $"colour {renderer.color}, host {Color}";
+            if (renderer.color != (host ? Color : Drawn)) return $"colour {renderer.color}, host {(host ? Color : Drawn)}";
             if (renderer.sortingLayerName != SortingLayer) return $"sorting layer '{renderer.sortingLayerName}', host '{SortingLayer}'";
             if (WorldTiled)
             {

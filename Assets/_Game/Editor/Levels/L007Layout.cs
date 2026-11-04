@@ -42,7 +42,7 @@ namespace Parallax.Editor.Levels
                 E(SoloRoomElementKind.Floor,"Tread_RE",(28.95f,11.25f),(1.5f,.5f)),
                 // S2, from the door to x 25.3; its end section (x 25.3-27.5) gives way. PAX-102: S2 is cut by two gaps wider than a
                 // jump (x 8-12.5 and 18-22.5), each crossed only on a rider. PAX-103: the kill strips that floated at S2's height
-                // are gone; spikes come up on S1 under the gaps instead (below, with the storm).
+                // are gone; spikes come up on S1 under the gaps instead (below).
                 E(SoloRoomElementKind.Floor,"S2_Main",(4f,9.5f),(8f,1f)),
                 E(SoloRoomElementKind.Floor,"S2_Mid",(14.25f,9.5f),(3.5f,1f)),
                 E(SoloRoomElementKind.Floor,"S2_East",(23.9f,9.5f),(2.8f,1f)),
@@ -109,27 +109,15 @@ namespace Parallax.Editor.Levels
             // PAX-103: the section where Ride_A sets the cat down (x 16-18) gives way 30 ticks after a landing, onto the gap's
             // spikes on S1 (it sank into the floating kill strip in PAX-102): step off and walk on.
             elements.Add(E(SoloRoomElementKind.CollapsingFloor,"Sink_S",(17f,9.5f),(2f,1f),settings:new SoloRoomTrapSettings(delayTicks:30)));
-            // PAX-103 (the developer: "from this level onwards we can start adding the storm that follows the player"; D-090
-            // amendment): a storm cloud over S2, following the cat left along it (it starts over S2's east end, behind the cat).
-            // PAX-104: it wakes as the cat comes onto S2 (x 23.5-25), so all of S2 is under it; waiting is what it punishes.
             // Ride_A is phased to the tower's descent: home as a cat that climbs at once comes down, leaving ~20 ticks after it
             // boards (PAX-107: phases 26 and 136 -> 53 and 13, 27 ticks later, for the ground walk's new traps); Ride_B leaves 110 ticks after Ride_A, as a cat that walks off Ride_A has just boarded it. It stays under the
             // corbel by the door (top 12.45 < 12.5) and clear of the door (its range ends at x 3).
-            // D-116 (the developer: "there is always a cloud constantly following the cat to zap it", toned down; then "I thought
-            // the cloud follows them all the way through"): it wakes as the cat starts (its trigger holds the start) and follows
-            // the cat floor to floor: low over the ground, under S2 over S1, and under the roof over S2, climbing
-            // or sinking 0.2 u a tick when the cat changes floor. PAX-107 (the developer: clouds 20 % faster, zap 10 % faster): it
-            // follows at 0.12 u/tick (PAX-107, D-125: the cat's run, 6 u/s; over S1 and S2 only to x 24.5, so the right tower's
-            // climb, whose zigzag stops at the cloud's height, and the fall through S2_End are out of its reach), strikes every 135 ticks,
-            // the first 130 ticks after it wakes (D-125: was 80; at the cat's run its strikes are placed off the solution's waits);
-            // the 25-tick tell stays. Waiting is what it punishes, all the way up.
-            elements.Add(E(SoloRoomElementKind.StormCloud,"Cloud",(29f,2.05f),(2f,.8f),(29.4f,1.5f),(5.2f,3f),
-                new SoloRoomTrapSettings(new StormCloudSettings(new[] {
-                    new StormFloor(-100f, 2.05f, 2.6f, 30.9f),
-                    new StormFloor(4.5f, 8.4f, 1.1f, 24.5f),
-                    new StormFloor(9.5f, 12.05f, 3f, 24.5f) }, followSpeed:.12f, firstStrikeDelay:130, strikePeriod:135, climbSpeed:.24f), new SoloRoomTrapSettings(delayTicks:0))));
-            // The gaps' spikes: on S1 under each gap (and under Sink_S), hidden until the cat comes onto S2 (x 23.5-25; a chain
-            // can't start from a cloud), then up for good, in view through the gaps from S2. A fall off a rider,
+            // D-291: the lasers where the cloud was, a floor each: Eye_G under S1 over the ground, Eye_M under S2 over S1, Eye_T under the roof over S2.
+            elements.Add(Laser("Eye_G",18f,4f,Rect.MinMaxRect(3f,0f,24f,3.8f),0));
+            elements.Add(Laser("Eye_M",14.25f,9f,Rect.MinMaxRect(1.1f,5f,24.5f,8.8f),45));
+            elements.Add(Laser("Eye_T",12f,14f,Rect.MinMaxRect(8f,10f,17f,13.8f),90));
+            // The gaps' spikes: on S1 under each gap (and under Sink_S), hidden until the cat comes onto S2 (x 23.5-25),
+            // then up for good, in view through the gaps from S2. A fall off a rider,
             // or through Sink_S, lands on them.
             // PAX-107 (the developer: spikes "where there wasn't any" over the hole S1_T6 leaves): gap A's spikes are in two pieces,
             // on S1_B (x 16-19.5) and on S1_D (x 21.5-22.5), not over the hole (x 19.5-21.5); a fall through it lands on Spikes_6

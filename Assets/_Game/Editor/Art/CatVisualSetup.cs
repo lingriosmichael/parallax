@@ -107,6 +107,9 @@ namespace Parallax.Editor.Art
         static readonly ClipRow[] Rows =
         {
             new ClipRow("Idle", CatAnimState.Idle, 7f, true),
+            // D-293: StandUp, FallLoop and StepDown sit after their state's own clip; CatTransitionClips plays them by slot.
+            new ClipRow("StandUp", CatAnimState.Idle, 30f, false),
+            new ClipRow("WallPush", CatAnimState.Idle, 6f, true),
             new ClipRow("IdleLook", CatAnimState.IdleFidget, 12f, false),
             new ClipRow("IdleEar", CatAnimState.IdleFidget, 12f, false),
             new ClipRow("IdleSit", CatAnimState.IdleFidget, 12f, false),
@@ -117,19 +120,28 @@ namespace Parallax.Editor.Art
             new ClipRow("TakeOff", CatAnimState.TakeOff, TakeOffFps, false),
             // Rise, Apex and Fall are played by the cat's velocity along gravity (CatClipSet.AirProgress), not by time.
             new ClipRow("Rise", CatAnimState.Rise, 12f, false),
+            // D-293: the same arc without a run-up (a straight jump or a launch); CatVisualPresenter plays them by slot.
+            new ClipRow("RiseStraight", CatAnimState.Rise, 12f, false),
+            new ClipRow("Reach", CatAnimState.Rise, 24f, false),
             new ClipRow("Apex", CatAnimState.Apex, 12f, false),
             new ClipRow("Fall", CatAnimState.Fall, 12f, false),
+            new ClipRow("FallStraight", CatAnimState.Fall, 12f, false),
+            new ClipRow("FallLoop", CatAnimState.Fall, 12f, true),
+            new ClipRow("StepDown", CatAnimState.Fall, 24f, false),
             new ClipRow("Land", CatAnimState.Land, LandFps, false, entry: LandEntry),
             new ClipRow("HardLand", CatAnimState.HardLand, HardLandFps, false, entry: HardLandEntry),
             new ClipRow("Death", CatAnimState.Death, 10f, false),
             new ClipRow("Death_Pit", CatAnimState.Death, 10f, false),
-            new ClipRow("Death_Spiked", CatAnimState.Death, 10f, false),
+            // D-293: Spiked and Arrow fit the death hold (0.6 s), so the cat ends lying still before the respawn.
+            new ClipRow("Death_Spiked", CatAnimState.Death, 15f, false),
             new ClipRow("Death_Crushed", CatAnimState.Death, 10f, false),
+            new ClipRow("Death_CrushedSide", CatAnimState.Death, 10f, false),
             new ClipRow("Death_Zapped", CatAnimState.Death, 10f, false),
-            new ClipRow("Death_Arrow", CatAnimState.Death, 10f, false),
+            new ClipRow("Death_Arrow", CatAnimState.Death, 14f, false),
             new ClipRow("Respawn", CatAnimState.Respawn, 20f, false),
-            // PAX-A14 target 3: 4 drawn roll cels and 4 turned in-betweens (the FlipRoll bridge sheet) at 24 fps: still 0.33 s.
-            new ClipRow("Flip", CatAnimState.Flip, 24f, false),
+            // PAX-A14 target 3: 4 drawn roll cels and 4 turned in-betweens (the FlipRoll bridge sheet); D-293: a tuck and an
+            // uncurl of 2 frames each around them, at 36 fps: still 0.33 s.
+            new ClipRow("Flip", CatAnimState.Flip, 36f, false),
             // Climb is played by the distance climbed (its strides; the fps is unused); Hang is one frame.
             new ClipRow("Climb", CatAnimState.Climb, 21f, true, ClimbStridePx),
             new ClipRow("Hang", CatAnimState.Hang, 1f, false),
@@ -196,6 +208,34 @@ namespace Parallax.Editor.Art
         const float FidgetDelay = 3f;
 
         public static string[] SlotNames => Rows.Select(r => r.Slot).ToArray();
+
+        // D-294: the cat's contact shadow: a soft dark ellipse on the surface under it, on the prefab's root (it
+        // turns with gravity, Visual's facing doesn't matter to it).
+        static void ApplyContactShadow(GameObject root, CatMotor2D motor, SpriteRenderer body, List<string> changes)
+        {
+            Sprite soft = EnvironmentKit.Sprite("ENV_Halo");
+            if (soft == null) { Debug.LogWarning("CatVisualSetup: no ENV_Halo in the kit; the cat keeps no contact shadow."); return; }
+            Transform t = root.transform.Find("Shadow");
+            if (t == null)
+            {
+                t = new GameObject("Shadow").transform;
+                t.SetParent(root.transform, false);
+                t.gameObject.layer = root.layer;
+                changes.Add("added the cat's Shadow");
+            }
+            SpriteRenderer r = t.GetComponent<SpriteRenderer>();
+            if (r == null) r = t.gameObject.AddComponent<SpriteRenderer>();
+            CatContactShadow shadow = t.GetComponent<CatContactShadow>();
+            if (shadow == null) shadow = t.gameObject.AddComponent<CatContactShadow>();
+            bool stale = r.sprite != soft || r.sharedMaterial != EnvironmentKit.UnlitMaterial || r.sortingLayerID != body.sortingLayerID || r.sortingOrder != 6;
+            r.sprite = soft; r.sharedMaterial = EnvironmentKit.UnlitMaterial; r.color = Color.black; r.enabled = false;
+            r.sortingLayerID = body.sortingLayerID; r.sortingOrder = 6;   // over the stone's top caps (CatContactShadow.StoneTop)
+            var so = new SerializedObject(shadow);
+            AssignObject(so, "motor", motor, changes, "CatContactShadow.motor");
+            AssignObject(so, "shadow", r, changes, "CatContactShadow.shadow");
+            so.ApplyModifiedPropertiesWithoutUndo();
+            if (stale) changes.Add("set the cat's Shadow sprite and sorting");
+        }
 
         [MenuItem("PARALLAX/Setup/Cat Visual")]
         public static void Configure()
@@ -279,6 +319,7 @@ namespace Parallax.Editor.Art
                 AssignObject(presenterSO, "signals", signals, changes, "CatVisualPresenter.signals");
                 presenterSO.ApplyModifiedPropertiesWithoutUndo();
                 SetConfigDefaults(config, motor, changes);
+                ApplyContactShadow(root, motor, body, changes);
 
                 if (changes.Count > changesBeforePrefab)
                     PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);

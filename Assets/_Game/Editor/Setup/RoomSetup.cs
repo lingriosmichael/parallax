@@ -16,6 +16,7 @@ namespace Parallax.Editor.Setup
     {
         const string DoorArtPath = "Assets/_Game/Art/Doors/A_Door_Exit.png";
         const int DoorArtSortingOrder = -2;
+        const float DoorFootWidth = 2.6f, DoorFootSquash = 0.16f, DoorFootAlpha = 0.6f;
         static readonly Vector2 DoorSize = new Vector2(0.6f, 1.5f);
 
         [MenuItem("PARALLAX/Setup/Rooms (Sandbox)")]
@@ -84,14 +85,14 @@ namespace Parallax.Editor.Setup
         static void BuildDoor(RealityRoot root, RoomManager manager, int id, Vector2 localPosition, List<string> changes) =>
             BuildDoorCore(SetupUtility.EnsureChild(root.transform, "Doors", LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id)), changes), root, $"Door_{id}", manager, id, localPosition, DoorSize, new Color(0.9f, 0.5f, 1f, 1f), null, changes);
 
-        internal static RoomDoor BuildDoorCore(Transform parent, RealityRoot root, string name, RoomManager manager, int id, Vector2 localPosition, Vector2 size, Color color, int? sortingOrder, List<string> changes)
+        internal static RoomDoor BuildDoorCore(Transform parent, RealityRoot root, string name, RoomManager manager, int id, Vector2 localPosition, Vector2 size, Color color, int? sortingOrder, List<string> changes, string kitSlot = "ENV_Door")
         {
             int layer = LayerMask.NameToLayer(RealitySpace.PhysicsLayerName(root.Id));
             GameObject doorObject = SetupUtility.EnsureChild(parent, name, layer, changes).gameObject;
             SetupUtility.SetLocalPosition(doorObject.transform, localPosition, changes);
             SpriteRenderer greybox = SetupUtility.SetVisual(doorObject, root, size, color, changes);
             if (sortingOrder.HasValue && greybox.sortingOrder != sortingOrder.Value) { greybox.sortingOrder = sortingOrder.Value; changes.Add("set " + doorObject.name + ".sortingOrder"); }
-            BuildDoorArt(doorObject.transform, greybox, root, size, changes);
+            BuildDoorArt(doorObject.transform, greybox, root, size, kitSlot, changes);
             RoomDoor door = SetupUtility.Ensure<RoomDoor>(doorObject, changes);
             SetInt(door, "roomId", id, changes);
             SetupUtility.SetVector2(door, "zoneSize", size, changes);
@@ -99,11 +100,13 @@ namespace Parallax.Editor.Setup
             return door;
         }
 
-        static void BuildDoorArt(Transform door, SpriteRenderer greybox, RealityRoot root, Vector2 doorSize, List<string> changes)
+        static void BuildDoorArt(Transform door, SpriteRenderer greybox, RealityRoot root, Vector2 doorSize, string kitSlot, List<string> changes)
         {
             // PAX-A15 (ruling 5, Phase 1 answer 2): with the environment kit on, the door is ENV-24's lit frame (centre
-            // pivot) with a warm glow behind it; otherwise the A_Door_Exit art (bottom pivot) as before.
-            Sprite kitSprite = SoloRoomSkin.Enabled ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Door") : null;
+            // pivot) with a warm glow behind it; otherwise the A_Door_Exit art (bottom pivot) as before. D-312: the district's
+            // own door when its kit has one (Obsidian's kit has only ENV_Door).
+            Sprite kitSprite = SoloRoomSkin.Enabled ? Parallax.Editor.Art.EnvironmentKit.Sprite(kitSlot) : null;
+            if (SoloRoomSkin.Enabled && kitSprite == null) kitSprite = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Door");
             Sprite sprite = kitSprite != null ? kitSprite : AssetDatabase.LoadAssetAtPath<Sprite>(DoorArtPath);
             if (sprite == null)
             {
@@ -115,6 +118,13 @@ namespace Parallax.Editor.Setup
             float lift = kitSprite != null ? -sprite.bounds.min.y : 0f;
             SetupUtility.SetLocalPosition(art, new Vector2(0f, -doorSize.y * 0.5f + lift), changes);
             BuildDoorGlow(art, kitSprite != null, root, changes);
+            // D-304: where the door meets the floor, so it stands on it.
+            DoorBacking(art, "Foot", kitSprite != null ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Halo") : null, DoorFootWidth, new Color(0.08f, 0.05f, 0.03f, DoorFootAlpha), DoorArtSortingOrder - 1, root, changes);
+            if (art.Find("Foot") is Transform foot)
+            {
+                foot.localPosition = new Vector3(0f, sprite.bounds.min.y, 0f);
+                foot.localScale = new Vector3(foot.localScale.x, foot.localScale.x * DoorFootSquash, 1f);
+            }
             var renderer = SetupUtility.Ensure<SpriteRenderer>(art.gameObject, changes);
             if (renderer.sprite != sprite)
             {
@@ -149,8 +159,10 @@ namespace Parallax.Editor.Setup
             // A soft dark pocket behind the door, then a warm glow around its opening: the lit doorway pops (A6).
             // 2026-10-17 visual review (L002: "a darker brown ring ... a dirty halo around the exit"; L008: "a sickly green-yellow
             // ring"): the pocket over a light sky read as a stain; warm and at 0.55 of its strength.
-            DoorBacking(art, "Shade", ready ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Halo") : null, ready ? look.DoorShadeSize : 0f, new Color(1f, 0.86f, 0.72f, ready ? look.DoorShadeAlpha * 0.55f : 0f), DoorArtSortingOrder - 2, root, changes);
-            DoorBacking(art, "Glow", ready ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Glow") : null, ready ? look.DoorGlowSize : 0f, new Color(1f, 0.86f, 0.58f, ready ? look.DoorGlowAlpha : 0f), DoorArtSortingOrder - 1, root, changes);
+                        // D-303: Obsidian's door is cold light: the warm pocket and glow drew a cream disc around it on a blue sky.
+            bool cold = Parallax.Editor.Art.EnvironmentKit.Current == Parallax.Editor.Levels.Biome.ObsidianVoid;
+DoorBacking(art, "Shade", ready ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Halo") : null, ready ? look.DoorShadeSize : 0f, new Color(cold ? 0.05f : 1f, cold ? 0.1f : 0.86f, cold ? 0.22f : 0.72f, ready ? look.DoorShadeAlpha * 0.55f : 0f), DoorArtSortingOrder - 2, root, changes);
+            DoorBacking(art, "Glow", ready ? Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Glow") : null, ready ? look.DoorGlowSize : 0f, new Color(cold ? 0.55f : 1f, cold ? 0.82f : 0.86f, cold ? 1f : 0.58f, ready ? look.DoorGlowAlpha : 0f), DoorArtSortingOrder - 1, root, changes);
         }
 
         static void DoorBacking(Transform art, string name, Sprite sprite, float size, Color color, int order, RealityRoot root, List<string> changes)

@@ -8,7 +8,8 @@ using UnityEngine;
 namespace Parallax.Editor.Setup
 {
     // PAX-119/120/121 (D-197): the builders for pressure plates, portals and aiming turrets (the conveyor was removed, D-199).
-    // Placeholder art: a plate slab, two coloured portal boxes (with the environment kit, D-199: two stone arches with coloured veils), a
+    // Placeholder art: a plate slab, two coloured portal boxes (with the environment kit, D-199: two stone arches with coloured veils;
+    // D-281: in Obsidian, the ring and swirl of PortalRing), a
     // grey turret with a red line.
     public static partial class TrapKitSetup
     {
@@ -40,7 +41,7 @@ namespace Parallax.Editor.Setup
             if (look.sortingOrder != 1) { look.sortingOrder = 1; changes.Add("set " + name + ".Exit.sortingOrder"); }
             // D-199 (L021 "the art is not clean"): with the environment kit on, each end is the door's stone arch with a coloured veil
             // in its opening (blue in, magenta out) in place of the flat box; the exit's veil blinks its warning.
-            if (PortalArch(go.transform, size, PortalIn, root, changes) is SpriteRenderer && PortalArch(exit, exitSize, PortalOut, root, changes) is SpriteRenderer veil)
+            if (PortalEnd(go.transform, size, PortalIn, "ENV_PortalSwirl_In", -1f, root, changes) is SpriteRenderer && PortalEnd(exit, exitSize, PortalOut, "ENV_PortalSwirl_Out", 1f, root, changes) is SpriteRenderer veil)
             {
                 foreach (SpriteRenderer box in new[] { go.GetComponent<SpriteRenderer>(), look })
                     if (box != null && box.enabled) { box.enabled = false; changes.Add("disabled " + box.name + " greybox"); }
@@ -53,6 +54,44 @@ namespace Parallax.Editor.Setup
                 ("moveTicks", Mathf.Max(1, settings.MoveTicks)), ("holdTicks", settings.HoldTicks), ("returnTicks", settings.ReturnTicks));
             return trap;
         }
+
+        static SpriteRenderer PortalEnd(Transform end, Vector2 size, Color tint, string swirl, float spin, RealityRoot root, List<string> changes) =>
+            SoloRoomSkin.Enabled && Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_PortalRing") != null
+                ? PortalRing(end, size, tint, swirl, spin, root, changes)
+                : PortalArch(end, size, tint, root, changes);
+
+        /// <summary>D-281 (the developer: "I dont want it to look like an exit but its own portal art"): a portal end's look where the kit
+        /// has one: OV-07a's ancient ring, closed, hovering at the box's centre (where the cat goes in and comes out), around a turning spiral of the void (an
+        /// entry's cyan draws in, an exit's violet pushes out) and a soft glow. Oval only where the box is much wider than the ring.
+        /// The returned swirl blinks the exit's warning.</summary>
+        static SpriteRenderer PortalRing(Transform end, Vector2 size, Color tint, string swirl, float spin, RealityRoot root, List<string> changes)
+        {
+            Sprite ring = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_PortalRing"), disc = Parallax.Editor.Art.EnvironmentKit.Sprite(swirl), glow = Parallax.Editor.Art.EnvironmentKit.Sprite("ENV_Glow");
+            if (ring == null || disc == null || glow == null) return null;
+            string band = RealitySpace.SortingLayerName(root.Id, SortingBand.Gameplay);
+            Vector2 drawn = PortalRingDrawn(size), mid = Vector2.zero;
+            SpriteRenderer Part(string part, Sprite sprite, Vector2 scale, Color color, int order, Material material)
+            {
+                Transform t = SetupUtility.EnsureChild(end, part, end.gameObject.layer, changes);
+                t.localPosition = mid; t.localRotation = Quaternion.identity; t.localScale = new Vector3(scale.x, scale.y, 1f);
+                var r = SetupUtility.Ensure<SpriteRenderer>(t.gameObject, changes);
+                r.sprite = sprite; r.color = color; r.sortingLayerName = band; r.sortingOrder = order;
+                r.sharedMaterial = material != null ? material : Parallax.Editor.Art.EnvironmentKit.UnlitMaterial;
+                return r;
+            }
+            Vector2 ringScale = new(drawn.x / ring.bounds.size.x, drawn.y / ring.bounds.size.y);
+            Part("Glow", glow, ringScale * (ring.bounds.size.x * PortalGlowScale / glow.bounds.size.x), new Color(tint.r, tint.g, tint.b, .28f), -4, EnvironmentStackSetup.GlowMaterial);
+            SpriteRenderer window = Part("Swirl", disc, ringScale * PortalWindow, Color.white, -3, null);
+            SetupUtility.Ensure<Parallax.Presentation.AmbientMotion>(window.gameObject, changes).ConfigureSpin(spin * PortalSpin);
+            Part("Ring", ring, ringScale, Color.white, -2, null);
+            return window;
+        }
+
+        /// <summary>The ring drawn for a portal box of `size`, centred on the box. Smaller than a standard box on purpose (D-281 amendment 1:
+        /// "about half the size"): the box stays the size the routes were built on.</summary>
+        internal static Vector2 PortalRingDrawn(Vector2 size) => new(Mathf.Max(PortalRingHeight, (size.x + .3f) * .5f), PortalRingHeight);
+
+        const float PortalRingHeight = 1f, PortalWindow = .68f, PortalGlowScale = 1.25f, PortalSpin = 50f;
 
         // D-199: a portal end's look: the door's arch (ENV_Door, standing on the box's foot), a soft glow behind it and a veil over its
         // opening, both in `tint`. The veil, or null without the environment kit.

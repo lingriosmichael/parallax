@@ -6874,3 +6874,636 @@ flair." Amends D-157; the title slice of PAX-A09 §1 and §4 comes forward.
 - **Buttons are one row:** with no progress, START GAME hides and PLAY and LEVELS close up, centred.
 
 **Open from D-157:** Android back on the title and level list. **Unverified:** the feel of the motion, and frame time on a phone (34 motes, 4 shafts, per-letter mesh rebuilds during a sheen).
+
+## D-281 — Obsidian Void's premium pass, and a portal of its own (2026-10-31, Proposed)
+
+**The developer:** "We have a lot of art in for Obsidian and I feel we are not making the most out of levels 31-40 visually. Remember this is a
+premium game. Do a visual clean up, then add more environment arts that have already been generated. Make it a premium game, there are middle
+and front arts. There is an art for portals that I dont like. I want to use different art for it. I dont want it to look like an exit but its
+own portal art." Amends D-262 (L031–L040's placeholder "Moonlit, Clear"), D-274 and D-199; OT-19 is no longer needed.
+
+**Why it looked thin:** every Obsidian level still ran D-262's placeholder: one palette, no mid row, no near row. The composer places each piece once,
+and these levels are 134 u long, so most of a run was bare sky. Nothing was placed in front of the play layer.
+
+**The composer (`EnvironmentStackSetup.Obsidian`):** Obsidian has its own, after `Inspiration.png`: a dark sky and a planet over a bright horizon of mist,
+ruins in rows out of the mist, the play stone darkest. Golden Ruins' composer is untouched. Every piece repeats across its layer's whole range.
+- **Palettes (`LevelPalettes`):** seven `Void*` palettes, OV-01 recoloured (cobalt, teal, indigo, violet, steel, ice, jade), cropped and mirrored so the
+  clouds lie differently. Never warm or red (crimson stays danger, D-172). No two neighbouring levels share one.
+- **Rows:** seven signatures, each a mid row, a near row and a number of voidfalls. L031 Citadel, L032 Voidfalls, L033 Rings, L034 Crystals, L035 Colonnade,
+  L036 Citadel, L037 Span, L038 Monoliths, L039 Crystals, L040 Voidfalls.
+- **Paintings now shown:** B_MG_01's citadel, OV-15's monolith, OV-08 and OV-09's voidfall and spray, OV-07a–d, OV-26 and OV-26b, B_FG_01's shards, OV-41's
+  skyline, OV-27 and OV-06 as painted fog and haze, OV-28's beams, and `Inspiration.png`'s crescent planet in place of OV-02's star.
+- **The front row (`ForegroundTier`):** OV-26's crystals over the stone under the walk, B_FG_01's shards over the roof, OV-26b beyond each end wall. A
+  piece's whole box stands over fixed stone or outside the room, with no element behind it, at every camera that can show it. This keeps the
+  2026-10-02 ruling: nothing pinned to the view and nothing over reachable air.
+- **A piece stands on what's under it** (`Footing`): the lowest walkable top or hazard where the camera shows it, so ruins never end in mid air over a lake.
+- **Pits stay open to the sky (D-253).** The composer draws no back walls in pits.
+- **Stone:** L031–L040 use the rimed or fractured fills, by level (`LevelLooks.StoneLooks`).
+
+**Clean-up:**
+- The masonry outside rooms was flat grey: the face and outside shadows are made for warm stone. Obsidian's now fall into deep blue.
+- The fills lost their pale diagonal streaks (`obsidian_extra.desmear`), which gave the tiling away.
+- `ENV_Halo` is dark again (the cold ramp made a pale disc behind every ring and door). The star's bloom is gone. Motes have a cold sprite (they drew olive).
+- The monoliths' mist crop is feathered, and fog and haze fade at their ends and foot (both showed straight cuts).
+- Mid and near pieces carry baked air (`AERIAL`), so background black never matches the play stone.
+- The template's `Vine_A` and `Plate_A` no longer draw in Obsidian levels (D-274 left this to the developer; it showed as a gold vine in L040). Only each
+  level scene's renderers are switched off; the objects, scripts and frozen code are untouched.
+
+**The portal (`TrapKitSetup.PortalRing`):** OV-07a's broken ring, closed by mirroring its upper half, around a turning spiral made from OV-01: cyan for an entry
+(turning in), violet for an exit (turning out). It hovers on the box's foot, 2 u tall, oval only where the box is wider (Portal_C); see amendment 1. Nothing is gameplay:
+the boxes, the timing and the exit's warning blink are as they were. The spin is `AmbientMotion.ConfigureSpin`: render time, frozen by pause, never read by
+gameplay. Golden Ruins has no ring, so a portal there would keep D-199's arch.
+
+**Rule (`ObsidianLookTests`):** each level has an Obsidian palette and a row, no pair repeats, no neighbours share a palette, and no ring goes into fixed stone
+at any place its end stands. `TrapArtTestKit.IsGated` no longer asks a portal with a ring for a separate `TrapArt`: its children draw it, and a portal without
+a ring still fails. This closes L033's parity failure, open since D-275.
+
+**Unverified:** frame time and heat on a phone. Batches rose from 62–84 to 74–115 at the start of a level; SetPass stayed the same or rose by 1 (L038 is 33,
+over V03's 30, and was 32 before). Readability in motion (dark near pieces behind moving platforms, D-252) needs a play-test.
+
+**D-281 amendment 1 (2026-10-31):** the developer, seeing L033: "Make them about half the size. too big." The ring is 1 u tall, half the size, and centred on its box
+(on the box's foot it would sit below a 1.5 u box). Portal_C's oval is 1.35 × 1 u. The trigger boxes are unchanged, so routes and timing are the same; each box now
+reaches past its ring (0.25 u above and below a standard ring; Portal_C's 2.4 u box about 0.5 u past each side).
+
+## D-282 — Golden Ruins' premium pass, L001–L030 (2026-10-31, Proposed)
+
+**The developer,** of D-281: "It is AMAZING ... Now I need you to do the same for levels 1-30. Again same prompt and same request for all levels from 1-30."
+
+**Where they stood:** L001–L010 were already rich (PAX-A16). L011–L020 reused those palettes and were mostly bare sky once a level ran long. L021–L030 had no entry in
+`LevelPalettes`, so all ten shared one sepia afternoon. No new painting was needed: the kit is complete, and it was placed too thinly.
+
+**Changes, all still in Golden Ruins' own composer (`Compose`, `NearTier`):**
+- **Rows run the whole range.** The far set and mid row no longer stop after one or two passes. The near row comes back to its paintings a view apart, so no view shows
+  one twice (the gauntlet's rule, kept).
+- **Floating ruins by the view's height (`FloatRows`):** a distant layer hardly moves with the camera, so pieces set around the frame's middle stay in view on every
+  storey. Rows standing on the lowest floor sat under the camera in tall levels. Islands and spires go in every level, floating ruins in all but Clear levels; all on the far layer, because ruling 4 (D-103) lets far pieces scale and mid pieces not.
+- **A piece stands on what's under it** (`Footing`, shared with D-281).
+- **Painted fog (ENV-27) at the mid row's foot.**
+- **The front row (`ForegroundTier`, shared):** ENV-26b's great trunk beyond each end wall, and A_FG_01's roots over roof stone. World-fixed, sharp, over stone or outside
+  the room, with no element behind them. No new ferns: the foot ferns stay as they were ("these front ferns everywhere, I don't like it").
+- **`ForegroundClear` now asks only the cameras that can show the piece.** At a long level's far ends a 1.1 layer shifts metres at cameras that can't see it.
+- **L021–L029 have their own light and row;** L030 stays GoldenHour (Moonlit took the cat's contrast to 1.6). L021–L030 vary their stone (`LevelLooks.StoneLooks`).
+  `CityLevels` adds L021, L024, L026, L027 and L029.
+- **Clean-up:** the outside masonry's shade is warm (the neutral dark read as a cold grey wash along long levels' feet). `env_kit.soft_rim` fades the pale cut edge of
+  the islands, spires and floating ruins (`PAX-102`'s alpha cut, kept, left a jagged white rim against open sky).
+
+**Kept on purpose:** L001–L010's palettes, L011–L020's palettes and stone (`BandTwo_UsesTheDefaultLook`), the pit back walls (the trap-hole rule), no waterfalls behind
+floors, nothing pinned to the view, and L027 and L030's Clear (D-232, D-252): no mid or near ruins and no pit walls, only the sky, far skyline and front row.
+
+**Unverified:** phone frame time. Levels that were already over V03's SetPass 30 stay over it (L019 61, was 56; L018 39; L001 41): that was so before this pass and
+is `PAX-V03`'s to settle. Readability in motion needs a play-test.
+
+
+## D-283 — The game's UI wears the title's look (PAX-A09, 2026-11-01, Proposed)
+
+**The developer:** "can you do this:- UI (PAX-A09): level select frames and lock icon, the styled stick and jump button, pause icon, cat portrait with progress line, and the pause and level-complete panels."
+
+**The look:** D-280's, everywhere: Cinzel and Cormorant, gold-line plates that give under a finger, the flourish under a heading. `GameUiStyle` holds it as small idempotent steps, and the
+existing menus use them, so re-running any of them keeps the look. `Tools/Art/game_ui.py` draws the art; nothing is generated by a paid service. The unlock panel shares the pause panel's button
+builder, so it took the look too.
+
+**Level select is a grid of cells, not a list:** nine across at 16:9, ten at 20:9, seven at 4:3, over the title world's darkened sky. A cell is `Locked`, `Open`, `Done` or `Paywalled` (`LevelCellState`):
+a lock, gold when a tap opens the unlock panel; the next level glows; a done level has a diamond and its best death count.
+
+**The play HUD takes no touches.** There was no visible stick or jump button at all (only a debug overlay, off in the template). `TouchControlsView` draws them from `TouchStickCatInput`'s new read-only
+state; the zones, and how a touch is claimed, are unchanged, so no reserved region changes (D-023, D-073). The stick still floats (D-021, D-049): it rests at a quiet home spot and jumps to the thumb.
+The jump button sits in the jump zone, whose whole area still works. `SafeAreaFit` keeps the portrait, line, stick home and jump clear of a cutout.
+
+**The progress line counts D-091's sections,** with a mark per gate and a diamond at the door. **The 11 levels with no gates (L001, L003–L010, L024, L029) show the portrait alone:** they have nothing to
+measure, and a line that never moves would lie.
+
+**The portrait** is Cat A's front view cut from `DesignImages/13_cat-character-sheet.png`, the developer's own sheet.
+
+**Pause moved** to the top beside the dev FLIP button, level with the portrait; its tap target grew to 120 units (51 dp on the Pixel 8a). Its right margin stays wider than the portrait's left because
+FLIP needs the corner in debug builds.
+
+**Found on the way:** the level-complete room rows wrapped one letter per line in the capture of the existing setup: `Rows` didn't control its children's width. Fixed.
+
+**Not in this:** settings (PAX-A09's sliders and "reduce motion") wait on the roadmap's settings decision. **Unverified:** touch comfort and the stick's feel, on a phone.
+
+## D-284 — One gravity orb, one direction orb, all drawn (2026-11-01, Proposed)
+
+The developer: "The gravity inverter should be one and the same through out, and the direction inverter should be one and the same"; "if we do we never draw the art for it".
+
+**Decision:** one orb art per kind in all 40 levels, and every direction inverter is drawn.
+
+- **Gravity:** `TRAP-08_glyph_ring` everywhere. Obsidian's `OBS_flip_ring` is out of use (amends D-275's stage 4).
+- **Direction:** the developer's painting `Art_Source/Traps_ChatGPT/INV-01_direction_orb_v2.png` (emerald glass, one white left-right arrow of light, gunmetal ring) replaces the gold `TRAP-06` art and Obsidian's `OBS_inverter_ring`. It's green because gold is lost against the sky, crimson is danger only (D-108), violet is gravity and cyan is Reality B's.
+- **The cue on the cat** follows it (`Tools/Art/trap_v2.py`): the mark is the orb's own arrow, the ring is drawn in its green, and the fire flare is tinted. `CueMarkSize` is 0.7 × 0.28 (was 0.2), for the arrow's shape.
+- **The 18 hidden inverters are drawn:** L006, L012 `Inv_H`, L024 (7), L026, L027, L030, L032, L034, L038 (3), L040. No inverter in a shipped level is disguised now; `InverterSettings.Disguised` stays for the Trap Lab and fixtures. Their trigger boxes didn't move. `InverterArt.OrbSide`'s narrow-zone rule is gone, so a 0.4 u zone draws the full 0.78 u orb.
+
+**Why:** no direction inverter was drawn after L020, and Obsidian's ring was never seen. **Cost:** D-210's L024 inverters were asked for as "spontaneous"; drawn, they warn.
+
+**Not changed:** L016 `Flip_H` stays a hidden gravity flip. L032 `Flip_3T` keeps its half-size ring: its zone is small so a jump clears it, and the full ring would go through the ceiling. `OBS_flip_ring.png` and `OBS_inverter_ring.png` stay on disk, unused.
+
+## D-285 — No storm clouds in any level (2026-11-01, Proposed)
+
+The developer: "I dont like the clouds at all. So remove all cloud traps. In every level."
+
+**Decision:** the storm cloud is gone from L001, L005, L007, L010, L011, L015, L018 and L020, with the routes that died to it. Nothing else in those layouts moved.
+
+- **L015** was built around the cloud. Its solution no longer dances on the cloud's clock: it hops to D2 and waits for D3. Its dead end D1 (the start alcove) and T12 are gone, and `Band2Element` asks for a spear or falling block there. Its roofs stay.
+- **L018:** the solution no longer steps out of charges. Level 18 and 20's element kinds no longer list the cloud.
+- **The system stays:** `StormCloudTrap`, its art, tests and the Trap Lab's rooms are unchanged, so it could come back. This matches the developer's preference since L025 ("No clouds").
+
+**Why:** the developer's taste, after playing. **Cost:** these levels punish stopping less; L015 and L018 lose the most.
+
+## D-286 — Every orb one size, one height (2026-11-01, Proposed)
+
+The developer, on L002: "Make all orbs the same size and at the same height if both are present in one level. I would prefer consistency."
+
+**Decision:** gravity and direction orbs draw at one size, 0.99 u, in every zone, and sit 1 u off the floor or ceiling their zone stands on (`TrapArtSetup.OrbOffset`). The direction orb no longer breathes. L032 `Flip_3T` is full size now, which amends D-284.
+
+- **Art only:** triggers stay where the layouts put them, so no route changes. A zone taller than 2 u keeps its trigger above the orb; `Flip_3T`'s orb reaches past its 0.6 u trigger.
+- **Exceptions:** an orb in mid-air stays at its zone's centre, because it's a jump target: L004 `Flip_A`, L009 `Flip_1` and `Flip_D1`, L020 `Inv_2`, L034's eight gravity orbs. L012 `Orb_B` stops short of the Shelf above it, so it sits 0.5 u off its floor.
+
+## D-287 — New music, and lasers in L015 (2026-11-01, Proposed)
+
+**Music.** The developer: "not a big fan of the background music, too melodic, too for kids. This is a game about a cat that is evading traps, and dies a million times. I need something more fast paced, cool, hip." Replaces D-277's scores; everything else in D-277 stands (one loop per world, rendered offline, streamed, resuming across scenes).
+
+- **GoldenRuins:** a cat burglar's funk break: 138 bpm, E Dorian, Em9 to A13, a swung break, slap bass, electric piano stabs, muted guitar, record scratches, vinyl crackle.
+- **ObsidianVoid:** dark phonk: 148 bpm, D Phrygian, a cowbell riff, a distorted 808, hard claps, trap hat rolls, a reese bass.
+- **Built on rhythm, not a tune**, because it plays behind a million deaths. The ambience (water, birds, air's glints) is gone with the old scores. This departs from Vision section 9's "warm, organic ambient bed".
+- **Measured (offline):** 75 and 84 % of the energy above 200 Hz, crest about 10 dB, RMS -19 dB as before, seamless. Nobody has listened yet.
+
+**L015.** The developer picked "the laser that follows you and aims at you" for the moving trap D-285 left L015 short of.
+
+- **Eye_R** hangs from a small roof (Eye_Roof, x 49.2-50.8, y 5.5-6) over the dance and tracks a cat over x 46-53. Hop to the other platform as it locks; on D2 through a lock is T11. **Eye_C** hangs from Roof_R and tracks the cave-in (x 42-46.5), range 5.6 u so it stops short of D1. Both use L021's beat (aim 50, lock 12, fire 10, period 105). Eye_R's phase gives two shots while D3 is away; the third goes off behind a cat on its way.
+- The dead end D2 route is gone (optional, D-155); it reached the dance off the beat.
+- L015's chaos moment now passes: 3 in view of 8. The lasers draw as grey-and-red placeholders until GT-10 and GT-11 are painted, as in L021, L022, L025 and L030.
+
+## D-288 — L004's roof section gives way at once; no checkpoints in levels 1-10 (2026-11-01, Proposed)
+
+**L004.** The developer: "this part looks very obviously as a trap, and is moving so slow, if a cat runs over it, it will always avoid it."
+
+- **Sink_R** was a rising section (PAX-102): 40 ticks' wait, 60 to move, under an open 6 u shaft that showed as a grey box over it. It's now a section that gives way 3 ticks after a touch, as Roof_4 does (delay 12), filling a recess only as deep as itself, with stone over it (Upper_C). A cat takes 17 ticks to cross it, so a runner falls onto RecessC_Hazard: jump it.
+- **Limit:** L004's recorded solution already dies at t215 to Arrow_O2, before this section, so the new jump is unvalidated.
+- **Still open:** Roof_4's column reads about 40 % brighter than the masonry beside it and Sink_R's about 15 %, with no layer on top; the cause isn't found.
+
+**Checkpoints.** The developer: "for levels 1-10 there should be no checkpoints in any level." L002's Upper section was the only one in those levels, and it's gone (amends D-091's use there). Each level keeps Checkpoint_0, its start.
+
+## D-289 — L004's last step is fake; a new beat every 5 levels (2026-11-01, Proposed)
+
+**L004.** The developer, on the step before the door: "I WANT THIS Last step/platform to be a trap. I dont want you to be able to land on it. If you do, you fall." Step_5 is a FakePlatform over Climb_Spikes. The climb's steps were spaced so none could be skipped, so Door_Step and the Door are 0.3 u lower: 1.34 u over Ride_4, reached by a leap from the left end of Ride_4's ride, not from its home. Unvalidated: L004's recorded solution still dies at t215 (D-288).
+
+**Music.** The developer: "I quite like the background music. But change the beat a bit every 5 levels, otherwise it feels to repetitive." Each block of 5 levels gets its own track: GoldenRuins to GoldenRuins6 (134-144 bpm) for L001-L030, ObsidianVoid and ObsidianVoid2 (148, 152 bpm) for L031-L040. **Amended the same day** (the developer: "I listen to the same music from level 1-7"): changing only the drums and bass left the tracks 99 % alike in pitch, so each track after the first now has its own key, chords, lead instrument, bass line and hook, and starts with them: G minor on organ, C minor on clavinet, A minor on brass, D Dorian on electric piano, F# minor on clavinet, and F minor for Obsidian's second. Later Obsidian levels start the two again. The first of each is unchanged. A level loads its block's track from the top, so the loop restarts at each new block. Title and level select keep the first Golden track. `MusicTrack` is appended to, so saved values hold.
+
+## D-290 — L005: the rising floor is solid, the ledge is plain (2026-11-01, Proposed)
+
+The developer: "If the floor goes up it shouldnt reveal empty space"; "I dont like that the platform shortens and reveals spikes. Remove them both."
+
+- **Rise_D** is the ground's whole depth (4 u, taking in Ground_2c_Base), so rising 1 u shows stone, not sky. Same trigger and timing.
+- **Ledge_D** is a plain fixed floor, and Spikes_D and T7 are gone (amends D-116). The floor still crushes a cat that goes under the ledge. A disguised riser in a floor must be as deep as the floor.
+
+## D-291 — Lasers where the clouds were (2026-11-01, Proposed)
+
+The developer: "add lasers where there used to be clouds in the earlier levels." Each hangs over a floor the cloud hunted: L001 Eye_1; L005 Eye_U, Eye_L; L007 Eye_G, Eye_M, Eye_T; L010 Eye_S, Eye_E; L011 Eye_G, Eye_T (each on a small new roof, so it's in view); L018 Eye_G, Eye_S, Eye_C; L020 Eye_S, Eye_R. L015 has its own (D-287). `LevelElementFactory.Laser` builds them: aim 50, lock 12, fire 10, every 135 ticks in levels 1-10 and 105 from level 11.
+
+- **Each zone covers a stretch that's run, not a wait the solution needs**, so standing still in it is what's punished. Turrets sit past a zone's edge, or have a short range, so a locked beam can't reach a required stop beyond it (L018).
+- **Routes:** T7 (L001), T8 (L010) and T3d (L011) are back with lasers as killers. T7 and T8 restore L001 and L010's rules on killers.
+- **Limits:** L005's and L007's recorded solutions were already failing, so L005's lasers are unvalidated past t136 and L007's past t1032. The lasers draw as placeholders in Golden Ruins until GT-10 and GT-11 are painted.
+
+## D-292 — The painted trap art is wired in (2026-11-01, Proposed)
+
+The developer: "Wire all new art now to the levels where they correspond." Art only: no collider, trigger or timing changed.
+
+- **Lasers, in both worlds:** a fixed mount and an eye that really turns with the aim (`TurretArt`, GT-10 and OT-18), locked state lit, with GT-11 as Golden Ruins' beam. `TurretTrap.AimAngle` is a new read-only property.
+- **Golden Ruins:** spinners (`SpinnerArt`: GT-01 cut at the arm's length, GT-02's hub), pendulums (GT-07 in three parts, its shaft tiled to the arm's length), pressure plates (`PlateArt`, GT-08), spiked undersides of movers (`FaceStripArt`, GT-04).
+- **Obsidian Void:** phase platforms (OT-20: lit, fading, caps while gone) and glitch platforms (OT-22: solid, breaking up, ghost) (`PaintedPlatformArt`; `MovingTrap.InWarning` is new and read-only), flip plates (`FlipPlateArt`, OT-21: one sprite, turned over at rest, replacing its spiked face), hard-light floors (OT-23 on `SolidArt`, with its cap), trident (OT-24) and chaser (OT-25) housings.
+- **Spiked crushers** (L023's presses, L030's Spikes_V and Spikes_D): GT-05 as one painting (`CrusherArt`), replacing the stone skin and the spike strip; its loose chips are removed at import.
+- **Not wired:** Golden Ruins' phase and glitch platforms keep their stone. Obsidian's hard-light floors no longer pass for stone, so L040's hatches show before they open.
+
+## D-293 — The cat's missing animations, from its own frames (2026-11-01, Proposed)
+
+The developer: "use the autosprite.io api and do all the cat animations that are missing. If it is not possible, then do them with code, and use the existing art." AutoSprite refused the call (`PLAN_REQUIRED: API access requires a paid subscription`; nothing was charged, the balance is still 20), so this is the code path. No frame is newly drawn. Each comes from a clip the game wasn't using, or is an existing frame turned by `cat_register.py` (`tilts`, `turn`).
+
+- **Frames picked again:** Door is the proud stand, not the pawing hop (C-24). Death_Arrow has the fall's in-betweens, so the cat no longer hangs in the air (C-21). Flip gets a two-frame tuck and uncurl at 36 fps, still 0.33 s (C-13). Death_Arrow and Death_Spiked are timed to end inside the 0.6 s death hold.
+- **Turned frames:** Death_Spiked topples through two turned frames, not one jump to lying (C-22). StepDown is a Walk stride tipping nose-down into the fall (C-09). RiseStraight and FallStraight are Rise and Fall turned upright and level, for a jump or fall with no run-up and for a geyser launch (C-08, C-12).
+- **New clips that have no state:** `CatTransitionClips` draws them over the state that's playing, so the state table, and so gameplay, never sees them: FallLoop on a long fall (C-10), StepDown on a walk-off (C-09), StandUp leaving the sit, three frames and never delaying the cat (C-20). A clip that isn't wired is skipped.
+- **Running takeoff:** a jump at Run speed shows Rise on its TakeOff frames, so there's no squat mid-stride (C-07).
+- **More, the same way (the developer asked for the rest):** Apex has a turned frame each side, so the body swings from Rise's angle to Fall's (C-11). A ground turn opens from a narrow drawing over 0.08 s, so the mirror reads as a pivot (C-03; `CatVisualConfig`). Holding into a wall leans in and walks slowly in place (WallPush, C-04; `CatMotor2D.MoveCommand` is new and presentation only). The upright Reach frames bridge onto a vine and into a leap (C-14, C-18), and a dismount lands on Land's crouch (C-16). A crusher from the side stands the pancake upright (Death_CrushedSide, C-23). HardLand loses its stray tick (C-06).
+- **Not done, on purpose:** the run brake (C-01): a stop lasts 0.075 s at deceleration 80, too short to see, and would cost the stance a stop settles on. Walk to stand (C-02) stays that same stance stop. Landing contact (C-05) already exists as bridges. Climb down (C-15) is Climb backwards, and full-speed climbing already steps through a regular subset (C-19).
+- **Limits:** these are stand-ins made of turned and reused frames, not new drawing, and none is seen in motion on a device yet. The vine's grab is a side view cut to a back view, with one bridge. A hang from the hands (C-17) has no frames at all and stays as it is. A painted version of any of them can replace its slot later.
+
+## D-294 — Cleaner lasers, pits, stone edges and frame (2026-11-01, Proposed)
+
+The developer, reviewing a screenshot: "visually it has to be very clean." Drawn only: no collider, trigger, kill or timing changed.
+
+- **Lasers, in every level:** every `LaserArt` has a soft glow tinted to its beam, drawn with no scene light and over what's behind it, so it reads on a bright sky and on black stone. A line from a source (turret, trident, chaser) also has a flare at the source and a burn where it lands. A thin aiming line draws as a hot core (`LASER_core`), not the painted beam shrunk to a hairline. An aiming line ends on the cat like a sight (`TurretTrap.Drawn`) instead of running on across its body; the fired beam and the kill still use the full length.
+- **Pit back walls:** no haze veil: its rectangle was the see-through box and its top the straight line against the sky. Pits are dark recessed stone going down into shadow, and their broken top is their only edge. Amends the 2026-10-19 "brighter" rule for pits only: a recess left by a floor or ceiling trap keeps its veil.
+- **Stone side edges:** `env_bumpy.worn_edge`: a slow swell a block or two long with a few rounded chips, and a soft shadow instead of a dark rim. Band and deep strips now share one outline, because two outlines met in square steps.
+- **The view's bottom edge falls into shadow** (`ViewEdgeShade`, a child of the camera), so a pit's spike tips cut by the frame don't show as stray marks.
+- **Carved panels:** none in Golden Ruins, one at most in Obsidian Void.
+- **Contact shadow:** `CatContactShadow`, a soft ellipse on the surface under the cat, fading as it rises; off on a vine or a wall.
+- **The white arc** was the ring that pulses from a gravity or direction orb when it fires, not the touch stick. `Effects/ring` is now a wide, faint band of light. Golden Ruins and Obsidian share it.
+- **Not touched:** the spikes themselves and the `A · LIVE` debug label, which weren't in this round.
+
+## D-295 — Thorns stay still, metal spikes are traps (2026-11-01, Proposed)
+
+The developer: "I would like to change some spikes to thorns and others remain as spikes but a different style", "I like the rule that thorns never move", "pop up spikes need to remain as spikes".
+
+- **The rule:** what a hazard looks like tells you how it behaves. Thorns (Golden Ruins) and crystal shards (Obsidian Void) never move: pit floors and fixed walls and ceilings. Metal spikes are traps: everything that pops up, slams or slides. No level breaks the rule, so there's no late betrayal.
+- **Style:** a bramble in bruised wine and near-black with pale bone thorns, and no green, so it can't pass for scenery. Spikes are old bronze and iron set in a carved base. Neither has an outline or a red cone tip. Amends D-108's outline rule and replaces D-161's stout spikes once painted.
+- **Fairness:** the drawn top of a bramble must closely match what kills the cat. Colliders don't change.
+- **Order:** three test paintings (`Docs/Art/THORNS_AND_SPIKES_PROMPTS.md`), tried in one level before anything else is painted. Nothing is wired yet.
+- **Crystal for Obsidian** was Claude's recommendation; the developer approved the painting ("I am happy with them").
+- **Amendment 1 (the same day; the developer: "It's not premium"):** round 1's paintings were loud close-up illustrations. Hazards are now near-silhouettes: dark, matte, slim, many and small, with one thin line of light. That replaces the bone thorns, bronze spikes and bright crystal above. Backgrounds go from magenta to green, because magenta tinted the edges. Importing them needs a green key.
+- **Amendment 2 (the same day; the developer gave `Docs/Art/Reference/thorn_reference_v1.png`: "I want something like this"):** thorns are a real briar: open, thin, angular olive branches with long thorns flushed pink at the base. They're four separate clusters overlapped along a hazard, not a tiling strip. This overrides "no green" and the silhouette look for thorns. Risk to check in the level test: olive may blend with the moss, and thin branches may not read at phone size.
+- **Amendment 3 (wired, the same day; the developer: "make sure that the surrounding visual to this new art has flow"):** every fixed `Hazard` draws as growth (`ThornArt`, `TrapArtSetup.Thorns.cs`): thorns in Golden Ruins, crystal in Obsidian Void, where they replace the floor lasers (a laser that moves stays a laser). Each sits over a soft shadow at its roots and shaded stone, with a dim row behind a lit row, and clusters pinned to both ends so a lethal row never shows a gap. HZ-02's iron blades replace the steel ones under the same sprite names, so every pop-up and moving spike takes them. Colliders and kill areas don't change.
+- **Amendment 4, the hazard rule (the developer: "There are too many inconsistencies... There should be a rule"):** the rule goes by what the player sees, not by what the code does. **Growth (thorns, crystal) is there when you arrive and stays. Metal comes out at you.** Everything in a pit is growth, hidden spikes included (L002, L007, L017 ×2, L019), so two pits side by side never differ; those five are always drawn and never appear. Everything that pops up, cycles or slides on open ground is metal. `TrapArtSetup.Grows` is the one place that decides, and `TheHazardRule_HoldsOnEveryRoom` holds it in every level.
+
+## D-296 — The app icon and store graphics (2026-11-01, Proposed)
+
+The developer: "I placed the art in the store folder, wire it for me." `Tools/Art/store_icons.py` makes everything from S-01, S-02 and S-03, which aren't changed.
+
+- **Icon:** the adaptive layers (432 px, `Assets/_Game/Art/AppIcon/`), with the cat's whole outline inside the area every launcher mask shows, so no mask cuts an ear; plus round and legacy versions. `PARALLAX/Setup/App Icon` gives them to Android; it's the only code that writes the icon slots. The icon reads at 48 px in a circle and a rounded square, on dark and light wallpapers.
+- **For Play Console, uploaded by hand:** `Art_Source/Store/export/play_icon_512.png` and `feature_graphic_1024x500.png`.
+- **Limits:** the feature graphic shows the old spike style and a saw blade, and it's brighter than the game. It's fine for now, but it should be repainted if the thorns change the game's look. Screenshots wait for final art. Nothing has been checked on a device.
+
+## D-297 — Play-test round: vines, camera, trap holes, L014 (2026-11-01, Proposed)
+
+- **Vines:** no carved capital. Every vine's drawing runs up into the stone above it, which draws over it. The grab box is unchanged. "The top of the vine should be a part of the ceiling. All vines should be like this."
+- **Camera:** a snap (a level's start or a respawn) sits above the cat, 0.9 of the dead zone (`CameraMath.SnapRaise`), in follow mode with room to move. Asked for on L010; applied to every level so starts stay consistent.
+- **Trap holes** are dark like pits, with no veil (`RecessBack` 0.44). This overrides the 2026-10-19 "make it even brighter" note: the bright recess was the same pale box as the pits.
+- **L014:** `Slam_10` removed, with betrayal T10; `Cap_10` fills its seat. `Band2RouteResultsTests`' L014 pin needs re-measuring.
+
+## D-298 — Play-test round: surprises, reset time, L015, L018, L019 (2026-11-01, Proposed)
+
+- **Reset:** the death hold is 80 ticks (1.6 s), up from 30. Supersedes D-041/D-058's 0.75 s limit on death to control and CLAUDE.md's "default 30": "Levels also reset wayyyy to quickly. Add an extra second."
+- **Hidden pits (amends D-295 am. 4):** "You shouldnt be able to see the trap below, should be a surprise." A pit in Golden Ruins whose floor gives way, spanning 80% of it or more, is covered by the room's own stone (`ThornArt`'s curtain) until a lid breaks or moves, so it passes for solid ground. Obsidian's pits are open to the void and keep theirs.
+- **L015:** the storm-cloud shelter roofs are gone (Start_Roof, Overhang_B, Roof_4, Overhang_4, Roof_S, Roof_9). Roof_R and Eye_Roof stay: the lasers hang from them.
+- **L018:** Eye_S moved to x 12.25, on fixed stone: at x 14 it hung from Slam_2's seat. It was the only turret in the game on moving stone.
+- **L019:** camera bias 0.8, from 1.5.
+
+## D-299 — L023: five platforms that kill (2026-11-01, Proposed)
+
+The developer: "Help me add 5 more moving platforms in level 23. These 5 new platforms should lead to traps / deaths." The five dead ends from D-208 stay; these are different, because each costs a life.
+
+| Platform | Reached from | What it does |
+|---|---|---|
+| Trap_4 | a jump west off Lift's top | climbs into Spikes_W in the roof |
+| Trap_1 | a drop west off Arc's far end | sinks into the lake |
+| Trap_3 | a jump west off Rocket on its way up | climbs into Spikes_Q in the roof |
+| Trap_2 | a jump up off Glide_2, past Press_2 | parks under Press_3, a new spiked press |
+| Trap_5 | a hop east off Bait_3, the shore in sight | carries its rider into thorns on Hang_E's face |
+
+All move at L023's one platform speed. A cat can still jump off any of them. They have no betrayal routes yet, like the dead ends.
+
+
+## D-300 — Visual consistency pass over L001-L010 (2026-11-02, Proposed)
+
+The developer, of L001: "There is no art/visual/ environment consistency. At the bottom of the image you start filled, and then a part disappears? ... Go through 1-10 screenshot through different runs ... We cant have visual inconsistencies when in production." All 129 declared routes of L001-L010 were played through the real scenes (`LevelRunCapture`) and reviewed on sampled contact sheets, not frame by frame. Drawn only: no collider, trigger, kill or timing changed.
+
+- **Hidden pits (amends D-298):** the stone over a pit is one strip per lid (`ThornArt.curtains`), so it goes tile by tile with the floor, not all at once with the first tile. A pit that passes for floor gets the recessed back wall under it, not the sky (L001's chasm).
+- **A hole left by any mover** (slam, hinge, press) in fixed stone is the same recess as a falling block's. L001's `Slam_1` showed sky in a roof whose `Block_1` hole was dark.
+- **Floor notches:** a recess open at its top is a small pit: recessed stone and a broken lip, not a flat black box with a straight top.
+- **Pits (amends D-294):** shadows start where the broken top is solid. From the lip's line they darkened a rectangle of sky over it, the "see-through box" again. `PitTint` goes from 0.46 to 0.62, so a pit is stone at its lip going into shadow, not black from the top.
+- **A pit in a free-standing slab shows the sky** (the 2026-10-19 rule, now applied to pits): side floors that stop above the pit's floor are a slab, not a mass. L009's chasm stood a black wall against the sky. Its thorns get a soft shadow (`PitShade_*`) so they still read at 3:1.
+- **Painted pieces:** `env_kit.clean_fringe` removes the junk colours left in a piece's soft edge. The one-pixel ring at `ENV_MidTowers`' foot read as a hard line across the frame. The 21 `ENV_Mid*` and `ENV_Far*` PNGs were cleaned in place.
+- **Moonlit:** far and mid pieces are tinted about the night sky's own colour (`NightFar`, `NightMid`), so their baked cream mist sinks into the sky. Hazed toward the pale haze they had sticker halos. The unlit outside strips dim at night too (L010's grey band).
+- **`ENV_RuinWall` spacing:** 10.1 u, from 10.8, so each feathered end lies over the next wall's stone. Two feathers overlapping made a pale pillar (L004, L008, L010).
+- **Left as they are:** the rotating square shards of a collapsing floor; L001's lower storey shows as a strip of sky under the top storey's slab, because it is real play space. The hazard contrast failures in L002, L004, L006 and L008 predate this round.
+
+### D-300 amendment 1 · L011-L030 and idle art (2026-11-02, Proposed)
+
+The developer: "There are so many different arts generated for level 1-30 which are used very little especially for the environment. Once the tests finish do the same scan and visual patch for levels 11-30." Their routes gave 2179 mid-run frames, reviewed by sampling each solution; betrayal routes were captured but not looked at, and L025-L029, whose routes are stale and end early, were swept whole by camera (`PARALLAX_RUN_SWEEP`). The patches are presentation only, and limited to Golden Ruins where they would otherwise reach Obsidian: scene files for L031-L040 differ from an unchanged rebuild only by the renamed empty `curtains` field.
+
+- **A pit's walls stand from its hazard up to its lid.** L016's spikes far under a lid, with air around them, drew a black column through the whole corridor. They are no pit now.
+- **Sliding lids' pockets** (L026) are recesses, not slots of sky through a solid floor.
+- **Free movers** (presses, lifts, L008, L024, L028, L030) take the room's warm shade over their rest place and travel (`MoverShade`). A mover flush in stone keeps its host's look at rest (P10).
+- **Descending ceilings** (L029, L030) keep D-249's plain block and gain the broken underside every slab has (`CeilingFillArt.lip`).
+- **Outside strips** are warm and dark in Golden Ruins, not a grey band (L024, L027).
+- **Idle paintings:** `SignatureGuests` adds `ENV_MidAqueduct`, `ENV_MidRuins` or `ENV_MidColonnade` to each row in L011-L030 that lacked it; `ENV_CitySkyline` joins L014, L018, L022 and L025; `LakeLevels` puts `ENV_FarLake_*` in L023 and L025. L027 and L030 stay Clear (D-232). A lake's waterline stays below the frame, because raising it would stand floors on water (the 2026-10 water rule), so only its ruins show.
+- **Not used, on purpose:** the EmberNight, JungleFalls, SkyIsles and SunkenGrotto paintings: D-172's world split changes only with a decision. `ENV_FarCluster` (magenta in its mist), `ENV_MidPillar` (read as a platform), and the frame and foreground pieces the developer removed stay out.
+
+## D-301 — Premium plan, Phase 1: one stone everywhere (2026-11-02, Proposed)
+
+The developer: "I want them all to be strong... I want no doubt that is is a premium game visually", every area at 9 or above (`Docs/V_TASKS/PREMIUM_VISUAL_PLAN.md`), then "Even if this means fixing level by level im okay with that. lets prepare for it and start improving."
+
+- **Stone shadows multiply (Golden Ruins).** The face and outside shadows blended stone toward one flat colour, which squeezed the masonry's contrast: the grey band over rooms (L024), the mist on every wall's foot (L025, mauve under a pink sky) and the flat side columns. They now multiply by warm colours (`GoldenFaceMultiply`, `GoldenOutsideMultiply`; `StoneShade.multiplies`, `_PaxShadeMul`), so seams stay and shadows are warm brown (LOOK_AND_FEEL §4). Obsidian keeps its blend.
+- **Movers wear real stone.** D-300's mover shade painted movers' travel into the outside channel, which flattened them and showed disguised plugs at rest (L005 `Rise_D`, L028 `Crush_2`). It's replaced by `HostSkin.Tint`, a multiply on a free-standing mover only (`SoloRoomSkin.MoverTint`). A mover set in stone stays white and matches its host. `Tint` is recorded apart from the host's colour, so `ValidateTrapSkins` still checks the host.
+- **Ground goes down to the room's bottom.** The floor's hanging strip was cut off by the view's bottom edge, over a slit of sky (L007, L022, L023, L025, L027, L030). `UnderFill` now also fills under ground at least 2 u deep, even between two chasms, and its open ends break like any face. A bridge keeps its chasm. No hanging strip draws over a fill.
+- **`UnderFill` bug:** summed float steps could pass a long room's end before the step that closed the last run, so runs reaching the room's edge were lost.
+- **`Outside_Bounce`** drops from 0.14 to 0.05.
+
+## D-302 — 150 levels, 30 per world (2026-11-02, Proposed)
+
+The developer: "I dont want you to use them just yet. I am aiming for a total of 150 levels. So I want basically 30 levels in each world."
+
+- **Target:** 150 levels, 30 in each world. This answers the roadmap's "How many levels ship?".
+- **L001–L030 stay Golden Ruins** (D-172 stands). EmberNight, JungleFalls, SkyIsles and SunkenGrotto are held for later levels. The plan's idea of using them in L011–L030 is dropped.
+- **Golden Ruins varies from within:** three districts of one city, The Gardens (L001–L010), The Overgrown Quarter (L011–L020) and The High Citadel (L021–L030), from `Docs/Art/PREMIUM_PACK_B_PROMPTS.md`.
+- **Open:** 150 at 30 each is five worlds, and six are painted. One goes, or the total becomes 180.
+
+## D-303 — Premium plan, Phase 1 finished (2026-11-02, Proposed)
+
+The developer: "Okay so first finish Phase 1."
+
+- **The grade lifts blacks.** The darkest hazard pixels land near L 0.03, so on a mid-tone background (L 0.12) no dark can reach 3:1. There, only light pixels count. Arrows went brighter, not darker.
+- **Arrows:** near-white edges, 8 and 7 px (`trap_v2.ARROW_EDGE`). **Launcher mouths:** 5 px edges. **Metal spikes:** lighter edges at the painted width; widening them cost the dark core on bright skies. **Thorns:** less calming of the pale bark and a higher lift, and a deeper, taller bed.
+- **`HazardContrastTests` is unchanged.** Measuring both thorn rows was tried and dropped: the dark row disappears on dark stone. Contrast failures are 28 hazards in 12 levels, down from 41 in 14: 22 thorns, 5 metal, 1 arrow at 28 %. These are re-measured after Phase 2's lighting.
+- **`ViewEdgeShade`** 0.86 to 0.6, warm. **Orbs** take `OrbCalm`. **Obsidian's door** takes a cold pocket and glow, not the warm cream disc.
+- **Results screen:** "No deaths", since the title font's zero reads as a letter O.
+- **`SolidArt`:** no dust on a tick a mover stands still (`Parity:L024`).
+- **`LevelRunCapture`** runs silent. Batch runs use a clone with audio disabled.
+- **Left, outside the look:** `RevealFrame` L022, L036, L039 and `WorldTileSkin` L032, L040 fail as they did before this work.
+- **Leftover strips** in L003, L007, L021 and L025 hang under real floating treads and floors, and stay.
+
+## D-304 — Premium plan, Phase 2: light and colour (2026-11-02, Proposed)
+
+The developer: "Whenever phase 1 is complete proceed with phase 2."
+
+- **Stone takes its sky's light.** `LevelPalettes.StoneLights` holds one colour per palette, set by `StoneShade` as the global `_PaxStoneLight`, in the shader all stone and plants share. So a disguised trap and its host always match, and the cat and hazards are never tinted. Unlit stone (outside strips, pit backs) takes it by hand (`StoneLit`). Obsidian Void has none.
+- **Skies run as a journey.** The Gardens: one day, dawn to moonlight. The Overgrown Quarter: a day under the canopy to blue hour. The High Citadel: the climb through the night to sunrise at the summit. Only `LevelPalettes.Levels` changed; D-282's rows and each level's signature stay.
+- **The moon:** `ENV_Sun` is neutral now, so a palette's tint makes a warm sun or a cool moon. Tinted blue, the painted yellow kept an orange rim. `env_kit.py` keeps it neutral.
+- **Night pits** fall into blue shadow (`NightDepthShade`), not black.
+- **The cat:** Obsidian's cat light eases from 1.1 to 0.7, and the cat's rim takes the level's light at 0.55 (`CatVisualPresenter.levelRim`).
+- **The door** has a soft contact shadow at its foot. Other contact shadows are left to the level-by-level phase.
+- **Obsidian's stone** waits for Pack F: light can't fix walls that read as tile.
+- **Contrast** is 32 hazards in 11 levels on the new skies.
+
+## D-305 — Premium plan, Phase 3: Packs A and B in the game (2026-11-02, Proposed)
+
+The developer: "Start with Phase 3."
+
+- **`Tools/Art/premium_pack.py`** keys the 11 paintings, matches them to the kit art beside them (they came about 1.7 times too bright), cuts them up and adds 20 slots to `env_kit.json`. Run it after `env_kit.py`, which rewrites the manifest.
+- **Platform undersides:** `ENV_ThickUnder` and `ENV_ThickUnderShort` are repainted from SB-01 at their old sizes, in every Golden Ruins level. They hang shallower than the old strips (about 0.85 u against 1.3 u on average), so head room over them only grows.
+- **Three districts:** `LevelLooks.District`. A district's landmark (`ENV_Landmark_0..2`) grows through its ten levels, from 0.42 to 1.05 scale.
+- **The Overgrown Quarter (L011–L020)** dresses with Pack B's leaves, ivy and roots.
+- **The High Citadel:** free-standing movers wear bronze over the level's own stone (`ENV_PressFace_*`, the painted bronze only; its stone came out an orange slab). Rails on pistons, straps on slabs. Never on a disguise (P10). Flip plates and slabs are left out.
+- **Hero walls, pilot:** `ENV_HeroRelief` and `ENV_HeroRoots` on the biggest faces of L022, L025 and L030, and `ENV_MidBreach` behind L022 and L025.
+- **Plants** are in the first atlas, so they batch.
+- **Contrast:** 33 hazards in 12 levels. `L009 Arrow_W2 (launcher)` fails in some runs and passes in others, at one camera pose.
+
+## D-306 — Premium plan, Phase 3: Obsidian's new walls (Pack F) (2026-11-03, Proposed)
+
+The developer painted Pack F. Obsidian's walls read as bathroom tile, which light couldn't fix (D-304).
+
+- **`premium_pack.py --obsidian`** replaces `ENV_Fill_A`, `A2` and `A3` in Obsidian's kit at their old size, with their normal maps, recessed fills and recess lips. Run it after `obsidian_env.py`, which writes the fills it replaces.
+- **A fill is two rows of OF-01 and OF-02.** The paintings came back 2:1 and darker than the old stone, so they're matched to its colour (`FILL_LOOK`, spread 1.15). A soft, wandering line picks between the rows, shifted half a width, because a straight join drew a ruled line across every wall.
+- **Which wall:** A is fractured glass, A2 and A3 mix glass and machinery. So each level keeps its existing `Stone` choice.
+- **Hero machines** (`ENV_HeroMachine_0..2`, OF-03) join `LevelLooks.HeroWalls` for all of L031–L040. Only L032 and L039 have faces big enough with clear space.
+- **Contrast** is 33 hazards in 12 levels. L009's launchers change between runs: one of `Arrow_W1` or `Arrow_W2` fails at one camera pose, near 20 %.
+
+## D-307 — Premium plan, Phase 4: first level pass (2026-11-03, Proposed)
+
+The developer: "Proceed with building Phase 4. No need for tests just build."
+
+- **Hero walls** may stand on any level's fixed wall of 7 × 4 u or more, scaled to fit, two reliefs at most, none in The Overgrown Quarter. They keep off what's visible and off trap stone, not off hidden triggers. 14 levels have a wall that takes one.
+- **Tried and dropped:** hero pieces on the outer masonry. Nearly all of each stood outside the camera's frame.
+- **Pack B's plants** are in every district (`PlantShare`: Gardens 0.35, Overgrown 1, Citadel 0.2).
+- **The collapsed wall** stands in the horizon's fog, hazed as its row, in L004, L008, L012, L017, L022, L025, L026 and L029.
+- **L006 and L029** gain a guest in their thin mid rows.
+- **L010:** night pits show their stone (`NightLift`), and thorns' shade halves at night.
+- **L037–L039:** L038 takes VoidIce and L039 VoidViolet, L037's fog eases.
+- **Paywall levels, by hand:** hero walls now fit narrower walls (4 × 3.2 u, scaled down to half), roots only from a lip, and a relief may stand low in The Overgrown Quarter. L011's lower row is a colonnade (`UnderRowTop` 7) standing in a sea of painted clouds. 20 levels have a hero wall well inside the frame in the sweep.
+- **No tests ran this round, at the developer's request.** `ObsidianLookTests` and `HazardContrastTests` may need re-checking, since palettes, thorn shade and hero dressing changed.
+
+## D-308 — Premium plan, Phase 4: water, ceilings and banners (2026-11-03, Proposed)
+
+The developer, answering the plan's open decisions (§8.2, §8.3, §8.5): "add water as long as it fits in the overall background, do not enforce it, only if it its in the overall image and doesnt affect the floor you walk on, yes ceilings, and bronze".
+
+- **Banners** are a muted bronze-ochre (`env_kit.py`: hue 32, saturation × 0.82, value × 0.7), no longer royal blue. Red stays for danger (D-108). Only `ENV_Banner_0` and `_1` change. A hero wall now keeps off banners: in L004, one hung over the relief's head. Running all of `env_kit.py` also undoes later steps (the sun, the far pieces, Pack B's undersides), so only the two banners were taken from its run.
+- **Water: tried, and nothing fits, so no water was added.** A waterfall thinning into mist was hung off a far island, behind its rock, and kept only if the water stayed in open air from the cameras the cat's walk sets (on every walkable top). That meant no floor under its visible length and no slab edge across it. It was tried in L002, L003, L006, L011, L013, L014, L017 and L020: off the district landmark, off the far islands, and anywhere in the open far sky. In every level, the water crossed a slab, ended on a floor, or stood where no camera shows it. The piece and its rule were removed rather than left placing water nobody sees. Water stays the far lake (D-300), only where it fits. A level with open sky under its walk can take a fall later.
+- **L029/L030 ceilings** keep D-249's one block, plugs and timing, and look like real stone:
+  - The open ends of each piece are broken-stone faces, as on every fixed face. They grow with the block as it comes down. The block's straight end sits 0.14 u inside them.
+  - A plug grows the same 0.14 u at each end as it slides out of its home, so the closed ceiling shows no sky at the joins.
+  - The floor above's underside no longer draws a dark seam across the ceiling hung under it.
+  - The bottom edge is unchanged, so the crush line still matches the collider.
+- **L034's thin platforms are left as they are for now.** Each stone and tile has one face the cat uses: a floor stone's top, or a ceiling stone's underside when the cat's gravity is up. Its other face looks out over the laser floor or the laser roof, and the cat can't reach it. Depth drawn only on that far face wouldn't mislead. That's the recommendation, waiting on the developer.
+- **Pack G** (`Docs/Art/PREMIUM_PACK_G_PROMPTS.md`) is the L040 finale vista, waiting on the developer's painting.
+
+## D-309 — Premium plan, Phase 4: L040 ends on the Heart of the Void (2026-11-03, Proposed)
+
+The developer painted Pack G's OG-01. It came back portrait (2:3), not 4:3, which suits a tall structure with its tail. It's saved as `OG-01_void_heart_v1.png` beside the original.
+
+- **`ENV_VoidHeart`** (`premium_pack.py --heart`, about 6 × 9 u) is unmixed from its magenta, not cut and eroded. Erosion lost the one- and two-pixel beams, and a hard cut left a pink rim. The magenta's violet cast on the stone loses its red. The step runs on its own because the walls' lips are re-cut from their old fills, so `--obsidian` mustn't run twice.
+- **L040** places it on the far layer, framed from where the camera rests by the door: the ring in the view's upper part, a little back toward the climb, the tail going down behind the play. It's hazed less than the far skyline, and it bobs slowly.
+- **Pilot only.** Standing it small and far off in L031–L039, nearer each level, is the next step if L040 works for the developer.
+
+## D-310 — Premium plan, Phase 4 finished (2026-11-03, Proposed)
+
+The developer: "Okay then finish Phase 4." That was taken as the go-ahead for L034 (D-308's recommendation).
+
+- **Finales:** each district's last level (L010, L020, L030) ends on its landmark, as L040 does on the Heart of the Void (D-309). It's framed from where the camera rests by the door (`DoorCamera`), a little back toward the climb, and centred in the open air between that floor and the stone over it. It's drawn smaller where that space is lower than the landmark: L020's door stands in a low corridor, and its canopy was cut off. L020 keeps its blue-hour sky, since a second moonlit finale after L010 would repeat it.
+- **L034:** its glass tiles take depth on the face no cat reaches (`LevelLooks.FarFaceDepth`, `ENV_StoneDepth`): Obsidian's cyan-seamed underside band and its shards, hung under the floor tiles and stood over the ceiling tiles. It's a trim of each tile, so it shatters with it. Colliders, routes and timing are unchanged. The hard-light stones keep their glow.
+- **The template's co-op anchors** (`Vine_A`, `Plate_A`) no longer draw in L001–L030. Their vine knot showed as a stray leafy stub at one fixed spot in every level. They stay working and untouched, as in Obsidian.
+- **Hero machines** cycle in the order they're placed, so each one differs from the one before. Picked by grid cell, the same porthole machine stood in nearly every frame of L039.
+- **Contact shadows:** rubble lying on a floor gets a soft dark shadow, the door's foot shadow squashed, so it sits on the stone. Trap mounts don't have them yet.
+- **Haze:** VoidViolet's far haze goes from 0.42 to 0.34 (L033's lower half read as a lavender wash, L039 too), and VoidJade's from 0.3 to 0.26 (L037).
+- **Hand pass, L014–L039:** looked at from the sweep, six frames per level. Left as they are:
+  - L018's pink sky weakens its first laser. It's part of the L017–L020 sunset run, and `HazardContrastTests` will measure it.
+  - L022, L025 and L030 have long stretches of bare masonry. More stamps of the one guardian would read as repeats (the developer ruled against stamped repeats, D-294), so four more hero walls are written as Pack A2 (`Docs/Art/PREMIUM_PACK_A2_PROMPTS.md`).
+- **§7's water moments** (L011, L014, L017, L020) became other moments: L014 its curtain of hanging vines, L017 the Great Fig over its twin corridors, L020 the framed finale, L011 its colonnade over the cloud sea (D-307).
+
+## D-311 — Pack A2 hero walls (2026-11-03, Proposed)
+
+The developer painted Pack A2 (`Docs/Art/PREMIUM_PACK_A2_PROMPTS.md`): a sealed door, a carved frieze, a blind arcade and an empty statue niche. They're in the Golden Ruins kit as `ENV_HeroDoor`, `ENV_HeroFrieze`, `ENV_HeroArcade` and `ENV_HeroNiche` (`premium_pack.py --walls`). The source paintings are saved as `HW-04`–`HW-07` beside the developer's originals.
+
+- **Colour:** each is keyed off its blue, matched to the wall's own stone (`ENV_Fill_A`), and seated with the relief's soft shadow. They keep less of their own colour than the relief (4 % against 12 %), because they came back yellower than the wall.
+- **Which piece goes where:** the five carved walls (the relief and these four) are chosen by a world grid, not by room. Cell (i, j) of a 12 × 10 u grid takes piece (i + 2j) mod 5, so the same piece recurs at least 24 u across or 20 u up, and never twice in one view. Rooms are built one at a time, and with a per-room choice two rooms side by side showed twins in L025. Within a room, a twin still nearer than 24 u is left out. The grid and that distance scale with the level's view, because L025's 1× camera sees about 36 u across.
+- **How many:**
+  - Under a wall's lip, carved walls alternate with roots (D-307). Lower down, where roots can't grow, every cell of the 9 u grid is carved; those cells were the bare stretches in L022, L025 and L030.
+  - Rows are now rounded, not floored, so a 14 u wall gets two rows.
+  - There's no cap per room in Golden Ruins: the old cap of 8 went to the biggest faces, often mostly off screen. Each piece keeps 1 u of bare stone around it.
+- **Obsidian's machines** are unchanged: the same 8 per room, and the same placements in every frame of L031–L040.
+- **Measured from the camera sweep of L001–L030 (448 frames):**
+  - Frames with a carved wall at least half on screen: L022 13 of 30, L025 13 of 15, L030 25 of 48.
+  - No frame shows the same carved piece twice.
+  - At most 2 pieces per frame at the usual zoom, and 6 in L025's wide view.
+- **L025's rising wall:** its "Seat" blocks are fixed stone, so they now carry pieces. No piece touches a rising platform's own rect (D-307's rule is unchanged).
+
+## D-312 — Packs E and I in, PAX-V06 game feel built (2026-11-03, Proposed)
+
+The developer: "Approved build it". That approved PAX-V06's file list, the Motion switch in the pause panel, running only the touched test fixtures, and the spear and doors going in first.
+
+- **Spear (TE-01):** it replaces the pilot painting as `TRAP-05`'s source (`trap_v2.py`, keyed off its blue; its collar starts at 72 % of its length). The whole-spear sprite the game draws keeps its fixed size (1.4 × 0.26 u), its dark wood and lit rim, and the crimson danger edge on its tip. Only the spear's six files changed: a full `trap_process.py --check` run had shown every other output unchanged.
+- **District doors (TE-02, TE-03):** `ENV_DoorOvergrown` (L011–L020) and `ENV_DoorCitadel` (L021–L030) come from `premium_pack.py --doors`, picked by `LevelLooks.DoorSlot`.
+  - Each frame is matched to the wall's stone. Matched to the Gardens door's frame, they stayed yellow.
+  - Each opening shows the Gardens door's own light; theirs was a flat yellow.
+  - Each is sized so its opening is as wide as the Gardens door's.
+  - TE-02's fig trunk ran off the top of the painting, so it fades out above its roots.
+  - Obsidian keeps its own `ENV_Door`. `EnvironmentReadabilityTests` now expects each district's slot.
+- **Effects (Pack I):** `fx_pack.py` cuts the six sheets into 44 sprites in the trap kit (`Effects/FX_*`): puffs, landing and skid dust, debris, sparks, impact rings, the door burst, and Obsidian shards and cyan sparks.
+  - A piece is every shape whose centre falls in its painted cell.
+  - Soft dust has the blue unmixed out of its rim (keyed like a hard edge, the rim stayed purple), and is pulled halfway to pale sand (orange, it read as fire).
+  - The door burst's cover follows its brightness gently (steeply, it read as a hard star).
+  - Debris, sparks and shards aren't drawn yet; they're for P5.3.
+- **PAX-V06:** all of it is presentation; no gameplay reads it.
+  - **Squash and stretch** (`CatVisualPresenter`, D-034): a stretch off the ground, a squash on landing, more on a hard one. It's applied to the drawing about the paws, never the collider. `FeelMath.Squash` settles through a small rebound. With no `FeelConfig` wired (every existing test), the drawing is exactly as before.
+  - **`LevelFeel`** (its own `GameFeel` root, beside `LevelHaptics`, read-only):
+    - Dust where the cat runs (every 1.1 u), skids, takes off, lands and slides down a wall, drawn on the cat's side of gravity.
+    - An impact ring and a shake by distance where a solid mover going 6 u/s or faster stops at once (falling blocks, slams, crushers). A slow platform, or one easing to rest, never counts.
+    - The death beat: a 3-frame white flash on the cat and a shake.
+    - A burst where a checkpoint section's gate lights (`RoomManager.SectionReached`, a new presentation event), and over the door at level complete.
+  - **Camera shake** (`LevelCameraFollow.ShakeOffset`): translation only (D-020). It's taken off before each follow step, so the follow, and the camera tell rule that shares `CameraMath.Step`, never see it.
+  - **Motion switch** in the pause panel, beside Vibration (`LevelProgressStore.ReduceMotion`): turns off every effect except the death flash.
+  - **Not changed:** the level-complete screen still shows on the same frame, so the door burst plays behind it. Delaying the screen would change the completion flow and its tests. Debris on collapses and sparks on metal are P5.3.
+  - **Tunables** live in `Assets/_Game/Data/FeelConfig.asset` (`PARALLAX/Setup/Game Feel (PAX-V06)`). The developer tunes them by hand: "too much / right / too little" per beat.
+
+## D-313 — Phase 5 finished: trap weight and living air (2026-11-03, Proposed)
+
+The developer: "No need for building or testing. Proceed with the next phase." That covers Phase 5's other two parts, P5.3 and P5.2. Nothing was compiled or tested.
+
+- **P5.3, trap weight (`LevelFeel.Throw`):** where a heavy mover stops at once (D-312's impact rule), its face throws something as well as the dust ring:
+  - Golden Ruins: 4 stone chips (Pack I's debris) that fly back and to both sides, spin and fall.
+  - Metal: sparks. A mover counts as metal by its name: a slam, a piston, a crusher, a press.
+  - Obsidian Void: glass shards and cold sparks.
+  - Collapsing floors keep their own 24 debris pieces (PAX-A13).
+  - The level build bakes each level's world into `LevelFeel` (`GameFeelSetup.BakeLevel`, called by `LevelSetup` beside the camera bake).
+- **P5.2, living air (`LevelAir`):** a few leaves (the trap kit's six `TRAP-13_leaf` sprites) drift down and swing through the view in Golden Ruins, and cold motes rise and twinkle in Obsidian Void.
+  - **How many:** 4 + 8 × the district's plant share, so 7 in The Gardens, 12 in The Overgrown Quarter, 6 in The High Citadel, and 10 motes in Obsidian.
+  - **Where:** at the top of the background band, so they're always behind the play layer: never over a hazard, a lane or the cat's path. They show only in open air, never over stone.
+  - **Behaviour:** each wraps just outside the view, so the air never bunches at one edge. They run on render time, so they freeze with the pause. Reduce motion hides them.
+- **Left as they are:**
+  - The background's own motion: rays breathe, islands bob, trees sway, clouds drift (`AmbientMotion`, PAX-A16, D-281).
+  - The hanging ivy doesn't sway. Its sprites pivot on their centres, so a turn would swing their tops off the wall they hang from.
+  - No birds and no water, per the developer's rulings.
+
+## D-314 — Phase 6: chapters, settings, the results cat, the menu reveal (2026-11-03, Proposed)
+
+The developer: "Proceed with Phase 6." The roadmap's Decide 2 (a settings screen) is taken as its own recommendation: a small one. As in Phase 5, nothing was compiled or tested.
+
+- **Level Select in chapters** (`LevelChapters`, `LevelSelectController`):
+  - Four tabs under the heading: The Gardens, The Overgrown Quarter, The High Citadel, Obsidian Void, ten levels each (a level list past 40 gets "Chapter 5" and on).
+  - Only the chosen chapter's levels show. Select opens on the chapter the player is up to: its first open level not yet done, else its last open one.
+  - Behind the cells, the chapter's landmark rises from the foot of the screen (the Garden Gate, the Great Fig, the Summit Citadel, the Heart of the Void), and the sky is tinted to the chapter's time of day.
+  - No unlock rule changed.
+  - The grid itself is as before; it wraps to the screen's width, so its rows couldn't be the chapters.
+- **Settings** (`SettingsPanel`), from a quiet SETTINGS button in the title's top-right corner:
+  - Music and Sound each step through 100, 75, 50, 25 % and off.
+  - Vibration and Motion flip.
+  - Everything is saved at once (`LevelProgressStore.MusicVolume`, `SoundVolume`) and read live: `GameAudio` multiplies the player's volume over the mix's channel volume (music, or sound for effects and the interface). The mix (`AudioCueBank`) is unchanged.
+  - The pause panel keeps its Vibration and Motion buttons; it has no volume.
+- **The results beat** (`ResultsCat`): the cat sits on the top-left rim of the level-complete plate, over a soft warm halo, looping its idle and now and then looking around. It runs on unscaled time.
+- **The transition** (`ScreenReveal`): Level Select opens out of black over 0.45 s; the title keeps its own intro. A fade out of each screen as it leaves would mean changing `LevelSceneLoader`, which every load and its tests go through, so it isn't done. Levels get no transition (PAX-V06: never during play).
+- **To see it:** run `PARALLAX/Setup/Title Screen`, `PARALLAX/Setup/Levels/Level Select` and `PARALLAX/Setup/Level Complete UI (PAX-049)` (on `_LevelTemplate`), then Rebuild All Levels.
+
+## D-315 — Phase 7: the proof run (2026-11-03, Proposed)
+
+The developer: "Go with Phase 7." Everything ran in batch mode on the work copy: the setup menus, Environment Stack, Rebuild All Levels, a capture of every level's solution route in Play Mode, and the three gate test groups. Phases 5 and 6 compiled on the first build.
+
+- **One fix from it:** TE-01's spear read 26 % at 3:1 over L011's pale sky (Spear_Gap). Its wood is darker now (0.5 against the pilot's 0.58) and its rim wider (4 px against 3). All four spear levels (L011, L015, L017, L019) now pass for their spears.
+- **Gate results (§2):**
+
+| Gate | Result |
+|---|---|
+| 1 No flat piece | By eye, from two frames a level: nothing flat found. There's no automatic check. |
+| 2 No hidden tells | `EnvironmentReadabilityTests` pass, P10 included. |
+| 3 Lit by its sky | `ObsidianLookTests` pass; by eye, every district takes its sky's light. |
+| 4 No wallpaper | Better (D-311), but not measured per frame. |
+| 5 Hero moment | Every finale frames its landmark (D-310). It's the developer's to judge. |
+| 6 Readable | **Fails in 12 levels.** `HazardContrastTests`: 29 hazards. All but one are spikes or thorns (L002, L004, L011–L014, L016–L020); the other is L009's launcher, intermittent. They wait on the thorns' round 2 paintings (D-295). |
+| 7 Motion | Every one of the 693 frames has drifting air in it (counted by presence; some is behind stone), and 450 show a feel effect. |
+| 8 Phone | Not run: it needs the Pixel 8a session. |
+| 9 Clean captures | Partly: solution routes at 20:9 only. The capture tool doesn't render betrayals' full replays or 4:3 and 16:9. |
+
+- **Menus**, captured in Play Mode: Level Select's chapter tabs over each landmark, the title's Settings panel, the results cat, the pause panel. One flaw: in the pause panel's narrower row, "Restore purchase" wraps onto two lines.
+- **Saved** in `~/Parallax_batch_tools/Phase7_proof/`: four contact sheets of the levels, the menu captures, and the whole route capture (693 frames with their dumps).
+- **Left for the developer:** the Pixel 8a session, the store screenshots (PAX-A10), and scoring the seven areas. Gate 6 keeps the 12 levels from Strong until the thorn and spike paintings come in.
+
+## D-316 — Toward 9: thorn halo, menu fixes, Obsidian fog (2026-11-03, Proposed)
+
+The developer: "Help me get them all to 9." This round measured each change on the work copy (`HazardContrastTests` for the 12 failing levels, then all three gate test groups after a rebuild of all 40).
+
+- **Thorns (`hazard_art.py`):** each cluster gets a thin dark halo (4 px at 340 px per unit, about 1 px on a phone), so the pale briar reads over a bright sky. It keeps HZ-01's airy shape, with a fine inked edge.
+  - Failing hazards went from 29 to 24, still in 12 levels.
+  - The test scores the share of a hazard's pixels that reach 3:1, and over dark stone the halo adds pixels that can't. That trade-off brought L006 and L008 in (one thorn bed each) while L009 and L012 passed.
+  - Tried and dropped: a 6 px halo (24 hazards), and a brighter bark with blades lit over 45 % of their width (43: it took away the dark core that reads over a bright sky).
+- **Menus:**
+  - The pause panel's second row is as wide as the first, so "Restore purchase" fits on one line.
+  - A one-room level's results show the total alone; the room line only repeated it.
+- **Obsidian:** each palette has its own fog (0.14–0.22, all were 0.3), less far haze and more saturation. In stills the change is slight: the milky look comes mostly from the mist bands and far layers. Every Obsidian hazard still reads.
+- **Gates after it:** `EnvironmentReadabilityTests` and `ObsidianLookTests` pass. `HazardContrastTests` fails 24 hazards in 12 levels: L002, L004, L006, L008, L011, L013, L014, L016–L020. They're thorns, metal blades over mid-tone stone, and one arrow at 28 %.
+- **What tuning the sprites couldn't do:** over mid-tone stone the game's grade lifts blacks, so only bright pixels reach 3:1, and a thin briar has few of them. Passing everywhere needs a decision from the developer: a bolder thorn painting, a darker stone behind the hazards, or a different measure for thin growth.
+
+## D-317 — Pack J in: Obsidian's skies; the hazards measured (2026-11-03, Proposed)
+
+The developer painted Pack J (`Docs/Art/PREMIUM_PACK_J_PROMPTS.md`). Each painting was measured in the levels with `HazardContrastTests`, rebuilt on the work copy.
+
+- **Obsidian skies and mist (kept):** `premium_pack.py --void-skies`.
+  - The shattered moon (OV-01b) is the cobalt sky and, mirrored, the steel one. The aurora (OV-01c) is jade, and mirrored teal. The ring nebula (OV-01d) is violet, and mirrored indigo. The frozen dawn (OV-01e) is ice.
+  - The streaked mist (OV-03d) replaces `ENV_Fog`, the band drawn three times in every Obsidian level.
+  - Each slot keeps its size; the manifest is unchanged. Every Obsidian hazard still reads.
+- **Bolder briar (HZ-01 v4, not used):**
+  - With the halo: 38 hazards failed in 17 levels.
+  - Without it: 27 in 13 of L001–L020, against 16 for v3 with its halo. The thick branches are a mid-toned olive, so over mid-brown stone fewer of their pixels reach 3:1, not more.
+  - v3 with its 4 px halo stays.
+- **Bolder spike row (HZ-02 v3, not used):** it fixed all seven hinge spikes, but a like number of floor spike strips that use the same blades failed instead (29 against 24). v2 stays.
+- **Fix kept:** `hazard_art.py` reads a spike row's feet from its blades' own base, so a painting that stops above its canvas's foot cuts (v3's cut nothing).
+- **Where it stands:** `HazardContrastTests` fails 24 hazards in 12 levels, as after D-316. Each painting traded some hazards for others, so the test can't judge between art styles. The gate needs the developer's ruling on how a thin growth hazard is measured, or a darker stone behind hazards.
+
+## D-318 — Readable hazards: shade behind the briar, bold blades on hinges (2026-11-03, Proposed)
+
+The developer approved the recommendation: darken what's behind the hazards, not the hazards themselves. Everything was measured by `HazardContrastTests` on rebuilt levels.
+
+- **Thorns** (`TrapArtSetup.Thorns.cs`): the test counts only the lit clusters, so shade behind them helps and isn't counted.
+  - The shadow behind each bed (`Bed`, ENV_Halo) is as tall as the growth (1.15×, at least 0.75 u) and spreads 1.4× past the outer branches. It's also stronger (0.92).
+  - The dim back row is near-black (0.08, 0.065, 0.06; it was a mid-tone 0.34). That mid tone was exactly what the lit branches over it missed 3:1 against.
+  - The 4 px halo baked into the sprites (D-316) is gone; counted with the sprite, it diluted the score over dark stone.
+  - In the levels, each bed sits in a shadowed band, so the pale briar reads clearly and keeps its airy shape. On a ledge against the sky it reads as a dark hedge.
+- **Hinge spikes** (`TrapArtConfig.SpikeBladesBold`, `SPIKE_bold_*`): spiked hinge floors use HZ-02 v3's bold blades. Every other strip keeps the stout set, since v3 everywhere failed as many floor strips as it fixed (D-317).
+- **No shade behind the hidden floor spikes:** it would mark where a hidden trap is (P10).
+- **Arrow:** its lit edge is 12 px (it was 8). L004's Arrow_Run passes.
+- **Obsidian's cloud rows:** tried with the streaked mist; they read as grey smoke over the sky, so they stay OV-03's. The skies and the low fog band (D-317) stay.
+- **Result:** `HazardContrastTests` fails 4 hazards in 4 levels (was 24 in 12):
+  - L004 Climb_Spikes at 30 %, on the line;
+  - L013 Spikes_P3 at 29 %, metal floor spikes;
+  - L014 Spikes_2 at 20 %;
+  - L018 Spikes_2 at 26 %.
+
+  `EnvironmentReadabilityTests` and `ObsidianLookTests` pass.
+
+## D-319 — Obsidian's cloud rows, and two tries that didn't help (2026-11-03, Proposed)
+
+The developer: "What else can you improve? Build it now." Each change below was measured on all 40 rebuilt levels.
+
+- **Obsidian's cloud rows (kept):** the six cloud bands use the streaked mist (OV-03d) in each row's own colour (its old mist's mean colour) at a third of their old strength. Plain white at half strength read as grey smoke. The shared milky veil is gone, so each level's own sky shows through: the levels look less alike, and each frame is a little plainer than the old busy nebula.
+- **Silhouette thorns against open sky (tried, reverted):** drawing growth with no stone behind it at 0.6 of its colour sent the failures from 4 to 54. Most beds have open sky behind them, and a darkened briar on a mid-bright sky is the very mid tone that fails.
+- **Carved walls at 38 % scale on medium walls (kept, no effect):** the same 96 Golden Ruins frames show a carved wall. The bare walls are held back by the other placement rules (the grid, the keep-outs, the size limits), not by the scale.
+- **Result:** `HazardContrastTests` fails 5 hazards in 5 levels: D-318's four, and L017's spear at 29 %. That spear passed in the run before, so the test moves about a point between runs at the line. `EnvironmentReadabilityTests` and `ObsidianLookTests` pass.
+
+## D-320 — Consistency: dark rims behind hazards, carved walls on tall faces, gate 9 captures (2026-11-04, Proposed)
+
+The developer: "Lets focus on consistency now." Consistency scores 9 when every gate in the premium plan's §2 passes on all 40 levels. This round worked on gates 4, 6 and 9, each measured on the work copies.
+
+- **Gate 6, hazards that read (now passing):** each lit hazard has a soft near-black rim behind it, as its own sprite: thorn clusters (`THORNRIM_*`), the stout and bold iron blades (`SPIKERIM_steel_*`, `SPIKERIM_bold_*`) and the arrow (`TRAP-02_arrow_rim`).
+  - On a phone the rim is about 2 px wide. It's shade like D-318's bed, so the pale bark and lit iron have dark behind them on any sky, and the hazard itself is unchanged. Over dark stone it disappears into the stone. The briar reads as if inked.
+  - `hazard_art.py` cuts the rims (`rim()`), `trap_v2.py` the arrow's. `TrapArtConfig` holds them (`ThornRims`, `SpikeRimsStout`, `SpikeRimsBold`, `ArrowRim`), `TrapKitImport` wires them, and the setup lays one behind each piece. `ThornArt` shows its rims with its clusters, `SpikeArt` moves each rim with its blade (rise, lean, flip), and `ArrowArt` puts the rim on the arrow's pose.
+  - The spear has no rim: its dark wood reads by its contrast with a pale sky, and a rim behind it sent L011's spears to 15 %. Instead its sunlit band is lighter (0.96, 0.8, 0.58 at 0.95, was 0.86, 0.66, 0.44 at 0.85). L017's V2 went from 29 % to 38 %, and the lowest spear is now 33 % (L019 Spear_2).
+  - **Result:** `HazardContrastTests` passes all 20 levels. The 5 hazards that failed (L004 Climb_Spikes, L013 Spikes_P3, L014 and L018 Spikes_2, L017 V2) all pass.
+- **Thorn shade frame:** D-318's wider bed reached past the growth frame the parity test allows (`TrapArtParityTests` failed 47 of 54 on `Bed`). The frame now covers the bed.
+- **Gate 4, wallpaper:** a carved-wall cell on a tall face was left bare whenever the world grid's piece already stood within 24 u in the room, which happens often with five pieces. L030's 28 u summit tower got one carving in four cells.
+  - Twins are now judged by one view (closer than 22 u across and 11 u up at once). When the grid's piece is taken, the next of the five with no twin in view is used.
+  - The sweep shows a carved wall in 85 Golden Ruins frames, up from 71 (L022, L025, L028, L030), still with no twins on screen. L030's solution route has no frame that is mostly plain wall without a feature, down from 4.
+- **Gate 9, captures:** `LevelRunCapture` now takes `PARALLAX_CAPTURE_ASPECT` (4:3, 16:9, 20:9) and `PARALLAX_CAPTURE_HOLES=1`, which clears the camera to magenta so any spot no layer covers shows. `PARALLAX_RUN_ROUTES=all` plays the betrayals in a dump run.
+  - Every route of all 40 levels was played at 20:9 (476 routes, 3,648 frames) and 16:9, and 4:3 followed. No frame has a hole.
+  - **One defect found and fixed:** Obsidian's far city skyline (`ENV_CitySkyline`) stood on a square-cut foot. The old milky cloud rows hid it until D-319 thinned them, so a hard horizontal line crossed every Obsidian level (plainest in L037). Its foot now fades into the mist (`premium_pack.py --void-skies`, as does `ENV_FarCluster`).
+  - That step is idempotent now: the cloud rows no longer lift their colour by 1.1 on every run.
+  - **Not covered:** L004, L005, L024, L025 and L027–L029 replay short solution routes, so their captures stop early. Re-pinning those routes is open from the plan's P0.2.
+- **Still open for gate 4:** 31 frames over every 20:9 route (most in L030, fixed above, and L035) are more than half plain wall with nothing over it. L035's ceiling is etched with glyph bands the measure can't see; L002's corridor ceiling is a real case.
+- **Tests:** the touched fixtures (`TrapArtBuildTests`, `TrapArtParityTests`, `TrapArtRevealFrameTests`, `TrapArtFireEffectTests`, `EnvironmentReadabilityTests`, `ObsidianLookTests`) pass 282 of 285. The three failures are `RevealFrame:L022`, `L036` and `L039`, which fail the same way in every run since Phase 1. `HazardContrastTests` passes 20 of 20.
+
+## D-321 — After a respawn, the room waits for the cat's first move (2026-11-04, Proposed; PAX-126)
+
+The developer, of L025's first checkpoint: "if you respawn at a checkpoint and it is inline with a laser, it will start aiming too quickly … any trap or anything only starts being online after the cat moves", then "This definitely needs to be a rule."
+
+- **The rule:** after a respawn from a death (a room reset, or a checkpoint section's rewind, D-041 and D-091), the room stays as the respawn left it until the cat's first move, jump or climb.
+  - Nothing runs during the wait: no room clock, traps, hazards, bounds or door, as in the death hold (D-058), but the cat is free.
+  - The first step that moves is the room's first live tick.
+  - A level's start, and a room entered through its door, don't wait.
+- **Amends:** D-041's "Death to regained control ≤ 0.75 s" still holds, since control comes back as before; only the room waits. D-091's rewind is still exact: the room resumes from the gate's state, one step later than it would have.
+- **Validators:** the standing-still and rewind-exactness checks at each checkpoint begin with a one-tick push of the stick up. It counts as a move, and with no vine the cat stays where it is, so both still measure a live room as before.
+  - A sideways tap showed that two rewinds of L012's Handoff gate give the cat a 0.0002 u different result (it stands on the moving floor F2_A). Standing still never showed it. It isn't fixed here.
+- **Tests:** the fixtures that respawn now make a first move (`PauseTestRig.TickActing`). A new test, `RoomDeathHoldTests.AfterARespawn_TheRoomWaits_UntilTheCatsFirstMove`, covers the rule. 14 failures exist without the change, measured on the same code minus PAX-126: `CheckpointSectionPlayModeTests`, L001's rewind, and `ValidateRoutes` L004, L005, L007, L018, L019, L024–L029, L032.
+- **Not decided here:** whether a checkpoint may sit inside a laser's aim zone. L025's Valley checkpoint (x 30.5) is inside `Eye_D`'s zone (x 4–32), and a rewind restores a laser part-way through its aim, which the wait doesn't change. L025's routes (D-213) were never replayed, and its solution dies on the descent, so the loop can't be measured until they're re-recorded.
+
+## D-322 — Touch feel: 60 fps on phones, a smaller stick that follows the thumb, full speed after a short push (2026-11-04, Proposed; PAX-127)
+
+The developer, after the first Pixel 8a session: "mobility is very hard particularly with thumbs. There seems to be some delay in the movements … there shouldn't be that much difference between full speed run and slowing down. It needs to feel faster … Some traps are so fast that the delay makes it feel off. Perhaps the movement circle should be smaller?", then "Patch it for me now."
+
+- **Frame rate:** phones run at 60 frames a second (`Parallax.App.FrameRate`, set before the first scene loads). Nothing set it before, so Android ran at Unity's mobile default of 30, which kept each touch waiting up to a frame and drew the cat in steps. The Editor and desktop keep their own rate. The simulation stays at 50 Hz (D-075). The heat and battery cost is measured in PAX-V03.
+- **Full speed after a short push:** the stick's x reaches full speed at a quarter of the way out (`VirtualStick.ToRun`, `fullSpeedAt` 0.25), so a thumb that pushes partway runs at the speed the levels are built for, as a key press does. The dead zone (0.15) and the climb dead zone (0.35, D-089) are unchanged.
+- **The centre follows the thumb:** past the ring, the stick's centre trails the thumb by the ring's radius (`VirtualStick.Follow`), so a short flick back reverses the cat. Inside the ring nothing changes. The drawn stick (PAX-A09) already reads the centre, so it moves with it. It's the Vision's floating stick (`00_VISION.md`, Touch).
+- **A smaller ring:** radius 0.08 of the safe area's height, was 0.12 (about 5 mm on the Pixel 8a, was 8 mm). The field is renamed (`stickRadius` → `ringRadius`), so every scene takes the new size without a setup menu or a rebuild; the old value stays in the scene files unused until they're next saved.
+- **Unchanged:** the motor (acceleration 60, deceleration 80, run 6 u/s, D-082), the keyboard, the jump button and every route.

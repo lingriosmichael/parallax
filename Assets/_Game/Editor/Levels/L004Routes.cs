@@ -10,7 +10,7 @@ namespace Parallax.Editor.Levels
     // keeping on along the roof (the door backs away over a section that gives way: go back down, along the slab's top,
     // and up under the door). The flip toward the door from the start is the dead end.
     // PAX-103: the end is the climb (L004Layout): down Flip_D to the slab's top, onto Step_1, ride Ride_2 left, Step_3, ride
-    // Ride_4 left, Step_5, and the door step. Each hop onto a 1 u platform releases mid-air (a full jump carries 3.9 u),
+    // Ride_4 left, and (D-289: Step_5 is fake) the leap over Step_5 to the door step. Each hop onto a 1 u platform releases mid-air (a full jump carries 3.9 u),
     // as a timed step; each ride is boarded as it comes home (it waits there 50 ticks). T5 and the door pads' landings went
     // with the door's retreat.
     // D-117: the cat is inverted from the first tick to the end (L004Layout's Invert); route moves are stick input, so every
@@ -24,7 +24,7 @@ namespace Parallax.Editor.Levels
             Until(Moving("Ride_2")), Until(Home("Ride_2")), Hold(Right), Jump(), Until(XAtMost(9.7f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Ride_2")), Until(Stopped("Ride_2")),
             Hold(Right), Jump(), Until(XAtMost(6.7f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Step_3")), Until(Still()),
             Until(Moving("Ride_4")), Until(Home("Ride_4")), Hold(Right), Jump(), Until(XAtMost(5.2f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Ride_4")), Until(Stopped("Ride_4")),
-            Hold(Right), Jump(), Until(XAtMost(2.2f)), Release().Timed(TimedMode.Shift), Until(GroundedOn("Step_5")), Until(Still()),
+            // D-289: Step_5 is fake: the leap goes from Ride_4, over it, to the door.
             Hold(Right), Jump(), Until(RoomComplete()) };
 
         public static RoomRoutes Build()
@@ -47,9 +47,9 @@ namespace Parallax.Editor.Levels
         static RouteStep[] PastSpikes() => new RouteStep[] {
                 // Under Flip_A, into Flip_R, up through the gap to the roof.
                 Until(GravityUp()), Until(GroundedOn("Roof_R2")),
-                // PAX-102: wait on Roof_R2 for Arrow_7's shot, then over Sink_R and the lane together.
+                // PAX-102, D-288: wait on Roof_R2 for Arrow_7's shot, then jump Sink_R and go on over the lane.
                 Release(), Until(Still()), Until(Moving("Arrow_7")), Until(Stopped("Arrow_7")),
-                Hold(Right), Until(XAtMost(22.4f)), Jump(), Until(Airborne()), Until(GroundedOn("Roof_4")), Jump(), Until(GroundedOn("Roof_M")),
+                Hold(Right), Until(XAtMost(29.2f)), Jump(), Until(Airborne()), Until(GroundedOn("Roof_R")), Until(XAtMost(22.4f)), Jump(), Until(Airborne()), Until(GroundedOn("Roof_4")), Jump(), Until(GroundedOn("Roof_M")),
                 // Down through Flip_D to the slab's top, then the climb.
                 Jump(), Until(GravityDown()), Release(), Until(GroundedOn("Slab")) }.Concat(Climb()).ToArray();
 
@@ -61,12 +61,14 @@ namespace Parallax.Editor.Levels
                     new Route("wait", Until(Dead()))),
                 new Betrayal("T12: Arrow_Jump hits a cat that jumps Arrow_Run at the start as it comes", "Arrow_Jump", DeathCause.Hazard,
                     new Route("jump the low arrow, then again as the high one comes", For(76), Jump(), Until(Airborne()), Until(Grounded()), For(8), Jump(), Until(Dead()))),
-                new Betrayal("T7: Sink_R rises into the recess with a cat that stops under it", "RecessC_Hazard", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(GroundedOn(Roof_R2))", "stop under the section", Hold(Right), Until(XAtMost(27.5f)), Release(), Until(Dead())), revealedBy: "Sink_R"),
+                new Betrayal("T7: Sink_R gives way under a cat that runs across it", "RecessC_Hazard", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Stopped(Arrow_7))", "run across", Hold(Right), Until(Dead())), revealedBy: "Sink_R"),
+                new Betrayal("T17: Step_5, the last step, isn't there: a cat that lands on it falls onto the spikes", "Climb_Spikes", DeathCause.Hazard,
+                    Route.PrefixOf(solution, "Until(Stopped(Ride_4))", "hop onto the step", Hold(Right), Jump(), Until(XAtMost(2.2f)), Release(), Until(Dead())), revealedBy: "Step_5"),
                 new Betrayal("T8: Arrow_7's shot hits a cat that stops in its lane on the roof", "Arrow_7", DeathCause.Hazard,
-                    Route.PrefixOf(solution, "Until(Stopped(Arrow_7))", "stop in the lane for the next shot", Hold(Right), Until(XAtMost(25.6f)), Release(), Until(Dead())),
+                    Route.PrefixOf(solution, "Until(Stopped(Arrow_7))", "stop in the lane for the next shot", Hold(Right), Until(XAtMost(29.2f)), Jump(), Until(Airborne()), Until(GroundedOn("Roof_R")), Until(XAtMost(23.3f)), Release(), Until(Dead())),
                     escape: d => Route.PrefixOf(solution, "Until(Stopped(Arrow_7))", $"step out {d} ticks after the next shot",
-                        new RouteStep[] { Hold(Right), Until(XAtMost(25.6f)), Release(), Until(Home("Arrow_7")), Until(Moving("Arrow_7")) }
+                        new RouteStep[] { Hold(Right), Until(XAtMost(29.2f)), Jump(), Until(Airborne()), Until(GroundedOn("Roof_R")), Until(XAtMost(23.3f)), Release(), Until(Home("Arrow_7")), Until(Moving("Arrow_7")) }
                         .Concat(d > 0 ? new[] { For(d) } : System.Array.Empty<RouteStep>())
                         .Concat(new[] { Hold(Right), Until(XAtMost(22.4f)), Jump(), Until(Airborne()), Until(GroundedOn("Roof_4")), Jump(), Until(GroundedOn("Roof_M")),
                             Jump(), Until(GravityDown()), Release(), Until(GroundedOn("Slab")) }).Concat(Climb()).ToArray())),

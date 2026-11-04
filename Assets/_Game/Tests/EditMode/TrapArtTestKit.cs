@@ -24,8 +24,11 @@ namespace Parallax.Tests.EditMode
         static readonly Type TrapLab = Type.GetType("Parallax.Editor.Setup.TrapLabLayout, Parallax.Editor");
         static readonly Type Layouts = Type.GetType("Parallax.Editor.Levels.LevelLayouts, Parallax.Editor");
 
-        /// <summary>Every trap kind has art (§12 R10): every RoomTrap except a vine that never snaps (the environment's).</summary>
-        public static bool IsGated(RoomTrap trap) => trap != null && !(trap is ClimbVine vine && !vine.Snaps);
+        /// <summary>Every trap kind has art (§12 R10): every RoomTrap except a vine that never snaps (the environment's), and a
+        /// portal wearing its ring, or the arch a Golden Ruins kit build gives it (D-281, D-199: its children draw it, as the trap's own
+        /// exit does; a bare portal still fails).</summary>
+        public static bool IsGated(RoomTrap trap) => trap != null && !(trap is ClimbVine vine && !vine.Snaps)
+            && !(trap is PortalTrap && trap.GetComponentsInChildren<SpriteRenderer>(true).Any(r => r.name is "Ring" or "Arch" && r.sprite != null));
 
         /// <summary>Static spikes and pit floors are Hazards without a RoomTrap; they have art too (every spike, §11 R1).</summary>
         public static bool IsBareHazard(Component c) => c is Hazard && c.GetComponent<RoomTrap>() == null;

@@ -20,6 +20,8 @@ import sys
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
+from scipy import ndimage
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cat_frames import *  # noqa: E402,F401,F403  (re-exported: the tests use cat_register's frame functions)
@@ -43,12 +45,47 @@ STYLE_REFERENCE = "Walk"            # PAX-A14 §3 A: every clip's tones are matc
 REACH_BAND_PX = 20                  # PAX-A14: a death clip's reach is measured on its lowest 20 source px (about 0.1 u)
 
 
+def tilted(frame, degrees, on_paw=True):
+    """The frame turned clockwise about its body's middle, its lowest paw back on the row it stood on (`on_paw`)."""
+    alpha = frame[..., 3] > ALPHA_FLOOR
+    rows, columns = np.nonzero(alpha)
+    if not on_paw:                  # the air role places it by its body, so it can turn in the middle of the cell, nothing cut
+        up = frame.shape[0] // 2 - int(rows.mean())
+        frame, rows = np.roll(frame, up, axis=0), rows + up
+    image = Image.fromarray((np.clip(frame, 0, 1) * 255).astype(np.uint8), "RGBA")
+    turned = image.rotate(-degrees, resample=Image.BICUBIC, center=(float(columns.mean()), float(rows.mean())))
+    out = np.asarray(turned).astype(np.float32) / 255.0
+    if not on_paw:
+        return out
+    drop = rows.max() - np.nonzero(out[..., 3] > ALPHA_FLOOR)[0].max()
+    return np.roll(out, drop, axis=0)
+
+
+def body_only(frame):
+    """The frame without what isn't joined to the cat, however faint: a smear the source left beside it."""
+    labels, count = ndimage.label(frame[..., 3] > 0.02)
+    if count < 2:
+        return frame
+    out = frame.copy()
+    out[labels != 1 + int(np.argmax(ndimage.sum_labels(np.ones_like(labels), labels, range(1, count + 1)))), 3] = 0
+    return out
+
+
 def load_sources(spec):
     sources = {}
     for s in spec["slots"]:
         idx = slot_indices(s)
         frames, sheet = clip_frames(s["clip"], idx)
         frames = [cleanup(f) for f in frames]
+        if s.get("bodyOnly"):
+            frames = [body_only(f) for f in frames]
+        # D-293: a pose no clip has, turned from one that does: [after this index, degrees (clockwise, toward the facing)], in order.
+        for offset, (after, degrees) in enumerate(s.get("tilts", [])):
+            frames.insert(after + 1 + offset, tilted(frames[after], degrees))
+        if s.get("turn"):
+            frames = [tilted(f, s["turn"], on_paw=False) for f in frames]
+        if s.get("turns"):
+            frames = [tilted(f, t, on_paw=False) if t else f for f, t in zip(frames, s["turns"])]
         if s.get("vine"):
             frames = [cleanup(key_vine(f)) for f in frames]
         sources[s["slot"]] = {"indices": idx, "sheet": sheet, "frames": frames,

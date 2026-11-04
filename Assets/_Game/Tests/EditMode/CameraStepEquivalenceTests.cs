@@ -57,7 +57,7 @@ namespace Parallax.Tests.EditMode
                         config.DeadZoneHalfExtents, config.LookAhead, halfView, frameCenter, frameMin, frameMax, verticalFollow);
                 }
 
-                if (immediate) return desired;
+                if (immediate) return CameraMath.SnapRaised(desired, frameSize, viewHeight, frameMin, frameMax, config.DeadZoneHalfExtents.y, config.MaxViewHeight, aspect);   // D-297
                 return Vector2.SmoothDamp(currentCentre, desired, ref Velocity, config.SmoothTime, config.MaxSpeed, deltaTime);
             }
         }
