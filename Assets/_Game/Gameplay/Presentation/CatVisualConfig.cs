@@ -38,6 +38,10 @@ namespace Parallax.Gameplay.Presentation
 
         [Tooltip("Body alpha while this cat is driven by EchoReplay.")]
         [SerializeField, Range(0f, 1f)] float echoAlpha = 0.5f;
+        [Tooltip("D-324 (PAX-129): an air jump's somersault, in seconds (one turn, forward).")]
+        [SerializeField] float airJumpSpinTime = 0.32f;
+        [Tooltip("D-324 (PAX-129): the cat's opacity while a whisker dodge lets arrows and lasers through.")]
+        [SerializeField, Range(0f, 1f)] float dodgeAlpha = 0.4f;
 
         [Tooltip("Outline width, in texels of the sprite texture.")]
         [SerializeField] float outlineWidth = 1.5f;
@@ -124,6 +128,8 @@ namespace Parallax.Gameplay.Presentation
         public float VelocitySmoothingTime => velocitySmoothingTime;
         public float TeleportDistance => teleportDistance;
         public float EchoAlpha => echoAlpha;
+        public float AirJumpSpinTime => airJumpSpinTime;
+        public float DodgeAlpha => dodgeAlpha;
         public float OutlineWidth => outlineWidth;
         public float GroundOffset => groundOffset;
         public CatMotorConfig MotorConfig => motorConfig;

@@ -31,8 +31,8 @@ namespace Parallax.Editor.Levels
         };
         internal const int CrumbleDelay = 14;
         // D-215: the laser turrets (as L021's, D-202/D-203): each aims EyeAim, locks EyeLock (its warning), fires EyeFire and rests
-        // EyeRest, every EyePeriod, over its own zone only.
-        internal const int EyeAim = 50, EyeLock = 12, EyeFire = 10, EyeRest = 33, EyePeriod = EyeAim + EyeLock + EyeFire + EyeRest;
+        // EyeRest, every EyePeriod, over its own zone only. D-323: fire halved to 5, rest 38, so EyePeriod stays 105.
+        internal const int EyeAim = 50, EyeLock = 12, EyeFire = 5, EyeRest = 38, EyePeriod = EyeAim + EyeLock + EyeFire + EyeRest;
         // The valley: its roof's underside, the vines' x and their bottom, the snap wave, the rain's beat.
         internal const float ValleyRoof = 12f, VineBottom = 5f, ValleyE = 51f, EastFloor = 4f, EastRoof = 9.5f;
         internal static readonly float[] VineX = { 34.5f, 37.3f, 40.1f, 42.9f, 45.7f, 48.5f };

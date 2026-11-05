@@ -81,6 +81,16 @@ namespace Parallax.Gameplay.Rooms
 
         public void Kill(ObserverId observerId, DeathCause cause) => Kill(observerId, cause, null);
 
+        /// <summary>D-324 (PAX-129): what a whisker dodge passes through: a trap whose class says so (RoomTrap.Dodgeable: arrows,
+        /// spears and hard-light bars, the aiming lasers, scanners, pulse gates, tridents, sweepers and chasers). A Hazard asks the
+        /// trap it belongs to (a pulse gate's barrier); spikes and pits belong to none, or to one that isn't dodgeable.</summary>
+        public static bool Dodgeable(UnityEngine.Object killer)
+        {
+            RoomTrap trap = killer as RoomTrap;
+            if (trap == null && killer is Hazard hazard) trap = hazard.GetComponent<RoomTrap>();
+            return trap != null && trap.Dodgeable;
+        }
+
         /// <summary>PAX-A13: as Kill, naming the killer (read-only information: nothing about the death changes).</summary>
         public void Kill(ObserverId observerId, DeathCause cause, UnityEngine.Object killer)
         {
@@ -96,6 +106,8 @@ namespace Parallax.Gameplay.Rooms
                 if (cause == DeathCause.OutOfBounds) checkpoints.Respawn(observer);
                 return;
             }
+            // D-324 (PAX-129): a whisker dodge lets arrows and lasers through.
+            if (cause == DeathCause.Hazard && observer.Cat != null && observer.Cat.IsDodging && Dodgeable(killer)) return;
 
             if (rooms == null || observerId != rooms.SoloReality)
             {

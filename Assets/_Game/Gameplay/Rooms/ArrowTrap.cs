@@ -71,6 +71,9 @@ namespace Parallax.Gameplay.Rooms
 
         protected override int DelayTicks => delayTicks;
         protected override CatDeathKind DeclaredDeathKind => CatDeathKind.Arrow;   // PAX-V07 §4: arrows and the spear variant
+        /// <summary>D-324: a flying arrow, spear or bar passes through a dodging cat; a spear's stuck check (stop + 1, just
+        /// before its shaft turns solid) doesn't: a spear that comes to rest inside the cat kills it, like a crush.</summary>
+        public override bool Dodgeable => !(spear && IsTimingEffectActive && RoomLifeTick - LatestFireTick == ArrowMath.StuckCheckTick(tellTicks, flightTicks));
 
         protected override void OnLiveRoomStep()
         {

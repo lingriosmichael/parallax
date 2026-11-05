@@ -31,6 +31,7 @@ namespace Parallax.Gameplay.Rooms
         bool Seen => IsTimingEffectActive && seenFire == LatestFireTick;
 
         protected override CatDeathKind DeclaredDeathKind => CatDeathKind.Spiked;
+        public override bool Dodgeable => true;   // D-324: a laser
 
         /// <summary>D-292: where it's aiming (degrees), for its eye's art.</summary>
         public float AimAngle => angle;

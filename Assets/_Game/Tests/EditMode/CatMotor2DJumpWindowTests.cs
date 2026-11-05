@@ -86,7 +86,10 @@ namespace Parallax.Tests.EditMode
             GravityReceiver gravity = rig.CatGo.AddComponent<GravityReceiver>();
             CatMotor2DFreezeTests.Invoke(gravity, "Awake");
             rig.Motor = rig.CatGo.AddComponent<CatMotor2D>();
-            CatMotor2DFreezeTests.SetPrivate(rig.Motor, "config", ScriptableObject.CreateInstance<CatMotorConfig>());
+            // D-324: no air jump here, so an airborne press shows the windows alone (CatSkillsTests covers the air jump).
+            var config = ScriptableObject.CreateInstance<CatMotorConfig>();
+            CatMotor2DFreezeTests.SetPrivate(config, "airJumps", 0);
+            CatMotor2DFreezeTests.SetPrivate(rig.Motor, "config", config);
             CatMotor2DFreezeTests.Invoke(rig.Motor, "Awake");
 
             rig.MoveTo(OnFloor);

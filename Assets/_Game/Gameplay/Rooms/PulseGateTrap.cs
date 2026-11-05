@@ -32,6 +32,7 @@ namespace Parallax.Gameplay.Rooms
         }
 
         protected override CatDeathKind DeclaredDeathKind => CatDeathKind.Zapped;
+        public override bool Dodgeable => true;   // D-324: a laser barrier (its Hazard does the killing; RoomDeath asks this)
 
         protected override void OnLiveRoomStep()
         {

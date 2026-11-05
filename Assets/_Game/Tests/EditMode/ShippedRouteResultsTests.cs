@@ -55,7 +55,7 @@ namespace Parallax.Tests.EditMode
         // D-116/D-119: L005 re-pinned: non-stop arrows, the corbel's 45-degree Arrow_X, S1's and the ground's riders, the crush
         // ledge (Ledge_D) at the ground's right end, the storm cloud on every floor.
         // D-126: Arrow_A every 100 ticks; the cat jumps its second shot where it waits for Arrow_X (window 25).
-        [TestCase("L005", new[] { 24, 25, 13, 19, 12, 32 }, new int[0], new[] { "Arrow_A=6", "Arrow_V2=6", "Arrow_B=6", "Arrow_C=6", "Arrow_D=6", "Floor_6=27", "Rise_D=0" }, new string[0])]
+        [TestCase("L005", new[] { 24, 25, 13, 19, 12, 32 }, new int[0], new[] { "Arrow_A=6", "Arrow_V2=6", "Arrow_B=6", "Floor_6=27", "Rise_D=0" }, new string[0])]
         // D-119: L006 re-pinned: Ride_7 over Pit_7 and the hinge floor Flip_8 (window 21; T7, T8). PAX-107: the lid 1.5 u longer
         // in all (the step-off dead end now lands on its spikes), the hinge 20 % faster, twice.
         // D-124: the way down is the climb onto Lift_G (no sweep, so no T3); the lid's gap (the step-off dead end into Pit_5).

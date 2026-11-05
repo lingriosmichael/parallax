@@ -65,7 +65,7 @@ namespace Parallax.Editor.Levels
         // Eye_1, under the ceiling over the floor in front of Gate_2 (EyeZone1X0-X1): it watches only a standing cat there.
         internal const float Eye1X = 16f, EyeZone1X0 = 12f, EyeZone1X1 = 20f;
         // Eye_1 locks and fires as a cat that went straight on from the gap past Gate_1 would stand waiting for Gate_2.
-        internal const int EyeAim = 40, EyeLock = 12, EyeFire = 10, EyePeriod = 100, Eye1Phase = 45;
+        internal const int EyeAim = 40, EyeLock = 12, EyeFire = 5, EyePeriod = 100, Eye1Phase = 45;   // D-323: fire halved (was 10)
         // Pit_1 (x Pit1X0-Pit1X1) and Stone_1 over its middle, lit Stone1On of every StonePeriod from Stone1Phase.
         internal const float Pit1X0 = 24f, Pit1X1 = 30f, StoneW = 1.5f;
         internal const int StonePeriod = 100, Stone1On = 60, StoneWarn = 12, Stone1Phase = 55;
@@ -79,7 +79,9 @@ namespace Parallax.Editor.Levels
         // v2: Trident_1, in the roof over the bridge's foot (TridentX): it warns TridentWarn and fires TridentFire every Beat5 from
         // TridentPhase, its beams to the floor about TridentReach either side. Wait for Gate_5 at WaitX5, outside its fan.
         internal const float TridentX = 42.8f, TridentSpread = 35f, WaitX5 = 39f;
-        internal const int TridentWarn = 12, TridentFire = 20, TridentPhase = 52;
+        internal const int TridentWarn = 12, TridentFire = 10, TridentPhase = 52;   // D-323: fire halved (was 20)
+        // D-323: the route still waits out the old 20-tick fan, so its timing (and Hall 3's chaser) is unchanged.
+        internal const int TridentRouteWait = 20;
         // The glass bridge: Glass_1-4 over Pit_2 (x Glass0-Glass1), each GlassDelay after a touch; Gate_5 at its east end.
         internal const float Glass0 = 44f, Glass1 = 52f, GlassW = 2f, Gate5X = 52.3f;
         internal const int GlassDelay = 20, Beat5 = 110, Gate5On = 44, Gate5Phase = 0;

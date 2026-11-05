@@ -94,6 +94,7 @@ namespace Parallax.Gameplay.Input
                 result.JumpHeld        |= cmd.JumpHeld;
                 result.InteractPressed |= cmd.InteractPressed;
                 result.InteractHeld    |= cmd.InteractHeld;
+                result.WhiskerPressed  |= cmd.WhiskerPressed;   // D-324
             }
 
             return result;

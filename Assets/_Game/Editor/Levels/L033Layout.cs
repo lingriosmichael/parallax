@@ -57,7 +57,7 @@ namespace Parallax.Editor.Levels
         internal static readonly float[] DSpots = { 114f, 119f, 124f, LedgeSpotX };
         // Eye_D, under the ceiling over the floor by the entry (EyeDX0 to the chasm).
         internal const float EyeDX = 104f, EyeDX0 = 102.2f;
-        internal const int EyeAim = 40, EyeLock = 12, EyeFire = 10, EyePeriod = 100, EyeDPhase = 0;
+        internal const int EyeAim = 40, EyeLock = 12, EyeFire = 5, EyePeriod = 100, EyeDPhase = 0;   // D-323: fire halved (was 10)
 
         public static SoloRoomDefinition Build()
         {

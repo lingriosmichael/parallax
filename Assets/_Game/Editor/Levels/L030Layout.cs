@@ -263,6 +263,6 @@ namespace Parallax.Editor.Levels
         // D-259: the lasers (L021's turret): over which platforms' ends, and their aim, lock (the tell) and fire, once a beat (the rest
         // of the beat they rest, well over D-056's slack).
         internal static readonly int[] LaserAt = { 1, 3, 6, 9, 12 };
-        internal const int LaserAim = 50, LaserLock = 12, LaserFire = 10;
+        internal const int LaserAim = 50, LaserLock = 12, LaserFire = 5;   // D-323: fire halved (was 10)
     }
 }

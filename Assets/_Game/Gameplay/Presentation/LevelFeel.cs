@@ -41,6 +41,7 @@ namespace Parallax.Gameplay.Presentation
         // Each solid mover's place, speed (u/s) and heading at the last tick.
         readonly Dictionary<MovingTrap, (Vector2 at, float speed, Vector2 heading)> moved = new Dictionary<MovingTrap, (Vector2, float, Vector2)>();
         CatVisualPresenter cat;
+        CatMotor2D motor;
         GravityReceiver gravity;
         SpriteRenderer catBody;
         RoomDoor[] doors = new RoomDoor[0];
@@ -71,6 +72,7 @@ namespace Parallax.Gameplay.Presentation
         {
             if (cat != null) cat.StateChanged -= OnCatState;
             cat = null;
+            motor = null;
             movers.Clear();
             moved.Clear();
             if (rooms != null) { rooms.LevelCompleted -= OnLevelCompleted; rooms.SectionReached -= OnSectionReached; }
@@ -88,6 +90,7 @@ namespace Parallax.Gameplay.Presentation
             if (solo == null || solo.Cat == null) return false;
             cat = solo.Cat.GetComponentInChildren<CatVisualPresenter>(true);
             if (cat == null) return false;
+            motor = solo.Cat;
             gravity = solo.Cat.GetComponent<GravityReceiver>();
             catBody = cat.GetComponentInChildren<SpriteRenderer>(true);
             cat.StateChanged += OnCatState;
@@ -107,6 +110,7 @@ namespace Parallax.Gameplay.Presentation
                 moved.Clear();   // a frozen mover isn't one that stopped
                 return;
             }
+            Skills();
             foreach (MovingTrap m in movers)
             {
                 if (m == null || !m.IsSolid) continue;
@@ -118,6 +122,16 @@ namespace Parallax.Gameplay.Presentation
                 if (known && FeelMath.Impact(last.speed, speed, config.ImpactSpeed)) Impact(m, last.heading);
                 moved[m] = (at, speed, speed > 0f ? step.normalized : last.heading);
             }
+        }
+
+        // D-324 (PAX-129): a kick of air under the paws on an air jump, and a pale flash about the cat as a whisker dodge begins.
+        void Skills()
+        {
+            if (Calm || motor == null) return;
+            Vector2 paws = cat.transform.position;
+            if (motor.AirJumpedThisStep) { Dust(config.LandPuffs, 0, paws, 1f); Dust(config.LandPuffs, 1, paws, 0.8f, -cat.Facing); }
+            if (motor.DodgedThisStep)
+                Spawn(config.Burst, paws + Up * 0.3f, config.GateBurstSize * 0.6f, 0f, config.BurstTime * 0.6f, Vector2.zero, 0f, swell: true, tint: new Color(1f, 0.98f, 0.92f, 0.85f), order: 1);
         }
 
         // A heavy mover stopped at once: a ring of dust along the face it hit, and a shake by how near the cat is.

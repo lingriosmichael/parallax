@@ -19,6 +19,10 @@ namespace Parallax.Gameplay.Rooms
         /// <summary>PAX-V07 §4: the kind of death this trap class causes (subclasses declare theirs).</summary>
         protected virtual CatDeathKind DeclaredDeathKind => CatDeathKind.Default;
 
+        /// <summary>D-324 (PAX-129): this trap's kill passes through a whisker-dodging cat (RoomDeath.Dodgeable). Off unless the
+        /// trap class says so (arrows and lasers); the death clip has no say.</summary>
+        public virtual bool Dodgeable => false;
+
         [SerializeField] int roomId;
         [SerializeField] TrapState initialState = TrapState.Armed;
         [SerializeField] RoomDeath roomDeath;

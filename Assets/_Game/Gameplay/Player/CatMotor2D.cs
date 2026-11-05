@@ -23,6 +23,15 @@ namespace Parallax.Gameplay.Player
         // PauseInputTests (sets coyoteTimer) reach them by reflection.
         float coyoteTimer;
         float jumpBufferTimer;
+        // D-324 (PAX-129): the air jumps left before the cat is back on the ground, a wall or a vine, and the whisker dodge's
+        // ticks left and its cooldown (CatSkills).
+        int airJumpsLeft;
+        int dodgeActive;
+        int dodgeCooldown;
+        // D-324: a press left to the buffer because the cat was about to land (it becomes the air jump if the buffer runs out
+        // in the air), and a buffer kept after an air jump, which only a wall or a vine may take (never the landing).
+        bool pressAwaitsLanding;
+        bool bufferAfterAirJump;
 
         RigidbodyConstraints2D savedConstraints;
         // PAX-087 (D-089): the climbing branch; null only when Awake disabled the motor.
@@ -37,6 +46,14 @@ namespace Parallax.Gameplay.Player
         public Collider2D GroundCollider { get; private set; }
         /// <summary>PAX-093 (D-095): true on the step a grounded cat jumped (not a leap off a vine).</summary>
         public bool JumpedThisStep { get; private set; }
+        /// <summary>D-324 (PAX-129): true on the step the cat jumped in the air.</summary>
+        public bool AirJumpedThisStep { get; private set; }
+        /// <summary>D-324 (PAX-129): true on the step a whisker dodge began.</summary>
+        public bool DodgedThisStep { get; private set; }
+        /// <summary>D-324 (PAX-129): arrows and lasers pass through the cat (RoomDeath ignores their kills).</summary>
+        public bool IsDodging => dodgeActive > 0;
+        /// <summary>D-324 (PAX-129): how far the dodge has refilled, 0 just used to 1 ready (the whisker button draws it).</summary>
+        public float DodgeReadiness => config != null ? CatSkills.DodgeReadiness(dodgeCooldown, TickTime.ToWholeTicks(config.DodgeCooldown)) : 1f;
         /// <summary>PAX-107 (presentation only, read by CatVisualPresenter): what the ground cast found under the cat this step,
         /// ground or not: a rising floor carrying the cat isn't ground (D-115), but the cat stands on it. Null when nothing,
         /// or when a vine, a wall or a launch owns the step. Never read by motion.</summary>
@@ -97,6 +114,9 @@ namespace Parallax.Gameplay.Player
             coyoteTimer = 0f;
             jumpBufferTimer = 0f;
             command = CatCommand.None;
+            airJumpsLeft = config != null ? config.AirJumps : 0;   // D-324: a respawn starts with the skills ready
+            dodgeActive = dodgeCooldown = 0;
+            pressAwaitsLanding = bufferAfterAirJump = false;
             climber?.Clear();   // PAX-087 (D-089): a death, reset or respawn ends a climb, with no regrab lock
             wallCling?.Clear(); // PAX-105 (D-110): and a cling and the face lock
             body.rotation = Vector2.SignedAngle(Vector2.down, gravity.Direction);
@@ -112,6 +132,7 @@ namespace Parallax.Gameplay.Player
             wallCling?.Release(); // PAX-105 (D-110): and of a wall (the face lock)
             body.linearVelocity = GeyserMath.Launch(body.linearVelocity, direction, speed);
             coyoteTimer = 0f;
+            airJumpsLeft = 0;   // D-324: a launch's flight is the geyser's (D-088's arcs); landing gives the air jump back
             IsGrounded = false;
             GroundContact = null;
         }
@@ -196,6 +217,7 @@ namespace Parallax.Gameplay.Player
             foreach (Collider2D c in GetComponents<Collider2D>()) if (!c.isTrigger) { bodyCollider = c; break; }
             climber = new CatClimber(body, bodyCollider, config);
             wallCling = new CatWallCling(body, bodyCollider, config, groundFilter);
+            airJumpsLeft = config.AirJumps;
         }
 
         /// <summary>PAX-126 (D-321): this step's command moved, jumped or climbed (an unfrozen cat only). After a respawn the
@@ -208,6 +230,7 @@ namespace Parallax.Gameplay.Player
             // driver upstream (so no source's latched edges leak past the hold) but discarded
             // here; velocity/rotation/gravity stay exactly as Freeze() left them.
             JumpedThisStep = false;
+            AirJumpedThisStep = DodgedThisStep = false;
             ActedThisStep = !IsFrozen && (Mathf.Abs(input.Move) > ActThreshold || input.JumpPressed || Mathf.Abs(input.Climb) > ActThreshold);
             CarrierVelocity = CarryShift = Vector2.zero;
             if (body != null) StepStartPosition = body.position;
@@ -215,6 +238,9 @@ namespace Parallax.Gameplay.Player
             if (IsFrozen) return;
 
             SetCommand(input);
+            // D-324 (PAX-129): the dodge runs whatever owns the step (a vine, a wall or the ground).
+            DodgedThisStep = CatSkills.Dodge(ref dodgeActive, ref dodgeCooldown, command.WhiskerPressed,
+                TickTime.ToWholeTicks(config.DodgeTime), TickTime.ToWholeTicks(config.DodgeCooldown));
 
             gravity.FixedTick(dt);
 
@@ -232,6 +258,8 @@ namespace Parallax.Gameplay.Player
             if (climber != null && climber.Step(command, down, right, IsGrounded, jumpBufferTimer > 0f, JumpMath.SpeedForHeight(config.JumpHeight, gravity.Strength), dt))
             {
                 wallCling?.Release();   // PAX-105 (D-110): climbing a vine wins over clinging
+                airJumpsLeft = config.AirJumps;   // D-324
+                pressAwaitsLanding = bufferAfterAirJump = false;
                 IsGrounded = false;
                 GroundContact = null;
                 coyoteTimer = 0f;
@@ -244,6 +272,8 @@ namespace Parallax.Gameplay.Player
             // or a move lock it returns false having touched no body, so everything below runs exactly as before.
             if (wallCling != null && wallCling.Step(command, down, IsGrounded, jumpBufferTimer > 0f, JumpMath.SpeedForHeight(config.JumpHeight, gravity.Strength), gravity.Strength, dt))
             {
+                airJumpsLeft = config.AirJumps;   // D-324
+                pressAwaitsLanding = bufferAfterAirJump = false;
                 IsGrounded = false;
                 GroundContact = null;
                 coyoteTimer = 0f;
@@ -254,10 +284,31 @@ namespace Parallax.Gameplay.Player
 
             int coyote = (int)coyoteTimer;
             int buffer = (int)jumpBufferTimer;
+            // D-324: a new press is its own; an air jump's leftover buffer isn't a jump on landing.
+            if (command.JumpPressed) pressAwaitsLanding = bufferAfterAirJump = false;
+            if (bufferAfterAirJump && IsGrounded) buffer = 0;
             bool jump = JumpWindows.Step(ref coyote, ref buffer, IsGrounded, command.JumpPressed,
                 TickTime.ToWholeTicks(config.CoyoteTime), TickTime.ToWholeTicks(config.JumpBufferTime));
             coyoteTimer = (float)coyote;
             jumpBufferTimer = (float)buffer;
+            // D-324 (PAX-129): the ground gives the air jumps back; a press in the air, with no ground or coyote jump and not
+            // about to land, is an air jump. A press left to the landing that the buffer outlasts in the air (the cat passed the
+            // ledge, or the floor moved away) is the air jump on the buffer's last step.
+            if (IsGrounded) airJumpsLeft = config.AirJumps;
+            bool airJump = false;
+            if (!IsGrounded && command.JumpPressed)
+            {
+                bool landingSoon = LandingSoon(down, right, along, fall, dt);
+                airJump = CatSkills.AirJump(true, jump, false, landingSoon, airJumpsLeft);
+                pressAwaitsLanding = !jump && landingSoon && airJumpsLeft > 0;
+            }
+            else if (pressAwaitsLanding && buffer == 0)
+            {
+                airJump = CatSkills.AirJump(true, jump, IsGrounded, false, airJumpsLeft);
+                pressAwaitsLanding = false;
+            }
+            if (jump || IsGrounded) pressAwaitsLanding = false;
+            if (buffer == 0 || jump) bufferAfterAirJump = false;
 
             float move = command.Move;
             bool keepAlong = false;
@@ -278,6 +329,15 @@ namespace Parallax.Gameplay.Player
             {
                 fall = -JumpMath.SpeedForHeight(config.JumpHeight, gravity.Strength);
                 JumpedThisStep = true;
+            }
+            else if (airJump)
+            {
+                fall = -JumpMath.SpeedForHeight(config.AirJumpHeight, gravity.Strength);
+                airJumpsLeft--;
+                // The press stays buffered: a wall latched or a vine grabbed within the buffer still wall-jumps or leaps off it
+                // (D-110, D-089). The landing can't take it (a low ceiling can bring the cat straight back down).
+                bufferAfterAirJump = buffer > 0;
+                AirJumpedThisStep = true;
             }
 
             fall = Mathf.Min(fall, config.MaxFallSpeed);
@@ -328,6 +388,20 @@ namespace Parallax.Gameplay.Player
             float overlapB = Mathf.Min(bb.max.x, cat.max.x) - Mathf.Max(bb.min.x, cat.min.x);
             if (Mathf.Abs(overlapA - overlapB) > 1e-4f) return overlapA > overlapB;
             return string.CompareOrdinal(a.name, b.name) < 0;
+        }
+
+        /// <summary>D-324 (PAX-129): ground the cat reaches within the jump buffer (a press then is the buffered jump on landing,
+        /// not an air jump). The cast follows where the cat will be: its sideways speed, and its fall with gravity's pull added,
+        /// so a cat sliding past a ledge corner isn't landing, and one near its apex just over a floor is. The buffer's last step
+        /// sees the ground after n = bufferTicks - 1 more physics steps, each adding gravity before it moves.</summary>
+        bool LandingSoon(Vector2 down, Vector2 right, float along, float fall, float dt)
+        {
+            int n = Mathf.Max(0, TickTime.ToWholeTicks(config.JumpBufferTime) - 1);
+            float drop = dt * (n * fall + gravity.Strength * dt * n * (n + 1) * .5f);
+            Vector2 path = down * Mathf.Max(0f, drop) + right * (along * n * dt);
+            float length = path.magnitude;
+            Vector2 direction = length > 1e-4f ? path / length : down;
+            return BestGround(groundHits, body.Cast(direction, groundFilter, groundHits, length + config.GroundProbeDistance), down) != null;
         }
 
         void UpdateGrounded(Vector2 down, float fall)

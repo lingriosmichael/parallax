@@ -24,7 +24,9 @@ namespace Parallax.Editor.Levels
     {
         internal const float C = 4.5f, Base = -2f, Top = 6.5f, Width = 108f, PitDepth = 1.5f, CoverH = .8f, CoverW = 1f;
         // Turrets: aim EyeAim (tracking), lock EyeLock (the tell), fire EyeFire. Wall muzzles sit 0.05 off their host's face.
-        internal const int EyeAim = 30, EyeLock = 12, EyeFire = 8;
+        internal const int EyeAim = 30, EyeLock = 12, EyeFire = 4;   // D-323: fire halved (was 8)
+        // D-323: the routes still set off where the old 8-tick fire ended, so their timing is unchanged.
+        internal const int EyeRouteWait = 8;
         internal const float Skin = .05f, TowerFoot = 1.8f;
         // ---- Hall 1 ----
         internal const float Tower1X0 = 47f, Eye1Y = 4f, Eye1Range = 50f;

@@ -35,6 +35,7 @@ namespace Parallax.Gameplay.Rooms
 
         protected override int DelayTicks => delayTicks;
         protected override CatDeathKind DeclaredDeathKind => CatDeathKind.Zapped;
+        public override bool Dodgeable => true;   // D-324: a laser arm
 
         public float Angle { get; private set; }
         /// <summary>Past its warning: the bar kills.</summary>

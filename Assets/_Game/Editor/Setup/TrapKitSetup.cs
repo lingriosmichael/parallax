@@ -134,6 +134,7 @@ namespace Parallax.Editor.Setup
                     case float number when !Mathf.Approximately(property.floatValue, number): property.floatValue = number; changed = true; break;
                     case bool boolean when property.boolValue != boolean: property.boolValue = boolean; changed = true; break;
                     case Vector2 vector when property.vector2Value != vector: property.vector2Value = vector; changed = true; break;
+                    case Rect rect when property.rectValue != rect: property.rectValue = rect; changed = true; break;   // D-324: a touch zone
                     // PAX-114 (D-187): a path's points.
                     case Vector2[] points when property.isArray && !SameVectors(property, points):
                         property.arraySize = points.Length;

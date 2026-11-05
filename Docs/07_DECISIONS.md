@@ -7502,8 +7502,57 @@ The developer, of L025's first checkpoint: "if you respawn at a checkpoint and i
 
 The developer, after the first Pixel 8a session: "mobility is very hard particularly with thumbs. There seems to be some delay in the movements … there shouldn't be that much difference between full speed run and slowing down. It needs to feel faster … Some traps are so fast that the delay makes it feel off. Perhaps the movement circle should be smaller?", then "Patch it for me now."
 
-- **Frame rate:** phones run at 60 frames a second (`Parallax.App.FrameRate`, set before the first scene loads). Nothing set it before, so Android ran at Unity's mobile default of 30, which kept each touch waiting up to a frame and drew the cat in steps. The Editor and desktop keep their own rate. The simulation stays at 50 Hz (D-075). The heat and battery cost is measured in PAX-V03.
+- **Frame rate:** phones run at 60 frames a second (`Parallax.App.FrameRate`, set before the first scene loads). Nothing set it before, so Android ran at Unity's mobile default of 30, which kept each touch waiting up to a frame and drew the cat in steps. Only the Android and iPhone apps: the Editor, desktop and the browser keep their own rate (a browser paces its own frames, and a target there makes them less even; Unity calls a phone's browser a mobile platform, so the check is by platform). The simulation stays at 50 Hz (D-075). The heat and battery cost is measured in PAX-V03.
 - **Full speed after a short push:** the stick's x reaches full speed at a quarter of the way out (`VirtualStick.ToRun`, `fullSpeedAt` 0.25), so a thumb that pushes partway runs at the speed the levels are built for, as a key press does. The dead zone (0.15) and the climb dead zone (0.35, D-089) are unchanged.
 - **The centre follows the thumb:** past the ring, the stick's centre trails the thumb by the ring's radius (`VirtualStick.Follow`), so a short flick back reverses the cat. Inside the ring nothing changes. The drawn stick (PAX-A09) already reads the centre, so it moves with it. It's the Vision's floating stick (`00_VISION.md`, Touch).
 - **A smaller ring:** radius 0.08 of the safe area's height, was 0.12 (about 5 mm on the Pixel 8a, was 8 mm). The field is renamed (`stickRadius` → `ringRadius`), so every scene takes the new size without a setup menu or a rebuild; the old value stays in the scene files unused until they're next saved.
 - **Unchanged:** the motor (acceleration 60, deceleration 80, run 6 u/s, D-082), the keyboard, the jump button and every route.
+
+## D-323 — Lasers fire for half as long (2026-11-05, Proposed; PAX-128)
+
+The developer, after the Pixel 8a session: "lasers after being fired lingers a bit … if it lingers a bit too long it makes it hard to avoid", then "Half it. But only the firing. It lingers a bit that if jumping you can still get caught by it on the way down."
+
+- **The lethal fire is halved, nothing else:** every aiming laser (PAX-121) fires 5 ticks (0.1 s), was 10; L036's fire 4, was 8; L031's trident (PAX-123) fires 10 ticks, was 20. Aim, lock (the tell, D-057) and the beam's drawing are unchanged.
+- **Every beat keeps its timing:** the turrets whose period is the sum of their phases (L015, L021, L022, L025) rest 38 ticks, was 33, so their period stays 105. Every other laser has a fixed period. A laser's first shot, its lock and each later shot happen on the same tick as before; only the fire ends sooner.
+- **Changed:** `LevelElementFactory.LaserFire` (L001, L005, L007, L010, L011, L018, L020) and the constants in L015, L021, L022, L025, L030, L031, L033 and L036. The Trap Lab and the test fixtures keep their own timings.
+- **Routes:** a shorter fire only removes lethal ticks, so no solution can newly die. A betrayal route that died in the last half of a fire would now live; each level's routes are replayed (`ValidateRoutesTests`) and compared with the same run before the change. L031's and L036's routes set off when a fire ends, so with the shorter fire they set off sooner and drifted (L036's solution died to `Eye_W`; an L031 betrayal died to `Gate_7`); they still wait out the old fire (`L031Routes.FanWait` 20, `L036Routes.Shot` with 8), which replays them exactly as before.
+
+## D-324 — Two cat skills: an air jump and the whisker dodge, on in every level; the jump button is a paw (2026-11-05, Proposed; PAX-129)
+
+The developer: "I want you to implement them both the whiskers and the jump. The button for jump is right now an arrow pointing up -> replace with a cat paw. And a 2nd button for the whiskers actions with a whisker button", then "On everywhere" (asked whether to keep them out of L001–L040) and "a cooldown but every 5 seconds".
+
+- **Air jump:** the jump button pressed in the air, once the ground jump and coyote time are out, jumps again: one air jump (`CatMotorConfig.airJumps` 1) to 1 u (`airJumpHeight`; the ground jump is 1.6, D-082). Landing, a grip wall or a vine gives it back; a respawn starts with it. A press while the cat is about to land (ground within the jump buffer at its fall speed) stays the buffered jump on landing, so it isn't spent. Holding the button doesn't repeat it. The press stays buffered, so a grip wall latched or a vine grabbed within the buffer still wall-jumps or leaps off it (D-110, D-089). A geyser's launch spends it: the launch's flight is the geyser's (D-088), and landing gives it back. Pure rule `CatSkills.AirJump`; the motor's `AirJumpedThisStep`.
+- **Whisker dodge:** a second button (and Shift on the keyboard). A press makes arrows (spears and hard-light bars too) and lasers (aiming lasers, tridents, pulse gates, scanners, sweepers, chasers: every killer that zaps) pass through the cat for 0.3 s (`dodgeTime`); the next press counts 5 s after it (`dodgeCooldown`). Spikes, crushers, falls and pits still kill. A respawn makes it ready. `RoomDeath.Kill` ignores a dodgeable killer while `CatMotor2D.IsDodging`; pure rule `CatSkills.Dodge`.
+- **Deterministic:** both run on ticks with the cat's command (D-040). Neither counts as the first move after a respawn (D-321 unchanged).
+- **Looks:** the air jump turns the cat once, forward, over 0.32 s, about its centre, with a kick of dust under its paws and the jump sound; the dodge draws the cat at 40 % with a pale flash and a whoosh (the wall jump's). Code-driven, no new frames.
+- **Buttons:** the jump button's chevron is a cat paw (`GUI_Paw`). The whisker button (`GUI_Whiskers`, 128 px) sits left of it and a little higher, where the thumb rolls over from the jump (touch zone x 0.68–0.78, y 0.16–0.46 of the safe area, checked before the interact zone it overlaps, which nothing in v1 uses); a gold ring refills round it over the cooldown, and it dims while cooling.
+- **On in every level, knowingly:** levels 1–40 were built and validated for a cat that can't do either. The routes are replayed with the new motor; but the reach checks (bait gaps, dead ends, out-of-reach baits, wall-jump shortcuts, D-083, D-085, D-110) don't model the air jump, and no arrow or laser trap is proven to need its timing any more. Some tricks will be easier or skippable; that's the developer's call to play-test.
+- **Not built:** the warning flash on the whiskers before a hit (only the traps' own tells show it). A Trap Lab room for the skills.
+
+**Amendment 1 (2026-11-05, code review; the developer: "Patch 1-8").**
+- *About to land* follows the cat's path over the buffer: its sideways speed, and its fall with gravity added each tick. A cat near its apex just over a floor is landing; one sliding past a ledge corner isn't.
+- A press left to a landing that doesn't come within the buffer (past the ledge, or the floor moved or dropped away) is the air jump on the buffer's last step. A press is never lost.
+- The buffer an air jump keeps is for a grip wall or a vine only: landing on it isn't a second jump (a low ceiling brings the cat straight back down).
+- What a dodge passes is each trap class's own `RoomTrap.Dodgeable`, never the death clip: arrows, spears and bars, aiming lasers, scanners, pulse gates (through their Hazard), tridents, sweepers, chasers. The storm cloud and a lone Hazard drawn as a zap don't.
+- A spear's stuck check (stop + 1) isn't dodgeable: a spear coming to rest inside a dodging cat kills it, so its shaft never turns solid around the cat.
+- The whisker zone is empty unless the Game UI menu sets it on the level template, so scenes without the whisker button (the frozen co-op sandbox's interact zone among them) keep their touches. The button is drawn on the zone's centre (x 0.73).
+- L031's and L036's routes name their old waits (`TridentRouteWait`, `EyeRouteWait`) beside the halved fire.
+
+**Amendment 2 (2026-11-05, play-test; the developer: "I tested the double jump and it is waaaaaaay too easy now. I think I need to remove double jumps.").**
+- The air jump is off: `CatMotorConfig.airJumps` 0. Every air-jump branch in the motor needs a jump left, so the jump is exactly as before D-324; the code, its amendment-1 fixes and `CatSkillsTests` (whose rig sets 1) stay, so it can come back by config.
+- ShippedRouteResults' L001–L003 windows go back to their pre-D-324 values. The whisker dodge and the paw button stay.
+
+**Amendment 3 (2026-11-05, play-test; the developer: "the buttons for jump and whisker should be closer together. It doesnt look clean.").**
+- The whisker button sits up and to the left of the jump button, centre (0.80, 0.30) of the safe area: about 40 px from the jump's ring at 16:9 (25 at 4:3, 65 at 20:9). Its touch zone `TouchStickCatInput.LevelWhiskerZone` is x 0.75–0.838, y 0.21–0.41: it holds the whole button and stops short of the jump button's ring on all three, reaching further left and up, away from it. `GameUiTests` checks the three shapes.
+
+## D-325 — L005's S1 arrows removed (2026-11-05, Proposed)
+
+The developer: "when you go down to the second level there is an arrow launcher immediately in the bottom left" (under the touch stick's thumb), then "L005 launcher can be removed". `Arrow_C` and `Arrow_D`, out of `Pillar_S1` along S1, are gone with their betrayals (T4, T5); the nook stays, a notch in S1, and the solution goes straight through it. S1 keeps its riders and `Eye_U`. L005's routes were already stale (D-153 am. 7); its solution still dies on S2, before this part.
+
+## D-326 — No dev tools on the level screen (2026-11-05, Proposed)
+
+The developer: "There are a lot of dev tools on the screen. in the middle top there are dev record and three is flip remove all of that."
+
+- The level template carried the frozen co-op dev tools from Level_Solo01: Echo's record button and timeline, the reality switch button, the FLIP button (`GravityDebugControl`), the debug panel and the world labels, and the touch input's debug overlay. The Game UI menu (`GameUiSetup.HideDevTools`) turns them all off in `_LevelTemplate`, and Rebuild All Levels carries that into every level. They show in no build any more, the Editor included.
+- They stay in the scene, off, and their code is untouched (frozen, D-038), so nothing that references them breaks. They leave `TouchStickCatInput.reservedRegions`, so their old screen spots take touches again; the pause, restart, level-complete and unlock buttons stay reserved.
+- Keyboard dev keys those components read (Q for flip, ` for the panel, F1 for labels) go with them. Sandbox_Realities and Level_Solo01 keep everything.

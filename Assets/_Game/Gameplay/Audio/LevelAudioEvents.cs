@@ -86,7 +86,8 @@ namespace Parallax.Gameplay.Audio
             if (!FindCat() || cat.IsFrozen || rooms.LevelComplete) return;
 
             if (cat.WallJumpedThisStep) gameAudio.Play(AudioCue.WallJump, CatX());
-            else if (cat.JumpedThisStep) gameAudio.Play(AudioCue.Jump, CatX());
+            else if (cat.JumpedThisStep || cat.AirJumpedThisStep) gameAudio.Play(AudioCue.Jump, CatX());   // D-324: the air jump too
+            if (cat.DodgedThisStep) gameAudio.Play(AudioCue.WallJump, CatX());   // D-324: the whisker dodge's whoosh
 
             if (cat.IsClimbing || cat.IsClinging) airborne = 0;
             else if (!cat.IsGrounded) airborne++;

@@ -15,6 +15,7 @@ namespace Parallax.Gameplay.Input
         bool jumpPressedLatched;
         bool interactHeld;
         bool interactPressedLatched;
+        bool whiskerPressedLatched;
 
         void Update()
         {
@@ -40,6 +41,8 @@ namespace Parallax.Gameplay.Input
                 jumpHeld = keyboard.spaceKey.isPressed;
                 interactPressedLatched |= keyboard.fKey.wasPressedThisFrame;
                 interactHeld = keyboard.fKey.isPressed;
+                // D-324 (PAX-129): Shift is the whisker dodge.
+                whiskerPressedLatched |= keyboard.leftShiftKey.wasPressedThisFrame || keyboard.rightShiftKey.wasPressedThisFrame;
             }
         }
 
@@ -83,9 +86,11 @@ namespace Parallax.Gameplay.Input
             cmd.JumpHeld = jumpHeld;
             cmd.InteractPressed = interactPressedLatched;
             cmd.InteractHeld = interactHeld;
+            cmd.WhiskerPressed = whiskerPressedLatched;
 
             jumpPressedLatched = false;
             interactPressedLatched = false;
+            whiskerPressedLatched = false;
 
             return cmd;
         }
@@ -98,6 +103,7 @@ namespace Parallax.Gameplay.Input
             jumpPressedLatched = false;
             interactHeld = false;
             interactPressedLatched = false;
+            whiskerPressedLatched = false;
         }
     }
 }

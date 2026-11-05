@@ -265,6 +265,68 @@ namespace Parallax.Tests.EditMode
             finally { rig.Dispose(); }
         }
 
+        // D-324 (PAX-129): a whisker dodge lets arrows and lasers through, nothing else, and only while it lasts.
+        [Test]
+        public void WhiskerDodge_LetsArrowsAndZapsThrough_NotSpikes_AndEnds()
+        {
+            Rig rig = Rig.Build(5, Vector2.zero, includeDoor: false);
+            var traps = new GameObject("Traps");
+            try
+            {
+                var arrow = traps.AddComponent<ArrowTrap>();
+                // A pulse gate kills through its Hazard, which asks the gate.
+                var zapGo = new GameObject("Zap"); zapGo.transform.SetParent(traps.transform);
+                zapGo.AddComponent<PulseGateTrap>();
+                var zap = zapGo.AddComponent<Hazard>(); SetPrivate(zap, "deathKind", CatDeathKind.Zapped);
+                var spikeGo = new GameObject("Spikes"); spikeGo.transform.SetParent(traps.transform);
+                var spikes = spikeGo.AddComponent<Hazard>(); SetPrivate(spikes, "deathKind", CatDeathKind.Spiked);
+                // The death clip has no say: a lone hazard drawn as a zap, or a crusher given the zap clip, still kills.
+                var lookGo = new GameObject("ZapLook"); lookGo.transform.SetParent(traps.transform);
+                var zapLook = lookGo.AddComponent<Hazard>(); SetPrivate(zapLook, "deathKind", CatDeathKind.Zapped);
+                var crushGo = new GameObject("Crusher"); crushGo.transform.SetParent(traps.transform);
+                var crusher = crushGo.AddComponent<MovingTrap>();
+                typeof(RoomTrap).GetField("overrideDeathKind", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(crusher, true);
+                typeof(RoomTrap).GetField("deathKindOverride", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(crusher, CatDeathKind.Zapped);
+                Assert.AreEqual(CatDeathKind.Zapped, crusher.DeathKind, "rig: the crusher shows the zap clip");
+                Assert.IsTrue(RoomDeath.Dodgeable(arrow) && RoomDeath.Dodgeable(zap));
+                Assert.IsFalse(RoomDeath.Dodgeable(spikes) || RoomDeath.Dodgeable(null));
+                Assert.IsFalse(RoomDeath.Dodgeable(zapLook) || RoomDeath.Dodgeable(crusher), "the clip doesn't make a killer dodgeable");
+
+                rig.Tick();
+                var press = new CatCommand { WhiskerPressed = true };
+                rig.Cat.Step(in press, 0.02f);
+                Assert.IsTrue(rig.Cat.IsDodging && rig.Cat.DodgedThisStep, "the press starts the dodge");
+                rig.Death.Kill(ObserverId.A, DeathCause.Hazard, arrow);
+                rig.Death.Kill(ObserverId.A, DeathCause.Hazard, zap);
+                Assert.IsFalse(rig.Death.IsHolding, "an arrow and a zap pass through a dodging cat");
+                rig.Death.Kill(ObserverId.A, DeathCause.Hazard, spikes);
+                Assert.IsTrue(rig.Death.IsHolding, "spikes still kill a dodging cat");
+            }
+            finally { rig.Dispose(); Object.DestroyImmediate(traps); }
+
+            rig = Rig.Build(5, Vector2.zero, includeDoor: false);
+            try
+            {
+                rig.Tick();
+                var press = new CatCommand { WhiskerPressed = true };
+                var none = CatCommand.None;
+                rig.Cat.Step(in press, 0.02f);
+                int dodge = TickTime.ToWholeTicks(.3f);
+                for (int i = 1; i < dodge; i++) rig.Cat.Step(in none, 0.02f);
+                Assert.IsTrue(rig.Cat.IsDodging, "the dodge lasts its 0.3 s");
+                rig.Cat.Step(in none, 0.02f);
+                Assert.IsFalse(rig.Cat.IsDodging, "and then ends");
+                var arrowGo = new GameObject("Arrow");
+                try
+                {
+                    rig.Death.Kill(ObserverId.A, DeathCause.Hazard, arrowGo.AddComponent<ArrowTrap>());
+                    Assert.IsTrue(rig.Death.IsHolding, "an arrow kills once the dodge is over");
+                }
+                finally { Object.DestroyImmediate(arrowGo); }
+            }
+            finally { rig.Dispose(); }
+        }
+
         // ---------- §8.5 Door during a hold ----------
 
         [Test]

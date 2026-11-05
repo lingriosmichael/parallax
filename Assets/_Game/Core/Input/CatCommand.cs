@@ -8,6 +8,7 @@ namespace Parallax.Core
         public bool  JumpHeld;
         public bool  InteractPressed;
         public bool  InteractHeld;
+        public bool  WhiskerPressed; // D-324 (PAX-129): edge: the whisker dodge pressed this tick
 
         public static CatCommand None => default;
     }

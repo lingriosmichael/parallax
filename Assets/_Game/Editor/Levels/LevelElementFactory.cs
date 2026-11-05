@@ -11,8 +11,8 @@ namespace Parallax.Editor.Levels
     static class LevelElementFactory
     {
         // D-291: an aiming laser (PAX-121) hung from the underside `under` at x, tracking a cat over `zone` (room coordinates): it aims 50 ticks,
-        // locks 12 (its tell), fires 10, on its `period`. It's what took the storm cloud's place: stand still in its zone and it hits.
-        internal const int LaserAim = 50, LaserLock = 12, LaserFire = 10;
+        // locks 12 (its tell), fires 5 (D-323: was 10), on its `period`. It's what took the storm cloud's place: stand still in its zone and it hits.
+        internal const int LaserAim = 50, LaserLock = 12, LaserFire = 5;
         internal static SoloRoomElement Laser(string name, float x, float under, Rect zone, int phase, int period = 135, float range = 40f)
         {
             float muzzle = under - .15f;

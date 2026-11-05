@@ -83,14 +83,9 @@ namespace Parallax.Editor.Levels
             elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_B",(.25f,11.5f),(.5f,.4f),(6f,12f),(1f,4f),
                 new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,11.5f,31.5f,unitsPerTick:.36f,disguised:true),
                 new SoloRoomTrapSettings(delayTicks:0,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:180))));   // D-119: then every 180
-            // T4 and T5: two arrows along S1 at body height, out of the pillar behind the cat, the second a while after the
-            // first. The nook is under their lane; both stop at the post.
-            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_C",(.25f,5.3f),(.5f,.4f),(3.75f,6.275f),(.5f,2.55f),
-                new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,5.3f,27f,unitsPerTick:.36f,disguised:true),
-                new SoloRoomTrapSettings(delayTicks:20,repeatMode:TrapRepeatMode.Continuous,cooldownTicks:160))));   // D-119: then every 180
-            elements.Add(E(SoloRoomElementKind.Arrow,"Arrow_D",(.25f,5.3f),(.5f,.4f),
-                settings:new SoloRoomTrapSettings(new ArrowLane(ArrowDirection.Right,5.3f,27f,unitsPerTick:.36f,disguised:true),
-                new SoloRoomTrapSettings(delayTicks:90,triggerSource:TrapTriggerSource.Chain,chainSource:"Arrow_C",repeatMode:TrapRepeatMode.Continuous,cooldownTicks:230))));   // D-119: then every 320
+            // T4 and T5 (Arrow_C and Arrow_D, out of Pillar_S1 along S1) removed: D-325 (the developer: "when you go down to the second
+            // level there is an arrow launcher immediately in the bottom left", under the touch stick's thumb; "L005 launcher can be
+            // removed"). The nook stays, a notch in S1.
             // The crush ledge (D-116; D-290, the developer: "I dont like that the platform shortens and reveals spikes. Remove them both"): a plain,
             // fixed ledge (x 23.5-27.5, y 1-1.5). A cat that goes under it is crushed; the way past is over it.
             elements.Add(E(SoloRoomElementKind.Floor,"Ledge_D",(25.5f,1.25f),(4f,.5f)));

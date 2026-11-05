@@ -141,6 +141,32 @@ namespace Parallax.Tests.EditMode
             finally { rig.Dispose(); }
         }
 
+        // D-324: a whisker dodge passes the spear in flight, but not its stuck check: a spear coming to rest inside a dodging cat
+        // kills it there (otherwise its shaft would switch on around the cat the next tick).
+        [Test]
+        public void ADodgingCatInTheShaft_OnStopPlusOne_IsStillKilled_ThoughTheFlightIsDodgeable()
+        {
+            PauseTestRig rig = PauseTestRig.Build(realInput: false, holdTicks: 30);
+            try
+            {
+                ArrowTrap trap = AddSpear(rig, 1f);
+                for (int s = 0; s <= StopTick; s++)
+                {
+                    rig.Tick();
+                    if (s >= Tell) Assert.IsTrue(trap.Dodgeable, $"s = {s}: the spear in flight passes a dodge");
+                }
+                var whisker = new CatCommand { WhiskerPressed = true };
+                rig.Cat.Step(in whisker, .02f);
+                Assert.IsTrue(rig.Cat.IsDodging, "rig: the cat dodges");
+                MoveCat(rig, new Vector2(4.3f, 1.3f));
+                rig.Tick();
+                Assert.IsTrue(rig.Cat.IsDodging, "rig: still dodging on stop + 1");
+                Assert.AreEqual(1, rig.Death.DeathsIn(0), "killed on stop + 1, dodge or not");
+                Assert.IsFalse(ShaftOf(trap).enabled, "and the shaft never switched on around the cat");
+            }
+            finally { rig.Dispose(); }
+        }
+
         // R2: a cat resting on the stop pose's top is outside the shaft shrunk by 0.02 a side: it survives stop + 1, and
         // the shaft switches on under it. "Resting" is where physics leaves a cat standing on a solid top: 0.005 above
         // it (SpearHarnessTests' drop lands the paw at 1.505 on the 1.5 top). Measured: Physics2D.OverlapBox reaches

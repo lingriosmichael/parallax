@@ -25,6 +25,7 @@ namespace Parallax.Gameplay.Rooms
         readonly float[] length = new float[Beams];
 
         protected override CatDeathKind DeclaredDeathKind => CatDeathKind.Zapped;
+        public override bool Dodgeable => true;   // D-324: laser beams
 
         public PulseGatePhase Phase { get; private set; }
         public float BeamAngle(int i) => TrapPath.TridentAngle(downAngle, spreadDegrees, i);

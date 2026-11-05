@@ -28,7 +28,8 @@ namespace Parallax.Editor.Levels
         // D3's cooldown: from Block_3 knocking it out until it's back, through the dance's locks.
         const int DanceGateTicks = 257;
         // D-287: Eye_R, the aiming laser over the dance: it aims EyeAim, locks EyeLock (its tell), fires EyeFire and rests, every EyePeriod (L021's beat).
-        internal const int EyeAim = 50, EyeLock = 12, EyeFire = 10, EyeRest = 33, EyePeriod = EyeAim + EyeLock + EyeFire + EyeRest, EyePhase = 20;   // two shots while D3 is away; the third goes off behind a cat on its way
+        // D-323: fire halved to 5, rest 38, so EyePeriod stays 105.
+        internal const int EyeAim = 50, EyeLock = 12, EyeFire = 5, EyeRest = 38, EyePeriod = EyeAim + EyeLock + EyeFire + EyeRest, EyePhase = 20;   // two shots while D3 is away; the third goes off behind a cat on its way
         const int EyeCPhase = 72;
         const float EyeX = 50f, EyeRoofBottom = 5.5f;
 

@@ -68,7 +68,23 @@ namespace Parallax.Gameplay.Player
         [Tooltip("PAX-105 (D-110): the |Move| away from the wall that lets go of it.")]
         [SerializeField] float wallReleaseThreshold = Parallax.Core.WallClingState.DefaultReleaseThreshold;
 
+        [Tooltip("D-324 (PAX-129): jumps the cat may make in the air before it's back on the ground, a wall or a vine. 0 since amendment 2: the developer found the air jump made the levels far too easy.")]
+        [SerializeField] int airJumps = 0;
+
+        [Tooltip("D-324 (PAX-129): an air jump's height, in world units, from where the cat is (the ground jump's is jumpHeight).")]
+        [SerializeField] float airJumpHeight = 1f;
+
+        [Tooltip("D-324 (PAX-129): how long a whisker dodge lets arrows and lasers pass through the cat, in seconds.")]
+        [SerializeField] float dodgeTime = 0.3f;
+
+        [Tooltip("D-324 (PAX-129): seconds from one whisker dodge until the next press counts.")]
+        [SerializeField] float dodgeCooldown = 5f;
+
         public float MaxSpeed => maxSpeed;
+        public int AirJumps => airJumps;
+        public float AirJumpHeight => airJumpHeight;
+        public float DodgeTime => dodgeTime;
+        public float DodgeCooldown => dodgeCooldown;
         public float Acceleration => acceleration;
         public float Deceleration => deceleration;
         public float MaxFallSpeed => maxFallSpeed;

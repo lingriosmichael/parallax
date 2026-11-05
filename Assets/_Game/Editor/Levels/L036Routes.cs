@@ -11,7 +11,7 @@ namespace Parallax.Editor.Levels
     // Beat(period, tick) is true on the tick an eye's shot ends. Betrayals branch off the solution's own steps.
     static class L036Routes
     {
-        const int Shot = L.EyeAim + L.EyeLock + L.EyeFire;
+        const int Shot = L.EyeAim + L.EyeLock + L.EyeRouteWait;   // D-323: where the old fire ended
         // The tick (mod its period) each eye's shot ends.
         static readonly int Eye1End = (L.Eye1Phase + Shot) % L.Eye1Period, Eye2End = (L.Eye2Phase + Shot) % L.Eye2Period;
         static readonly int EyeWEnd = (L.EyeWPhase + Shot) % L.CrossPeriod, EyeEEnd = (L.EyeEPhase + Shot) % L.CrossPeriod;

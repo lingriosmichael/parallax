@@ -40,11 +40,11 @@ namespace Parallax.Editor.Levels
         // The pendulums.
         internal const int SwingAPeriod = 180, SwingBPeriod = 170;
         // The turrets (D-202, D-203): each aims EyeAim, locks EyeLock (its tell), fires EyeFire and rests EyeRest (D-203: "make it
-        // recharge faster"; 33 is the least D-056's periodic slack allows), every EyePeriod. Each hangs from a ceiling and tracks only a cat below it, in its sight and inside
+        // recharge faster"; 33 is the least D-056's periodic slack allows; D-323: fire halved to 5 and rest 38, so EyePeriod stays 105), every EyePeriod. Each hangs from a ceiling and tracks only a cat below it, in its sight and inside
         // its zone (D-203: "it should only aim below", "the range of the turrets needs to be the whole standable area of the current
         // floor"): its storey from wall or column to column, floor to the underside above. Storey C's ends at V4's spike pit, so a
         // cat on the vent's pad can't be shot.
-        internal const int EyeAim = 50, EyeLock = 12, EyeFire = 10, EyeRest = 33, EyePeriod = EyeAim + EyeLock + EyeFire + EyeRest;
+        internal const int EyeAim = 50, EyeLock = 12, EyeFire = 5, EyeRest = 38, EyePeriod = EyeAim + EyeLock + EyeFire + EyeRest;
         // Where each hangs, and its phase: its first fire (tuned against the solution; each starts after the cat has left its
         // storey's checkpoint, and never fires as the cat stands on or rides a vent in its zone).
         internal const float EyeAX = 15f, EyeBX = 11f, EyeCX = 11f, EyeX = 14f;

@@ -34,8 +34,8 @@ namespace Parallax.Editor.Levels
         // The descent's clock: the flips turn over FlipGap apart, and Swing_1 and Swing_2 swing on the same beat from their own phases
         // (Swing_1 crosses the first hop just as Flip_1 rights itself), all DescentPhase into the room's beat.
         internal const int FlipPeriod = 120, FlipGap = 25, DescentPhase = 0, Swing1Phase = 75, Swing2Phase = 115, SwingCPeriod = 140;
-        // Eye_S (as L021's turrets): aim, lock (its tell), fire, rest, and its phase.
-        internal const int EyeAim = 50, EyeLock = 12, EyeFire = 10, EyeRest = 33, EyePeriod = EyeAim + EyeLock + EyeFire + EyeRest, EyePhase = 75;
+        // Eye_S (as L021's turrets): aim, lock (its tell), fire, rest, and its phase. D-323: fire halved to 5, rest 38, so EyePeriod stays 105.
+        internal const int EyeAim = 50, EyeLock = 12, EyeFire = 5, EyeRest = 38, EyePeriod = EyeAim + EyeLock + EyeFire + EyeRest, EyePhase = 75;
         // Lift_P: down LiftMove ticks LiftDelay after Plate_V, holds LiftHold in its slot, back up over LiftMove.
         internal const int LiftDelay = 10, LiftMove = 60, LiftHold = 60;
         // The tower: the cogs' loop and beat, their phases, Hand's turn (degrees a tick; 160 ticks a turn).

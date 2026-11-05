@@ -50,7 +50,8 @@ namespace Parallax.Editor.Levels
         // v2: Trident_1 fires at room tick t; a run from the cat's x now crosses its fan (where its beams meet a cat on the floor,
         // x FanX0-FanX1) while it's quiet.
         const float FanX0 = L.TridentX - 3.2f, FanX1 = L.TridentX + 3.2f;
-        static bool FanLethal(int t) { if (t < L.TridentPhase) return false; int k = (t - L.TridentPhase) % L.Beat5; return k >= L.TridentWarn && k < L.TridentWarn + L.TridentFire; }
+        // D-323: the route waits out the old fan (L.TridentRouteWait), not the halved fire.
+        static bool FanLethal(int t) { if (t < L.TridentPhase) return false; int k = (t - L.TridentPhase) % L.Beat5; return k >= L.TridentWarn && k < L.TridentWarn + L.TridentRouteWait; }
         static bool FanQuiet(RouteView v)
         {
             int now = v.Last.RoomLifeTick; float x = v.Last.X;

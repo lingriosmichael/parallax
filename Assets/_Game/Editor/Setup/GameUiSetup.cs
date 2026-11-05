@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using Parallax.DebugTools;
 using Parallax.Gameplay.Input;
 using Parallax.Gameplay.Levels;
+using Parallax.Gameplay.Observers;
 using Parallax.Gameplay.Rooms;
 using Parallax.Gameplay.UI;
 using UnityEditor;
@@ -23,7 +25,10 @@ namespace Parallax.Editor.Setup
         public const string PlayHudName = "PlayHud";
         // The middle of TouchStickCatInput's stick and jump zones' lower parts, as fractions of the safe area.
         static readonly Vector2 StickHome = new Vector2(0.13f, 0.25f), JumpHome = new Vector2(0.89f, 0.22f);
-        const float JumpSize = 172f, PortraitSize = 96f, LineLength = 300f;
+        // D-324 (PAX-129): up and to the left of the jump button, about 40 px from its ring at 16:9, inside TouchStickCatInput's
+        // whisker zone (which stops short of the jump button, and reaches further left and up for the thumb).
+        static readonly Vector2 WhiskerHome = new Vector2(0.80f, 0.30f);
+        const float JumpSize = 172f, WhiskerSize = 128f, PortraitSize = 96f, LineLength = 300f;
 
         [MenuItem("PARALLAX/Setup/Levels/Game UI (PAX-A09)")]
         public static void Configure()
@@ -68,10 +73,59 @@ namespace Parallax.Editor.Setup
             var changes = new List<string>();
             PaidUnlockSetup.BuildPanel(canvas.transform, true, changes);
             GameObject hud = BuildPlayHud(canvas.transform, changes);
-            TrapKitSetup.Write(hud.GetComponent<TouchControlsView>(), changes, ("input", touch));
+            TrapKitSetup.Write(hud.GetComponent<TouchControlsView>(), changes, ("input", touch), ("rooms", rooms), ("observers", Object.FindAnyObjectByType<ObserverSet>()));
+            TrapKitSetup.Write(touch, changes, ("whiskerZone", TouchStickCatInput.LevelWhiskerZone), ("showDebugOverlay", false));   // D-324: the zone the button sits on
+            HideDevTools(touch, changes);
             TrapKitSetup.Write(hud.GetComponentInChildren<LevelProgressLine>(true), changes, ("rooms", rooms));
             TrapKitSetup.Write(screen, changes, ("playHud", hud));
             Save(scene, changes, report);
+        }
+
+        // The developer, 2026-11-05: "There are a lot of dev tools on the screen ... remove all of that." The frozen co-op dev tools the template
+        // inherited (Echo's record button and timeline, the reality switch, the FLIP button, the debug panel and labels) stay in the scene, off,
+        // so nothing that references them breaks; their code is untouched. The touch input's debug overlay is off above, and the hidden tools leave
+        // its reserved regions, so their old spots on screen take touches again.
+        static void HideDevTools(TouchStickCatInput touch, List<string> changes)
+        {
+            var hidden = new List<GameObject>();
+            foreach (string name in new[] { "RecordButton", "EchoTimeline", "SwitchButton" })
+            {
+                GameObject go = FindIncludingInactive(name);
+                if (go == null) continue;
+                hidden.Add(go);
+                if (go.activeSelf) { go.SetActive(false); EditorUtility.SetDirty(go); changes.Add("hid " + name); }
+            }
+            var tools = new List<Behaviour>();
+            foreach (Behaviour tool in new Behaviour[]
+                     {
+                         Object.FindAnyObjectByType<GravityDebugControl>(FindObjectsInactive.Include),
+                         Object.FindAnyObjectByType<DebugPanel>(FindObjectsInactive.Include),
+                         Object.FindAnyObjectByType<WorldLabelOverlay>(FindObjectsInactive.Include),
+                     })
+            {
+                if (tool == null) continue;
+                tools.Add(tool);
+                if (tool.enabled) { tool.enabled = false; EditorUtility.SetDirty(tool); changes.Add("turned off " + tool.GetType().Name); }
+            }
+
+            // Only the dev tools leave: the panels (pause, level complete, unlock) are inactive until they open, and stay reserved.
+            var serialized = new SerializedObject(touch);
+            SerializedProperty regions = serialized.FindProperty("reservedRegions");
+            for (int i = regions.arraySize - 1; i >= 0; i--)
+            {
+                var region = regions.GetArrayElementAtIndex(i).objectReferenceValue as Behaviour;
+                if (region == null || !(tools.Contains(region) || hidden.Exists(go => region.transform.IsChildOf(go.transform)))) continue;
+                changes.Add("unreserved " + region.GetType().Name);
+                regions.DeleteArrayElementAtIndex(i);
+            }
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static GameObject FindIncludingInactive(string name)
+        {
+            foreach (Transform t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (t.name == name) return t.gameObject;
+            return null;
         }
 
         static void Save(Scene scene, List<string> changes, List<string> report)
@@ -105,10 +159,32 @@ namespace Parallax.Editor.Setup
             GameUiStyle.Paint(PauseMenuSetup.EnsureComponent<Image>(jumpGO, changes, "JumpButton"), GameUiStyle.Art("GUI_Ring"), Color.white, false, changes, "JumpButton");
             var jumpGroup = PauseMenuSetup.EnsureComponent<CanvasGroup>(jumpGO, changes, "JumpButton");
             Quiet(jumpGroup, changes, "JumpButton");
-            GameUiStyle.Picture(jumpGO.transform, "Chevron", center, Vector2.one * (JumpSize * 0.6f), Vector2.zero, GameUiStyle.Art("GUI_Chevron"), Color.white, changes);
+            // D-324 (the developer: "replace with a cat paw"): the paw takes the chevron's place.
+            Transform chevron = jumpGO.transform.Find("Chevron");
+            if (chevron != null) { Object.DestroyImmediate(chevron.gameObject); changes.Add("removed JumpButton/Chevron"); }
+            GameUiStyle.Picture(jumpGO.transform, "Paw", center, Vector2.one * (JumpSize * 0.6f), Vector2.zero, GameUiStyle.Art("GUI_Paw"), Color.white, changes);
+
+            // D-324 (PAX-129): the whisker button, a ring that refills in gold over the dodge's cooldown, the whiskers inside.
+            GameObject whiskerGO = PauseMenuSetup.EnsureChild(root.transform, "WhiskerButton", changes);
+            GameUiStyle.Place((RectTransform)whiskerGO.transform, WhiskerHome, Vector2.one * WhiskerSize, Vector2.zero, changes, "WhiskerButton");
+            GameUiStyle.Paint(PauseMenuSetup.EnsureComponent<Image>(whiskerGO, changes, "WhiskerButton"), GameUiStyle.Art("GUI_Ring"), Color.white, false, changes, "WhiskerButton");
+            var whiskerGroup = PauseMenuSetup.EnsureComponent<CanvasGroup>(whiskerGO, changes, "WhiskerButton");
+            Quiet(whiskerGroup, changes, "WhiskerButton");
+            Image fill = GameUiStyle.Picture(whiskerGO.transform, "Refill", center, Vector2.one * (WhiskerSize + 8f), Vector2.zero, GameUiStyle.Art("GUI_Ring"), GameUiStyle.Gold, changes);
+            if (fill.type != Image.Type.Filled || fill.fillMethod != Image.FillMethod.Radial360 || fill.fillOrigin != (int)Image.Origin360.Top || !fill.fillClockwise)
+            {
+                fill.type = Image.Type.Filled;
+                fill.fillMethod = Image.FillMethod.Radial360;
+                fill.fillOrigin = (int)Image.Origin360.Top;
+                fill.fillClockwise = true;
+                fill.fillAmount = 1f;
+                changes.Add("set Refill to fill round from the top");
+            }
+            GameUiStyle.Picture(whiskerGO.transform, "Whiskers", center, Vector2.one * (WhiskerSize * 0.66f), Vector2.zero, GameUiStyle.Art("GUI_Whiskers"), Color.white, changes);
 
             var view = PauseMenuSetup.EnsureComponent<TouchControlsView>(root, changes, PlayHudName);
-            TrapKitSetup.Write(view, changes, ("stickRest", 0.22f), ("stickHeld", 0.5f), ("stickBase", stickGO.transform), ("stickKnob", knob.transform), ("stick", stickGroup), ("jump", jumpGO.transform), ("jumpGroup", jumpGroup));
+            TrapKitSetup.Write(view, changes, ("stickRest", 0.22f), ("stickHeld", 0.5f), ("stickBase", stickGO.transform), ("stickKnob", knob.transform), ("stick", stickGroup), ("jump", jumpGO.transform), ("jumpGroup", jumpGroup),
+                ("whisker", whiskerGO.transform), ("whiskerGroup", whiskerGroup), ("whiskerFill", fill));
             return root;
         }
 

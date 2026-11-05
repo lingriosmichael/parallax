@@ -14,6 +14,12 @@ namespace Parallax.Gameplay.Input
         [SerializeField] Rect stickZone = new Rect(0.00f, 0.00f, 0.5f, 0.6f);
         [SerializeField] Rect jumpZone = new Rect(0.78f, 0.00f, 0.22f, 0.45f);
         [SerializeField] Rect interactZone = new Rect(0.56f, 0.00f, 0.18f, 0.40f);
+        /// <summary>D-324 (PAX-129): the whisker dodge's zone in the levels, around the whisker button (GameUiSetup, centre x 0.80, y 0.30)
+        /// up and to the left of the jump button. It stops at x 0.838, short of the jump button's ring at 16:9, 20:9 and 4:3, and
+        /// reaches further left and up, away from it. The Game UI menu writes it onto the level template.</summary>
+        public static readonly Rect LevelWhiskerZone = new Rect(0.75f, 0.21f, 0.088f, 0.20f);
+        [Tooltip("D-324 (PAX-129): the whisker dodge's zone; it wins over the interact zone it overlaps. Off (empty) unless a setup menu sets it, so scenes without the whisker button (the frozen co-op sandbox's interact zone among them) keep their touches.")]
+        [SerializeField] Rect whiskerZone = Rect.zero;
         [Tooltip("PAX-127 (D-322): the ring's radius, a share of the safe area's height. Renamed from stickRadius (0.12), so every scene takes this smaller ring without a setup menu.")]
         [SerializeField] float ringRadius = 0.08f;
         [SerializeField] float deadZone = 0.15f;
@@ -37,12 +43,14 @@ namespace Parallax.Gameplay.Input
 
         readonly HashSet<int> jumpFingerIds = new HashSet<int>();
         readonly HashSet<int> interactFingerIds = new HashSet<int>();
+        readonly HashSet<int> whiskerFingerIds = new HashSet<int>();
         readonly HashSet<int> activeIds = new HashSet<int>();
         readonly List<int> staleIds = new List<int>();
         readonly HashSet<int> ignoredFingerIds = new HashSet<int>();
         readonly List<ITouchReservedRegion> validReservedRegions = new List<ITouchReservedRegion>();
         bool jumpPressedLatch;
         bool interactPressedLatch;
+        bool whiskerPressedLatch;
 
         // PAX-A09: what the on-screen stick and jump button draw. Read only; nothing here changes how a touch is claimed.
         public bool StickHeld => stickFingerId >= 0;
@@ -50,6 +58,7 @@ namespace Parallax.Gameplay.Input
         public Vector2 StickCurrent => stickCurrent;
         public float StickRadiusPixels => ringRadius * Screen.safeArea.height;
         public bool JumpHeld => jumpFingerIds.Count > 0;
+        public bool WhiskerHeld => whiskerFingerIds.Count > 0;
 
         void Awake()
         {
@@ -109,7 +118,12 @@ namespace Parallax.Gameplay.Input
 
                     Vector2 norm = TouchZones.ToSafeAreaNormalised(touch.screenPosition, safeArea);
 
-                    if (interactZone.Contains(norm))
+                    if (whiskerZone.Contains(norm))
+                    {
+                        whiskerFingerIds.Add(id);
+                        whiskerPressedLatch = true;
+                    }
+                    else if (interactZone.Contains(norm))
                     {
                         interactFingerIds.Add(id);
                         interactPressedLatch = true;
@@ -156,6 +170,10 @@ namespace Parallax.Gameplay.Input
             {
                 if (!activeIds.Contains(id)) staleIds.Add(id);
             }
+            foreach (int id in whiskerFingerIds)
+            {
+                if (!activeIds.Contains(id)) staleIds.Add(id);
+            }
             for (int i = 0; i < staleIds.Count; i++) EndFinger(staleIds[i]);
 
             staleIds.Clear();
@@ -192,6 +210,7 @@ namespace Parallax.Gameplay.Input
             if (id == stickFingerId) stickFingerId = -1;
             jumpFingerIds.Remove(id);
             interactFingerIds.Remove(id);
+            whiskerFingerIds.Remove(id);
         }
 
         public CatCommand Read()
@@ -209,6 +228,9 @@ namespace Parallax.Gameplay.Input
             cmd.InteractHeld = interactFingerIds.Count > 0;
             interactPressedLatch = false;
 
+            cmd.WhiskerPressed = whiskerPressedLatch;
+            whiskerPressedLatch = false;
+
             return cmd;
         }
 
@@ -217,12 +239,14 @@ namespace Parallax.Gameplay.Input
             stickFingerId = -1;
             jumpFingerIds.Clear();
             interactFingerIds.Clear();
+            whiskerFingerIds.Clear();
             ignoredFingerIds.Clear();
             lastStickVector = Vector2.zero;
             currentMove = 0f;
             currentClimb = 0f;
             jumpPressedLatch = false;
             interactPressedLatch = false;
+            whiskerPressedLatch = false;
         }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -234,6 +258,7 @@ namespace Parallax.Gameplay.Input
 
             GUI.Label(new Rect(10f, 10f, 400f, 20f), $"Move: {currentMove:F2}  Climb: {currentClimb:F2}  Projection: {projection}");
             DrawZone(interactZone, safeArea, new Color(0.4f, 0.9f, 1f, 0.2f));
+            DrawZone(whiskerZone, safeArea, new Color(1f, 0.9f, 0.5f, 0.15f));
 
             if (stickFingerId >= 0)
             {

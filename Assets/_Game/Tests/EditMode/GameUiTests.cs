@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using Parallax.Core;
+using Parallax.Gameplay.Input;
 using Parallax.Gameplay.UI;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -96,6 +97,30 @@ namespace Parallax.Tests.EditMode
             Assert.AreEqual(0, root.transform.Find("PlayHud").GetSiblingIndex(), "the play HUD goes under every panel");
 
             CollectionAssert.IsEmpty(BuildHud(root.transform), "a second build must report no changes");
+        }
+
+        // D-324 (the developer: "the buttons for jump and whisker should be closer together"): on 16:9, 20:9 and 4:3 (the HUD's scaler: 1920 x 1080,
+        // match 0.5) the whisker button sits 15-80 px from the jump button's ring, inside its touch zone, and the zone stops short of the jump button.
+        [TestCase(1920f, 1080f)]
+        [TestCase(2400f, 1080f)]
+        [TestCase(1440f, 1080f)]
+        public void WhiskerButton_SitsCloseToTheJump_InItsZone_AndTheZoneStopsShortOfTheJump(float width, float height)
+        {
+            T Get<T>(string name) => (T)SetupType.GetField(name, BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
+            Vector2 whisker = Get<Vector2>("WhiskerHome"), jump = Get<Vector2>("JumpHome");
+            float scale = Mathf.Sqrt(width / 1920f * (height / 1080f));
+            float whiskerR = Get<float>("WhiskerSize") * .5f * scale, jumpR = Get<float>("JumpSize") * .5f * scale;
+            Vector2 px = new(width, height);
+            float gap = Vector2.Distance(Vector2.Scale(whisker, px), Vector2.Scale(jump, px)) - whiskerR - jumpR;
+            Assert.That(gap, Is.InRange(15f, 80f), "the gap between the two rings, px");
+
+            Rect zone = TouchStickCatInput.LevelWhiskerZone;
+            const float Slack = .001f;
+            Assert.LessOrEqual(whisker.x + whiskerR / width, zone.xMax + Slack, "the whisker button's right edge is in its zone");
+            Assert.GreaterOrEqual(whisker.x - whiskerR / width, zone.xMin);
+            Assert.LessOrEqual(whisker.y + whiskerR / height, zone.yMax);
+            Assert.GreaterOrEqual(whisker.y - whiskerR / height, zone.yMin);
+            Assert.GreaterOrEqual(jump.x - jumpR / width, zone.xMax - Slack, "a tap on the jump button's ring is never a dodge");
         }
 
         [Test]

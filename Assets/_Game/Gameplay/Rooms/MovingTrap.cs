@@ -74,6 +74,7 @@ namespace Parallax.Gameplay.Rooms
 
         // PAX-V07 §4: a Solid mover (push wall, crusher, lift, drop-and-return, falling ceiling) crushes; a Hazard one spikes.
         protected override CatDeathKind DeclaredDeathKind => kind == MovingTrapKind.Solid && spikes == null ? CatDeathKind.Crushed : CatDeathKind.Spiked;
+        public override bool Dodgeable => Scans;   // D-324: a scanner's beam; every other mover crushes or spikes
 
         public SurfaceMotion Motion => surfaceMotion;
         protected override int DelayTicks => delayTicks;

@@ -43,6 +43,7 @@ namespace Parallax.Gameplay.Rooms
         ChasePhase phase;
 
         protected override CatDeathKind DeclaredDeathKind => CatDeathKind.Zapped;
+        public override bool Dodgeable => true;   // D-324: a laser arm
 
         public ChasePhase Phase => phase;
         public float X => x;

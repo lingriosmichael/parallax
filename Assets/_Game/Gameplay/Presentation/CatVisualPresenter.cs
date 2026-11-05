@@ -40,6 +40,9 @@ namespace Parallax.Gameplay.Presentation
         // 2026-09-30); item 3: the climb frames are registered on the collider, so Visual keeps this pose on the vine too.
         // PAX-A14: the one offset is interpolation's, on a tick a moving floor's carry wrote the body's position (CarryDrawn).
         Vector3 restLocalPosition;
+        // D-324 (PAX-129): the air jump's somersault, seconds into it (negative: none), and Visual's authored rotation.
+        float spinTime = -1f;
+        Quaternion restLocalRotation;
         Collider2D bodyCollider;
         Vector2 lastWorldPosition;
         Vector2 smoothedVelocity;
@@ -83,6 +86,7 @@ namespace Parallax.Gameplay.Presentation
             motionRoot = motor.transform;
             body = motor.GetComponent<Rigidbody2D>();
             restLocalPosition = transform.localPosition;
+            restLocalRotation = transform.localRotation;
             foreach (Collider2D c in motor.GetComponents<Collider2D>()) if (!c.isTrigger) { bodyCollider = c; break; }
 
             if (gravity == null)
@@ -284,6 +288,29 @@ namespace Parallax.Gameplay.Presentation
             ApplyFacing(stateMachine.Facing, next, dt);
             shownFacing = Facing;
             PlaceOnWall(next);
+            Somersault(next, dt);
+        }
+
+        // D-324 (PAX-129): an air jump turns the drawing once, forward, about the body's centre, over AirJumpSpinTime; landing,
+        // a wall, a vine or a death ends it at once. Only Visual's rotation and (for the pivot) its position this frame.
+        void Somersault(CatAnimState next, float dt)
+        {
+            if (motor.AirJumpedThisStep && spinTime < 0f) spinTime = 0f;
+            bool stop = spinTime >= config.AirJumpSpinTime || OnGround(next) || next is CatAnimState.Climb or CatAnimState.Hang
+                or CatAnimState.WallCling or CatAnimState.WallSlide or CatAnimState.Death || motor.IsFrozen;
+            if (spinTime < 0f || stop)
+            {
+                spinTime = -1f;
+                transform.localRotation = restLocalRotation;
+                return;
+            }
+            spinTime += dt;
+            float turn = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(spinTime / Mathf.Max(0.01f, config.AirJumpSpinTime)));
+            Quaternion spin = Quaternion.Euler(0f, 0f, -Facing * 360f * turn);
+            Vector3 centre = bodyCollider != null && transform.parent != null ? transform.parent.InverseTransformPoint(bodyCollider.bounds.center) : transform.localPosition;
+            centre.z = transform.localPosition.z;
+            transform.localPosition = centre + spin * (transform.localPosition - centre);
+            transform.localRotation = spin * restLocalRotation;
         }
 
         // PAX-105 (D-110, §2.4): on a wall, Hang (clinging still) and Climb played backwards by the distance slid (the paws
@@ -439,6 +466,7 @@ namespace Parallax.Gameplay.Presentation
         void UpdateEchoAlpha()
         {
             float alpha = observer != null && observer.Driver != null && observer.Driver.Kind == InputSourceKind.EchoReplay ? config.EchoAlpha : 1f;
+            if (motor != null && motor.IsDodging) alpha *= config.DodgeAlpha;   // D-324: a ghost while arrows and lasers pass through
             SetAlpha(bodyRenderer, alpha);
             SetAlpha(outlineRenderer, alpha);
         }
